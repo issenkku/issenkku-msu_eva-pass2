@@ -11,58 +11,54 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
-            $table->id();
-            $table->string('prefix');
-            $table->string('name');
-            $table->foreignId('position_id');
-            $table->foreignId('employee_type_id');
-            $table->foreignId('faculty_id');
-            $table->foreignId('department_id');
-            $table->string('personal_number')->unique();
-            $table->string('password');
-            $table->string('email')->unique();
-            $table->string('phone')->unique();
-            $table->rememberToken();
-            $table->timestamps();
-        });
 
         Schema::create('positions', function (Blueprint $table) {
             $table->id();
-            $table->string('position_name');
+            $table->string('name');
             $table->string('description')->nullable();
-            $table->boolean('status');
-            $table->timestamps();
-        });
-
-        Schema::create('employee_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('type_name');
-            $table->string('description')->nullable();
-            $table->boolean('status');
-            $table->timestamps();
-        });
-
-        Schema::create('faculties', function (Blueprint $table) {
-            $table->id();
-            $table->string('faculty_name');
-            $table->string('description')->nullable();
-            $table->boolean('status');
             $table->timestamps();
         });
 
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             $table->string('department_name');
+            $table->string('faculty');
             $table->string('description')->nullable();
-            $table->boolean('status');
+        });
+
+        Schema::create('settings',function (Blueprint $table){
+            $table->id();
+            $table->string('faculty');
+            $table->string('university');
+        });
+
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('prefix');
+            $table->string('name');
+            $table->string('employee_id')->unique();
+            $table->string('password');
+            $table->string('email')->unique();
+            $table->string('phone')->unique();
+            $table->string('personnel_type');
+            $table->text('bio')->nullable();
+            $table->string('status');
+            $table->foreignId('position_id')->constrained('positions');
+            $table->foreignId('department_id')->constrained('departments');
             $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->foreignId('employee_id')->primary();
+            $table->foreignId('user_id')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
+        });
+
+        Schema::create('user_histories', function(Blueprint $table){
+            $table->id();
+            $table->foreignId('user_id')->constrained('users');
+            $table->text('action');
+            $table->timestamp('action_timestamp');
         });
     }
 
@@ -73,9 +69,9 @@ return new class extends Migration
     {
         Schema::dropIfExists('employees');
         Schema::dropIfExists('positions');
-        Schema::dropIfExists('employee_types');
-        Schema::dropIfExists('faculties');
         Schema::dropIfExists('departments');
+        Schema::dropIfExists('settings');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('user_histories');
     }
 };
