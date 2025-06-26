@@ -23,7 +23,6 @@ return new class extends Migration
             $table->id();
             $table->string('department_name');
             $table->string('faculty');
-            $table->string('description')->nullable();
         });
 
         Schema::create('settings',function (Blueprint $table){
