@@ -2,14 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\DepartmentsController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::get('/', [DepartmentsController::class, 'index'])->name('index');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/createDepartments', [DepartmentsController::class, 'create'])->name('create'); 
+Route::post('/store', [DepartmentsController::class, 'store'])->name('store'); 
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+Route::delete('/departments/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
