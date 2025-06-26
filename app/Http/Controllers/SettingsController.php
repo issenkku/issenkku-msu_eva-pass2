@@ -12,7 +12,10 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        //
+        $settings = Settings::all();
+        return view('index', compact('settings'));
+        // --- IGNORE ---
+        // return view('indexSettings', ['settings' => $settings]);
     }
 
     /**
@@ -20,16 +23,33 @@ class SettingsController extends Controller
      */
     public function create()
     {
-        //
+        $settings = Settings::all();
+        return view('createSettings', compact('settings'));
+        return redirect()->route('create')->with('last_settings', $request->only(['faculty', 'university']));
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
+   public function store(Request $request)
+{
+    $request->validate([
+        'faculty' => 'required|string|max:255',
+        'university' => 'required|string|max:255',
+    ]);
+
+    $data = Settings::create([
+        'faculty' => $request->faculty,
+        'university' => $request->university,
+    ]);
+
+    // ส่งค่าที่บันทึกล่าสุดไปหน้า createSettings
+    return redirect()
+        ->route('create')
+        ->with('last', $data)
+        ->with('success', 'Settings created successfully');
+}
 
     /**
      * Display the specified resource.
