@@ -235,7 +235,7 @@
                                 <td>{{ $department->department_name }}</td>
                                 <td>{{ $department->faculty }}</td>
                                 <td>
-                                    <button class="btn btn-action btn-edit" 
+                                    <button class="btn btn-action btn-edit"
                                         onclick="handleEdit({{ $department->id }}, '{{ $department->department_name }}', '{{ $department->faculty }}')">
                                         <i class="fas fa-edit me-1"></i>แก้ไข
                                     </button>
@@ -248,6 +248,8 @@
                         @endforeach
                     </tbody>
                 </table>
+                <!-- ลิงก์แบ่งหน้า -->
+                {{ $departments->links() }}
             @else
                 <div class="empty-state">
                     <i class="fas fa-inbox"></i>
@@ -306,7 +308,8 @@
                     <h5 class="modal-title" id="deleteModalLabel">
                         <i class="fas fa-exclamation-triangle me-2"></i>ยืนยันการลบ
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">
                     <i class="fas fa-trash-alt" style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;"></i>
@@ -334,20 +337,20 @@
         function openCreateModal() {
             // เคลียร์ backdrop ที่ค้างก่อน
             clearModalBackdrop();
-            
+
             const form = document.getElementById('departmentForm');
             const modalTitle = document.getElementById('departmentModalLabel');
-            
+
             if (!form || !modalTitle) return;
 
             // รีเซ็ตฟอร์ม
             resetForm();
-            
+
             // ตั้งค่าฟอร์มสำหรับเพิ่มข้อมูล
             form.action = "{{ route('store') }}";
             document.getElementById('form_method').value = 'POST';
             modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มข้อมูลแผนก';
-            
+
             // เปิด modal ด้วย Bootstrap API
             const modalEl = document.getElementById('departmentModal');
             const modal = new bootstrap.Modal(modalEl);
@@ -358,15 +361,15 @@
         function handleEdit(id, name, faculty) {
             // เคลียร์ backdrop ที่ค้างก่อน
             clearModalBackdrop();
-            
+
             const form = document.getElementById('departmentForm');
             const modalTitle = document.getElementById('departmentModalLabel');
-            
+
             if (!form || !modalTitle) return;
 
             // รีเซ็ตฟอร์มก่อน
             resetForm();
-            
+
             // ตั้งค่าฟอร์มสำหรับแก้ไข
             form.action = `/departments/${id}`;
             document.getElementById('form_method').value = 'PUT';
@@ -374,7 +377,7 @@
             document.getElementById('department_name').value = name;
             document.getElementById('faculty').value = faculty;
             modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลแผนก';
-            
+
             // เปิด modal ด้วย Bootstrap API
             const modalEl = document.getElementById('departmentModal');
             const modal = new bootstrap.Modal(modalEl);
@@ -385,14 +388,14 @@
         function submitForm() {
             const form = document.getElementById('departmentForm');
             const modalEl = document.getElementById('departmentModal');
-            
+
             if (form && modalEl) {
                 // ปิด modal
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 if (modal) {
                     modal.hide();
                 }
-                
+
                 // ส่งฟอร์มทันที
                 form.submit();
             }
@@ -402,11 +405,11 @@
         function confirmDelete(id) {
             // เคลียร์ backdrop ที่ค้างก่อน
             clearModalBackdrop();
-            
+
             const deleteForm = document.getElementById('deleteForm');
             if (deleteForm) {
                 deleteForm.action = "/departments/" + id;
-                
+
                 const modalEl = document.getElementById('deleteModal');
                 const modal = new bootstrap.Modal(modalEl);
                 modal.show();
@@ -420,13 +423,13 @@
                 form.reset();
                 document.getElementById('departmentId').value = '';
                 document.getElementById('form_method').value = 'POST';
-                
+
                 // เคลียร์ error states
                 const inputs = form.querySelectorAll('.form-control');
                 inputs.forEach(input => {
                     input.classList.remove('is-invalid');
                 });
-                
+
                 const errors = form.querySelectorAll('.invalid-feedback');
                 errors.forEach(error => {
                     error.remove();
@@ -444,13 +447,13 @@
                     modalInstance.hide();
                 }
             });
-            
+
             // ลบ backdrop ทั้งหมด
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(backdrop => {
                 backdrop.remove();
             });
-            
+
             // เคลียร์ body classes และ styles
             document.body.classList.remove('modal-open');
             document.body.style.removeProperty('overflow');

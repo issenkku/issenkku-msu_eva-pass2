@@ -8,7 +8,7 @@ class Departments extends Model
 {
     protected $fillable = [
         'department_name',
-        'faculty_id',
+        'faculty',
     ];
-
+public $timestamps = false;
 }
