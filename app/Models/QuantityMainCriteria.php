@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class QuantityMainCriteria extends Model
 {
     protected $table = 'quantity_main_criterias';
+    public $timestamps = false;
 
     protected $fillable = [
         'name',
@@ -23,6 +24,12 @@ class QuantityMainCriteria extends Model
 
     public function quantitySubCriterias(): HasMany
     {
-        return $this->hasMany(QuantitySubCriteria::class);
+        return $this->hasMany(QuantitySubCriteria::class, 'quantity_main_criteria_id');
+    }
+
+    // helper function to get the main criteria name
+    public function mainCriteria()
+    {
+        return $this->belongsTo(QuantityMainCriteria::class, 'quantity_main_criteria_id');
     }
 }

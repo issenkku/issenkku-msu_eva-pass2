@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class QualityMainCriteria extends Model
 {
     protected $table = 'quality_main_criterias';
+    public $timestamps = false;
 
     protected $fillable = [
         'name',
@@ -23,8 +24,14 @@ class QualityMainCriteria extends Model
         return $this->belongsTo(CriteriaVersion::class);
     }
 
-    public function qualitySubCriterias(): HasMany
+    public function qualitySubCriterias()
     {
-        return $this->hasMany(QualitySubCriteria::class);
+        return $this->hasMany(QualitySubCriteria::class, 'quality_main_criteria_id');
+    }
+
+    // helper function to get the main criteria name
+    public function mainCriteria()
+    {
+        return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
     }
 }

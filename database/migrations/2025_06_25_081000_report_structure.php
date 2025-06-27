@@ -19,6 +19,32 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Report Structure - Main Report
+        Schema::create('report_datas', function (Blueprint $table) {
+            $table->id();
+            $table->string('report_title');
+            $table->text('report_description');
+            $table->string('assessment_type');
+            $table->text('comment');
+            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
+        });
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+            $table->string('main_categories');
+            $table->string('sub_categories');
+            $table->integer('sequence');
+            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
+        });
+        Schema::create('evaluation_lists', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->decimal('sum_score', 5, 2);
+            $table->integer('sequence');
+            $table->string('annotation');
+            $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
+            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
+        });
+
         // Report Structure - Quantity table
         Schema::create('quantity_main_criterias', function (Blueprint $table) {
             $table->id();
@@ -33,7 +59,8 @@ return new class extends Migration
             $table->decimal('score_a', 5, 2);
             $table->decimal('score_b', 5, 2);
             $table->foreignId('quantity_main_criteria_id')->constrained('quantity_main_criterias')->onDelete('cascade');
-            $table->foreignId('criteria_version_id')->constrained('criteria_versions');
+            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
+            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade'); 
         });
 
         // Report Structure - Quality table
@@ -52,30 +79,8 @@ return new class extends Migration
             $table->decimal('num_score', 5, 2);
             $table->foreignId('quality_main_criteria_id')->constrained('quality_main_criterias')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
-        });
+            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade'); 
 
-        // Report Structure - Main Report
-        Schema::create('report_datas', function (Blueprint $table) {
-            $table->id();
-            $table->text('report_desc_bottom');
-            $table->string('assessment_type');
-            $table->text('comment');
-            $table->foreignId('criteria_version_id')->constrained('criteria_versions');
-        });
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name_categories');
-            $table->string('sub_categories');
-            $table->integer('sequence');
-            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
-        });
-        Schema::create('evaluation_lists', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->decimal('sum_score', 5, 2);
-            $table->integer('sequence');
-            $table->string('annotation');
-            $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
         });
     }
 

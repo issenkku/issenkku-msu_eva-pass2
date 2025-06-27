@@ -16,6 +16,7 @@ class QualitySubCriteria extends Model
         'num_score',
         'quality_main_criteria_id',
         'criteria_version_id',
+        'evaluation_list_id',
     ];
 
     public function mainCriteria(): BelongsTo
@@ -31,5 +32,10 @@ class QualitySubCriteria extends Model
     public function qualityScores()
     {
         return $this->hasMany(QualityScore::class);
+    }
+
+    public function evaluationList(): BelongsTo
+    {
+        return $this->belongsTo(EvaluationList::class, 'evaluation_list_id');
     }
 }

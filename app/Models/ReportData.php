@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ReportData extends Model
 {
     protected $table = 'report_datas';
+    public $timestamps = false;
 
     protected $fillable = [
-        'report_desc_bottom',
+        'report_title',
+        'report_description',
         'assessment_type',
         'comment',
         'criteria_version_id',

@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Category extends Model
 {
+    protected $table = 'categories';
+    public $timestamps = false;
+
     protected $fillable = [
-        'name_categories',
+        'main_categories',
         'sub_categories',
         'sequence',
         'criteria_version_id',
@@ -18,4 +21,10 @@ class Category extends Model
     {
         return $this->belongsTo(CriteriaVersion::class);
     }
+
+    public function evaluationLists()
+    {
+        return $this->hasMany(EvaluationList::class, 'categorie_id');
+    }
+    
 }

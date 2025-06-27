@@ -22,7 +22,7 @@ class CriteriaVersion extends Model
 
     public function creator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by', 'user_id');
+        return $this->belongsTo(User::class, 'created_by', 'id');
     }
 
     public function quantityMainCriterias(): HasMany
@@ -45,8 +45,8 @@ class CriteriaVersion extends Model
         return $this->hasMany(Category::class);
     }
 
-    public function evaluationLists(): HasMany
+    public function evaluationLists()
     {
-        return $this->hasMany(EvaluationList::class);
+        return $this->hasMany(EvaluationList::class, 'criteria_version_id');
     }
 }

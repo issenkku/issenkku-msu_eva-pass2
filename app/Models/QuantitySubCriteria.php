@@ -18,6 +18,7 @@ class QuantitySubCriteria extends Model
         'score_b',
         'quantity_main_criteria_id',
         'criteria_version_id',
+        'evaluation_list_id',
     ];
 
     public function mainCriteria(): BelongsTo
@@ -33,5 +34,10 @@ class QuantitySubCriteria extends Model
     public function quantityScores()
     {
         return $this->hasMany(QuantityScore::class);
+    }
+
+    public function evaluationList(): BelongsTo
+    {
+        return $this->belongsTo(EvaluationList::class, 'evaluation_list_id');
     }
 }

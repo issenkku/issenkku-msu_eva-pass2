@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class EvaluationList extends Model
 {
     protected $table = 'evaluation_lists';
+    public $timestamps = false;
 
     protected $fillable = [
         'name',
         'sum_score',
         'sequence',
         'annotation',
+        'categorie_id',
         'criteria_version_id',
     ];
 
@@ -22,18 +24,22 @@ class EvaluationList extends Model
         return $this->belongsTo(CriteriaVersion::class);
     }
 
-    public function quantityScores()
-    {
-        return $this->hasMany(QuantityScore::class);
-    }
-
-    public function qualityScores()
-    {
-        return $this->hasMany(QualityScore::class);
-    }
-
     public function evidenceAnswers()
     {
         return $this->hasMany(EvidenceAnswer::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'categorie_id');
+    }
+
+    public function quantitySubCriterias()
+    {
+        return $this->hasMany(QuantitySubCriteria::class, 'evaluation_list_id');
+    }
+    public function qualitySubCriterias()
+    {
+        return $this->hasMany(QualitySubCriteria::class, 'evaluation_list_id');
     }
 }

@@ -20,23 +20,21 @@ return new class extends Migration
         });
         Schema::create('quantity_scores', function (Blueprint $table) {
             $table->foreignId('quantity_sub_criteria_id')->constrained('quantity_sub_criterias');
-            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists');
             $table->foreignId('report_id')->constrained('reports');
             $table->decimal('score_C', 5, 2)->nullable();
             $table->decimal('score_D', 5, 2)->nullable();
             $table->timestamps();
 
-            $table->index(['quantity_sub_criteria_id', 'evaluation_list_id', 'report_id'], 'quantity_scores_all_idx');
+            $table->index(['quantity_sub_criteria_id', 'report_id'], 'quantity_scores_all_idx');
 
         });
         Schema::create('quality_scores', function (Blueprint $table) {
             $table->foreignId('quality_sub_criteria_id')->constrained('quality_sub_criterias');
-            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists');
             $table->foreignId('report_id')->constrained('reports');
             $table->decimal('score', 5, 2)->nullable();
             $table->timestamps();
 
-            $table->index(['quality_sub_criteria_id', 'evaluation_list_id', 'report_id'], 'quality_scores_all_idx');
+            $table->index(['quality_sub_criteria_id', 'report_id'], 'quality_scores_all_idx');
 
         });
         Schema::create('evidence_answers', function (Blueprint $table) {
