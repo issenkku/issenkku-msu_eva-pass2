@@ -34,14 +34,12 @@ class PositionsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
-            'created_at' => 'required|date',
-            'updated_at' => 'required|date',
+            
         ]);
         Positions::create([
             'name' => $request->name,
             'description' => $request->description,
-            'created_at' => $request->created_at,
-            'updated_at' => $request->updated_at,
+           
         ]);
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
@@ -65,20 +63,18 @@ class PositionsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Positions $positions)
+    public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
-            'created_at' => 'required|date',
-            'updated_at' => 'required|date',
+            
         ]);
         $positions = Positions::findOrFail($id);
         $positions->update([
             'name' => $request->name,
             'description' => $request->description,
-            'created_at' => $request->created_at,
-            'updated_at' => $request->updated_at,
+          
         ]);
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
         
@@ -87,8 +83,9 @@ class PositionsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Positions $positions)
+    public function destroy($id)
     {
+        $positions = Positions::findOrFail($id);
         $positions->delete();
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
         // --- IGNORE ---

@@ -1,5 +1,5 @@
 @extends('layout')
-@section('title', 'จัดการข้อมูลแผนก')
+@section('title', 'จัดการข้อมูลตำแหน่ง')
 @section('content')
     <style>
         .page-header {
@@ -200,8 +200,8 @@
 
     <!-- Page Header -->
     <div class="page-header">
-        <h2><i class="fas fa-building me-2"></i>จัดการข้อมูลแผนก</h2>
-        <p class="mb-0">ระบบจัดการข้อมูลแผนกและคณะ</p>
+        <h2><i class="fas fa-user-tie me-2"></i>จัดการข้อมูลตำแหน่ง</h2>
+        <p class="mb-0">ระบบจัดการข้อมูลตำแหน่งงาน</p>
     </div>
 
     <!-- Add Button -->
@@ -218,29 +218,29 @@
         </div>
 
         <div class="table-responsive">
-            @if (isset($departments) && $departments->count() > 0)
+            @if (isset($positions) && $positions->count() > 0)
                 <table class="table table-custom">
                     <thead>
                         <tr>
                             <th>ลำดับ</th>
-                            <th>ชื่อแผนก</th>
-                            <th>ชื่อคณะ</th>
+                            <th>ชื่อตำแหน่ง</th>
+                            <th>คำอธิบาย</th>
                             <th>การจัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($departments as $index => $department)
+                        @foreach ($positions as $index => $position)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
-                                <td>{{ $department->department_name }}</td>
-                                <td>{{ $department->faculty }}</td>
+                                <td>{{ $position->name }}</td>
+                                <td>{{ $position->description ?? '-' }}</td>
                                 <td>
                                     <button class="btn btn-action btn-edit"
-                                        onclick="handleEdit({{ $department->id }}, '{{ $department->department_name }}', '{{ $department->faculty }}')">
+                                        onclick="handleEdit({{ $position->id }}, '{{ $position->name }}', '{{ $position->description }}')">
                                         <i class="fas fa-edit me-1"></i>แก้ไข
                                     </button>
                                     <button class="btn btn-action btn-delete"
-                                        onclick="confirmDelete({{ $department->id }})">
+                                        onclick="confirmDelete({{ $position->id }})">
                                         <i class="fas fa-trash me-1"></i>ลบ
                                     </button>
                                 </td>
@@ -249,61 +249,59 @@
                     </tbody>
                 </table>
                 <!-- ลิงก์แบ่งหน้า -->
-                {{ $departments->links() }}
+                {{ $positions->links() }}
             @else
                 <div class="empty-state">
-                    <i class="fas fa-inbox"></i>
+                    <i class="fas fa-user-tie"></i>
                     <h5>ยังไม่มีข้อมูล</h5>
-                    <p>คลิกปุ่ม "เพิ่มข้อมูล" เพื่อเริ่มต้นเพิ่มข้อมูลแผนก</p>
+                    <p>คลิกปุ่ม "เพิ่มข้อมูล" เพื่อเริ่มต้นเพิ่มข้อมูลตำแหน่ง</p>
                 </div>
             @endif
         </div>
     </div>
-<!-- Flash Messages -->
-@if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-@endif
 
-@if($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
+    <!-- Flash Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <!-- Modal -->
-    <div class="modal fade" id="departmentModal" tabindex="-1" aria-labelledby="departmentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="positionModal" tabindex="-1" aria-labelledby="positionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content modal-content-custom">
                 <div class="modal-header modal-header-custom">
-                    <h5 class="modal-title" id="departmentModalLabel">
-                        <i class="fas fa-plus me-2"></i>เพิ่มข้อมูลแผนก
+                    <h5 class="modal-title" id="positionModalLabel">
+                        <i class="fas fa-plus me-2"></i>เพิ่มข้อมูลตำแหน่ง
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body modal-body-custom">
-                    <form id="departmentForm" method="POST">
+                    <form id="positionForm" method="POST">
                         @csrf
                         <input type="hidden" name="_method" id="form_method" value="POST">
-                        <input type="hidden" id="departmentId" name="id">
+                        <input type="hidden" id="positionId" name="id">
 
                         <div class="form-group mb-3">
-                            <label for="department_name" class="form-label">ชื่อแผนก</label>
-                            <input type="text" id="department_name" name="department_name" class="form-control" required>
+                            <label for="name" class="form-label">ชื่อตำแหน่ง</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
                         </div>
-
                         <div class="form-group mb-3">
-                            <label for="faculty" class="form-label">ชื่อคณะ</label>
-                            <input type="text" id="faculty" name="faculty" class="form-control" required>
+                            <label for="description" class="form-label">คำอธิบาย</label>
+                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="คำอธิบายตำแหน่ง (ไม่บังคับ)"></textarea>
                         </div>
                     </form>
                 </div>
@@ -333,7 +331,7 @@
                 <div class="modal-body text-center">
                     <i class="fas fa-trash-alt" style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;"></i>
                     <h5>คุณต้องการลบข้อมูลนี้หรือไม่?</h5>
-                    <p class="text-muted">การลบข้อมูลนี้ไม่สามารย้อนกลับได้</p>
+                    <p class="text-muted">การลบข้อมูลนี้ไม่สามารถย้อนกลับได้</p>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">
@@ -357,8 +355,8 @@
             // เคลียร์ backdrop ที่ค้างก่อน
             clearModalBackdrop();
 
-            const form = document.getElementById('departmentForm');
-            const modalTitle = document.getElementById('departmentModalLabel');
+            const form = document.getElementById('positionForm');
+            const modalTitle = document.getElementById('positionModalLabel');
 
             if (!form || !modalTitle) return;
 
@@ -366,23 +364,23 @@
             resetForm();
 
             // ตั้งค่าฟอร์มสำหรับเพิ่มข้อมูล
-            form.action = "{{ route('departments.store') }}";
+            form.action = "{{ route('positions.store') }}";
             document.getElementById('form_method').value = 'POST';
-            modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มข้อมูลแผนก';
+            modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มข้อมูลตำแหน่ง';
 
             // เปิด modal ด้วย Bootstrap API
-            const modalEl = document.getElementById('departmentModal');
+            const modalEl = document.getElementById('positionModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
         }
 
         // ฟังก์ชันเปิด modal สำหรับแก้ไขข้อมูล
-        function handleEdit(id, name, faculty) {
+        function handleEdit(id, name, description) {
             // เคลียร์ backdrop ที่ค้างก่อน
             clearModalBackdrop();
 
-            const form = document.getElementById('departmentForm');
-            const modalTitle = document.getElementById('departmentModalLabel');
+            const form = document.getElementById('positionForm');
+            const modalTitle = document.getElementById('positionModalLabel');
 
             if (!form || !modalTitle) return;
 
@@ -390,23 +388,23 @@
             resetForm();
 
             // ตั้งค่าฟอร์มสำหรับแก้ไข
-            form.action = `/departments/${id}`;
+            form.action = `/positions/${id}`;
             document.getElementById('form_method').value = 'PUT';
-            document.getElementById('departmentId').value = id;
-            document.getElementById('department_name').value = name;
-            document.getElementById('faculty').value = faculty;
-            modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลแผนก';
+            document.getElementById('positionId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('description').value = description || '';
+            modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลตำแหน่ง';
 
             // เปิด modal ด้วย Bootstrap API
-            const modalEl = document.getElementById('departmentModal');
+            const modalEl = document.getElementById('positionModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
         }
 
         // ฟังก์ชันส่งฟอร์ม
         function submitForm() {
-            const form = document.getElementById('departmentForm');
-            const modalEl = document.getElementById('departmentModal');
+            const form = document.getElementById('positionForm');
+            const modalEl = document.getElementById('positionModal');
 
             if (form && modalEl) {
                 // ปิด modal
@@ -427,7 +425,7 @@
 
             const deleteForm = document.getElementById('deleteForm');
             if (deleteForm) {
-                deleteForm.action = "/departments/" + id;
+                deleteForm.action = "/positions/" + id;
 
                 const modalEl = document.getElementById('deleteModal');
                 const modal = new bootstrap.Modal(modalEl);
@@ -437,11 +435,11 @@
 
         // ฟังก์ชันรีเซ็ตฟอร์ม
         function resetForm() {
-            const form = document.getElementById('departmentForm');
+            const form = document.getElementById('positionForm');
             if (form) {
                 form.reset();
                 
-                document.getElementById('departmentId').value = '';
+                document.getElementById('positionId').value = '';
                 document.getElementById('form_method').value = 'POST';
 
                 // เคลียร์ error states
