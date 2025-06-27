@@ -12,8 +12,8 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $settings = Settings::all();
-        return view('settings.index');
+          $setting = Settings::first(); 
+         return view('settings.index', compact('setting'));
         // --- IGNORE ---
         // return view('indexSettings', ['settings' => $settings]);
     }
@@ -32,25 +32,47 @@ class SettingsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'faculty' => 'required|string|max:255',
-            'university' => 'required|string|max:255',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'faculty' => 'required|string|max:255',
+    //         'university' => 'required|string|max:255',
+    //     ]);
 
-        $data = Settings::create([
-            'faculty' => $request->faculty,
-            'university' => $request->university,
-        ]);
+    //     $data = Settings::create([
+    //         'faculty' => $request->faculty,
+    //         'university' => $request->university,
+    //     ]);
 
-        // ส่งค่าที่บันทึกล่าสุดไปหน้า createSettings
-        return redirect()
-            ->route('settings.index')
-            ->with('last', $data)
-            ->with('success', 'Settings created successfully');
+    //     // ส่งค่าที่บันทึกล่าสุดไปหน้า createSettings
+    //     return redirect()
+    //         ->route('settings.index')
+    //         ->with('last', $data)
+    //         ->with('success', 'Settings created successfully');
+    // }
+public function store(Request $request)
+{
+    $request->validate([
+        'university' => 'required|string|max:255',
+        'faculty' => 'required|string|max:255',
+    ]);
+
+    if ($request->has('id')) {
+        // อัปเดตข้อมูลเดิม
+        $setting = Settings::findOrFail($request->id);
+        $setting->update($request->only(['university', 'faculty']));
+        $message = 'อัปเดตข้อมูลสำเร็จ!';
+    } else {
+        // สร้างข้อมูลใหม่ หรือ upsert
+        Settings::updateOrCreate(
+            ['id' => 1], // เงื่อนไขค้นหา
+            $request->only(['university', 'faculty'])
+        );
+        $message = 'บันทึกข้อมูลสำเร็จ!';
     }
 
+    return redirect()->route('settings.index')->with('success', $message);
+}
     /**
      * Display the specified resource.
      */
