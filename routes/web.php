@@ -1,16 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome');
-// })->name('home');
 
-// Route::get('dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// require __DIR__.'/settings.php';
-// require __DIR__.'/auth.php';
-require __DIR__.'/report.php';
+Route::view('/', 'criteria_config.index')->name('criteria_config.index');
+Route::view('/criteria-config', 'criteria_config.create')->name('criteria_config.create');
