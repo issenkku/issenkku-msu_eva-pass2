@@ -12,7 +12,10 @@ class PositionsController extends Controller
      */
     public function index()
     {
-        //
+        $positions = Positions::paginate(5);
+        return view('positions.index', compact('positions'));
+        // --- IGNORE ---
+        // return view('index', ['positions' => $positions]);
     }
 
     /**
@@ -28,7 +31,19 @@ class PositionsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'created_at' => 'required|date',
+            'updated_at' => 'required|date',
+        ]);
+        Positions::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'created_at' => $request->created_at,
+            'updated_at' => $request->updated_at,
+        ]);
+        return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
 
     /**
@@ -52,7 +67,21 @@ class PositionsController extends Controller
      */
     public function update(Request $request, Positions $positions)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'created_at' => 'required|date',
+            'updated_at' => 'required|date',
+        ]);
+        $positions = Positions::findOrFail($id);
+        $positions->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'created_at' => $request->created_at,
+            'updated_at' => $request->updated_at,
+        ]);
+        return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+        
     }
 
     /**
@@ -60,6 +89,9 @@ class PositionsController extends Controller
      */
     public function destroy(Positions $positions)
     {
-        //
+        $positions->delete();
+        return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+        // --- IGNORE ---
+        // return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }
 }
