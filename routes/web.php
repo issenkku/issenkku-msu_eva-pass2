@@ -16,7 +16,6 @@ Route::prefix('departments')->name('departments.')->group(function () {
 
 Route::prefix('settings')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
-    Route::get('/create', [SettingsController::class, 'create'])->name('create');
     Route::post('/store', [SettingsController::class, 'store'])->name('store');
 });
 

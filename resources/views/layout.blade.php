@@ -183,7 +183,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container">
-            <a href="{{ route('index') ?? '#' }}" class="navbar-brand navbar-brand-custom">
+            <a href="#" class="navbar-brand navbar-brand-custom">
                 <i class="fas fa-chart-line me-2"></i>
                 ระบบประเมินบุคลากร
             </a>
@@ -198,14 +198,14 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom {{ request()->is('/') ? 'active' : '' }}"
-                            href="{{ route('index') ?? '#' }}">
+                            href="#">
                             <i class="fas fa-home me-2"></i>
                             หน้าแรก
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link nav-link-custom {{ request()->is('create') ? 'active' : '' }}"
-                            href="{{ route('create') ?? '#' }}">
+                            href="#">
                             <i class="fas fa-plus me-2"></i>
                             เพิ่มข้อมูล
                         </a>

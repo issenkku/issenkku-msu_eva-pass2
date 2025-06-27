@@ -188,7 +188,7 @@
                                         <i class="fas fa-save me-2"></i>
                                         บันทึกข้อมูล
                                     </button>
-                                    <a href="{{ route('settings.create') }}" class="btn btn-custom btn-secondary-custom">
+                                    <a href="{{ route('settings.index') }}" class="btn btn-custom btn-secondary-custom">
                                         <i class="fas fa-arrow-left me-2"></i>
                                         กลับ
                                     </a>
