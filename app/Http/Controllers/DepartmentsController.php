@@ -13,7 +13,7 @@ class DepartmentsController extends Controller
     public function index()
     {
         $departments = Departments::paginate(5);
-        return view('createDepartments', compact('departments'));
+        return view('departments.index', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);
     }
@@ -44,7 +44,7 @@ class DepartmentsController extends Controller
         'faculty' => $request->faculty,
     ]);
 
-    return redirect()->route('index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
 }
 
     /**
@@ -81,7 +81,7 @@ public function update(Request $request, $id)
         'faculty' => $request->faculty,
     ]);
 
-    return redirect()->route('index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
 }
 
 
