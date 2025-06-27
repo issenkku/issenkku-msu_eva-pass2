@@ -214,7 +214,7 @@
     <!-- Table Container -->
     <div class="table-container">
         <div class="table-header">
-            <h4><i class="fas fa-table me-2"></i>แสดงข้อมูลเป็น Table</h4>
+            <h4><i class="fas fa-table me-2"></i>แสดงข้อมูลตำแหน่งงาน</h4>
         </div>
 
         <div class="table-responsive">
