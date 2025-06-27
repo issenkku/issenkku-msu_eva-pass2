@@ -12,11 +12,33 @@
     </td>
     <td class="p-4 text-center">{{ $employee['contact'] }}</td>
     <td class="p-4 text-center space-x-2">
-        <x-button type="primary" text="แก้ไข" class="text-sm" />
+        <!-- <x-button type="primary" text="แก้ไข" class="text-sm" onclick='openEditModal(@json($employee))'/> -->
+        <x-button type="primary" text="แก้ไข" class="text-sm" 
+            onclick='openEditModal({
+                id: {{ $employee["id"] }},
+                prefix: "{{ $employee["prefix"] ?? "" }}",
+                name: "{{ $employee["name"] }}",
+                employee_id: "{{ $employee["code"] }}",
+                email: "{{ $employee["email"] ?? "" }}",
+                phone: "{{ $employee["contact"] }}",
+                personnel_type: "{{ $employee["type"] }}",
+                bio: "{{ $employee["bio"] ?? "" }}",
+                status: "{{ $employee["status"] ?? "active" }}",
+                position_id: {{ $employee["position_id"] ?? "null" }},
+                department_id: {{ $employee["department_id"] ?? "null" }}
+            })'
+        />
         <form action="{{ route('users.destroy', $employee['id']) }}" method="POST" class="inline">
             @csrf
             @method('DELETE')
-            <x-button type="danger" text="ลบ" class="text-sm" onclick="return confirm('ยืนยันการลบ?')" />
+            <x-button 
+                type="danger" 
+                text="ลบ" 
+                buttonType="submit" 
+                class="text-sm" 
+                onclick="return confirm('ยืนยันการลบ?')" 
+            />
         </form>
     </td>
 </tr>
+

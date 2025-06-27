@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 use Response;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -31,9 +32,10 @@ class UserController extends Controller
             'status'=>'required|max:20',
             'position_id'=> 'required|integer',
             'department_id'=> 'required|integer',
+            'role' => 'string',
         ]);
 
-        User::create([
+        $user = User::create([
             'prefix' => $request->prefix,
             'name'=> $request->name,
             'employee_id'=> $request->employee_id,
@@ -47,6 +49,8 @@ class UserController extends Controller
             'department_id'=> $request->department_id,
         ]);
 
+        $user->assignRole($request->role);
+
         return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
     }
 
@@ -55,7 +59,8 @@ class UserController extends Controller
         $users = User::with('position')->paginate(10);
         $departments = Department::all();
         $positions = Position::all();
-        return view('user.management.index', compact('users', 'departments', 'positions'));
+        $roles = Role::all();
+        return view('user.management.index', compact('users', 'departments', 'positions', 'roles'));
     }
 
     public function update(Request $request, User $user):RedirectResponse
@@ -70,6 +75,7 @@ class UserController extends Controller
             'status'=>'required|max:20',
             'position_id'=> 'required|integer',
             'department_id'=> 'required|integer',
+            'role' => '',
             'employee_id' => ['required', 'max:20',
                         Rule::unique('users', 'employee_id')->ignore($user->id),
             ],
@@ -90,6 +96,7 @@ class UserController extends Controller
         }
 
         $user->save();
+        $user->assignRole($request->role);
 
         return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
@@ -97,7 +104,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return response()->json(['message' => 'User deleted successfully.']);
+        return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
     }
 }
 

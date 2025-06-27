@@ -38,12 +38,19 @@
             <tbody>
                 @foreach ($users as $index => $user)
                     <x-user-table :index="$index + 1" :employee="[
+                        'id' => $user->id,
+                        'prefix' => $user->prefix,
                         'name' => $user->name,
                         'code' => $user->employee_id,
                         'position' => optional($user->position)->name,
                         'type' => $user->personnel_type,
                         'contact' => $user->phone,
-                        'id' => $user->id
+                        'email' => $user->email,
+                        'bio' => $user->bio,
+                        'status' => $user->status,
+                        'position_id' => $user->position_id,
+                        'department_id' => $user->department_id,
+                        'role' => $user->getRoleNames()->first(),
                     ]" />
                 @endforeach
             </tbody>

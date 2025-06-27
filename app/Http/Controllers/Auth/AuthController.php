@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Auth;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Hash;
 
@@ -39,8 +40,9 @@ class AuthController extends Controller
 
         // Log the user in using Laravel session auth
         Auth::login($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return redirect()->intended('/dashboard')->with('success', 'เข้าสู่ระบบสำเร็จ');
+        return redirect()->intended('/users')->with('success', 'เข้าสู่ระบบสำเร็จ');
     }
 
     public function logout(Request $request)
@@ -49,7 +51,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/loginform')->with('success', 'ออกจากระบบสำเร็จ');
+        return redirect('/')->with('success', 'ออกจากระบบสำเร็จ');
     }
 
     public function user(Request $request)

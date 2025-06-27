@@ -54,6 +54,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getAuthIdentifierName()
+    {
+        return 'employee_id';
+    }
+
     public function position(){
         return $this->belongsTo(Position::class);
     }

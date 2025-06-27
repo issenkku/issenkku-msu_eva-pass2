@@ -7,8 +7,14 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800">
-    <nav class="bg-gray-800 text-white p-4">
+    <nav class="bg-gray-800 text-white p-4 flex justify-between items-center">
         <h1 class="text-lg font-semibold">การจัดการผู้ใช้งานและสิทธิการเข้าถึง</h1>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                ออกจากระบบ
+            </button>
+        </form>
     </nav>
     <main class="p-6">
         @yield('content')

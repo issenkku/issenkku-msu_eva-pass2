@@ -23,7 +23,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label class="block">คำนำหน้า</label>
-                            <select name="prefix" class="w-full border rounded px-3 py-2" required>
+                            <select name="prefix" id="prefix" class="w-full border rounded px-3 py-2" required>
                                 <option value="">คำนำหน้า</option>
                                 <option value="นาย" {{ old('prefix', $user->prefix ?? '') == 'นาย' ? 'selected' : '' }}>นาย</option>
                                 <option value="นาง" {{ old('prefix', $user->prefix ?? '') == 'นาง' ? 'selected' : '' }}>นาง</option>
@@ -32,11 +32,11 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block">ชื่อ-นามสกุล</label>
-                            <input type="text" name="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="name" id="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" required />
                         </div>
                         <div class="md:col-span-3">
                             <label class="block">รหัสพนักงาน</label>
-                            <input type="text" name="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" required />
                         </div>
                     </div>
                 </div>
@@ -47,7 +47,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label>สาขาวิชา</label>
-                            <select name="department_id" class="w-full border rounded px-3 py-2" required>
+                            <select name="department_id" id="department_id" class="w-full border rounded px-3 py-2" required>
                                 <option value="">เลือกสาขาวิชา</option>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
@@ -59,9 +59,9 @@
                         </div>
                         <div>
                             <label>ตำแหน่ง</label>
-                            <select name="position_id" class="w-full border rounded px-3 py-2" required>
+                            <select name="position_id" id="position_id" class="w-full border rounded px-3 py-2" required>
                                 <option value="">เลือกตำแหน่ง</option>
-                                @foreach ($positions as $position)
+                                @foreach ($positions as $position) 
                                     <option value="{{ $position->id }}"
                                         {{ old('position_id', $user->position_id ?? '') == $position->id ? 'selected' : '' }}>
                                         {{ $position->name }}
@@ -71,7 +71,7 @@
                         </div>
                         <div>
                             <label>ประเภทบุคลากร</label>
-                            <select name="personnel_type" class="w-full border rounded px-3 py-2" required>
+                            <select name="personnel_type" id="personnel_type" class="w-full border rounded px-3 py-2" required>
                                 <option value="">เลือกประเภทบุคลากร</option>
                                 <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type ?? '') == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                                 <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type ?? '') == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
@@ -86,18 +86,18 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label>อีเมล</label>
-                            <input type="email" name="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" required />
                         </div>
                         <div>
                             <label>เบอร์โทร</label>
-                            <input type="text" name="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" required />
                         </div>
                     </div>
                 </div>
 
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ประวัติการศึกษา</h3>
-                    <input type="text" name="bio" class="w-full border rounded px-3 py-2" value="{{ old('bio', $user->bio ?? '') }}" class="w-full border rounded px-3 py-2" />
+                    <input type="text" name="bio" id="bio" class="w-full border rounded px-3 py-2" value="{{ old('bio', $user->bio ?? '') }}"/>
                 </div>
 
                 <!-- รหัสผ่าน -->
@@ -107,11 +107,27 @@
                 </div>
 
                 <div>
-                    <h3 class="text-purple-600 font-semibold mb-2">สถานะ</h3>
-                    <select name="status" class="w-full border rounded px-3 py-2" required>
-                        <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
-                        <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
-                    </select>
+                    <h3 class="text-purple-600 font-semibold mb-2">ตั้งค่าผู้ใช้งาน</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label>บทบาท</label>
+                            <select name="status" class="w-full border rounded px-3 py-2">
+                                <option value="">เลือกบทบาท</option>
+                                @foreach ($roles as $role)
+                                <option value="{{ $role->name }}">
+                                    {{ $role->name }}
+                                </option>
+                            @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label>สถานะ</label>
+                            <select name="status" class="w-full border rounded px-3 py-2" required>
+                                <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
+                                <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -136,6 +152,12 @@ function openCreateModal(button) {
     // Reset the form
     form.reset();
 
+    // Reset role dropdown
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+        roleSelect.value = '';
+    }
+
     // Use route from data attribute
     const action = button.getAttribute('data-action');
     form.action = action;
@@ -146,42 +168,102 @@ function openCreateModal(button) {
     // Ensure password is required
     document.getElementById('password').required = true;
 
+    // Reset modal title
+    const modalTitle = modal.querySelector('h2');
+    if (modalTitle) {
+        modalTitle.textContent = 'เพิ่มเจ้าหน้าที่ใหม่';
+    }
+
     // Show the modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
 function openEditModal(user) {
+    console.log('Opening edit modal with user data:', user); // Debug log
+    
     const modal = document.getElementById('userModal');
     const form = document.getElementById('userForm');
 
-    // ตั้งค่า action ไปที่ route update ของ user
+    // Set form action to update route
     form.action = `/users/${user.id}`;
     document.getElementById('formMethod').value = "PUT";
 
-    // เติมค่าลงในฟอร์ม
-    document.getElementById('prefix').value = user.prefix || '';
-    document.getElementById('name').value = user.name || '';
-    document.getElementById('employee_id').value = user.employee_id || '';
-    document.getElementById('email').value = user.email || '';
-    document.getElementById('phone').value = user.phone || '';
-    document.getElementById('personnel_type').value = user.personnel_type || '';
-    document.getElementById('bio').value = user.bio || '';
-    document.getElementById('status').value = user.status || '';
-    document.getElementById('position_id').value = user.position_id || '';
-    document.getElementById('department_id').value = user.department_id || '';
+    // Update modal title
+    const modalTitle = modal.querySelector('h2');
+    if (modalTitle) {
+        modalTitle.textContent = 'แก้ไขข้อมูลเจ้าหน้าที่';
+    }
 
-    // Password ไม่ต้อง required ตอน edit
-    document.getElementById('password').required = false;
-    document.getElementById('password').value = '';
+    // Populate text inputs
+    const textFields = ['name', 'employee_id', 'email', 'phone', 'bio'];
+    textFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element && user[field] !== undefined) {
+            element.value = user[field] || '';
+            console.log(`Set ${field} to:`, user[field]); // Debug log
+        }
+    });
 
-    // เปิด Modal
+    // Populate select dropdowns
+    const selectFields = [
+        { id: 'prefix', value: user.prefix },
+        { id: 'department_id', value: user.department_id },
+        { id: 'position_id', value: user.position_id },
+        { id: 'personnel_type', value: user.personnel_type },
+        { id: 'status', value: user.status }
+    ];
+
+    selectFields.forEach(field => {
+        const element = document.getElementById(field.id);
+        if (element && field.value !== undefined) {
+            element.value = field.value || '';
+            console.log(`Set ${field.id} to:`, field.value); // Debug log
+            
+            // Trigger change event in case there are dependent dropdowns
+            element.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // Password should not be required on edit
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.required = false;
+        passwordInput.value = '';
+        passwordInput.placeholder = 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน';
+    }
+
+    const roleSelect = document.getElementById('role');
+    if (roleSelect && user.role) {
+        roleSelect.value = user.role;
+        roleSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Show the modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
 function closeModal() {
     const modal = document.getElementById('userModal');
+    const modalTitle = modal.querySelector('h2');
+    const form = document.getElementById('userForm');
+    
+    // Reset modal title
+    if (modalTitle) {
+        modalTitle.textContent = 'เพิ่มเจ้าหน้าที่ใหม่';
+    }
+    
+    // Reset form
+    form.reset();
+    
+    // Reset password requirement
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+        passwordInput.required = true;
+        passwordInput.placeholder = '';
+    }
+    
     modal.classList.add('hidden');
     modal.classList.remove('flex');
 }
