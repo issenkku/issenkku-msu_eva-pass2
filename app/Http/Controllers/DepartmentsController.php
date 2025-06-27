@@ -94,7 +94,7 @@ public function destroy($id)
     $department = Departments::findOrFail($id);
     $department->delete();
 
-    return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
 }
 
 
