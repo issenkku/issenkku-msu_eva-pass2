@@ -10,5 +10,5 @@ class Departments extends Model
         'department_name',
         'faculty',
     ];
-public $timestamps = false;
+    public $timestamps = false;
 }
