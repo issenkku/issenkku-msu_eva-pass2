@@ -175,6 +175,11 @@
             .navbar-brand-custom {
                 font-size: 1.2rem;
             }
+
+            .nav-link-custom {
+                padding: 8px 15px !important;
+                margin: 2px 0;
+            }
         }
     </style>
 </head>
@@ -196,35 +201,104 @@
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->is('/') ? 'active' : '' }}" href="#">
+                    <!-- หน้าหลัก/Dashboard -->
+                    {{-- <li class="nav-item">
+                        <a class="nav-link nav-link-custom {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" 
+                           href="#">
                             <i class="fas fa-home me-2"></i>
                             หน้าแรก
                         </a>
+                    </li> --}}
+
+                    <!-- จัดการข้อมูล Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-custom dropdown-toggle 
+                           {{ request()->routeIs(['settings.*', 'departments.*', 'positions.*']) ? 'active' : '' }}" 
+                           href="#" id="navbarDataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-database me-2"></i>
+                            จัดการข้อมูล
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="navbarDataDropdown">
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('settings.*') ? 'fw-bold' : '' }}" 
+                                   href="{{ route('settings.index') }}">
+                                    <i class="fas fa-university me-2"></i>
+                                    ข้อมูลมหาวิทยาลัย
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('departments.*') ? 'fw-bold' : '' }}" 
+                                   href="{{ route('departments.index', []) ?? '#' }}">
+                                    <i class="fas fa-building me-2"></i>
+                                    ข้อมูลสาขา/ภาควิชา
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('positions.*') ? 'fw-bold' : '' }}" 
+                                   href="{{ route('positions.index', []) ?? '#' }}">
+                                    <i class="fas fa-user-tie me-2"></i>
+                                    ข้อมูลตำแหน่ง
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+
+                    <!-- การประเมิน -->
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->is('create') ? 'active' : '' }}"
-                            href="#">
-                            <i class="fas fa-plus me-2"></i>
-                            เพิ่มข้อมูล
+                        <a class="nav-link nav-link-custom {{ request()->routeIs('evaluations.*') ? 'active' : '' }}" 
+                           href="#">
+                            <i class="fas fa-clipboard-check me-2"></i>
+                            การประเมิน
                         </a>
                     </li>
+
+                    <!-- รายงาน -->
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-custom {{ request()->routeIs('reports.*') ? 'active' : '' }}" 
+                           href="#">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            รายงาน
+                        </a>
+                    </li>
+
+                    <!-- จัดการระบบ Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="navbarDropdown"
+                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="navbarSystemDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-2"></i>
-                            จัดการ
+                            จัดการระบบ
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item dropdown-item-custom" href="#"><i
-                                        class="fas fa-users me-2"></i>จัดการผู้ใช้</a></li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="#"><i
-                                        class="fas fa-chart-bar me-2"></i>รายงาน</a></li>
+                        <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="navbarSystemDropdown">
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom" href="#">
+                                    <i class="fas fa-users me-2"></i>
+                                    จัดการผู้ใช้
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom" href="#">
+                                    <i class="fas fa-tools me-2"></i>
+                                    ตั้งค่าระบบ
+                                </a>
+                            </li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item dropdown-item-custom" href="#"><i
-                                        class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ</a></li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom" href="#">
+                                    <i class="fas fa-download me-2"></i>
+                                    สำรองข้อมูล
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom" href="#">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    ออกจากระบบ
+                                </a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -261,9 +335,12 @@
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
             });
         });
 
@@ -276,8 +353,10 @@
 
             if (scrollTop > lastScrollTop && scrollTop > 100) {
                 navbar.style.transform = 'translateY(-100%)';
+                navbar.style.transition = 'transform 0.3s ease';
             } else {
                 navbar.style.transform = 'translateY(0)';
+                navbar.style.transition = 'transform 0.3s ease';
             }
 
             lastScrollTop = scrollTop;
@@ -286,6 +365,18 @@
         // Add loading animation
         window.addEventListener('load', function() {
             document.body.style.opacity = '1';
+        });
+
+        // Active dropdown highlight
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownItems = document.querySelectorAll('.dropdown-item-custom');
+            dropdownItems.forEach(item => {
+                if (item.classList.contains('fw-bold')) {
+                    const dropdown = item.closest('.dropdown');
+                    const dropdownToggle = dropdown.querySelector('.dropdown-toggle');
+                    dropdownToggle.classList.add('active');
+                }
+            });
         });
     </script>
 

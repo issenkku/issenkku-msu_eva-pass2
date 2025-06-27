@@ -173,14 +173,10 @@
                 <div class="col-lg-8 col-md-10">
                     <div class="card card-custom">
                         <div class="card-header-custom">
-                            <h1>✨ ข้อมูลหน้าที่ ✨</h1>
+                            <h1>✨ มหาวิทยาลัย ✨</h1>
                             <p class="mb-0" style="opacity: 0.9;">
                                 กรอกข้อมูลมหาวิทยาลัยและคณะ
-                                @if(isset($settings) && $setting)
-                                    <span class="status-badge status-update">อัปเดตข้อมูล</span>
-                                @else
-                                    <span class="status-badge status-new">สร้างข้อมูลใหม่</span>
-                                @endif
+                                
                             </p>
                         </div>
                         <div class="card-body p-5">
