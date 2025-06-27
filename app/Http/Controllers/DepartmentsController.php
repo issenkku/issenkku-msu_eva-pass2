@@ -13,7 +13,7 @@ class DepartmentsController extends Controller
     public function index()
     {
         $departments = Departments::all();
-        return view('index', compact('departments'));
+        return view('createDepartments', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);
     }

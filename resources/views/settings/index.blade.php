@@ -141,7 +141,7 @@
                             <p class="mb-0" style="opacity: 0.9;">กรอกข้อมูลมหาวิทยาลัยและคณะ</p>
                         </div>
                         <div class="card-body p-5">
-                            <form action="{{ route('store') }}" method="POST">
+                            <form action="{{ route('settings.store') }}" method="POST">
                                 @csrf
 
                                 <!-- ชื่อมหาวิทยาลัย -->
@@ -188,7 +188,7 @@
                                         <i class="fas fa-save me-2"></i>
                                         บันทึกข้อมูล
                                     </button>
-                                    <a href="{{ route('index') }}" class="btn btn-custom btn-secondary-custom">
+                                    <a href="{{ route('settings.create') }}" class="btn btn-custom btn-secondary-custom">
                                         <i class="fas fa-arrow-left me-2"></i>
                                         กลับ
                                     </a>

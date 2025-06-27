@@ -12,8 +12,8 @@ class SettingsController extends Controller
      */
     public function index()
     {
-        $settings = Settings::all();
-        return view('index', compact('settings'));
+        //$settings = Settings::all();
+        return view('settings.index');
         // --- IGNORE ---
         // return view('indexSettings', ['settings' => $settings]);
     }

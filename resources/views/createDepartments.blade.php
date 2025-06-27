@@ -366,7 +366,7 @@
             resetForm();
 
             // ตั้งค่าฟอร์มสำหรับเพิ่มข้อมูล
-            form.action = "{{ route('store') }}";
+            form.action = "{{ route('departments.store') }}";
             document.getElementById('form_method').value = 'POST';
             modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มข้อมูลแผนก';
 
@@ -440,6 +440,7 @@
             const form = document.getElementById('departmentForm');
             if (form) {
                 form.reset();
+                
                 document.getElementById('departmentId').value = '';
                 document.getElementById('form_method').value = 'POST';
 
