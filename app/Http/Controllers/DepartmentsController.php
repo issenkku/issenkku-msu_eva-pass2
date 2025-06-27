@@ -12,7 +12,7 @@ class DepartmentsController extends Controller
      */
     public function index()
     {
-        $departments = Departments::all();
+        $departments = Departments::paginate(5);
         return view('createDepartments', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);
@@ -21,13 +21,13 @@ class DepartmentsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-      $departments = Departments::paginate(5);
-   return view('createDepartments', compact('departments'));
+//     public function create()
+//     {
+//       $departments = Departments::paginate(5);
+//    return view('createDepartments', compact('departments'));
 
        
-    }
+//     }
 
     /**
      * Store a newly created resource in storage.
@@ -44,7 +44,7 @@ class DepartmentsController extends Controller
         'faculty' => $request->faculty,
     ]);
 
-    return redirect()->route('create')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
 }
 
     /**
@@ -81,7 +81,7 @@ public function update(Request $request, $id)
         'faculty' => $request->faculty,
     ]);
 
-    return redirect()->route('create')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
 }
 
 
@@ -94,7 +94,7 @@ public function destroy($id)
     $department = Departments::findOrFail($id);
     $department->delete();
 
-    return redirect()->route('create')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
 }
 
 
