@@ -21,39 +21,36 @@ class DepartmentsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-//     public function create()
-//     {
-//       $departments = Departments::paginate(5);
-//    return view('createDepartments', compact('departments'));
+    //     public function create()
+    //     {
+    //       $departments = Departments::paginate(5);
+    //    return view('createDepartments', compact('departments'));
 
-       
-//     }
+
+    //     }
 
     /**
      * Store a newly created resource in storage.
      */
- public function store(Request $request)
-{
-    $request->validate([
-        'department_name' => 'required|string|max:255',
-        'faculty' => 'required|string|max:255',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'department_name' => 'required|string|max:255',
+            'faculty' => 'required|string|max:255',
+        ]);
 
-    Departments::create([
-        'department_name' => $request->department_name,
-        'faculty' => $request->faculty,
-    ]);
+        Departments::create([
+            'department_name' => $request->department_name,
+            'faculty' => $request->faculty,
+        ]);
 
-    return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
-}
+        return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
+    }
 
     /**
      * Display the specified resource.
      */
-    public function show(Departments $departments)
-    {
-        
-    }
+    public function show(Departments $departments) {}
 
     /**
      * Show the form for editing the specified resource.
@@ -66,36 +63,34 @@ class DepartmentsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    
 
-public function update(Request $request, $id)
-{
-    $request->validate([
-        'department_name' => 'required|string|max:255',
-        'faculty' => 'required|string|max:255',
-    ]);
 
-    $department = Departments::findOrFail($id);
-    $department->update([
-        'department_name' => $request->department_name,
-        'faculty' => $request->faculty,
-    ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'department_name' => 'required|string|max:255',
+            'faculty' => 'required|string|max:255',
+        ]);
 
-    return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
-}
+        $department = Departments::findOrFail($id);
+        $department->update([
+            'department_name' => $request->department_name,
+            'faculty' => $request->faculty,
+        ]);
+
+        return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+    }
 
 
 
     /**
      * Remove the specified resource from storage.
      */
-public function destroy($id)
-{
-    $department = Departments::findOrFail($id);
-    $department->delete();
+    public function destroy($id)
+    {
+        $department = Departments::findOrFail($id);
+        $department->delete();
 
-    return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
-}
-
-
+        return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    }
 }

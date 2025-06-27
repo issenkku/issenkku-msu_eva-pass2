@@ -32,24 +32,24 @@ class SettingsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-   public function store(Request $request)
-{
-    $request->validate([
-        'faculty' => 'required|string|max:255',
-        'university' => 'required|string|max:255',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'faculty' => 'required|string|max:255',
+            'university' => 'required|string|max:255',
+        ]);
 
-    $data = Settings::create([
-        'faculty' => $request->faculty,
-        'university' => $request->university,
-    ]);
+        $data = Settings::create([
+            'faculty' => $request->faculty,
+            'university' => $request->university,
+        ]);
 
-    // ส่งค่าที่บันทึกล่าสุดไปหน้า createSettings
-    return redirect()
-        ->route('settings.index')
-        ->with('last', $data)
-        ->with('success', 'Settings created successfully');
-}
+        // ส่งค่าที่บันทึกล่าสุดไปหน้า createSettings
+        return redirect()
+            ->route('settings.index')
+            ->with('last', $data)
+            ->with('success', 'Settings created successfully');
+    }
 
     /**
      * Display the specified resource.
