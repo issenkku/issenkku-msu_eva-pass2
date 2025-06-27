@@ -19,17 +19,6 @@ class DepartmentsController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    //     public function create()
-    //     {
-    //       $departments = Departments::paginate(5);
-    //    return view('createDepartments', compact('departments'));
-
-
-    //     }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -48,23 +37,8 @@ class DepartmentsController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Departments $departments) {}
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Departments $departments)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-
-
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -80,8 +54,6 @@ class DepartmentsController extends Controller
 
         return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
-
-
 
     /**
      * Remove the specified resource from storage.
