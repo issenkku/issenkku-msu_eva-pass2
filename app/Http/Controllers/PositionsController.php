@@ -18,17 +18,6 @@ class PositionsController extends Controller
         // return view('index', ['positions' => $positions]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -42,22 +31,6 @@ class PositionsController extends Controller
 
         ]);
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Positions $positions)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Positions $positions)
-    {
-        //
     }
 
     /**
