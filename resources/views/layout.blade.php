@@ -197,8 +197,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->is('/') ? 'active' : '' }}"
-                            href="#">
+                        <a class="nav-link nav-link-custom {{ request()->is('/') ? 'active' : '' }}" href="#">
                             <i class="fas fa-home me-2"></i>
                             หน้าแรก
                         </a>

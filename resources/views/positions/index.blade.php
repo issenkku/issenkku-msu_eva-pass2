@@ -239,8 +239,7 @@
                                         onclick="handleEdit({{ $position->id }}, '{{ $position->name }}', '{{ $position->description }}')">
                                         <i class="fas fa-edit me-1"></i>แก้ไข
                                     </button>
-                                    <button class="btn btn-action btn-delete"
-                                        onclick="confirmDelete({{ $position->id }})">
+                                    <button class="btn btn-action btn-delete" onclick="confirmDelete({{ $position->id }})">
                                         <i class="fas fa-trash me-1"></i>ลบ
                                     </button>
                                 </td>
@@ -261,14 +260,14 @@
     </div>
 
     <!-- Flash Messages -->
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    @if($errors->any())
+    @if ($errors->any())
         <div class="alert alert-danger">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
@@ -301,7 +300,8 @@
                         </div>
                         <div class="form-group mb-3">
                             <label for="description" class="form-label">คำอธิบาย</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="คำอธิบายตำแหน่ง (ไม่บังคับ)"></textarea>
+                            <textarea id="description" name="description" class="form-control" rows="3"
+                                placeholder="คำอธิบายตำแหน่ง (ไม่บังคับ)"></textarea>
                         </div>
                     </form>
                 </div>
@@ -438,7 +438,7 @@
             const form = document.getElementById('positionForm');
             if (form) {
                 form.reset();
-                
+
                 document.getElementById('positionId').value = '';
                 document.getElementById('form_method').value = 'POST';
 
