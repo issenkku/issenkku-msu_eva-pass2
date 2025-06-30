@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CriteriaVersion;
 use Illuminate\Http\Request;
-// use App\Http\Requests\CriteriaVersionRequest;
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\ReportData;
 use App\Models\Category;
@@ -25,40 +24,10 @@ class ReportStructureController extends Controller
         return CriteriaVersionResource::collection($criteriaVersions);
     }
 
-    // Get one by id
-    // public function show($id)
-    // {
-    //     try {
-    //         $version = CriteriaVersion::with([
-    //             'quantityMainCriterias.quantitySubCriterias',
-    //             'qualityMainCriterias.qualitySubCriterias',
-    //             'reportDatas',
-    //             'categories.evaluationLists' // ความสัมพันธ์ที่ถูกต้อง
-    //         ])->where('id', $id)->first();
-
-    //         if (!$version) {
-    //             return response()->json([
-    //                 'message' => 'CriteriaVersion not found'
-    //             ], 404);
-    //         }
-
-    //         return response()->json([
-    //             'data' => $version
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         // บันทึกข้อผิดพลาดและส่งข้อความที่เป็นประโยชน์กลับไป
-    //         Log::error('Error fetching criteria version: ' . $e->getMessage());
-    //         return response()->json([
-    //             'message' => 'Failed to retrieve criteria version',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
     public function show($id)
     {
         try {
-            // ตรวจสอบว่ามีเวอร์ชันนี้หรือไม่
+            // ตรวจสอบว่ามีเวอร์ชัน
             $versionExists = CriteriaVersion::where('id', $id)->exists();
             if (!$versionExists) {
                 return response()->json([
@@ -66,8 +35,6 @@ class ReportStructureController extends Controller
                 ], 404);
             }
 
-            // ใช้ Eloquent Eager Loading ที่มีประสิทธิภาพมากขึ้น
-            // สร้าง query อย่างเฉพาะเจาะจง โดยใช้ join และ select เฉพาะข้อมูลที่ต้องการ
             $version = CriteriaVersion::select('id', 'version_name', 'created_by')
                 ->with([
                     'reportDatas:id,criteria_version_id,report_title,report_description,assessment_type,comment',
@@ -203,7 +170,7 @@ class ReportStructureController extends Controller
                 'data' => $formattedResponse
             ]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error fetching criteria version: ' . $e->getMessage());
+            Log::error('Error fetching criteria version: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to retrieve criteria version',
                 'error' => $e->getMessage()
@@ -255,15 +222,6 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
         ]);
-
-        // // ตรวจสอบชื่อซ้ำก่อนที่จะพยายามบันทึก
-        // $existingVersion = CriteriaVersion::where('version_name', $validated['version_name'])->first();
-        // if ($existingVersion) {
-        //     return response()->json([
-        //         'message' => 'Criteria version with this name already exists',
-        //         'error' => 'Duplicate version name: ' . $validated['version_name']
-        //     ], 422);
-        // }
 
         try {
             $version = DB::transaction(function () use ($validated) {
