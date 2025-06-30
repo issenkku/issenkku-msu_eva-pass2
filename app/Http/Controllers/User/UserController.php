@@ -26,7 +26,7 @@ class UserController extends Controller
             'employee_id'=> 'required|max:20|unique:users,employee_id',
             'password'=> ['required','max:50', Rules\Password::defaults()],
             'email'=> 'required|string|lowercase|email:rfc,dns|max:50|unique:users,email',
-            'phone'=> 'required|max:20|unique:users,phone',
+            'phone'=> 'required|max:20|regex:/^[0-9]{10}$/|unique:users,phone',
             'personnel_type'=> 'required|string|max:100',
             'bio'=>'nullable|string|max:1000',
             'status'=>'required|max:20',
@@ -68,7 +68,7 @@ class UserController extends Controller
         $rules = ([
             'prefix'=> 'required|string|max:10',
             'name' => 'required|string|max:100',
-            'phone'=> ['required', 'max:20', 
+            'phone'=> ['required', 'max:20','regex:/^[0-9]{10}$/', 
                         Rule::unique('users', 'phone')->ignore($user->id)],
             'personnel_type'=> 'required|string|max:100',
             'bio'=>'nullable|string|max:1000',

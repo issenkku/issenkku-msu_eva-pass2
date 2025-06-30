@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\UserController;
 use Inertia\Inertia;
 
-Route::get('/test', function () {
+Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
@@ -21,17 +22,24 @@ Route::prefix('users')->name('users.')->group(function () {
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
 });
 
-Route::get('/roles', [UserController::class, 'getRoles']);
-
-Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/', [AuthController::class, 'login']);
+// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+// Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('guest')->controller(AuthController::class)->group(function(){
-    Route::get('/', 'showLoginForm')->name('login');
-    Route::post('/', 'login');
+    Route::get('/login', 'showLoginForm')->name('login');
+    Route::post('/login', 'login');
 });
 
-// routes/web.php (or routes/api.php)
-Route::get('/setup-roles-permissions', [RoleAndPermissionController::class, 'setupRolesAndPermissions']);
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+Route::resource('/roles', RoleAndPermissionController::class);
+
+// Route::middleware(['auth:sanctum'])->group(function () {
+//     Route::get('/profile', function (Request $request) {
+//         return response()->json($request->user());
+//     });
+//     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
+// });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -50,47 +50,89 @@ class RoleAndPermissionController extends Controller
 
     public function index()
     {
-        $roles = Role::all();
-        return view('', compact('roles'));
+        $roles = Role::with('permissions')->get();
+        $permissions = Permission::all();
+        return view('user.role-management.index', compact('roles', 'permissions'));
     }
 
-    public function store(Request $request):RedirectResponse
+    public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required|unique:roles,name',
+            'permissions' => 'nullable|array',
+        ]);
+
         $role = Role::create(['name' => $request->name]);
+        $role->syncPermissions($request->permissions ?? []);
 
-        foreach ($request->permission as $permission) {
-            $role->givePermissionTo($permission);
-        }
-
-        foreach ($request->users as $user) {
-            $user = User::find($user);
-            $user->assignRole($role->name);
-        }
-
-        return redirect()->route('')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
+        return redirect()->route('roles.index')->with('success', 'Role created.');
     }
 
-    public function update(Request $request, Role $role):RedirectResponse
+    public function show(Role $role)
     {
-        $role = Role::where('id', $request->id)->first();
-        $role->name = $request->name;
-        $role->update();
+        return view('roles.show', compact('role'));
+    }
 
-        $role->syncPermissions($request->permission);
+    // public function assignRole(Request $request)
+    // {
+    //     $request->validate([
+    //         'user_id' => 'required|exists:users,id',
+    //         'role' => 'required|exists:roles,name',
+    //     ]);
 
-        DB::table('model_has_roles')->where('role_id', $request->id)->delete();
+    //     $user = User::findOrFail($request->user_id);
+    //     $user->syncRoles([$request->role]);
 
-        foreach ($request->users as $user) {
-            $user = User::find($user);
-            $user->assignRole($role->name);
+    //     return back()->with('success', 'Role assigned to user.');
+    // }
+
+    public function edit(Role $role)
+    {
+        $permissions = Permission::all();
+        $users = User::all();
+
+        $rolePermissions = $role->permissions->pluck('name')->toArray();
+        $assignedUsers = $role->users->pluck('id')->toArray(); // users with this role
+        return view('user.role-management.edit-role', compact('role', 'permissions', 'rolePermissions', 'users', 'assignedUsers'));
+    }
+
+    public function update(Request $request, Role $role)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'permissions' => 'nullable|array',
+            'users' => 'nullable|array',
+        ]);
+
+        $role->update(['name' => $request->name]);
+        $role->syncPermissions($request->permissions ?? []);
+
+        // Get IDs of selected users
+        $selectedUserIds = $request->users ?? [];
+
+        // Assign this role to newly selected users (if they don't already have it)
+        foreach ($selectedUserIds as $userId) {
+            $user = User::find($userId);
+            if (!$user->hasRole($role->name)) {
+                $user->assignRole($role->name);
+            }
         }
 
-        return redirect()->route('')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+        // Optionally: Remove role from users who are no longer selected
+        $previousUsers = $role->users()->pluck('id')->toArray();
+        $toRemove = array_diff($previousUsers, $selectedUserIds);
+
+        foreach ($toRemove as $userId) {
+            $user = User::find($userId);
+            $user->removeRole($role->name);
+        }
+
+        return redirect()->route('roles.index')->with('success', 'Role updated.');
     }
 
     public function destroy(Role $role)
     {
         $role->delete();
-        return response()->json(['message' => 'Role deleted successfully.']);
+        return redirect()->route('roles.index')->with(['message' => 'Role deleted successfully.']);
     }
 }

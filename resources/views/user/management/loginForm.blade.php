@@ -1,85 +1,55 @@
-@extends('layouts.user-management-page')
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-bold mb-4">เข้าสู่ระบบ</h2>
 
-@section('content')
-<div class="min-h-screen flex justify-center items-center bg-neutral-50">
-    <div class="w-full max-w-md px-4">
-        <div class="shadow-figma border bg-white rounded-lg">
-            <div class="space-y-4 text-center pb-8 p-6">
-                <div class="mx-auto w-20 h-20 rounded-full flex items-center justify-center shadow-lg">
-                    <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl shadow-yellow-50">
-                        <img src="{{ asset('favicon-msu.png') }}" alt="logo" />
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบ</h2>
-                    <p class="text-gray-600 text-base">กรุณาป้อนข้อมูลเพื่อเข้าสู่ระบบประเมินผล</p>
-                </div>
+        <form id="loginForm">
+            <div class="mb-4">
+                <label for="employee_id" class="block">รหัสพนักงาน</label>
+                <input type="text" id="employee_id" name="employee_id" class="w-full border px-3 py-2 rounded" required>
             </div>
 
-            <div class="p-6 space-y-6">
-                @if(session('success'))
-                    <div class="text-green-600 font-semibold text-center">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if($errors->any())
-                    <div class="text-sm text-center font-semibold text-red-600 border border-red-200 bg-red-50 rounded-md p-3">
-                        {{ $errors->first() }}
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('login') }}" class="space-y-6">
-                    @csrf
-
-                    <div class="space-y-2">
-                        <label for="employee_id" class="text-sm font-medium text-gray-700">
-                            Username
-                        </label>
-                        <div class="relative w-full">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A8 8 0 1116.879 6.196M15 12h.01" />
-                            </svg>
-                            <input
-                                type="text"
-                                id="employee_id"
-                                name="employee_id"
-                                value="{{ old('employee_id') }}"
-                                placeholder="Username"
-                                class="w-full h-12 pl-10 pr-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition duration-150"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label for="password" class="text-sm font-medium text-gray-700">
-                            Password
-                        </label>
-                        <div class="relative w-full">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c1.654 0 3-1.346 3-3S13.654 5 12 5 9 6.346 9 8s1.346 3 3 3z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21H7a2 2 0 01-2-2v-2a6 6 0 0112 0v2a2 2 0 01-2 2z" />
-                            </svg>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                placeholder="Password"
-                                class="w-full h-12 pl-10 pr-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-gray-300 focus:border-gray-300 transition duration-150"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div class="text-right">
-                        <a href="#" class="text-publicHealth hover:text-rose-600 text-sm">ลืมรหัสผ่าน?</a>
-                    </div>
-
-                    <x-button type="primary" text="เข้าสู่ระบบ" buttonType="submit" class="w-full" />
-                </form>
+            <div class="mb-4">
+                <label for="password" class="block">รหัสผ่าน</label>
+                <input type="password" id="password" name="password" class="w-full border px-3 py-2 rounded" required>
             </div>
-        </div>
+
+            <div id="error" class="text-red-500 mb-2 hidden"></div>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">เข้าสู่ระบบ</button>
+        </form>
     </div>
-</div>
-@endsection
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const employee_id = form.employee_id.value;
+            const password = form.password.value;
+
+            axios.post('/login', { employee_id, password })
+                .then(response => {
+                    localStorage.setItem('token', response.data.token);
+                    window.location.href = response.data.redirect || '/users';
+                })
+                .catch(error => {
+                    const message = error.response?.data?.message || 'เข้าสู่ระบบไม่สำเร็จ';
+                    errorDiv.textContent = message;
+                    errorDiv.classList.remove('hidden');
+                });
+        });
+    </script>
+</body>
+</html>

@@ -11,9 +11,7 @@
         <h1 class="text-lg font-semibold">การจัดการผู้ใช้งานและสิทธิการเข้าถึง</h1>
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-                ออกจากระบบ
-            </button>
+            <button type="submit" class="text-red-600">Logout</button>
         </form>
     </nav>
     <main class="p-6">
@@ -21,3 +19,4 @@
     </main>
 </body>
 </html>
+

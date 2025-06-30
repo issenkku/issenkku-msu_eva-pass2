@@ -101,32 +101,19 @@
                 </div>
 
                 <!-- รหัสผ่าน -->
-                <div>
+                <div id="passwordPanel">
                     <h3 class="text-purple-600 font-semibold mb-2">รหัสผ่าน</h3>
                     <input type="password" name="password" id="password" class="w-full border rounded px-3 py-2" {{ isset($user) ? '' : 'required' }} />
                 </div>
 
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ตั้งค่าผู้ใช้งาน</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label>บทบาท</label>
-                            <select name="status" class="w-full border rounded px-3 py-2">
-                                <option value="">เลือกบทบาท</option>
-                                @foreach ($roles as $role)
-                                <option value="{{ $role->name }}">
-                                    {{ $role->name }}
-                                </option>
-                            @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label>สถานะ</label>
-                            <select name="status" class="w-full border rounded px-3 py-2" required>
-                                <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
-                                <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
-                            </select>
-                        </div>
+                    <div>
+                        <label>สถานะ</label>
+                        <select name="status" class="w-full border rounded px-3 py-2" required>
+                            <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
+                            <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -165,8 +152,10 @@ function openCreateModal(button) {
     // Set form method to POST
     document.getElementById('formMethod').value = "POST";
 
-    // Ensure password is required
-    document.getElementById('password').required = true;
+    document.getElementById('passwordPanel').style.display = 'block';
+    const passwordInput = document.getElementById('password');
+    passwordInput.required = true;
+    passwordInput.placeholder = '';
 
     // Reset modal title
     const modalTitle = modal.querySelector('h2');
@@ -225,13 +214,12 @@ function openEditModal(user) {
         }
     });
 
-    // Password should not be required on edit
+    document.getElementById('passwordPanel').style.display = 'none';
+
     const passwordInput = document.getElementById('password');
-    if (passwordInput) {
-        passwordInput.required = false;
-        passwordInput.value = '';
-        passwordInput.placeholder = 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน';
-    }
+    passwordInput.required = false;
+    passwordInput.value = '';
+    passwordInput.placeholder = 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน';
 
     const roleSelect = document.getElementById('role');
     if (roleSelect && user.role) {
