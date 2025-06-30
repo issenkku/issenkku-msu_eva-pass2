@@ -22,133 +22,134 @@
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
             margin: 0;
+            color: #495057;
         }
 
         /* Custom Navbar */
         .navbar-custom {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            background: #060606 !important;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
             padding: 15px 0;
         }
 
         .navbar-brand-custom {
-            font-weight: 700;
+            font-weight: 600;
             font-size: 1.5rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff !important;
             text-decoration: none;
         }
 
         .navbar-brand-custom:hover {
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #eaeef2 !important;
         }
 
         .nav-link-custom {
-            color: #495057 !important;
+            color: #eaeef2 !important;
             font-weight: 500;
             padding: 10px 20px !important;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-            margin: 0 5px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            margin: 0 3px;
         }
 
         .nav-link-custom:hover {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white !important;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            background: #f8f9fa;
+            color: #495057 !important;
         }
 
         .nav-link-custom.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #495057;
             color: white !important;
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
         /* Custom Toggle Button */
         .navbar-toggler-custom {
-            border: none;
+            border: 1px solid #dee2e6;
             padding: 8px 12px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+            background: #ffffff;
         }
 
         .navbar-toggler-custom:focus {
-            box-shadow: none;
+            box-shadow: 0 0 0 0.2rem rgba(73, 80, 87, 0.15);
         }
 
         .navbar-toggler-icon-custom {
             width: 20px;
             height: 20px;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2873, 80, 87, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
         /* Main Container */
         .main-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
             margin: 20px auto;
             padding: 0;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
 
         /* Content Area */
         .content-area {
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.95);
+            padding: 0;
+            background: #ffffff;
             min-height: calc(100vh - 200px);
         }
 
         /* Footer */
         .footer-custom {
-            background: rgba(255, 255, 255, 0.95);
+            background: #f8f9fa;
             padding: 20px 0;
             text-align: center;
             color: #6c757d;
             font-size: 14px;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #dee2e6;
         }
 
         /* Dropdown Menu */
         .dropdown-menu-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 10px;
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 8px 0;
         }
 
         .dropdown-item-custom {
-            border-radius: 8px;
-            padding: 10px 15px;
-            transition: all 0.3s ease;
+            border-radius: 0;
+            padding: 10px 20px;
+            transition: all 0.2s ease;
             color: #495057;
+            border: none;
+            background: none;
         }
 
         .dropdown-item-custom:hover {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .dropdown-item-custom.fw-bold {
+            background: #495057;
             color: white;
-            transform: translateX(5px);
+        }
+
+        .dropdown-divider {
+            margin: 8px 0;
+            border-top: 1px solid #dee2e6;
         }
 
         /* Animations */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
 
             to {
@@ -158,18 +159,23 @@
         }
 
         .fade-in-up {
-            animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Active dropdown indicator */
+        .dropdown-toggle.active::after {
+            color: #495057;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .main-container {
                 margin: 10px;
-                border-radius: 15px;
+                border-radius: 4px;
             }
 
             .content-area {
-                padding: 20px;
+                padding: 0;
             }
 
             .navbar-brand-custom {
@@ -180,6 +186,72 @@
                 padding: 8px 15px !important;
                 margin: 2px 0;
             }
+
+            .dropdown-menu-custom {
+                margin-top: 5px;
+            }
+        }
+
+        /* Remove unnecessary visual effects */
+        .container {
+            max-width: 1200px;
+        }
+
+        /* Professional styling for buttons */
+        .btn {
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: #495057;
+            border-color: #495057;
+        }
+
+        .btn-primary:hover {
+            background-color: #343a40;
+            border-color: #343a40;
+        }
+
+        /* Table styling consistency */
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        /* Card styling consistency */
+        .card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        /* Form styling consistency */
+        .form-control:focus {
+            border-color: #495057;
+            box-shadow: 0 0 0 0.2rem rgba(73, 80, 87, 0.15);
+        }
+
+        .form-select:focus {
+            border-color: #495057;
+            box-shadow: 0 0 0 0.2rem rgba(73, 80, 87, 0.15);
+        }
+
+        .text-gray {
+            color: #7d7d7d;
         }
     </style>
 </head>
@@ -189,7 +261,7 @@
     <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
         <div class="container">
             <a href="#" class="navbar-brand navbar-brand-custom">
-                <i class="fas fa-chart-line me-2"></i>
+                <i class="fas fa-chart-line me-2 text-gray"></i>
                 ระบบประเมินบุคลากร
             </a>
 
@@ -213,30 +285,31 @@
                     <!-- จัดการข้อมูล Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle 
-                           {{ request()->routeIs(['settings.*', 'departments.*', 'positions.*']) ? 'active' : '' }}" 
-                           href="#" id="navbarDataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-database me-2"></i>
+                           {{ request()->routeIs(['settings.*', 'departments.*', 'positions.*']) ? 'active' : '' }}"
+                            href="#" id="navbarDataDropdown" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            <i class="fas fa-database me-2 text-gray "></i>
                             จัดการข้อมูล
                         </a>
                         <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="navbarDataDropdown">
                             <li>
-                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('settings.*') ? 'fw-bold' : '' }}" 
-                                   href="{{ route('settings.index') }}">
-                                    <i class="fas fa-university me-2"></i>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('settings.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('settings.index') }}">
+                                    <i class="fas fa-university me-2 text-gray"></i>
                                     ข้อมูลมหาวิทยาลัย
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('departments.*') ? 'fw-bold' : '' }}" 
-                                   href="{{ route('departments.index', []) ?? '#' }}">
-                                    <i class="fas fa-building me-2"></i>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('departments.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('departments.index', []) ?? '#' }}">
+                                    <i class="fas fa-building me-2 text-gray"></i>
                                     ข้อมูลสาขา/ภาควิชา
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('positions.*') ? 'fw-bold' : '' }}" 
-                                   href="{{ route('positions.index', []) ?? '#' }}">
-                                    <i class="fas fa-user-tie me-2"></i>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('positions.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('positions.index', []) ?? '#' }}">
+                                    <i class="fas fa-user-tie me-2 text-gray"></i>
                                     ข้อมูลตำแหน่ง
                                 </a>
                             </li>
@@ -245,18 +318,18 @@
 
                     <!-- การประเมิน -->
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->routeIs('evaluations.*') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-clipboard-check me-2"></i>
+                        <a class="nav-link nav-link-custom {{ request()->routeIs('evaluations.*') ? 'active' : '' }}"
+                            href="#">
+                            <i class="fas fa-clipboard-check me-2 text-gray"></i>
                             การประเมิน
                         </a>
                     </li>
 
                     <!-- รายงาน -->
                     <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->routeIs('reports.*') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-chart-bar me-2"></i>
+                        <a class="nav-link nav-link-custom {{ request()->routeIs('reports.*') ? 'active' : '' }}"
+                            href="#">
+                            <i class="fas fa-chart-bar me-2 text-gray"></i>
                             รายงาน
                         </a>
                     </li>
@@ -265,19 +338,19 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="navbarSystemDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-cog me-2"></i>
+                            <i class="fas fa-cog me-2 text-gray"></i>
                             จัดการระบบ
                         </a>
                         <ul class="dropdown-menu dropdown-menu-custom" aria-labelledby="navbarSystemDropdown">
                             <li>
                                 <a class="dropdown-item dropdown-item-custom" href="#">
-                                    <i class="fas fa-users me-2"></i>
+                                    <i class="fas fa-users me-2 text-gray"></i>
                                     จัดการผู้ใช้
                                 </a>
                             </li>
                             <li>
                                 <a class="dropdown-item dropdown-item-custom" href="#">
-                                    <i class="fas fa-tools me-2"></i>
+                                    <i class="fas fa-tools me-2 text-gray"></i>
                                     ตั้งค่าระบบ
                                 </a>
                             </li>
@@ -286,7 +359,7 @@
                             </li>
                             <li>
                                 <a class="dropdown-item dropdown-item-custom" href="#">
-                                    <i class="fas fa-download me-2"></i>
+                                    <i class="fas fa-download me-2 text-gray"></i>
                                     สำรองข้อมูล
                                 </a>
                             </li>
@@ -295,7 +368,7 @@
                             </li>
                             <li>
                                 <a class="dropdown-item dropdown-item-custom" href="#">
-                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    <i class="fas fa-sign-out-alt me-2 text-gray"></i>
                                     ออกจากระบบ
                                 </a>
                             </li>
@@ -317,9 +390,7 @@
             <div class="footer-custom">
                 <div class="container">
                     <p class="mb-0">
-                        <i class="fas fa-heart text-danger me-1"></i>
                         ระบบประเมินบุคลากร © {{ date('Y') }} | พัฒนาด้วย Laravel
-                        <i class="fab fa-laravel text-danger ms-1"></i>
                     </p>
                 </div>
             </div>
@@ -344,22 +415,14 @@
             });
         });
 
-        // Auto-hide navbar on scroll
-        let lastScrollTop = 0;
-        const navbar = document.querySelector('.navbar');
-
+        // Simplified navbar behavior - remove auto-hide for professional look
         window.addEventListener('scroll', function() {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                navbar.style.transform = 'translateY(-100%)';
-                navbar.style.transition = 'transform 0.3s ease';
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
             } else {
-                navbar.style.transform = 'translateY(0)';
-                navbar.style.transition = 'transform 0.3s ease';
+                navbar.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.08)';
             }
-
-            lastScrollTop = scrollTop;
         });
 
         // Add loading animation
@@ -375,6 +438,18 @@
                     const dropdown = item.closest('.dropdown');
                     const dropdownToggle = dropdown.querySelector('.dropdown-toggle');
                     dropdownToggle.classList.add('active');
+                }
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu.show');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.contains(event.target) && !dropdown.previousElementSibling.contains(event
+                        .target)) {
+                    const bsDropdown = new bootstrap.Dropdown(dropdown.previousElementSibling);
+                    bsDropdown.hide();
                 }
             });
         });

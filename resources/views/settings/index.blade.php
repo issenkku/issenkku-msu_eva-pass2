@@ -2,168 +2,184 @@
 @section('content')
     <style>
         .form-container {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #ffffff;
             min-height: 100vh;
-            padding: 20px 0;
+            padding: 40px 0;
         }
 
         .card-custom {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
 
         .card-header-custom {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 25px;
+            background: #f8f9fa;
+            color: #495057;
+            padding: 30px;
             text-align: center;
-            border: none;
+            border-bottom: 1px solid #dee2e6;
         }
 
         .card-header-custom h1 {
             margin: 0;
             font-weight: 600;
-            font-size: 2rem;
+            font-size: 1.75rem;
+            color: #212529;
+        }
+
+        .card-header-custom p {
+            margin: 10px 0 0 0;
+            color: #6c757d;
+            font-size: 0.95rem;
         }
 
         .form-group-custom {
-            margin-bottom: 25px;
+            margin-bottom: 24px;
             position: relative;
         }
 
         .form-control-custom {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            padding: 15px 20px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: #ffffff;
+            color: #495057;
         }
 
         .form-control-custom:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-            background: white;
+            border-color: #495057;
+            box-shadow: 0 0 0 0.2rem rgba(73, 80, 87, 0.15);
+            background: #ffffff;
             outline: none;
         }
 
         .form-label-custom {
-            font-weight: 600;
+            font-weight: 500;
             color: #495057;
             margin-bottom: 8px;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .btn-custom {
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid;
             margin: 5px;
         }
 
-        .btn-success-custom {
-            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
+        .btn-primary-custom {
+            background: #495057;
+            border-color: #495057;
             color: white;
         }
 
-        .btn-success-custom:hover {
-            background: linear-gradient(135deg, #4a9929, #96d9bb);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(86, 171, 47, 0.4);
+        .btn-primary-custom:hover {
+            background: #343a40;
+            border-color: #343a40;
+            color: white;
         }
 
         .btn-secondary-custom {
-            background: linear-gradient(135deg, #bdc3c7, #95a5a6);
-            color: white;
+            background: #ffffff;
+            border-color: #ced4da;
+            color: #6c757d;
         }
 
         .btn-secondary-custom:hover {
-            background: linear-gradient(135deg, #a9b2b8, #7f8c8d);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(149, 165, 166, 0.4);
+            background: #f8f9fa;
+            border-color: #adb5bd;
+            color: #495057;
         }
 
         .alert-custom {
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
-            margin-top: 10px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            animation: shake 0.5s ease-in-out;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-top: 8px;
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .alert-success-custom {
-            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 12px 16px;
             margin-bottom: 20px;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @keyframes shake {
-            0%, 100% {
-                transform: translateX(0);
-            }
-            25% {
-                transform: translateX(-5px);
-            }
-            75% {
-                transform: translateX(5px);
-            }
-        }
-
-        @keyframes fadeIn {
-            0% {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .form-icon {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #6c757d;
-            font-size: 18px;
+            font-size: 16px;
         }
 
         .input-group-custom {
             position: relative;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 12px;
+        .info-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 20px;
+            border-left: 4px solid #495057;
+        }
+
+        .info-box h6 {
+            color: #495057;
+            margin-bottom: 12px;
             font-weight: 600;
-            margin-left: 10px;
+            font-size: 14px;
         }
 
-        .status-new {
-            background: linear-gradient(135deg, #56ab2f, #a8e6cf);
-            color: white;
+        .info-box p {
+            margin: 8px 0;
+            color: #495057;
+            font-size: 14px;
         }
 
-        .status-update {
-            background: linear-gradient(135deg, #f39c12, #f1c40f);
-            color: white;
+        .info-box small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 1.5rem;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .me-2 {
+            margin-right: 0.5rem;
+        }
+
+        .p-5 {
+            padding: 40px;
+        }
+
+        /* Remove emoji styling for more formal look */
+        .form-label-custom::before {
+            content: '';
+            margin-right: 0;
         }
     </style>
 
@@ -173,11 +189,8 @@
                 <div class="col-lg-8 col-md-10">
                     <div class="card card-custom">
                         <div class="card-header-custom">
-                            <h1>✨ มหาวิทยาลัย ✨</h1>
-                            <p class="mb-0" style="opacity: 0.9;">
-                                กรอกข้อมูลมหาวิทยาลัยและคณะ
-                                
-                            </p>
+                            <h1>ข้อมูลมหาวิทยาลัย</h1>
+                            <p class="mb-0">กรอกข้อมูลมหาวิทยาลัยและคณะ</p>
                         </div>
                         <div class="card-body p-5">
                             {{-- แสดงข้อความสำเร็จ --}}
@@ -198,12 +211,12 @@
                                 <!-- ชื่อมหาวิทยาลัย -->
                                 <div class="form-group-custom">
                                     <label for="university" class="form-label-custom">
-                                        🏛️ ชื่อมหาวิทยาลัย
+                                        ชื่อมหาวิทยาลัย <span style="color: #dc3545;">*</span>
                                     </label>
                                     <div class="input-group-custom">
                                         <input type="text" name="university" id="university"
                                             class="form-control form-control-custom" 
-                                            placeholder="กรุณาใส่ชื่อมหาวิทยาลัย"
+                                            placeholder="กรุณาระบุชื่อมหาวิทยาลัย"
                                             value="{{ old('university', $setting->university ?? '') }}" 
                                             required>
                                         <i class="form-icon fas fa-university"></i>
@@ -219,12 +232,12 @@
                                 <!-- ชื่อคณะ -->
                                 <div class="form-group-custom">
                                     <label for="faculty" class="form-label-custom">
-                                        🎓 ชื่อคณะ
+                                        ชื่อคณะ <span style="color: #dc3545;">*</span>
                                     </label>
                                     <div class="input-group-custom">
                                         <input type="text" name="faculty" id="faculty"
                                             class="form-control form-control-custom" 
-                                            placeholder="กรุณาใส่ชื่อคณะ"
+                                            placeholder="กรุณาระบุชื่อคณะ"
                                             value="{{ old('faculty', $setting->faculty ?? '') }}" 
                                             required>
                                         <i class="form-icon fas fa-graduation-cap"></i>
@@ -240,18 +253,18 @@
                                 <!-- แสดงข้อมูลปัจจุบัน -->
                                 @if(isset($settings) && $setting)
                                     <div class="form-group-custom">
-                                        <div style="background: #e3f2fd; border-radius: 12px; padding: 15px; border-left: 4px solid #2196f3;">
-                                            <h6 style="color: #1976d2; margin-bottom: 10px;">
+                                        <div class="info-box">
+                                            <h6>
                                                 <i class="fas fa-info-circle me-2"></i>ข้อมูลปัจจุบัน
                                             </h6>
-                                            <p style="margin: 5px 0; color: #424242;">
+                                            <p>
                                                 <strong>มหาวิทยาลัย:</strong> {{ $setting->university }}
                                             </p>
-                                            <p style="margin: 5px 0; color: #424242;">
+                                            <p>
                                                 <strong>คณะ:</strong> {{ $setting->faculty }}
                                             </p>
-                                            <small style="color: #666;">
-                                                อัปเดตล่าสุด: {{ $setting->updated_at->format('d/m/Y H:i') }}
+                                            <small>
+                                                อัปเดตล่าสุด: {{ $setting->updated_at->format('d/m/Y H:i') }} น.
                                             </small>
                                         </div>
                                     </div>
@@ -259,7 +272,7 @@
 
                                 <!-- ปุ่มส่งและกลับ -->
                                 <div class="text-center mt-4">
-                                    <button type="submit" class="btn btn-custom btn-success-custom">
+                                    <button type="submit" class="btn btn-custom btn-primary-custom">
                                         <i class="fas fa-save me-2"></i>
                                         @if(isset($settings) && $setting)
                                             อัปเดตข้อมูล
