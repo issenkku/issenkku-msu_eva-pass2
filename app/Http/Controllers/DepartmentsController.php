@@ -28,6 +28,15 @@ class DepartmentsController extends Controller
             'faculty' => 'required|string|max:255',
         ]);
 
+        // ตรวจสอบชื่อภาควิชาซ้ำ
+        $existingDepartment = Departments::where('department_name', $request->department_name)->first();
+        
+        if ($existingDepartment) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['department_name' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
+        }
+
         Departments::create([
             'department_name' => $request->department_name,
             'faculty' => $request->faculty,
@@ -45,6 +54,17 @@ class DepartmentsController extends Controller
             'department_name' => 'required|string|max:255',
             'faculty' => 'required|string|max:255',
         ]);
+
+        // ตรวจสอบชื่อภาควิชาซ้ำ (ยกเว้นตัวเอง)
+        $existingDepartment = Departments::where('department_name', $request->department_name)
+            ->where('id', '!=', $id)
+            ->first();
+        
+        if ($existingDepartment) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['department_name' => 'ชื่อภาควิชานี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
+        }
 
         $department = Departments::findOrFail($id);
         $department->update([
