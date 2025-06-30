@@ -13,6 +13,11 @@ class Report extends Model
         'status',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function reportData(): BelongsTo
     {
         return $this->belongsTo(ReportData::class);

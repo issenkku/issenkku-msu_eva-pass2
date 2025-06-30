@@ -11,19 +11,18 @@ class QualityScore extends Model
 
     protected $fillable = [
         'quality_sub_criteria_id',
-        'evaluation_list_id',
         'report_id',
         'score',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function qualitySubCriteria(): BelongsTo
     {
         return $this->belongsTo(QualitySubCriteria::class);
-    }
-
-    public function evaluationList(): BelongsTo
-    {
-        return $this->belongsTo(EvaluationList::class);
     }
 
     public function report(): BelongsTo

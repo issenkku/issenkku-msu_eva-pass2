@@ -15,6 +15,12 @@ class EvidenceAnswer extends Model
         'link',
     ];
 
+    protected $casts = [
+        'link' => 'array',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function evaluationList(): BelongsTo
     {
         return $this->belongsTo(EvaluationList::class);

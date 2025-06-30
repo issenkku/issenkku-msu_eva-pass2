@@ -11,20 +11,19 @@ class QuantityScore extends Model
 
     protected $fillable = [
         'quantity_sub_criteria_id',
-        'evaluation_list_id',
         'report_id',
         'score_C',
         'score_D',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function quantitySubCriteria(): BelongsTo
     {
         return $this->belongsTo(QuantitySubCriteria::class);
-    }
-
-    public function evaluationList(): BelongsTo
-    {
-        return $this->belongsTo(EvaluationList::class);
     }
 
     public function report(): BelongsTo
