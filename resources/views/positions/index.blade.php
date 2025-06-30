@@ -402,15 +402,18 @@
         @endif
 
         @if ($errors->any())
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger" style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7;">
+                <i class="fas fa-exclamation-circle me-2 mt-1"></i>
+                <div>
+                    <ul class="mb-0 ps-3">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         @endif
+
 
         <!-- Table Container -->
         <div class="table-container">
