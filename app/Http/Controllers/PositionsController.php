@@ -23,13 +23,22 @@ class PositionsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
-
         ]);
+
+        // ตรวจสอบชื่อตำแหน่งซ้ำ
+        $existingPosition = Positions::where('name', $request->name)->first();
+        
+        if ($existingPosition) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
+        }
+
         Positions::create([
             'name' => $request->name,
             'description' => $request->description,
-
         ]);
+        
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
 
@@ -41,14 +50,25 @@ class PositionsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:500',
-
         ]);
+
+        // ตรวจสอบชื่อตำแหน่งซ้ำ (ยกเว้นตัวเอง)
+        $existingPosition = Positions::where('name', $request->name)
+            ->where('id', '!=', $id)
+            ->first();
+        
+        if ($existingPosition) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
+        }
+
         $positions = Positions::findOrFail($id);
         $positions->update([
             'name' => $request->name,
             'description' => $request->description,
-
         ]);
+        
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
 
