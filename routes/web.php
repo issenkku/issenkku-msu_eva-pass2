@@ -24,3 +24,15 @@ Route::prefix('positions')->name('positions.')->group(function () {
     Route::put('/{id}', [PositionsController::class, 'update'])->name('update');      // อัปเดตข้อมูล
     Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy'); // ลบข้อมูล
 });
+
+Route::get('/criteria-config', function () {
+    return view('criteria_config.index');
+});
+
+Route::get('/criteria-configs', function () {
+    return view('criteria_config.create');
+});
+
+Route::get('/criteria-evaluators', function () {
+    return view('criteria_config.evaluators');
+});
