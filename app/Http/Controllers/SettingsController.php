@@ -25,18 +25,18 @@ class SettingsController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[ก-๙\s]+$/u' // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
+                'regex:/^[ก-๙a-zA-Z\s]+$/u' // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
             ],
             'faculty' => [
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[ก-๙\s]+$/u' // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
+                'regex:/^[ก-๙a-zA-Z\s]+$/u' // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
             ],
         ], [
             // ข้อความแจ้งเตือนแบบกำหนดเอง
-            'university.regex' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
-            'faculty.regex' => 'ชื่อคณะต้องเป็นภาษาไทยเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
+            'university.regex' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
+            'faculty.regex' => 'ชื่อคณะต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
             'university.required' => 'กรุณากรอกชื่อมหาวิทยาลัย',
             'faculty.required' => 'กรุณากรอกชื่อคณะ',
             'university.max' => 'ชื่อมหาวิทยาลัยต้องไม่เกิน 255 ตัวอักษร',
@@ -44,15 +44,15 @@ class SettingsController extends Controller
         ]);
 
         // เช็คเพิ่มเติมด้วย PHP function (สำรอง)
-        if (!$this->isThaiOnly($request->university)) {
+        if (!$this->isThaiOrEnglish($request->university)) {
             return redirect()->back()
-                ->withErrors(['university' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยเท่านั้น ห้ามใช้อักษรพิเศษ'])
+                ->withErrors(['university' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
                 ->withInput();
         }
 
-        if (!$this->isThaiOnly($request->faculty)) {
+        if (!$this->isThaiOrEnglish($request->faculty)) {
             return redirect()->back()
-                ->withErrors(['faculty' => 'ชื่อคณะต้องเป็นภาษาไทยเท่านั้น ห้ามใช้อักษรพิเศษ'])
+                ->withErrors(['faculty' => 'ชื่อคณะต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
                 ->withInput();
         }
 
@@ -76,9 +76,9 @@ class SettingsController extends Controller
     /**
      * ตรวจสอบว่าข้อความเป็นภาษาไทยเท่านั้น
      */
-    private function isThaiOnly($text)
-    {
-        // ตรวจสอบว่ามีเฉพาะอักษรไทย (ก-๙) และช่องว่างเท่านั้น
-        return preg_match('/^[ก-๙\s]+$/u', $text);
-    }
+    private function isThaiOrEnglish($text)
+{
+    // ตรวจสอบว่าเป็นภาษาไทย, ภาษาอังกฤษ และช่องว่างเท่านั้น
+    return preg_match('/^[ก-๙a-zA-Z\s]+$/u', $text);
+}
 }
