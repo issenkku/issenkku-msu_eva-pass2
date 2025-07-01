@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QualityScore extends Model
 {
-    protected $table = 'quality_scores';
+    public $incrementing = false;
 
+    protected $table = 'quality_scores';
+    protected $primaryKey = ['quality_sub_criteria_id', 'report_id'];
     protected $fillable = [
         'quality_sub_criteria_id',
         'report_id',

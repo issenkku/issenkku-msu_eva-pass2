@@ -26,7 +26,7 @@ class QualitySubCriteria extends Model
 
     public function criteriaVersion(): BelongsTo
     {
-        return $this->belongsTo(CriteriaVersion::class);
+        return $this->belongsTo(CriteriaVersion::class , 'criteria_version_id');
     }
 
     public function qualityScores()

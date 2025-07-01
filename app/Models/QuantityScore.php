@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class QuantityScore extends Model
 {
-    protected $table = 'quantity_scores';
+    public $incrementing = false;
 
+    protected $table = 'quantity_scores';
+    protected $primaryKey = ['quantity_sub_criteria_id', 'report_id'];
     protected $fillable = [
         'quantity_sub_criteria_id',
         'report_id',

@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EvidenceAnswer extends Model
 {
+    // public $incrementing = false;
     protected $table = 'evidence_answers';
-
     protected $fillable = [
         'evaluation_list_id',
         'report_id',
@@ -16,7 +16,6 @@ class EvidenceAnswer extends Model
     ];
 
     protected $casts = [
-        'link' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

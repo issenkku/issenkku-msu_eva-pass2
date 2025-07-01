@@ -36,10 +36,10 @@ class EvaluationList extends Model
 
     public function quantitySubCriterias()
     {
-        return $this->hasMany(QuantitySubCriteria::class, 'evaluation_list_id');
+        return $this->hasMany(QuantitySubCriteria::class, 'evaluation_list_id', 'id');
     }
     public function qualitySubCriterias()
     {
-        return $this->hasMany(QualitySubCriteria::class, 'evaluation_list_id');
+        return $this->hasMany(QualitySubCriteria::class, 'evaluation_list_id', 'id');
     }
 }
