@@ -32,12 +32,6 @@
         @include('user.management.user-form-modal')
     </div>
 
-    {{-- <div class="flex flex-wrap gap-4 mb-4">
-        <x-search-bar />
-        <!-- <x-filter label="ตำแหน่ง" name="position_id" :options="$positions" /> -->
-        <x-filter label="ประเภทบุคลากร" name="personnel_type_id" :options="$personnelTypes" />
-    </div> --}}
-
     <form method="GET" class="mb-4 flex flex-wrap gap-2 items-center">
         <select name="department_id" class="border rounded px-2 py-1">
             <option value="">ทุกแผนก</option>
