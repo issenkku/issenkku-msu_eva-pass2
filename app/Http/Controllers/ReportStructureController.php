@@ -91,6 +91,7 @@ class ReportStructureController extends Controller
                 'created_by' => $version->created_by,
                 'report_datas' => $version->reportDatas->map(function ($reportData) {
                     return [
+                        'report_data_id' => $reportData->id,
                         'report_title' => $reportData->report_title,
                         'report_description' => $reportData->report_description,
                         'assessment_type' => $reportData->assessment_type,
@@ -100,66 +101,78 @@ class ReportStructureController extends Controller
                 'categories' => $version->categories->map(function ($category) {
                     // กลุ่ม evaluation lists ตาม category
                     return [
+                        'categorie_id' => $category->id,
                         'main_categories' => $category->main_categories,
                         'sub_categories' => $category->sub_categories,
                         'sequence' => $category->sequence,
                         'evaluation_lists' => $category->evaluationLists->map(function ($evalList) {
                             // สร้าง Map ของ quantity main criterias
-                            $quantityMainMap = collect();
+                            $quantityMainMap = [];
+
                             foreach ($evalList->quantitySubCriterias as $qSub) {
                                 $mainId = $qSub->quantity_main_criteria_id;
                                 $main = $qSub->mainCriteria;
 
-                                if (!$quantityMainMap->has($mainId) && $main) {
-                                    $quantityMainMap->put($mainId, [
+                                if (!$main) {
+                                    continue; // ข้ามถ้าไม่มี main criteria
+                                }
+
+                                if (!isset($quantityMainMap[$mainId])) {
+                                    $quantityMainMap[$mainId] = [
+                                        'quantity_main_criteria_id' => $main->id,
                                         'name' => $main->name,
                                         'tooltips' => $main->tooltips,
                                         'quantity_sub_criterias' => []
-                                    ]);
-                                }
-
-                                if ($main) {
-                                    $quantityMainMap->get($mainId)['quantity_sub_criterias'][] = [
-                                        'name' => $qSub->name,
-                                        'sequence' => $qSub->sequence,
-                                        'score_a' => (float)$qSub->score_a,
-                                        'score_b' => (float)$qSub->score_b,
                                     ];
                                 }
+
+                                $quantityMainMap[$mainId]['quantity_sub_criterias'][] = [
+                                    'quantity_sub_criteria_id' => $qSub->id,
+                                    'name' => $qSub->name,
+                                    'sequence' => $qSub->sequence,
+                                    'score_a' => (float)$qSub->score_a,
+                                    'score_b' => (float)$qSub->score_b,
+                                ];
                             }
 
                             // สร้าง Map ของ quality main criterias
-                            $qualityMainMap = collect();
+                            $qualityMainMap = [];
+
                             foreach ($evalList->qualitySubCriterias as $qSub) {
                                 $mainId = $qSub->quality_main_criteria_id;
                                 $main = $qSub->mainCriteria;
 
-                                if (!$qualityMainMap->has($mainId) && $main) {
-                                    $qualityMainMap->put($mainId, [
+                                if (!$main) {
+                                    continue; // ข้ามถ้าไม่มี main criteria
+                                }
+
+                                if (!isset($qualityMainMap[$mainId])) {
+                                    $qualityMainMap[$mainId] = [
+                                        'quality_main_criteria_id' => $main->id, // ใช้ $main->id ไม่ใช่ $main->name
                                         'name' => $main->name,
                                         'ratio' => $main->ratio,
                                         'tooltips' => $main->tooltips,
                                         'sequence' => $main->sequence,
                                         'quality_sub_criterias' => []
-                                    ]);
-                                }
-
-                                if ($main) {
-                                    $qualityMainMap->get($mainId)['quality_sub_criterias'][] = [
-                                        'name' => $qSub->name,
-                                        'sequence' => $qSub->sequence,
-                                        'num_score' => (float)$qSub->num_score,
                                     ];
                                 }
+
+                                $qualityMainMap[$mainId]['quality_sub_criterias'][] = [
+                                    'quality_sub_criteria_id' => $qSub->id,
+                                    'name' => $qSub->name,
+                                    'sequence' => $qSub->sequence,
+                                    'num_score' => (float)$qSub->num_score,
+                                ];
                             }
 
                             return [
+                                'evaluation_id' => $evalList->id,
                                 'name' => $evalList->name,
                                 'sum_score' => (float)$evalList->sum_score,
                                 'sequence' => $evalList->sequence,
                                 'annotation' => $evalList->annotation,
-                                'quantity_main_criterias' => $quantityMainMap->values()->all(),
-                                'quality_main_criterias' => $qualityMainMap->values()->all(),
+                                'quantity_main_criterias' => array_values($quantityMainMap),
+                                'quality_main_criterias' => array_values($qualityMainMap),
                             ];
                         })->values()->all(),
                     ];
