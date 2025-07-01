@@ -2,7 +2,12 @@
 
 <tr class="border-b">
     <td class="p-4 text-center">{{ $index }}</td>
-    <td class="p-4">{{ $employee['name'] }}</td>
+    <td class="p-4">
+        {{ $employee['name'] }}
+        @if(!empty($employee['role']))
+            <div class="mt-1 text-xs text-blue-700">บทบาท: <strong>{{ $employee['role'] }}</strong></div>
+        @endif
+    </td>
     <td class="p-4 text-center">{{ $employee['code'] }}</td>
     <td class="p-4 text-center">{{ $employee['position'] }}</td>
     <td class="p-4 text-center">
@@ -12,7 +17,6 @@
     </td>
     <td class="p-4 text-center">{{ $employee['contact'] }}</td>
     <td class="p-4 text-center space-x-2">
-        <!-- <x-button type="primary" text="แก้ไข" class="text-sm" onclick='openEditModal(@json($employee))'/> -->
         <x-button type="primary" text="แก้ไข" class="text-sm" 
             onclick='openEditModal({
                 id: {{ $employee["id"] }},
@@ -25,7 +29,8 @@
                 bio: "{{ $employee["bio"] ?? "" }}",
                 status: "{{ $employee["status"] ?? "active" }}",
                 position_id: {{ $employee["position_id"] ?? "null" }},
-                department_id: {{ $employee["department_id"] ?? "null" }}
+                department_id: {{ $employee["department_id"] ?? "null" }},
+                roles: [{ name: {!! json_encode($employee["role"] ?? "") !!} }]
             })'
         />
         <form action="{{ route('users.destroy', $employee['id']) }}" method="POST" class="inline">

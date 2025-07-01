@@ -32,7 +32,7 @@ class UserController extends Controller
             'status'=>'required|max:20',
             'position_id'=> 'required|integer',
             'department_id'=> 'required|integer',
-            'role' => 'string',
+            'role' => 'required|string',
         ]);
 
         $user = User::create([
@@ -49,18 +49,22 @@ class UserController extends Controller
             'department_id'=> $request->department_id,
         ]);
 
-        $user->assignRole($request->role);
+        // ป้องกัน assignRole ถ้าไม่มีค่า role
+        if ($request->filled('role')) {
+            $user->syncRoles([$request->role]);
+        }
 
         return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
     }
 
     public function index()
     {
-        $users = User::with('position')->paginate(10);
+        $users = User::with(['position', 'roles'])->paginate(10); // โหลด roles ด้วย
         $departments = Department::all();
         $positions = Position::all();
         $roles = Role::all();
-        return view('user.management.index', compact('users', 'departments', 'positions', 'roles'));
+        $user = null; // สำหรับ modal create
+        return view('user.management.index', compact('users', 'departments', 'positions', 'roles', 'user'));
     }
 
     public function update(Request $request, User $user):RedirectResponse
@@ -75,7 +79,7 @@ class UserController extends Controller
             'status'=>'required|max:20',
             'position_id'=> 'required|integer',
             'department_id'=> 'required|integer',
-            'role' => '',
+            'role' => 'required|string',
             'employee_id' => ['required', 'max:20',
                         Rule::unique('users', 'employee_id')->ignore($user->id),
             ],
@@ -92,11 +96,14 @@ class UserController extends Controller
         $user->fill(collect($validated)->except('password')->toArray());
 
         if ($request->filled('password')) {
-            $user->password = $request->input('password'); // no Hash::make here
+            $user->password = Hash::make($request->input('password'));
         }
 
         $user->save();
-        $user->assignRole($request->role);
+        // syncRoles เพื่อบันทึกบทบาทที่เลือกไว้
+        if ($request->filled('role')) {
+            $user->syncRoles([$request->role]);
+        }
 
         return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }

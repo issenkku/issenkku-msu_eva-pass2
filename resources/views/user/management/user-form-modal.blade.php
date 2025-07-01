@@ -108,12 +108,34 @@
 
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ตั้งค่าผู้ใช้งาน</h3>
-                    <div>
+                    <div class="mb-3">
                         <label>สถานะ</label>
                         <select name="status" class="w-full border rounded px-3 py-2" required>
                             <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
                             <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>บทบาท (Role)</label>
+                        <select name="role" id="role" class="w-full border rounded px-3 py-2" required>
+                            <option value="">เลือกบทบาท</option>
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->name }}"
+                                    {{ old('role', isset($user) && $user ? ($user->roles->first()->name ?? '') : '') == $role->name ? 'selected' : '' }}>
+                                    {{ $role->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div id="currentRoleDisplay" class="mt-2 text-sm text-green-700">
+                            @php
+                                $currentRole = old('role', isset($user) && $user ? ($user->roles->first()->name ?? '') : '');
+                            @endphp
+                            @if($currentRole)
+                                <span>บทบาทที่บันทึกไว้: <strong>{{ $currentRole }}</strong></span>
+                            @else
+                                <span>ยังไม่ได้เลือกบทบาท</span>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -222,9 +244,11 @@ function openEditModal(user) {
     passwordInput.placeholder = 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน';
 
     const roleSelect = document.getElementById('role');
-    if (roleSelect && user.role) {
-        roleSelect.value = user.role;
+    if (roleSelect && user.roles && user.roles.length > 0) {
+        roleSelect.value = user.roles[0].name;
         roleSelect.dispatchEvent(new Event('change'));
+    } else if (roleSelect) {
+        roleSelect.value = '';
     }
 
     // Show the modal
@@ -259,6 +283,19 @@ function closeModal() {
 function openModal() {
     document.getElementById('userModal').classList.remove('hidden');
     document.getElementById('userModal').classList.add('flex');
+}
+
+// อัปเดตแสดงบทบาทที่เลือกทันทีเมื่อเปลี่ยน dropdown
+const roleSelect = document.getElementById('role');
+const currentRoleDisplay = document.getElementById('currentRoleDisplay');
+if (roleSelect && currentRoleDisplay) {
+    roleSelect.addEventListener('change', function() {
+        if (roleSelect.value) {
+            currentRoleDisplay.innerHTML = 'บทบาทที่เลือก: <strong>' + roleSelect.value + '</strong>';
+        } else {
+            currentRoleDisplay.innerHTML = 'ยังไม่ได้เลือกบทบาท';
+        }
+    });
 }
 </script>
 
