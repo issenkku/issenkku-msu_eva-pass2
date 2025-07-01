@@ -25,14 +25,8 @@ Route::prefix('positions')->name('positions.')->group(function () {
     Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy'); // ลบข้อมูล
 });
 
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
-});
+Route::get('/criteria-config', function () {return view('criteria_config.index');});
+Route::get('/criteria-configs', function () { return view('criteria_config.create');});
+Route::get('/criteria-evaluators', function () { return view('criteria_config.evaluators');});
 
-Route::get('/criteria-configs', function () {
-    return view('criteria_config.create');
-});
-
-Route::get('/criteria-evaluators', function () {
-    return view('criteria_config.evaluators');
-});
+Route::get('/evaluator-dashboard',function(){return view('evaluator_dashboard.index');});
