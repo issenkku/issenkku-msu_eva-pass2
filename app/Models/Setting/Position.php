@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Setting;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Position extends Model
 {
     protected $fillable = [
-        'department_name',
-        'faculty',
+        'name',
+        'description',
+
     ];
 
     public function user(){

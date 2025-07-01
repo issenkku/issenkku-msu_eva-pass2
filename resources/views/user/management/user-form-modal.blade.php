@@ -2,9 +2,9 @@
 <!-- <x-button text="เพิ่มเจ้าหน้าที่ใหม่" onclick="openModal()" /> -->
 
 <!-- Modal Background -->
-<div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+<div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-baseline justify-center z-50 overflow-y-auto">
     <!-- Modal Box -->
-    <div class="bg-white rounded-xl w-full max-w-3xl p-6 relative">
+    <div class="bg-white rounded-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="flex justify-between items-center border-b pb-3">
             <h2 class="text-lg font-semibold text-purple-700">เพิ่มเจ้าหน้าที่ใหม่</h2>
@@ -15,6 +15,17 @@
         <form id="userForm" action="{{ route('users.store') }}" method="POST">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">
+
+            <!-- Validation Errors -->
+            @if ($errors->any())
+                <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    <ul class="list-disc pl-5">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             <div class="grid grid-cols-1 gap-6 mt-4">
                 <!-- ข้อมูลส่วนบุคคล -->
