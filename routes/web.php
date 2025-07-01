@@ -1,10 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-//use Inertia\Inertia;
-use App\Http\Controllers\DepartmentsController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\PositionsController;
+use App\Http\Controllers\Setting\DepartmentsController;
+use App\Http\Controllers\Setting\SettingsController;
+use App\Http\Controllers\Setting\PositionsController;
 
 Route::prefix('departments')->name('departments.')->group(function () {
     Route::get('/', [DepartmentsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
