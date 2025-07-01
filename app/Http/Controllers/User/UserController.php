@@ -24,15 +24,15 @@ class UserController extends Controller
             'prefix'=> 'required|string|max:10',
             'name' => 'required|string|max:100',
             'employee_id'=> 'required|max:20|unique:users,employee_id',
-            'password'=> ['required','max:50', Rules\Password::defaults()],
+            'password'=> ['required','max:50'],
             'email'=> 'required|string|lowercase|email:rfc,dns|max:50|unique:users,email',
-            'phone'=> 'required|max:20|regex:/^[0-9]{10}$/|unique:users,phone',
+            'phone'=> 'required|max:20|unique:users,phone',
             'personnel_type'=> 'required|string|max:100',
             'bio'=>'nullable|string|max:1000',
             'status'=>'required|max:20',
-            'position_id'=> 'required|integer',
-            'department_id'=> 'required|integer',
-            'role' => 'required|string',
+            'position_id'=> 'required|exists:positions,id',
+            'department_id'=> 'required|exists:departments,id',
+            'role' => 'nullable|string',
         ]);
 
         $user = User::create([
@@ -72,14 +72,14 @@ class UserController extends Controller
         $rules = ([
             'prefix'=> 'required|string|max:10',
             'name' => 'required|string|max:100',
-            'phone'=> ['required', 'max:20','regex:/^[0-9]{10}$/', 
+            'phone'=> ['required', 'max:20', 
                         Rule::unique('users', 'phone')->ignore($user->id)],
             'personnel_type'=> 'required|string|max:100',
             'bio'=>'nullable|string|max:1000',
             'status'=>'required|max:20',
             'position_id'=> 'required|integer',
             'department_id'=> 'required|integer',
-            'role' => 'required|string',
+            'role' => 'nullable|string',
             'employee_id' => ['required', 'max:20',
                         Rule::unique('users', 'employee_id')->ignore($user->id),
             ],
@@ -88,7 +88,7 @@ class UserController extends Controller
         ]);
 
         if ($request->filled('password')) {
-            $rules['password'] = ['required', 'confirmed', 'max:50', Rules\Password::defaults()];
+            $rules['password'] = ['required', 'confirmed', 'max:50'];
         }
 
         $validated = $request->validate($rules);

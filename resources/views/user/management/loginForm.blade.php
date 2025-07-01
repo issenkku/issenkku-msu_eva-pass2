@@ -24,6 +24,11 @@
             </div>
 
             <div id="error" class="text-red-500 mb-2 hidden"></div>
+            <div class="mt-4">
+                <a href="{{ route('password.request') }}" class="text-sm text-blue-600 hover:underline">
+                    ลืมรหัสผ่าน?
+                </a>
+            </div>
 
             <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">เข้าสู่ระบบ</button>
         </form>

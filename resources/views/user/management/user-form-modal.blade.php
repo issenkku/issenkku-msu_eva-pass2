@@ -29,14 +29,17 @@
                                 <option value="นาง" {{ old('prefix', $user->prefix ?? '') == 'นาง' ? 'selected' : '' }}>นาง</option>
                                 <option value="นางสาว" {{ old('prefix', $user->prefix ?? '') == 'นางสาว' ? 'selected' : '' }}>นางสาว</option>
                             </select>
+                            <div class="text-red-500 text-sm mt-1 hidden" id="prefixError">กรุณาเลือกคำนำหน้า</div>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block">ชื่อ-นามสกุล</label>
                             <input type="text" name="name" id="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อ</div>
                         </div>
                         <div class="md:col-span-3">
                             <label class="block">รหัสพนักงาน</label>
                             <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <div class="text-red-500 text-sm mt-1 hidden" id="employee_idError">กรุณากรอกรหัสพนักงานให้ถูกต้อง</div>
                         </div>
                     </div>
                 </div>
@@ -56,6 +59,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="text-red-500 text-sm mt-1 hidden" id="department_idError">กรุณาเลือกสาขาวิชา</div>
                         </div>
                         <div>
                             <label>ตำแหน่ง</label>
@@ -68,6 +72,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            <div class="text-red-500 text-sm mt-1 hidden" id="position_idError">กรุณาเลือกตำแหน่ง</div>
                         </div>
                         <div>
                             <label>ประเภทบุคลากร</label>
@@ -76,6 +81,7 @@
                                 <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type ?? '') == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                                 <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type ?? '') == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
                             </select>
+                            <div class="text-red-500 text-sm mt-1 hidden" id="personnel_typeError">กรุณาเลือกประเภทบุคลากร</div>
                         </div>
                     </div>
                 </div>
@@ -87,10 +93,12 @@
                         <div>
                             <label>อีเมล</label>
                             <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <div class="text-red-500 text-sm mt-1 hidden" id="emailError">กรุณากรอกอีเมลให้ถูกต้อง</div>
                         </div>
                         <div>
                             <label>เบอร์โทร</label>
                             <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <div class="text-red-500 text-sm mt-1 hidden" id="phoneError">กรุณากรอกเบอร์โทรให้ถูกต้อง</div>
                         </div>
                     </div>
                 </div>
@@ -98,19 +106,23 @@
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ประวัติการศึกษา</h3>
                     <input type="text" name="bio" id="bio" class="w-full border rounded px-3 py-2" value="{{ old('bio', $user->bio ?? '') }}"/>
+                    @error('bio')
+                        <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <!-- รหัสผ่าน -->
                 <div id="passwordPanel">
                     <h3 class="text-purple-600 font-semibold mb-2">รหัสผ่าน</h3>
                     <input type="password" name="password" id="password" class="w-full border rounded px-3 py-2" {{ isset($user) ? '' : 'required' }} />
+                    <div class="text-red-500 text-sm mt-1 hidden" id="passwordError">กรุณากรอกรหัสผ่านให้ถูกต้อง</div>
                 </div>
 
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ตั้งค่าผู้ใช้งาน</h3>
                     <div class="mb-3">
                         <label>สถานะ</label>
-                        <select name="status" class="w-full border rounded px-3 py-2" required>
+                        <select name="status" id="status" class="w-full border rounded px-3 py-2" required>
                             <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
                             <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
                         </select>
@@ -241,7 +253,6 @@ function openEditModal(user) {
     const passwordInput = document.getElementById('password');
     passwordInput.required = false;
     passwordInput.value = '';
-    passwordInput.placeholder = 'เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน';
 
     const roleSelect = document.getElementById('role');
     if (roleSelect && user.roles && user.roles.length > 0) {
@@ -297,5 +308,121 @@ if (roleSelect && currentRoleDisplay) {
         }
     });
 }
+function showError(id, message) {
+    const errorDiv = document.getElementById(id + 'Error');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+    }
+}
+
+function hideError(id) {
+    const errorDiv = document.getElementById(id + 'Error');
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
+    }
+}
+
+function validateField(id, type = 'text') {
+    const input = document.getElementById(id);
+    if (!input) return;
+
+    const eventType = (type === 'select') ? 'change' : 'input';
+    input.addEventListener(eventType, () => {
+        const value = input.value.trim();
+
+        // General required check
+        if (!value) {
+            showError(id, 'จำเป็นต้องกรอกข้อมูล');
+            return;
+        }
+
+        // Email format check
+        if (id === 'email') {
+            const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!pattern.test(value)) {
+                showError(id, 'รูปแบบอีเมลไม่ถูกต้อง');
+                return;
+            }
+        }
+
+        // Phone validation: must be 10 digits, formatted
+        if (id === 'phone') {
+            const digits = value.replace(/\D/g, '');
+            if (digits.length !== 10) {
+                showError(id, 'กรุณากรอกเบอร์โทร 10 หลัก');
+                return;
+            }
+        }
+
+        // Password length check
+        if (id === 'password' && input.required && value.length < 6) {
+            showError(id, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+            return;
+        }
+
+        // If all checks pass, hide any error
+        hideError(id);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const requiredTextFields = ['name', 'employee_id', 'email', 'phone'];
+    const requiredSelectFields = ['prefix', 'department_id', 'position_id', 'personnel_type', 'status'];
+
+    requiredTextFields.forEach(id => validateField(id, 'text'));
+    requiredSelectFields.forEach(id => validateField(id, 'select'));
+
+    document.getElementById('userForm').addEventListener('submit', function (e) {
+        let hasError = false;
+
+        [...requiredTextFields, ...requiredSelectFields].forEach(id => {
+            const input = document.getElementById(id);
+            if (input && !input.value.trim()) {
+                showError(id, 'จำเป็นต้องกรอกข้อมูล');
+                hasError = true;
+            }
+
+            // Extra checks for email/phone
+            if (id === 'email' && input && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
+                showError(id, 'รูปแบบอีเมลไม่ถูกต้อง');
+                hasError = true;
+            }
+
+            if (id === 'phone' && input) {
+                const digits = input.value.replace(/\D/g, '');
+                if (digits.length !== 10) {
+                    showError(id, 'กรุณากรอกเบอร์โทรให้ถูกต้อง');
+                    hasError = true;
+                }
+            }
+
+        });
+
+        if (hasError) e.preventDefault(); // Block form submit
+    });
+});
+
+document.getElementById('phone').addEventListener('input', function (e) {
+    // Remove all non-digit characters
+    let digits = this.value.replace(/\D/g, '');
+
+    // Limit to max 10 digits
+    if (digits.length > 10) {
+        digits = digits.slice(0, 10);
+    }
+
+    // Apply formatting: xxx-xxx-xxxx
+    let formatted = digits;
+    if (digits.length > 6) {
+        formatted = `${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}`;
+    } else if (digits.length > 3) {
+        formatted = `${digits.slice(0,3)}-${digits.slice(3)}`;
+    }
+
+    this.value = formatted;
+});
+
 </script>
+
 
