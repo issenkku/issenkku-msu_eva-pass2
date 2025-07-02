@@ -333,16 +333,6 @@ class ReportStructureController extends Controller
                 return $version;
             });
 
-            // Optionally, eager load relationships for response
-            // $version->load([
-            //     'quantityMainCriterias.quantitySubCriterias',
-            //     'qualityMainCriterias.qualitySubCriterias',
-            //     'reportDatas',
-            //     // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
-            //     'categories.evaluationLists.quantitySubCriterias.mainCriteria',
-            //     'categories.evaluationLists.qualitySubCriterias.mainCriteria',
-            // ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Criteria version and related records created successfully',
@@ -356,12 +346,14 @@ class ReportStructureController extends Controller
                 ])
             ], 201);
         } catch (ValidationException $e) {
+            Log::error('Validation error in store: ' . json_encode($e->errors()));
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'error' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            Log::error('Server error in store: ' . $e->getMessage(), ['exception' => $e]);
             DB::rollBack();
             return response()->json([
                 'success' => false,
