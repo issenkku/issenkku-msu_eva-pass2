@@ -11,6 +11,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+use App\Models\Setting\Position;
+use App\Models\Setting\Department;
 
 class User extends Authenticatable implements CanResetPassword
 {
