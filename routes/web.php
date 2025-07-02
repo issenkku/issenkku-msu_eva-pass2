@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Evaluatee\DashboardController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
@@ -14,9 +15,9 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('dashboard', function () {
+//     return Inertia::render('Dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::prefix('departments')->name('departments.')->group(function () {
     Route::get('/', [DepartmentsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
@@ -49,13 +50,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::resource('/roles', RoleAndPermissionController::class);
 
-// Route::middleware(['auth:sanctum'])->group(function () {
-//     Route::get('/profile', function (Request $request) {
-//         return response()->json($request->user());
-//     });
-//     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
-// });
-
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 Route::prefix('positions')->name('positions.')->group(function () {
@@ -75,4 +69,16 @@ Route::get('/criteria-configs', function () {
 
 Route::get('/criteria-evaluators', function () {
     return view('criteria_config.evaluators');
+});
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
+Route::put('/evaluation/{id}', [DashboardController::class, 'updateEvaluation'])->name('evaluation.update');
+
+// Additional routes for evaluation system
+Route::prefix('evaluation')->name('evaluation.')->group(function () {
+    Route::get('/create', [DashboardController::class, 'create'])->name('create');
+    Route::post('/store', [DashboardController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
+    Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
 });
