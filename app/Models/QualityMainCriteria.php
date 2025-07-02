@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class QualityMainCriteria extends Model
+{
+    protected $table = 'quality_main_criterias';
+    public $timestamps = false;
+
+    protected $fillable = [
+        'name',
+        'ratio',
+        'tooltips',
+        'sequence',
+        'criteria_version_id',
+    ];
+
+    public function criteriaVersion(): BelongsTo
+    {
+        return $this->belongsTo(CriteriaVersion::class);
+    }
+
+    public function qualitySubCriterias()
+    {
+        return $this->hasMany(QualitySubCriteria::class, 'quality_main_criteria_id');
+    }
+
+    // helper function to get the main criteria name
+    public function mainCriteria()
+    {
+        return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
+    }
+}
