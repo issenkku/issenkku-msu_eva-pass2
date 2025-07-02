@@ -47,3 +47,4 @@ class PositionSeeder extends Seeder
         ]);
     }
 }
+
