@@ -14,6 +14,7 @@ use App\Models\QualityMainCriteria;
 use App\Models\QualitySubCriteria;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class ReportStructureController extends Controller
 {
@@ -205,12 +206,12 @@ class ReportStructureController extends Controller
             'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
-            'categories' => 'required|array',
+            'categories' => 'required|array|min:1',
             'categories.*.main_categories' => 'required|string',
             'categories.*.sub_categories' => 'required|string',
             'categories.*.sequence' => 'required|integer|min:1',
 
-            'categories.*.evaluation_lists' => 'nullable|array',
+            'categories.*.evaluation_lists' => 'nullable|array|min:1',
             'categories.*.evaluation_lists.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
@@ -333,23 +334,38 @@ class ReportStructureController extends Controller
             });
 
             // Optionally, eager load relationships for response
-            $version->load([
-                'quantityMainCriterias.quantitySubCriterias',
-                'qualityMainCriterias.qualitySubCriterias',
-                'reportDatas',
-                // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
-                'categories.evaluationLists.quantitySubCriterias.mainCriteria',
-                'categories.evaluationLists.qualitySubCriterias.mainCriteria',
-            ]);
+            // $version->load([
+            //     'quantityMainCriterias.quantitySubCriterias',
+            //     'qualityMainCriterias.qualitySubCriterias',
+            //     'reportDatas',
+            //     // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
+            //     'categories.evaluationLists.quantitySubCriterias.mainCriteria',
+            //     'categories.evaluationLists.qualitySubCriterias.mainCriteria',
+            // ]);
 
             return response()->json([
+                'success' => true,
                 'message' => 'Criteria version and related records created successfully',
-                'data' => $version,
+                'data' => $version->load([
+                    'quantityMainCriterias.quantitySubCriterias',
+                    'qualityMainCriterias.qualitySubCriterias',
+                    'reportDatas',
+                    // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
+                    'categories.evaluationLists.quantitySubCriterias.mainCriteria',
+                    'categories.evaluationLists.qualitySubCriterias.mainCriteria',
+                ])
             ], 201);
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
             return response()->json([
-                'message' => 'Failed to create criteria version',
-                'error'   => $e->getMessage(),
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }
