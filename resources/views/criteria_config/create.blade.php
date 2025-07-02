@@ -8,7 +8,7 @@
                 <p class="text-gray-600">กรุณากรอกข้อมูลเกณฑ์การประเมินให้ครบถ้วน</p>
             </div>
 
-            <form id="jsonForm" action="{{ route('reports.store') }}" method="POST" class="space-y-6">
+            <form id="jsonForm" action="{{ route('report-structure.store') }}" method="POST" class="space-y-6">
                 @csrf
 
                 <!-- Report Datas -->
@@ -20,29 +20,34 @@
                     </h2>
                     <div class="space-y-4">
                         <div>
-                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อรุ่น</label>
-                            <input id="version_name"
+                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อรุ่น <span
+                                    class="text-red-500">*</span></label>
+                            <input id="version_name" required name="version_name"
                                 class="version_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 placeholder="ชื่อรุ่น (เช่น Demo Version 2024)">
+                            <input type="hidden" id="auth-user-id" value="{{ Auth::id() }}">
                         </div>
                         <div>
-                            <label for="report_title" class="block text-sm font-medium text-gray-700 mb-1">ชื่อเกณฑ์</label>
-                            <input id="report_title"
+                            <label for="report_title" class="block text-sm font-medium text-gray-700 mb-1">ชื่อเกณฑ์ <span
+                                    class="text-red-500">*</span></label>
+                            <input id="report_title" required name="report_title"
                                 class="report_title border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 placeholder="ชื่อเกณฑ์การประเมิน">
                         </div>
                         <div>
                             <label for="report_description"
-                                class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเกณฑ์</label>
-                            <textarea id="report_description" rows="3"
+                                class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเกณฑ์ <span
+                                    class="text-red-500">*</span></label>
+                            <textarea id="report_description" rows="3" required name="report_description"
                                 class="report_description border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                 placeholder="รายละเอียดเพิ่มเติมของเกณฑ์"></textarea>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="assessment_type"
-                                    class="block text-sm font-medium text-gray-700 mb-1">ประเภทการประเมิน</label>
-                                <select id="assessment_type"
+                                    class="block text-sm font-medium text-gray-700 mb-1">ประเภทการประเมิน <span
+                                        class="text-red-500">*</span></label>
+                                <select id="assessment_type" required name="assessment_type"
                                     class="assessment_type border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                                     <option value="technical">กลุ่มวิชาการ</option>
                                     <option value="support">กลุ่มสนับสนุน</option>
@@ -66,7 +71,7 @@
                             class="bg-blue-600 text-white rounded-full w-7 h-7 flex items-center justify-center mr-2">2</span>
                         หมวดหมู่การประเมิน
                     </h2>
-                    <!-- Example/Initial Category Block -->
+                    <!-- Category Block -->
                     <div
                         class="category_block bg-white p-6 rounded-lg shadow border-l-4 border-blue-500 transition-all hover:shadow-md">
                         <div class="flex justify-between items-center mb-4">
@@ -104,14 +109,16 @@
                                 <span class="category_sequence text-gray-700 font-medium">1</span>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่หลัก</label>
-                                <input
+                                <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่หลัก <span
+                                        class="text-red-500">*</span></label>
+                                <input required
                                     class="main_categories border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                     placeholder="ชื่อหมวดหมู่หลัก">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่ย่อย</label>
-                                <input
+                                <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่ย่อย <span
+                                        class="text-red-500">*</span></label>
+                                <input required
                                     class="sub_categories border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                     placeholder="ชื่อหมวดหมู่ย่อย">
                             </div>
@@ -158,30 +165,34 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">ลำดับ</label>
-                                        <span class="eval_sequence text-gray-700 font-medium">1</span>
+                                        <span name='eval_sequence'
+                                            class="eval_sequence text-gray-700 font-medium">1</span>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ</label>
-                                        <input
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ <span
+                                                class="text-red-500">*</span></label>
+                                        <input required name="eval_name"
                                             class="eval_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                                             placeholder="ชื่อรายการประเมิน">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">คะแนนรวม</label>
-                                        <input type="number"
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">คะแนนรวม <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="number" required name="sum_score"
                                             class="sum_score border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                                             placeholder="คะแนนรวม">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
-                                        <input
+                                        <input name="annotation"
                                             class="annotation border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2"
                                             placeholder="หมายเหตุ">
                                     </div>
                                 </div>
                                 <!-- Criteria Type Selection -->
                                 <div class="mb-4">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเกณฑ์</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">ประเภทเกณฑ์ <span
+                                            class="text-red-500">*</span></label>
                                     <div class="criteria_type_check_group flex gap-4 text-black">
                                         <label class="flex items-center">
                                             <input type="checkbox" class="criteria_type quantity_criteria_type"
@@ -250,19 +261,20 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-700 mb-1">ลำดับ</label>
-                                                <span class="quant_main_sequence text-gray-700 font-medium">1</span>
+                                                <span name="quant_main_sequence"
+                                                    class="quant_main_sequence text-gray-700 font-medium">1</span>
                                             </div>
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-gray-700 mb-1">ชื่อเกณฑ์</label>
-                                                <input
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อเกณฑ์ <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="quant_name"
                                                     class="quant_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 block w-full p-1.5 text-sm"
                                                     placeholder="ชื่อเกณฑ์ปริมาณ">
                                             </div>
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-gray-700 mb-1">คำอธิบาย</label>
-                                                <input
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">คำอธิบาย <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="quant_tooltips"
                                                     class="quant_tooltips border border-gray-300 text-black rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 block w-full p-1.5 text-sm"
                                                     placeholder="คำอธิบายเพิ่มเติม">
                                             </div>
@@ -285,26 +297,28 @@
                                                     <div>
                                                         <label
                                                             class="block text-xs font-medium text-gray-600 mb-1">ลำดับ</label>
-                                                        <span class="quant_sub_sequence text-gray-700 font-medium">1</span>
+                                                        <span name="quant_sub_sequence"
+                                                            class="quant_sub_sequence text-gray-700 font-medium">1</span>
                                                     </div>
                                                     <div>
                                                         <label
-                                                            class="block text-xs font-medium text-gray-600 mb-1">ชื่อเกณฑ์ย่อย</label>
-                                                        <input
+                                                            class="block text-xs font-medium text-gray-600 mb-1">ชื่อเกณฑ์ย่อย
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input name="quant_sub_name"
                                                             class="quant_sub_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 block w-full p-1 text-sm"
                                                             placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs font-medium text-gray-600 mb-1">คะแนน
-                                                            A</label>
-                                                        <input type="number"
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">คะแนน A
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="score_a"
                                                             class="score_a border border-gray-300 text-black rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 block w-full p-1 text-sm"
                                                             placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs font-medium text-gray-600 mb-1">คะแนน
-                                                            B</label>
-                                                        <input type="number"
+                                                        <label class="block text-xs font-medium text-gray-600 mb-1">คะแนน B
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="score_b"
                                                             class="score_b border border-gray-300 text-black rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 block w-full p-1 text-sm"
                                                             placeholder="คะแนน B">
                                                     </div>
@@ -376,25 +390,27 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                                             <div>
                                                 <label class="block text-xs font-medium text-gray-700 mb-1">ลำดับ</label>
-                                                <span class="qual_main_sequence text-gray-700 font-medium">1</span>
+                                                <span name="qual_main_sequence"
+                                                    class="qual_main_sequence text-gray-700 font-medium">1</span>
                                             </div>
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-gray-700 mb-1">ชื่อเกณฑ์</label>
-                                                <input
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">ชื่อเกณฑ์ <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="qual_name"
                                                     class="qual_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1.5 text-sm"
                                                     placeholder="ชื่อเกณฑ์คุณภาพ">
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">สัดส่วน</label>
-                                                <input type="number"
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">สัดส่วน <span
+                                                        class="text-red-500">*</span></label>
+                                                <input type="number" name="qual_ratio"
                                                     class="qual_ratio border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1.5 text-sm"
                                                     placeholder="สัดส่วน">
                                             </div>
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-gray-700 mb-1">คำอธิบาย</label>
-                                                <input
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">คำอธิบาย <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="qual_tooltips"
                                                     class="qual_tooltips border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1.5 text-sm"
                                                     placeholder="คำอธิบายเพิ่มเติม">
                                             </div>
@@ -417,19 +433,22 @@
                                                     <div>
                                                         <label
                                                             class="block text-xs font-medium text-gray-600 mb-1">ลำดับ</label>
-                                                        <span class="qual_sub_sequence text-gray-700 font-medium">1</span>
+                                                        <span name="qual_sub_sequence"
+                                                            class="qual_sub_sequence text-gray-700 font-medium">1</span>
                                                     </div>
                                                     <div>
                                                         <label
-                                                            class="block text-xs font-medium text-gray-600 mb-1">ชื่อเกณฑ์ย่อย</label>
-                                                        <input
+                                                            class="block text-xs font-medium text-gray-600 mb-1">ชื่อเกณฑ์ย่อย
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input name="qual_sub_name"
                                                             class="qual_sub_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1 text-sm"
                                                             placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
                                                         <label
-                                                            class="block text-xs font-medium text-gray-600 mb-1">คะแนนสูงสุด</label>
-                                                        <input type="number"
+                                                            class="block text-xs font-medium text-gray-600 mb-1">คะแนนสูงสุด
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="num_score"
                                                             class="num_score border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1 text-sm"
                                                             placeholder="คะแนนสูงสุด">
                                                     </div>
@@ -462,50 +481,49 @@
                     </div>
                 </div>
                 <!-- END Category Block -->
-        </div>
 
-        <button type="button" id="add_category_btn"
-            class="my-4 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            เพิ่มหมวดหมู่การประเมิน
-        </button>
+                <button type="button" id="add_category_btn"
+                    class="my-4 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    เพิ่มหมวดหมู่การประเมิน
+                </button>
 
-        <div class="flex justify-end mt-8 space-x-3">
-            <button type="button" id="reset_form_btn"
-                class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                ล้างฟอร์ม
-            </button>
-            <button type="submit"
-                class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                บันทึกข้อมูล
-            </button>
+                <div class="flex justify-end mt-8 space-x-3">
+                    <button type="button" id="reset_form_btn"
+                        class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        ล้างฟอร์ม
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
         </div>
-        </form>
-    </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loading_overlay"
-        class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div id="loading_overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-5 rounded-lg shadow-lg text-center">
             <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-3"></div>
             <p class="text-gray-700">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
         </div>
     </div>
     <!-- Confirmation Modal -->
-    <div id="confirm_modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div id="confirm_modal" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
             <div class="text-center">
                 <div class="bg-blue-100 rounded-full p-3 mx-auto w-16 h-16 flex items-center justify-center mb-4">
@@ -528,7 +546,7 @@
         </div>
     </div>
     <!-- Success Modal -->
-    <div id="success_modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div id="success_modal" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
             <div class="text-center">
                 <div class="bg-green-100 rounded-full p-3 mx-auto w-16 h-16 flex items-center justify-center mb-4">
@@ -540,9 +558,9 @@
                 <h3 class="text-lg font-bold text-gray-800 mb-2">ส่งข้อมูลสำเร็จ</h3>
                 <p class="text-gray-600 mb-4">ข้อมูลเกณฑ์การประเมินถูกบันทึกเรียบร้อยแล้ว</p>
                 <div class="flex justify-center space-x-3">
-                    <button id="close_modal_btn"
-                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">ปิด</button>
-                    <a href="{{ route('reports.index') }}"
+                    {{-- <button id="close_modal_btn"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">ปิด</button> --}}
+                    <a href="{{ route('criteria_config.index') }}"
                         class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">ไปหน้ารายการเกณฑ์</a>
                 </div>
             </div>
@@ -644,8 +662,9 @@
 
         document.addEventListener('click', function(e) {
             if (e.target.closest('.delete_category_btn')) {
-                const block = e.target.closest('.category_block')
-                const container = block.closest('#categories_container');;
+                const block = e.target.closest('.category_block');
+                const container = document.getElementById('categories_container');
+
                 if (confirm('ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
                     if (container.querySelectorAll('.category_block').length > 1) {
                         block.remove();
@@ -655,8 +674,8 @@
                         alert('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
                     }
                 }
-
             }
+
             if (e.target.closest('.delete_eval_btn')) {
                 const block = e.target.closest('.evaluation_list_block');
                 const container = block.closest('.evaluation_lists_container');
@@ -668,38 +687,53 @@
                     alert('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
                 }
             }
+
             if (e.target.closest('.delete_quant_btn')) {
                 const block = e.target.closest('.quant_criteria_block');
                 const container = block.closest('.quantity_main_criterias_container');
                 if (container.querySelectorAll('.quant_criteria_block').length > 1) {
                     block.remove();
                     updateQuantMainSequence(container);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                } else {
+                    alert('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
                 }
             }
+
             if (e.target.closest('.delete_quant_sub_btn')) {
                 const block = e.target.closest('.quant_sub_criteria_block');
                 const container = block.closest('.quant_sub_criteria_container');
                 if (container.querySelectorAll('.quant_sub_criteria_block').length > 1) {
                     block.remove();
                     updateQuantSubSequence(container);
+                } else {
+                    alert('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
                 }
             }
+
             if (e.target.closest('.delete_qual_btn')) {
                 const block = e.target.closest('.qual_criteria_block');
                 const container = block.closest('.quality_main_criterias_container');
                 if (container.querySelectorAll('.qual_criteria_block').length > 1) {
                     block.remove();
                     updateQualMainSequence(container);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                } else {
+                    alert('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
                 }
             }
+
             if (e.target.closest('.delete_qual_sub_btn')) {
                 const block = e.target.closest('.qual_sub_criteria_block');
                 const container = block.closest('.qual_sub_criterias_container');
                 if (container.querySelectorAll('.qual_sub_criteria_block').length > 1) {
                     block.remove();
                     updateQualSubSequence(container);
+                } else {
+                    alert('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
                 }
             }
+
             if (e.target.closest('.move_category_up_btn')) {
                 const block = e.target.closest('.category_block');
                 const previous = block.previousElementSibling;
@@ -709,6 +743,7 @@
                     updateCategorySequence(document.getElementById('categories_container'));
                 }
             }
+
             if (e.target.closest('.move_category_down_btn')) {
                 const block = e.target.closest('.category_block');
                 const next = block.nextElementSibling;
@@ -718,6 +753,7 @@
                     updateCategorySequence(document.getElementById('categories_container'));
                 }
             }
+
             if (e.target.closest('.move_eval_up_btn')) {
                 const block = e.target.closest('.evaluation_list_block');
                 const container = block.closest('.evaluation_lists_container');
@@ -728,6 +764,7 @@
                     updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
                 }
             }
+
             if (e.target.closest('.move_eval_down_btn')) {
                 const block = e.target.closest('.evaluation_list_block');
                 const container = block.closest('.evaluation_lists_container');
@@ -738,6 +775,7 @@
                     updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
                 }
             }
+
             if (e.target.closest('.move_quant_up_btn')) {
                 const block = e.target.closest('.quant_criteria_block');
                 const container = block.closest('.quantity_main_criterias_container');
@@ -748,6 +786,7 @@
                     updateQuantMainSequence(container);
                 }
             }
+
             if (e.target.closest('.move_quant_down_btn')) {
                 const block = e.target.closest('.quant_criteria_block');
                 const container = block.closest('.quantity_main_criterias_container');
@@ -758,6 +797,7 @@
                     updateQuantMainSequence(container);
                 }
             }
+
             if (e.target.closest('.move_qual_up_btn')) {
                 const block = e.target.closest('.qual_criteria_block');
                 const container = block.closest('.quality_main_criterias_container');
@@ -768,6 +808,7 @@
                     updateQualMainSequence(container);
                 }
             }
+
             if (e.target.closest('.move_qual_down_btn')) {
                 const block = e.target.closest('.qual_criteria_block');
                 const container = block.closest('.quality_main_criterias_container');
@@ -778,6 +819,7 @@
                     updateQualMainSequence(container);
                 }
             }
+
             if (e.target.closest('#add_category_btn')) {
                 let newBlock = cloneAndClear('.category_block');
                 document.getElementById('categories_container').appendChild(newBlock);
@@ -788,6 +830,7 @@
                     block: 'start'
                 });
             }
+
             if (e.target.closest('.add_evaluation_list_btn')) {
                 let parent = e.target.closest('.category_block').querySelector('.evaluation_lists_container');
                 let newBlock = cloneAndClear('.evaluation_list_block');
@@ -799,6 +842,7 @@
                     block: 'start'
                 });
             }
+
             if (e.target.closest('.add_quant_criteria_btn')) {
                 let parent = e.target.closest('.evaluation_list_block').querySelector(
                     '.quantity_main_criterias_container');
@@ -811,6 +855,7 @@
                     block: 'start'
                 });
             }
+
             if (e.target.closest('.add_quant_sub_criteria_btn')) {
                 let parent = e.target.closest('.quant_criteria_block').querySelector(
                     '.quant_sub_criteria_container');
@@ -822,6 +867,7 @@
                     block: 'start'
                 });
             }
+
             if (e.target.closest('.add_qual_criteria_btn')) {
                 let parent = e.target.closest('.evaluation_list_block').querySelector(
                     '.quality_main_criterias_container');
@@ -834,6 +880,7 @@
                     block: 'start'
                 });
             }
+
             if (e.target.closest('.add_qual_sub_criteria_btn')) {
                 let parent = e.target.closest('.qual_criteria_block').querySelector(
                     '.qual_sub_criterias_container');
@@ -864,10 +911,13 @@
         document.getElementById('reset_form_btn').addEventListener('click', function() {
             if (confirm('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?')) {
                 document.getElementById('jsonForm').reset();
-                document.querySelectorAll('.evaluation_lists_container').forEach(container => {
-                    updateEvalSequence(container);
-                });
+
+                // รีเซ็ตส่วนที่ซ่อน
+                document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container')
+                    .forEach(container => container.classList.add('hidden'));
+
                 updateCategorySequence(document.getElementById('categories_container'));
+                document.querySelectorAll('.evaluation_lists_container').forEach(updateEvalSequence);
                 document.querySelectorAll('.quantity_main_criterias_container').forEach(updateQuantMainSequence);
                 document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
                 document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
@@ -875,152 +925,187 @@
             }
         });
 
-        document.getElementById('close_modal_btn').addEventListener('click', function() {
-            document.getElementById('success_modal').classList.add('hidden');
-        });
+        // document.getElementById('close_modal_btn').addEventListener('click', function() {
+        //     document.getElementById('success_modal').classList.add('hidden');
+        // });
 
         document.getElementById('cancel_modal_btn').addEventListener('click', function() {
             hideConfirmModal();
         });
 
+        let finalData = null;
+
         document.getElementById('jsonForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            let finalData = {
-                version_name: '',
-                created_by: 1,
+            // ตรวจสอบการกรอกข้อมูลที่จำเป็นก่อนส่ง
+            const versionName = document.querySelector('.version_name').value.trim();
+            if (!versionName) {
+                alert('กรุณากรอกชื่อรุ่น');
+                return;
+            }
+
+            finalData = {
+                version_name: versionName,
+                created_by: document.getElementById('auth-user-id')?.value ||
+                    1, // Fallback to 1 if auth ID is unavailable
                 report_datas: [],
                 categories: []
             };
 
             let rd = document.querySelector('.report_datas_block');
-            finalData.version_name = rd.querySelector('.version_name').value;
             finalData.report_datas.push({
                 report_title: rd.querySelector('.report_title').value,
                 report_description: rd.querySelector('.report_description').value,
                 assessment_type: rd.querySelector('.assessment_type').value,
-                comment: rd.querySelector('.comment').value
+                comment: rd.querySelector('.comment').value || null
             });
 
             document.querySelectorAll('#categories_container .category_block').forEach((catBlock, catI) => {
                 let category = {
                     main_categories: catBlock.querySelector('.main_categories').value,
                     sub_categories: catBlock.querySelector('.sub_categories').value,
-                    sequence: catBlock.querySelector('.category_sequence') ? Number(catBlock
-                        .querySelector('.category_sequence').textContent) : catI + 1,
+                    sequence: Number(catBlock.querySelector('.category_sequence').textContent),
                     evaluation_lists: []
                 };
+
                 catBlock.querySelectorAll('.evaluation_lists_container .evaluation_list_block').forEach((
                     evalBlock, evalI) => {
+                    // ตรวจสอบว่าต้องเลือกประเภทเกณฑ์อย่างน้อย 1 ประเภท
+                    const quantityChecked = evalBlock.querySelector('.quantity_criteria_type')
+                        .checked;
+                    const qualityChecked = evalBlock.querySelector('.quality_criteria_type')
+                        .checked;
+
                     let evalList = {
                         name: evalBlock.querySelector('.eval_name').value,
                         sum_score: Number(evalBlock.querySelector('.sum_score').value),
-                        sequence: evalBlock.querySelector('.eval_sequence') ? Number(evalBlock
-                            .querySelector('.eval_sequence').textContent) : evalI + 1,
-                        annotation: evalBlock.querySelector('.annotation').value,
-                        quantity_main_criterias: [],
-                        quality_main_criterias: []
+                        sequence: Number(evalBlock.querySelector('.eval_sequence').textContent),
+                        annotation: evalBlock.querySelector('.annotation').value || null,
+                        quantity_main_criterias: quantityChecked ? [] : [],
+                        quality_main_criterias: qualityChecked ? [] : []
                     };
 
-                    evalBlock.querySelectorAll(
-                        '.quantity_main_criterias_container .quant_criteria_block').forEach((
-                        qMain, qj) => {
-                        let quantMain = {
-                            name: qMain.querySelector('.quant_name').value,
-                            tooltips: qMain.querySelector('.quant_tooltips').value,
-                            sequence: qMain.querySelector('.quant_main_sequence') ?
-                                Number(qMain.querySelector('.quant_main_sequence')
-                                    .textContent) : qj + 1,
-                            quantity_sub_criterias: []
-                        };
-                        qMain.querySelectorAll(
-                                '.quant_sub_criteria_container .quant_sub_criteria_block')
-                            .forEach((subQ, sk) => {
-                                quantMain.quantity_sub_criterias.push({
-                                    name: subQ.querySelector('.quant_sub_name')
-                                        .value,
-                                    sequence: subQ.querySelector(
-                                        '.quant_sub_sequence') ? Number(subQ
-                                        .querySelector(
-                                            '.quant_sub_sequence')
-                                        .textContent) : sk + 1,
-                                    score_a: Number(subQ.querySelector(
-                                        '.score_a').value),
-                                    score_b: Number(subQ.querySelector(
-                                        '.score_b').value)
-                                });
-                            });
-                        evalList.quantity_main_criterias.push(quantMain);
-                    });
+                    if (quantityChecked) {
+                        evalBlock.querySelectorAll(
+                            '.quantity_main_criterias_container .quant_criteria_block').forEach(
+                            (qMain, qj) => {
+                                let quantMain = {
+                                    name: qMain.querySelector('.quant_name').value,
+                                    tooltips: qMain.querySelector('.quant_tooltips').value,
+                                    sequence: Number(qMain.querySelector(
+                                        '.quant_main_sequence').textContent),
+                                    quantity_sub_criterias: []
+                                };
 
-                    evalBlock.querySelectorAll(
-                        '.quality_main_criterias_container .qual_criteria_block').forEach((
-                        qMain, qj) => {
-                        let qualMain = {
-                            name: qMain.querySelector('.qual_name').value,
-                            ratio: Number(qMain.querySelector('.qual_ratio').value),
-                            tooltips: qMain.querySelector('.qual_tooltips').value,
-                            sequence: qMain.querySelector('.qual_main_sequence') ?
-                                Number(qMain.querySelector('.qual_main_sequence')
-                                    .textContent) : qj + 1,
-                            quality_sub_criterias: []
-                        };
-                        qMain.querySelectorAll(
-                                '.qual_sub_criterias_container .qual_sub_criteria_block')
-                            .forEach((subQ, sk) => {
-                                qualMain.quality_sub_criterias.push({
-                                    name: subQ.querySelector('.qual_sub_name')
-                                        .value,
-                                    sequence: subQ.querySelector(
-                                        '.qual_sub_sequence') ? Number(subQ
-                                        .querySelector('.qual_sub_sequence')
-                                        .textContent) : sk + 1,
-                                    num_score: Number(subQ.querySelector(
-                                        '.num_score').value)
-                                });
+                                qMain.querySelectorAll(
+                                        '.quant_sub_criteria_container .quant_sub_criteria_block'
+                                    )
+                                    .forEach((subQ, sk) => {
+                                        quantMain.quantity_sub_criterias.push({
+                                            name: subQ.querySelector(
+                                                '.quant_sub_name').value,
+                                            sequence: Number(subQ.querySelector(
+                                                    '.quant_sub_sequence')
+                                                .textContent),
+                                            score_a: Number(subQ.querySelector(
+                                                '.score_a').value),
+                                            score_b: Number(subQ.querySelector(
+                                                '.score_b').value)
+                                        });
+                                    });
+
+                                evalList.quantity_main_criterias.push(quantMain);
                             });
-                        evalList.quality_main_criterias.push(qualMain);
-                    });
+                    }
+
+                    if (qualityChecked) {
+                        evalBlock.querySelectorAll(
+                            '.quality_main_criterias_container .qual_criteria_block').forEach((
+                            qMain, qj) => {
+                            let qualMain = {
+                                name: qMain.querySelector('.qual_name').value,
+                                ratio: Number(qMain.querySelector('.qual_ratio').value),
+                                tooltips: qMain.querySelector('.qual_tooltips').value,
+                                sequence: Number(qMain.querySelector(
+                                    '.qual_main_sequence').textContent),
+                                quality_sub_criterias: []
+                            };
+
+                            qMain.querySelectorAll(
+                                    '.qual_sub_criterias_container .qual_sub_criteria_block'
+                                )
+                                .forEach((subQ, sk) => {
+                                    qualMain.quality_sub_criterias.push({
+                                        name: subQ.querySelector(
+                                            '.qual_sub_name').value,
+                                        sequence: Number(subQ.querySelector(
+                                                '.qual_sub_sequence')
+                                            .textContent),
+                                        num_score: Number(subQ.querySelector(
+                                            '.num_score').value)
+                                    });
+                                });
+
+                            evalList.quality_main_criterias.push(qualMain);
+                        });
+                    }
 
                     category.evaluation_lists.push(evalList);
                 });
+
                 finalData.categories.push(category);
             });
 
-            // Show confirmation modal with version_name
+            // แสดง modal ยืนยันการบันทึก
             showConfirmModal(finalData.version_name);
+        });
+        // จัดการคลิกปุ่มยืนยัน
+        document.getElementById('confirm_submit_btn').addEventListener('click', function handleSubmit() {
+            hideConfirmModal();
+            showLoading();
 
-            // Handle confirm button click
-            document.getElementById('confirm_submit_btn').addEventListener('click', function() {
-                hideConfirmModal();
-                showLoading();
-
-                fetch(document.getElementById('jsonForm').action, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                        },
-                        body: JSON.stringify(finalData)
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        hideLoading();
-                        if (data.success) {
-                            showSuccessModal();
-                        } else {
-                            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + (data.message ||
-                                'ไม่ทราบสาเหตุ'));
+            fetch("{{ route('report-structure.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    },
+                    body: JSON.stringify(finalData)
+                })
+                .then(response => {
+                    const status = response.status;
+                    return response.json().then(data => ({
+                        status,
+                        data
+                    }));
+                })
+                .then(({
+                    status,
+                    data
+                }) => {
+                    hideLoading();
+                    if (status === 201 || data.success) {
+                        showSuccessModal();
+                    } else {
+                        console.warn('Error response:', {
+                            status,
+                            message: data.message,
+                            errors: data.errors
+                        });
+                        alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่ทราบสาเหตุ'));
+                        if (data.errors) {
+                            alert('ข้อผิดพลาดการตรวจสอบ: ' + JSON.stringify(data.errors));
                         }
-                    })
-                    .catch(error => {
-                        hideLoading();
-                        console.error('Error:', error);
-                        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่');
-                    });
-            }, {
-                once: true
-            }); // Use { once: true } to ensure the listener is removed after execution
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    console.error('Network Error:', error);
+                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่');
+                });
+
+            this.removeEventListener('click', handleSubmit);
         });
     </script>
 @endpush

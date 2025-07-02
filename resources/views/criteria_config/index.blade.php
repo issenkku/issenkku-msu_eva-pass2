@@ -9,7 +9,7 @@
                 <h2 class="text-3xl font-bold text-gray-800">
                     ชื่อหน้า
                 </h2>
-                <a href="#" class="px-5 py-2 bg-lime-400 text-gray-800 font-semibold rounded-md hover:bg-lime-300">
+                <a href="{{ route('criteria_config.create') }}" class="px-5 py-2 bg-lime-400 text-gray-800 font-semibold rounded-md hover:bg-lime-300">
                     เพิ่มเกณฑ์
                 </a>
             </div>
