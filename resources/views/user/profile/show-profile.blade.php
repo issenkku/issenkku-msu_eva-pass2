@@ -4,20 +4,15 @@
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
     <h2 class="text-2xl font-semibold mb-6">User Profile</h2>
 
-    <!-- Profile Photo and Name -->
-    <div class="flex items-center mb-6">
-        <img src="{{ $user->photo_url ?? asset('images/default-avatar.png') }}"
-             alt="User Photo"
-             class="w-24 h-24 rounded-full object-cover border mr-4">
-        <div>
-            <h3 class="text-xl font-bold">{{ $user->name }}</h3>
-            <p class="text-sm text-gray-600">{{ $user->email }}</p>
-            @if($user->email_verified_at)
-                <p class="text-sm text-green-600">Verified at: {{ $user->email_verified_at->format('d M Y, H:i') }}</p>
-            @else
-                <p class="text-sm text-red-600">Email not verified</p>
-            @endif
-        </div>
+    <!-- Profile Name and Email -->
+    <div class="mb-6">
+        <h3 class="text-xl font-bold">{{ $user->name }}</h3>
+        <p class="text-sm text-gray-600">{{ $user->email }}</p>
+        {{-- @if($user->email_verified_at)
+            <p class="text-sm text-green-600">Verified at: {{ $user->email_verified_at->format('d M Y, H:i') }}</p>
+        @else
+            <p class="text-sm text-red-600">Email not verified</p>
+        @endif --}}
     </div>
 
     <!-- User Info -->
