@@ -20,6 +20,12 @@
                     </h2>
                     <div class="space-y-4">
                         <div>
+                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-1">ชื่อรุ่น</label>
+                            <input id="version_name"
+                                class="version_name border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                                placeholder="ชื่อรุ่น (เช่น Demo Version 2024)">
+                        </div>
+                        <div>
                             <label for="report_title" class="block text-sm font-medium text-gray-700 mb-1">ชื่อเกณฑ์</label>
                             <input id="report_title"
                                 class="report_title border border-gray-300 text-black rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -213,14 +219,33 @@
                                     <div class="quant_criteria_block bg-white p-3 rounded shadow-sm">
                                         <div class="flex justify-between items-center mb-2">
                                             <h6 class="text-sm font-medium text-gray-700">เกณฑ์ปริมาณหลัก</h6>
-                                            <button type="button"
-                                                class="delete_quant_btn text-red-500 hover:text-red-700 text-xs">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
+                                            <div class="flex space-x-2">
+                                                <button type="button"
+                                                    class="move_quant_up_btn text-blue-500 hover:text-blue-700 disabled:text-gray-400"
+                                                    disabled>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="move_quant_down_btn text-blue-500 hover:text-blue-700 disabled:text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="delete_quant_btn text-red-500 hover:text-red-700 text-xs">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                             <div>
@@ -320,14 +345,33 @@
                                     <div class="qual_criteria_block bg-white p-3 rounded shadow-sm">
                                         <div class="flex justify-between items-center mb-2">
                                             <h6 class="text-sm font-medium text-gray-700">เกณฑ์คุณภาพหลัก</h6>
-                                            <button type="button"
-                                                class="delete_qual_btn text-red-500 hover:text-red-700 text-xs">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
+                                            <div class="flex space-x-2">
+                                                <button type="button"
+                                                    class="move_qual_up_btn text-blue-500 hover:text-blue-700 disabled:text-gray-400"
+                                                    disabled>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="move_qual_down_btn text-blue-500 hover:text-blue-700 disabled:text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="delete_qual_btn text-red-500 hover:text-red-700 text-xs">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                                             <div>
@@ -354,7 +398,6 @@
                                                     class="qual_tooltips border border-gray-300 text-black rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full p-1.5 text-sm"
                                                     placeholder="คำอธิบายเพิ่มเติม">
                                             </div>
-
                                         </div>
                                         <div
                                             class="qual_sub_criterias_container space-y-2 pl-3 border-l-2 border-purple-100 mb-2">
@@ -461,6 +504,29 @@
             <p class="text-gray-700">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
         </div>
     </div>
+    <!-- Confirmation Modal -->
+    <div id="confirm_modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <div class="text-center">
+                <div class="bg-blue-100 rounded-full p-3 mx-auto w-16 h-16 flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">ยืนยันการบันทึกข้อมูล</h3>
+                <p class="text-gray-600 mb-2">ชื่อรุ่น: <span id="version_name_display" class="font-medium"></span></p>
+                <p class="text-gray-600 mb-4">คุณต้องการบันทึกข้อมูลเกณฑ์การประเมินนี้หรือไม่?</p>
+                <div class="flex justify-center space-x-3">
+                    <button id="cancel_modal_btn"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">ยกเลิก</button>
+                    <button id="confirm_submit_btn"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">ยืนยัน</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Success Modal -->
     <div id="success_modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
@@ -502,7 +568,7 @@
                 node.querySelector('.quality_main_criterias_container').classList.add('hidden');
             }
             if (blockSelector === '.category_block') {
-                const container = document.querySelector('#categories_container');
+                const container = document.getElementById('categories_container');
                 const index = container.querySelectorAll('.category_block').length + 1;
                 node.querySelector('.category_sequence').textContent = index;
             }
@@ -563,18 +629,33 @@
             document.getElementById('loading_overlay').classList.add('hidden');
         }
 
+        function showConfirmModal(versionName) {
+            document.getElementById('version_name_display').textContent = versionName || 'ไม่ระบุ';
+            document.getElementById('confirm_modal').classList.remove('hidden');
+        }
+
+        function hideConfirmModal() {
+            document.getElementById('confirm_modal').classList.add('hidden');
+        }
+
         function showSuccessModal() {
             document.getElementById('success_modal').classList.remove('hidden');
         }
 
         document.addEventListener('click', function(e) {
             if (e.target.closest('.delete_category_btn')) {
-                const block = e.target.closest('.category_block');
+                const block = e.target.closest('.category_block')
+                const container = block.closest('#categories_container');;
                 if (confirm('ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
-                    block.remove();
-                    updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
-                    updateCategorySequence(document.getElementById('categories_container'));
+                    if (container.querySelectorAll('.category_block').length > 1) {
+                        block.remove();
+                        updateCategorySequence(container);
+                        updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                    } else {
+                        alert('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
+                    }
                 }
+
             }
             if (e.target.closest('.delete_eval_btn')) {
                 const block = e.target.closest('.evaluation_list_block');
@@ -657,6 +738,46 @@
                     updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
                 }
             }
+            if (e.target.closest('.move_quant_up_btn')) {
+                const block = e.target.closest('.quant_criteria_block');
+                const container = block.closest('.quantity_main_criterias_container');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('quant_criteria_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                    updateQuantMainSequence(container);
+                }
+            }
+            if (e.target.closest('.move_quant_down_btn')) {
+                const block = e.target.closest('.quant_criteria_block');
+                const container = block.closest('.quantity_main_criterias_container');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('quant_criteria_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                    updateQuantMainSequence(container);
+                }
+            }
+            if (e.target.closest('.move_qual_up_btn')) {
+                const block = e.target.closest('.qual_criteria_block');
+                const container = block.closest('.quality_main_criterias_container');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('qual_criteria_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                    updateQualMainSequence(container);
+                }
+            }
+            if (e.target.closest('.move_qual_down_btn')) {
+                const block = e.target.closest('.qual_criteria_block');
+                const container = block.closest('.quality_main_criterias_container');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('qual_criteria_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                    updateQualMainSequence(container);
+                }
+            }
             if (e.target.closest('#add_category_btn')) {
                 let newBlock = cloneAndClear('.category_block');
                 document.getElementById('categories_container').appendChild(newBlock);
@@ -683,6 +804,7 @@
                     '.quantity_main_criterias_container');
                 let newBlock = cloneAndClear('.quant_criteria_block');
                 parent.appendChild(newBlock);
+                updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                 updateQuantMainSequence(parent);
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
@@ -705,6 +827,7 @@
                     '.quality_main_criterias_container');
                 let newBlock = cloneAndClear('.qual_criteria_block');
                 parent.appendChild(newBlock);
+                updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                 updateQualMainSequence(parent);
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
@@ -730,7 +853,6 @@
                 const quantityContainer = evalBlock.querySelector('.quantity_main_criterias_container');
                 const qualityContainer = evalBlock.querySelector('.quality_main_criterias_container');
 
-                // Check the state of both checkboxes
                 const quantityCheckbox = evalBlock.querySelector('.quantity_criteria_type');
                 const qualityCheckbox = evalBlock.querySelector('.quality_criteria_type');
 
@@ -745,9 +867,7 @@
                 document.querySelectorAll('.evaluation_lists_container').forEach(container => {
                     updateEvalSequence(container);
                 });
-                document.querySelectorAll('#categories_container').forEach(container => {
-                    updateCategorySequence(container);
-                });
+                updateCategorySequence(document.getElementById('categories_container'));
                 document.querySelectorAll('.quantity_main_criterias_container').forEach(updateQuantMainSequence);
                 document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
                 document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
@@ -759,18 +879,22 @@
             document.getElementById('success_modal').classList.add('hidden');
         });
 
+        document.getElementById('cancel_modal_btn').addEventListener('click', function() {
+            hideConfirmModal();
+        });
+
         document.getElementById('jsonForm').addEventListener('submit', function(event) {
             event.preventDefault();
-            showLoading();
 
             let finalData = {
-                version_name: 'Demo Version 2024',
+                version_name: '',
                 created_by: 1,
                 report_datas: [],
                 categories: []
             };
 
             let rd = document.querySelector('.report_datas_block');
+            finalData.version_name = rd.querySelector('.version_name').value;
             finalData.report_datas.push({
                 report_title: rd.querySelector('.report_title').value,
                 report_description: rd.querySelector('.report_description').value,
@@ -863,28 +987,40 @@
                 finalData.categories.push(category);
             });
 
-            fetch(document.getElementById('jsonForm').action, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                    },
-                    body: JSON.stringify(finalData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading();
-                    if (data.success) {
-                        showSuccessModal();
-                    } else {
-                        alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + (data.message || 'ไม่ทราบสาเหตุ'));
-                    }
-                })
-                .catch(error => {
-                    hideLoading();
-                    console.error('Error:', error);
-                    alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่');
-                });
+            // Show confirmation modal with version_name
+            showConfirmModal(finalData.version_name);
+
+            // Handle confirm button click
+            document.getElementById('confirm_submit_btn').addEventListener('click', function() {
+                hideConfirmModal();
+                showLoading();
+
+                fetch(document.getElementById('jsonForm').action, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                        },
+                        body: JSON.stringify(finalData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        hideLoading();
+                        if (data.success) {
+                            showSuccessModal();
+                        } else {
+                            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' + (data.message ||
+                                'ไม่ทราบสาเหตุ'));
+                        }
+                    })
+                    .catch(error => {
+                        hideLoading();
+                        console.error('Error:', error);
+                        alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่');
+                    });
+            }, {
+                once: true
+            }); // Use { once: true } to ensure the listener is removed after execution
         });
     </script>
 @endpush
