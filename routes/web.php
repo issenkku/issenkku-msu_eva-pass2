@@ -10,10 +10,6 @@ use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
-
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -76,3 +72,7 @@ Route::get('/criteria-configs', function () {
 Route::get('/criteria-evaluators', function () {
     return view('criteria_config.evaluators');
 });
+
+Route::view('/criteria', 'criteria_config.index')->name('criteria_config.index');
+Route::view('/criteria-config', 'criteria_config.create')->name('criteria_config.create');
+require __DIR__.'/report.php';

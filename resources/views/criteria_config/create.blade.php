@@ -1,365 +1,1227 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="py-12">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <form action="#" method="POST">
-            @csrf
-
-            <!-- ======================================= -->
-            <!-- Section 1: ชื่อเกณฑ์และกลุ่มงาน           -->
-            <!-- ======================================= -->
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">ชื่อ section</h2>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-3 items-center">
-                        <label for="criterion_name" class="col-span-1 text-sm font-medium text-gray-700">ชื่อเกณฑ์ :</label>
-                        <input type="text" name="criterion_name" id="criterion_name" class="col-span-2 mt-1 form-input-custom">
-                    </div>
-                    <div class="grid grid-cols-3 items-center">
-                        <label for="department" class="col-span-1 text-sm font-medium text-gray-700">เลือกกลุ่มงาน :</label>
-                        <select id="department" name="department" class="col-span-2 mt-1 form-select-custom">
-                            <option>กลุ่มวิชาการ</option>
-                            <option>กลุ่มสนับสนุน</option>
-                        </select>
-                    </div>
-                </div>
+    <div class="py-12 bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-10">
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-3">สร้างเกณฑ์การประเมินใหม่</h1>
+                <p class="text-gray-600 text-lg">กรุณากรอกข้อมูลเกณฑ์การประเมินให้ครบถ้วนเพื่อสร้างเกณฑ์ที่สมบูรณ์</p>
             </div>
 
-            <!-- ======================================= -->
-            <!-- Section 2: ด้านปริมาณ (Quantitative)     -->
-            <!-- ======================================= -->
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">ชื่อ section ด้านปริมาณ</h2>
-                <!-- ... (ส่วนของชื่อหัวข้อหลัก/ย่อย เหมือนเดิม) ... -->
-                <hr class="my-6">
-                
-                <!-- Container สำหรับเก็บรายการที่เพิ่มเข้ามา -->
-                <div class="space-y-4" id="quantitative_items_container">
-                    <!-- Mockup Item 1 (แสดงเป็นตัวอย่าง) -->
-                    <div class="grid grid-cols-10 gap-4 items-center">
-                        <label class="col-span-1 text-sm text-gray-700">ชื่อรายการ</label>
-                        <input type="text" class="col-span-5 form-input-custom">
-                        <label class="col-span-1 text-sm text-gray-700 text-right">ค่าน้ำหนัก</label>
-                        <input type="text" class="col-span-1 form-input-custom">
-                        <label class="col-span-2 text-sm text-gray-700 text-center">หน่วยภาระงานมาตรฐาน</label>
-                    </div>
-                </div>
+            <form id="jsonForm" action="{{ route('report-structure.store') }}" method="POST" class="space-y-8">
+                @csrf
 
-                <!-- 1. เพิ่ม ID ให้กับปุ่ม -->
-                <div class="flex justify-end mt-4">
-                    <button type="button" id="add_quantitative_item_btn" class="px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-300">
-                        เพิ่มรายการ
-                    </button>
-                </div>
-            </div>
-
-            <!-- 2. สร้าง Template เพื่อเก็บ HTML ที่จะคัดลอก -->
-            <template id="quantitative_item_template">
-                <div class="grid grid-cols-10 gap-4 items-center">
-                    <label class="col-span-1 text-sm text-gray-700">ชื่อรายการ</label>
-                    <input type="text" class="col-span-5 form-input-custom">
-                    <label class="col-span-1 text-sm text-gray-700 text-right">ค่าน้ำหนัก</label>
-                    <input type="text" class="col-span-1 form-input-custom">
-                    <label class="col-span-2 text-sm text-gray-700 text-center">หน่วยภาระงานมาตรฐาน</label>
-                </div>
-            </template>
-
-
-            <!-- ======================================= -->
-            <!-- Section 3: ด้านคุณภาพ (Qualitative)      -->
-            <!-- ======================================= -->
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">ชื่อ section ด้านคุณภาพ</h2>
-
-                <!-- 1. สร้าง Container หลักสำหรับเก็บ "หัวข้อหลัก" -->
-                <div id="main_topics_container" class="space-y-10">
-                    
-                    <!-- Block ของ "หัวข้อหลัก" ชุดแรก -->
-                    <div class="main-topic-block border border-gray-200 p-4 rounded-lg">
-                        <div class="grid grid-cols-3 gap-4">
-                            <div class="col-span-2">
-                                <label class="block text-sm font-medium text-gray-700">ชื่อหัวข้อหลัก :</label>
-                                <input type="text" name="main_topics[0][name]" class="mt-1 form-input-custom">
+                <!-- Report Datas -->
+                <div
+                    class="report_datas_block bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+                    <h2 class="font-bold text-2xl text-gray-900 mb-6 flex items-center">
+                        <span
+                            class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">1</span>
+                        ข้อมูลเกณฑ์การประเมิน
+                    </h2>
+                    <div class="space-y-6">
+                        <div>
+                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-2">ชื่อรุ่น <span
+                                    class="text-red-500">*</span></label>
+                            <input id="version_name" required name="version_name"
+                                class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                placeholder="เช่น Demo Version 2024">
+                            <input type="hidden" id="auth-user-id" value="{{ Auth::id() }}">
+                        </div>
+                        <div>
+                            <label for="report_title" class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
+                                    class="text-red-500">*</span></label>
+                            <input id="report_title" required name="report_title"
+                                class="report_title border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                placeholder="ชื่อเกณฑ์การประเมิน">
+                        </div>
+                        <div>
+                            <label for="report_description"
+                                class="block text-sm font-medium text-gray-700 mb-2">รายละเอียดเกณฑ์ <span
+                                    class="text-red-500">*</span></label>
+                            <textarea id="report_description" rows="4" required name="report_description"
+                                class="report_description border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                placeholder="รายละเอียดเพิ่มเติมของเกณฑ์"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="assessment_type"
+                                    class="block text-sm font-medium text-gray-700 mb-2">ประเภทการประเมิน <span
+                                        class="text-red-500">*</span></label>
+                                <select id="assessment_type" required name="assessment_type"
+                                    class="assessment_type border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200">
+                                    <option value="">-- เลือกประเภทการประเมิน --</option>
+                                    <option value="technical">กลุ่มวิชาการ</option>
+                                    <option value="support">กลุ่มสนับสนุน</option>
+                                </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">ค่าน้ำหนักคะแนน</label>
-                                <input type="text" name="main_topics[0][weight]" class="mt-1 form-input-custom">
+                                <label for="comment"
+                                    class="block text-sm font-medium text-gray-700 mb-2">ความคิดเห็นเพิ่มเติม</label>
+                                <input id="comment"
+                                    class="comment border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                    placeholder="ความคิดเห็นเพิ่มเติม">
                             </div>
-                        </div>
-                        <hr class="my-6">
-
-                        <!-- Container สำหรับ "หัวข้อย่อย" ของหัวข้อหลักชุดนี้ -->
-                        <div class="sub_topics_container space-y-8">
-                            <!-- Block ของ "หัวข้อย่อย" ชุดแรก -->
-                            <div class="sub-topic-block">
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div class="col-span-2"><label class="block text-sm font-medium text-gray-700">ชื่อหัวข้อย่อย</label><input type="text" name="main_topics[0][sub_topics][0][name]" class="mt-1 form-input-custom"></div>
-                                    <div><label class="block text-sm font-medium text-gray-700">สัดส่วน</label><input type="text" name="main_topics[0][sub_topics][0][ratio]" class="mt-1 form-input-custom"></div>
-                                </div>
-                                <div class="my-3 border-t border-dashed border-gray-300"></div>
-                                <div class="space-y-6 qualitative_items_container">
-                                    <div class="grid grid-cols-5 gap-4">
-                                        <div class="col-span-4"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ</label><input type="text" name="main_topics[0][sub_topics][0][items][0][name]" class="w-full form-input-custom"></div>
-                                        <div class="col-span-1"><label class="block text-sm font-medium text-gray-700 mb-1">ค่าคะแนน</label><input type="text" name="main_topics[0][sub_topics][0][items][0][score]" class="w-full form-input-custom"></div>
-                                    </div>
-                                </div>
-                                <div class="flex justify-end mt-4"><button type="button" class="add_qualitative_item_btn px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-300">เพิ่มรายการ</button></div>
-                            </div>
-                        </div>
-                        
-                        <!-- ปุ่มเพิ่มหัวข้อย่อยของหัวข้อหลักชุดนี้ -->
-                        <div class="mt-6 space-y-4">
-                            <hr><div class="flex justify-center"><button type="button" class="add_sub_topic_btn px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300">เพิ่มหัวข้อย่อย</button></div>
-                        </div>
-
-                        <!-- ส่วนหมายเหตุ -->
-                        <div class="mt-6">
-                            <label for="main_topics[0][notes]" class="block text-sm font-medium text-gray-700">หมายเหตุ (คำแนะนำการให้คะแนน)</label>
-                            <textarea id="main_topics[0][notes]" name="main_topics[0][notes]" rows="3" class="form-input-custom !py-2"></textarea>
                         </div>
                     </div>
                 </div>
 
+                <!-- Categories -->
+                <div id="categories_container" class="space-y-8">
+                    <h2 class="font-bold text-2xl text-gray-900 mb-4 flex items-center">
+                        <span
+                            class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center mr-3">2</span>
+                        หมวดหมู่การประเมิน
+                    </h2>
+                    <!-- Category Block -->
+                    <div
+                        class="category_block bg-white p-8 rounded-xl shadow-lg border-l-4 border-blue-600 hover:shadow-xl transition-shadow duration-300">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-xl text-gray-900">หมวดหมู่การประเมิน</h3>
+                            <div class="flex space-x-3">
+                                <button type="button"
+                                    class="move_category_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200"
+                                    disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 15l7-7 7 7" />
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                    class="move_category_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                    class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                <span class="category_sequence text-gray-700 font-medium text-lg">1</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่หลัก <span
+                                        class="text-red-500">*</span></label>
+                                <input required
+                                    class="main_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                    placeholder="ชื่อหมวดหมู่หลัก">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่ย่อย <span
+                                        class="text-red-500">*</span></label>
+                                <input required
+                                    class="sub_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
+                                    placeholder="ชื่อหมวดหมู่ย่อย">
+                            </div>
+                        </div>
+                        <div class="evaluation_lists_container space-y-6 mt-8">
+                            <h4 class="font-bold text-lg text-gray-900 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-600" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                รายการประเมิน
+                            </h4>
+                            <div
+                                class="evaluation_list_block bg-gray-100 p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h5 class="font-bold text-gray-900">รายการประเมิน</h5>
+                                    <div class="flex space-x-3">
+                                        <button type="button"
+                                            class="move_eval_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200"
+                                            disabled>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 15l7-7 7 7" />
+                                            </svg>
+                                        </button>
+                                        <button type="button"
+                                            class="move_eval_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <button type="button"
+                                            class="delete_eval_btn text-red-600 hover:text-red-800 transition duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                        <span name="eval_sequence"
+                                            class="eval_sequence text-gray-700 font-medium text-lg">1</span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span
+                                                class="text-red-500">*</span></label>
+                                        <input required name="eval_name"
+                                            class="eval_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
+                                            placeholder="ชื่อรายการประเมิน">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">คะแนนรวม <span
+                                                class="text-red-500">*</span></label>
+                                        <input type="number" required name="sum_score"
+                                            class="sum_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
+                                            placeholder="คะแนนรวม">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                                        <input name="annotation"
+                                            class="annotation border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
+                                            placeholder="หมายเหตุ">
+                                    </div>
+                                </div>
+                                <!-- Criteria Type Selection -->
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทเกณฑ์</label>
+                                    <div class="criteria_type_check_group flex gap-6 text-gray-900">
+                                        <label class="flex items-center">
+                                            <input type="checkbox"
+                                                class="criteria_type quantity_criteria_type form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500"
+                                                value="quantity">
+                                            <span class="ml-2 text-sm">เกณฑ์ด้านปริมาณ</span>
+                                        </label>
+                                        <label class="flex items-center">
+                                            <input type="checkbox"
+                                                class="criteria_type quality_criteria_type form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
+                                                value="quality">
+                                            <span class="ml-2 text-sm">เกณฑ์ด้านคุณภาพ</span>
+                                        </label>
+                                    </div>
+                                </div>
 
-                <div class="mt-6 space-y-4">
-                    <hr>
-                    <!-- 2. ปุ่มเพิ่มหัวข้อหลัก -->
-                    <div class="flex justify-center">
-                        <button type="button" id="add_main_topic_btn" class="px-4 py-1.5 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600">
-                            เพิ่มหัวข้อหลัก
+                                <!-- Quantity Criteria Section -->
+                                <div
+                                    class="quantity_main_criterias_container space-y-4 pl-6 border-l-4 border-green-400 hidden">
+                                    <h6 class="font-bold text-gray-900 mb-3 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                        </svg>
+                                        เกณฑ์ด้านปริมาณ
+                                    </h6>
+                                    <button type="button"
+                                        class="add_quant_criteria_btn mt-2 text-sm px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        เพิ่มเกณฑ์ปริมาณหลัก
+                                    </button>
+                                    <div
+                                        class="quant_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <h6 class="text-sm font-bold text-gray-900">เกณฑ์ปริมาณหลัก</h6>
+                                            <div class="flex space-x-3">
+                                                <button type="button"
+                                                    class="move_quant_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200"
+                                                    disabled>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="move_quant_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="delete_quant_btn text-red-600 hover:text-red-800 transition duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                                <span name="quant_main_sequence"
+                                                    class="quant_main_sequence text-gray-700 font-medium text-lg">1</span>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="quant_name"
+                                                    class="quant_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="ชื่อเกณฑ์ปริมาณ">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="quant_tooltips"
+                                                    class="quant_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="quant_sub_criteria_container space-y-3 pl-4 border-l-2 border-green-200 mb-3">
+                                            <div class="quant_sub_criteria_block bg-gray-50 p-3 rounded-lg">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <span class="text-sm font-medium text-gray-600">เกณฑ์ปริมาณย่อย</span>
+                                                    <button type="button"
+                                                        class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                    <div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
+                                                        <span name="quant_sub_sequence"
+                                                            class="quant_sub_sequence text-gray-700 font-medium text-lg">1</span>
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input name="quant_sub_name"
+                                                            class="quant_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
+                                                            placeholder="ชื่อเกณฑ์ย่อย">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน A
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="score_a"
+                                                            class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
+                                                            placeholder="คะแนน A">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน B
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="score_b"
+                                                            class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
+                                                            placeholder="คะแนน B">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                            class="add_quant_sub_criteria_btn text-sm px-3 py-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            เพิ่มปริมาณย่อย
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Quality Criteria Section -->
+                                <div
+                                    class="quality_main_criterias_container space-y-4 pl-6 border-l-4 border-purple-400 hidden">
+                                    <h6 class="font-bold text-gray-900 mb-3 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-purple-600"
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                        </svg>
+                                        เกณฑ์ด้านคุณภาพ
+                                    </h6>
+                                    <button type="button"
+                                        class="add_qual_criteria_btn mt-2 text-sm px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        เพิ่มเกณฑ์คุณภาพหลัก
+                                    </button>
+                                    <div
+                                        class="qual_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <h6 class="text-sm font-bold text-gray-900">เกณฑ์คุณภาพหลัก</h6>
+                                            <div class="flex space-x-3">
+                                                <button type="button"
+                                                    class="move_qual_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200"
+                                                    disabled>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M5 15l7-7 7 7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="move_qual_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                    class="delete_qual_btn text-red-600 hover:text-red-800 transition duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5"
+                                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                                <span name="qual_main_sequence"
+                                                    class="qual_main_sequence text-gray-700 font-medium text-lg">1</span>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="qual_name"
+                                                    class="qual_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="ชื่อเกณฑ์คุณภาพ">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">สัดส่วน <span
+                                                        class="text-red-500">*</span></label>
+                                                <input type="number" name="qual_ratio"
+                                                    class="qual_ratio border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="สัดส่วน">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
+                                                        class="text-red-500">*</span></label>
+                                                <input name="qual_tooltips"
+                                                    class="qual_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                            </div>
+                                        </div>
+                                        <div
+                                            class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
+                                            <div class="qual_sub_criteria_block bg-gray-50 p-3 rounded-lg">
+                                                <div class="flex justify-between items-center mb-2">
+                                                    <span class="text-sm font-medium text-gray-600">เกณฑ์คุณภาพย่อย</span>
+                                                    <button type="button"
+                                                        class="delete_qual_sub_btn text-red-600 hover:text-red-800 transition duration-200">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
+                                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                    <div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
+                                                        <span name="qual_sub_sequence"
+                                                            class="qual_sub_sequence text-gray-700 font-medium text-lg">1</span>
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input name="qual_sub_name"
+                                                            class="qual_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
+                                                            placeholder="ชื่อเกณฑ์ย่อย">
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-sm font-medium text-gray-600 mb-2">คะแนนสูงสุด
+                                                            <span class="text-red-500">*</span></label>
+                                                        <input type="number" name="num_score"
+                                                            class="num_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
+                                                            placeholder="คะแนนสูงสุด">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button"
+                                            class="add_qual_sub_criteria_btn text-sm px-3 py-1.5 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                            </svg>
+                                            เพิ่มคุณภาพย่อย
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button"
+                            class="add_evaluation_list_btn mt-6 text-sm px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            เพิ่มรายการประเมิน
                         </button>
                     </div>
                 </div>
-            </div>
+                <!-- END Category Block -->
 
-
-            <!-- =========================================== -->
-            <!-- Templates (ต้องอัปเดตทั้งหมด)               -->
-            <!-- =========================================== -->
-
-            <!-- 3. Template สำหรับ "หัวข้อหลัก" ทั้งชุด (ใหม่) -->
-            <template id="main_topic_template">
-                <div class="main-topic-block border border-gray-200 p-4 rounded-lg">
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="col-span-2"><label class="block text-sm font-medium text-gray-700">ชื่อหัวข้อหลัก :</label><input type="text" name="main_topics[__MAIN_INDEX__][name]" class="mt-1 form-input-custom"></div>
-                        <div><label class="block text-sm font-medium text-gray-700">ค่าน้ำหนักคะแนน</label><input type="text" name="main_topics[__MAIN_INDEX__][weight]" class="mt-1 form-input-custom"></div>
-                    </div>
-                    <hr class="my-6">
-                    <div class="sub_topics_container space-y-8">
-                        <div class="sub-topic-block">
-                            <div class="grid grid-cols-3 gap-4">
-                                <div class="col-span-2"><label class="block text-sm font-medium text-gray-700">ชื่อหัวข้อย่อย</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][0][name]" class="mt-1 form-input-custom"></div>
-                                <div><label class="block text-sm font-medium text-gray-700">สัดส่วน</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][0][ratio]" class="mt-1 form-input-custom"></div>
-                            </div>
-                            <div class="my-3 border-t border-dashed border-gray-300"></div>
-                            <div class="space-y-6 qualitative_items_container">
-                                <div class="grid grid-cols-5 gap-4">
-                                    <div class="col-span-4"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][0][items][0][name]" class="w-full form-input-custom"></div>
-                                    <div class="col-span-1"><label class="block text-sm font-medium text-gray-700 mb-1">ค่าคะแนน</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][0][items][0][score]" class="w-full form-input-custom"></div>
-                                </div>
-                            </div>
-                            <div class="flex justify-end mt-4"><button type="button" class="add_qualitative_item_btn px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-300">เพิ่มรายการ</button></div>
-                        </div>
-                    </div>
-                    <div class="mt-6 space-y-4"><hr><div class="flex justify-center"><button type="button" class="add_sub_topic_btn px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300">เพิ่มหัวข้อย่อย</button></div></div>
-
-                    <div class="mt-6">
-                        <label for="main_topics[__MAIN_INDEX__][notes]" class="block text-sm font-medium text-gray-700">หมายเหตุ (คำแนะนำการให้คะแนน)</label>
-                        <textarea id="main_topics[__MAIN_INDEX__][notes]" name="main_topics[__MAIN_INDEX__][notes]" rows="3" class="form-input-custom !py-2"></textarea>
-                    </div>
-                </div>
-            </template>
-
-            <template id="sub_topic_template">
-                <div class="sub-topic-block">
-                    <div class="grid grid-cols-3 gap-4">
-                        <div class="col-span-2"><label class="block text-sm font-medium text-gray-700">ชื่อหัวข้อย่อย</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][name]" class="mt-1 form-input-custom"></div>
-                        <div><label class="block text-sm font-medium text-gray-700">สัดส่วน</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][ratio]" class="mt-1 form-input-custom"></div>
-                    </div>
-                    <div class="my-3 border-t border-dashed border-gray-300"></div>
-                    <div class="space-y-6 qualitative_items_container">
-                        <div class="grid grid-cols-5 gap-4">
-                            <div class="col-span-4"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][items][0][name]" class="w-full form-input-custom"></div>
-                            <div class="col-span-1"><label class="block text-sm font-medium text-gray-700 mb-1">ค่าคะแนน</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][items][0][score]" class="w-full form-input-custom"></div>
-                        </div>
-                    </div>
-                    <div class="flex justify-end mt-4"><button type="button" class="add_qualitative_item_btn px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded-full hover:bg-gray-300">เพิ่มรายการ</button></div>
-                </div>
-            </template>
-
-            <template id="qualitative_item_template">
-                <div class="grid grid-cols-5 gap-4">
-                    <div class="col-span-4"><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อรายการ</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][items][__ITEM_INDEX__][name]" class="w-full form-input-custom"></div>
-                    <div class="col-span-1"><label class="block text-sm font-medium text-gray-700 mb-1">ค่าคะแนน</label><input type="text" name="main_topics[__MAIN_INDEX__][sub_topics][__SUB_INDEX__][items][__ITEM_INDEX__][score]" class="w-full form-input-custom"></div>
-                </div>
-            </template>
-            
-            <!-- ======================================= -->
-            <!-- Form Actions                            -->
-            <!-- ======================================= -->
-            <div class="flex justify-end space-x-3">
-                <button type="button" id="reset_form_btn" class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400">
-                    ล้างค่า
+                <button type="button" id="add_category_btn"
+                    class="my-6 px-5 py-2.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    เพิ่มหมวดหมู่การประเมิน
                 </button>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    บันทึก
-                </button>
-            </div>
-        </form>
+
+                <div class="flex justify-end mt-10 space-x-4">
+                    <button type="button" id="reset_form_btn"
+                        class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        ล้างฟอร์ม
+                    </button>
+                    <button type="submit"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        บันทึกข้อมูล
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
+
+    <!-- Loading Overlay -->
+    <div id="loading_overlay"
+        class="fixed inset-0  bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p class="text-gray-700 text-lg">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
+        </div>
+    </div>
+    <!-- Confirmation Modal -->
+    <div id="confirm_modal"
+        class="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <div class="text-center">
+                <div class="bg-blue-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">ยืนยันการบันทึกข้อมูล</h3>
+                <p class="text-gray-600 mb-3">ชื่อรุ่น: <span id="version_name_display" class="font-medium"></span></p>
+                <p class="text-gray-600 mb-6">คุณต้องการบันทึกข้อมูลเกณฑ์การประเมินนี้หรือไม่?</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="cancel_modal_btn"
+                        class="px-5 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">ยกเลิก</button>
+                    <button id="confirm_submit_btn"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">ยืนยัน</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Success Modal -->
+    <div id="success_modal"
+        class="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <div class="text-center">
+                <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">ส่งข้อมูลสำเร็จ</h3>
+                <p class="text-gray-600 mb-6">ข้อมูลเกณฑ์การประเมินถูกบันทึกเรียบร้อยแล้ว</p>
+                <p class="text-gray-500 text-sm mb-6">กำลังเปลี่ยนเส้นทางใน <span id="countdown">5</span> วินาที...</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="{{ route('criteria_config.index') }}"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">ไปหน้ารายการเกณฑ์</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Success Modal -->
+    <div id="success_modal"
+        class="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <div class="text-center">
+                <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-3">ส่งข้อมูลสำเร็จ</h3>
+                <p class="text-gray-600 mb-6">ข้อมูลเกณฑ์การประเมินถูกบันทึกเรียบร้อยแล้ว</p>
+                <p class="text-gray-500 text-sm mb-6">กำลังเปลี่ยนเส้นทางใน <span id="countdown">5</span> วินาที...</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="{{ route('criteria_config.index') }}"
+                        class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">ไปหน้ารายการเกณฑ์</a>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-        
-    // ===========================================
-    // ===== JavaScript สำหรับ "ด้านคุณภาพ" =====
-    // ===========================================
-    const quantAddButton = document.getElementById('add_quantitative_item_btn');
-    const quantContainer = document.getElementById('quantitative_items_container');
-    const quantTemplate = document.getElementById('quantitative_item_template');
+    <script>
+        function cloneAndClear(blockSelector) {
+            let node = document.querySelector(blockSelector).cloneNode(true);
+            node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
+            node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+            node.querySelectorAll(
+                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
+            ).forEach(e => e.remove());
 
-    if (quantAddButton && quantContainer && quantTemplate) {
-        quantAddButton.addEventListener('click', function () {
-            const clone = quantTemplate.content.cloneNode(true);
-            // ไม่ต้องสร้าง wrapper แล้ว เพราะ template มี div ครอบอยู่แล้ว
-            quantContainer.appendChild(clone);
-        });
-    }
-
-
-    // ===========================================
-    // ===== JavaScript สำหรับ "ด้านคุณภาพ" =====
-    // ===========================================
-    const mainTopicsContainer = document.getElementById('main_topics_container');
-    const addMainTopicButton = document.getElementById('add_main_topic_btn');
-
-    const mainTopicTemplate = document.getElementById('main_topic_template');
-    const subTopicTemplate = document.getElementById('sub_topic_template');
-    const itemTemplate = document.getElementById('qualitative_item_template');
-    
-    // ---- Event Delegation ที่ Container ใหญ่ที่สุด ----
-    if (mainTopicsContainer) {
-        mainTopicsContainer.addEventListener('click', function(event) {
-            const target = event.target;
-
-            // --- จัดการการ "เพิ่มหัวข้อย่อย" ---
-            if (target.classList.contains('add_sub_topic_btn')) {
-                const mainTopicBlock = target.closest('.main-topic-block');
-                const subTopicsContainer = mainTopicBlock.querySelector('.sub_topics_container');
-                const mainIndex = Array.from(mainTopicsContainer.children).indexOf(mainTopicBlock);
-                const subIndex = subTopicsContainer.children.length;
-
-                let templateContent = subTopicTemplate.innerHTML
-                    .replace(/__MAIN_INDEX__/g, mainIndex)
-                    .replace(/__SUB_INDEX__/g, subIndex);
-                
-                const newSubTopic = document.createElement('div');
-                newSubTopic.innerHTML = templateContent;
-                subTopicsContainer.appendChild(newSubTopic.firstElementChild);
+            if (blockSelector === '.evaluation_list_block') {
+                const container = document.querySelector('.evaluation_lists_container');
+                const index = container.querySelectorAll('.evaluation_list_block').length + 1;
+                node.querySelector('.eval_sequence').textContent = index;
+                node.querySelector('.quantity_main_criterias_container').classList.add('hidden');
+                node.querySelector('.quality_main_criterias_container').classList.add('hidden');
             }
-
-            // --- จัดการการ "เพิ่มรายการ" ---
-            if (target.classList.contains('add_qualitative_item_btn')) {
-                const mainTopicBlock = target.closest('.main-topic-block');
-                const subTopicBlock = target.closest('.sub-topic-block');
-                const itemsContainer = subTopicBlock.querySelector('.qualitative_items_container');
-
-                const mainIndex = Array.from(mainTopicsContainer.children).indexOf(mainTopicBlock);
-                const subIndex = Array.from(mainTopicBlock.querySelector('.sub_topics_container').children).indexOf(subTopicBlock);
-                const itemIndex = itemsContainer.children.length;
-                
-                let templateContent = itemTemplate.innerHTML
-                    .replace(/__MAIN_INDEX__/g, mainIndex)
-                    .replace(/__SUB_INDEX__/g, subIndex)
-                    .replace(/__ITEM_INDEX__/g, itemIndex);
-                
-                const newItem = document.createElement('div');
-                newItem.innerHTML = templateContent;
-                itemsContainer.appendChild(newItem.firstElementChild);
+            if (blockSelector === '.category_block') {
+                const container = document.getElementById('categories_container');
+                const index = container.querySelectorAll('.category_block').length + 1;
+                node.querySelector('.category_sequence').textContent = index;
             }
-        });
-    }
+            return node;
+        }
 
-    // ---- ฟังก์ชันสำหรับ "เพิ่มหัวข้อหลัก" (แยกออกมา) ----
-    if (addMainTopicButton) {
-        addMainTopicButton.addEventListener('click', function() {
-            const mainIndex = mainTopicsContainer.children.length;
-            
-            const templateContent = mainTopicTemplate.innerHTML.replace(/__MAIN_INDEX__/g, mainIndex);
-            
-            const newMainTopic = document.createElement('div');
-            newMainTopic.innerHTML = templateContent;
-            mainTopicsContainer.appendChild(newMainTopic.firstElementChild);
-        });
-    }
+        function updateButtonStates(containerSelector, upBtnSelector, downBtnSelector) {
+            const items = document.querySelectorAll(containerSelector);
+            items.forEach((item, index) => {
+                const upBtn = item.querySelector(upBtnSelector);
+                const downBtn = item.querySelector(downBtnSelector);
+                upBtn.disabled = index === 0;
+                downBtn.disabled = index === items.length - 1;
+            });
+        }
 
-        
-    // ===========================================
-    // ===== JavaScript สำหรับปุ่ม "ล้างค่า" =====
-    // ===========================================
-    const resetFormButton = document.getElementById('reset_form_btn');
+        function updateEvalSequence(container) {
+            container.querySelectorAll('.evaluation_list_block').forEach((evalBlock, index) => {
+                evalBlock.querySelector('.eval_sequence').textContent = index + 1;
+            });
+        }
 
-    if (resetFormButton) {
-        resetFormButton.addEventListener('click', function() {
-            // 1. แสดงกล่องข้อความยืนยัน
-            if (!confirm('คุณต้องการล้างข้อมูลในฟอร์มทั้งหมดใช่หรือไม่?')) {
-                return; // ถ้าผู้ใช้กด "Cancel" ให้หยุดการทำงาน
-            }
+        function updateCategorySequence(container) {
+            container.querySelectorAll('.category_block').forEach((catBlock, index) => {
+                catBlock.querySelector('.category_sequence').textContent = index + 1;
+            });
+        }
 
-            // 2. ล้างค่าใน input, select, textarea ทั้งหมดในฟอร์ม
-            const form = resetFormButton.closest('form');
-            if (form) {
-                form.reset();
-            }
+        function updateQuantMainSequence(container) {
+            container.querySelectorAll('.quant_criteria_block').forEach((block, idx) => {
+                block.querySelector('.quant_main_sequence').textContent = idx + 1;
+            });
+        }
 
-            // 3. ลบ element ที่สร้างแบบไดนามิกใน "ด้านปริมาณ"
-            const quantitativeContainer = document.getElementById('quantitative_items_container');
-            if (quantitativeContainer) {
-                // เก็บรายการแรกๆ ไว้ (ตามจำนวนที่แสดงตอนแรก)
-                const initialQuantItems = 2; // << ปรับตัวเลขนี้ถ้าจำนวนเริ่มต้นเปลี่ยนไป
-                while (quantitativeContainer.children.length > initialQuantItems) {
-                    quantitativeContainer.lastChild.remove();
+        function updateQuantSubSequence(container) {
+            container.querySelectorAll('.quant_sub_criteria_block').forEach((block, idx) => {
+                block.querySelector('.quant_sub_sequence').textContent = idx + 1;
+            });
+        }
+
+        function updateQualMainSequence(container) {
+            container.querySelectorAll('.qual_criteria_block').forEach((block, idx) => {
+                block.querySelector('.qual_main_sequence').textContent = idx + 1;
+            });
+        }
+
+        function updateQualSubSequence(container) {
+            container.querySelectorAll('.qual_sub_criteria_block').forEach((block, idx) => {
+                block.querySelector('.qual_sub_sequence').textContent = idx + 1;
+            });
+        }
+
+        function showLoading() {
+            document.getElementById('loading_overlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading_overlay').classList.add('hidden');
+        }
+
+        function showConfirmModal(versionName) {
+            document.getElementById('version_name_display').textContent = versionName || 'ไม่ระบุ';
+            document.getElementById('confirm_modal').classList.remove('hidden');
+        }
+
+        function hideConfirmModal() {
+            document.getElementById('confirm_modal').classList.add('hidden');
+        }
+
+        function showSuccessModal() {
+            document.getElementById('success_modal').classList.remove('hidden');
+            let countdown = 5;
+            const countdownElement = document.getElementById('countdown');
+            const interval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    window.location.href = "{{ route('criteria_config.index') }}";
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete_category_btn')) {
+                const block = e.target.closest('.category_block');
+                const container = document.getElementById('categories_container');
+                if (confirm('ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
+                    if (container.querySelectorAll('.category_block').length > 1) {
+                        block.remove();
+                        updateCategorySequence(container);
+                        updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                    } else {
+                        alert('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
+                    }
                 }
             }
 
-            // 4. ลบ element ที่สร้างแบบไดนามิกใน "ด้านคุณภาพ"
-            const mainTopicsContainer = document.getElementById('main_topics_container');
-            if (mainTopicsContainer) {
-                 // 4.1 ลบ "หัวข้อหลัก" ที่เพิ่มเข้ามาทั้งหมด ให้เหลือแค่ชุดแรก
-                const initialMainTopics = 1; // << มีหัวข้อหลักเริ่มต้น 1 ชุด
-                while (mainTopicsContainer.children.length > initialMainTopics) {
-                    mainTopicsContainer.lastChild.remove();
+            if (e.target.closest('.delete_eval_btn')) {
+                const block = e.target.closest('.evaluation_list_block');
+                const container = block.closest('.evaluation_lists_container');
+                if (container.querySelectorAll('.evaluation_list_block').length > 1) {
+                    block.remove();
+                    updateEvalSequence(container);
+                    updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                } else {
+                    alert('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
+                }
+            }
+
+            if (e.target.closest('.delete_quant_btn')) {
+                const block = e.target.closest('.quant_criteria_block');
+                const container = block.closest('.quantity_main_criterias_container');
+                if (container.querySelectorAll('.quant_criteria_block').length > 1) {
+                    block.remove();
+                    updateQuantMainSequence(container);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                } else {
+                    alert('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
+                }
+            }
+
+            if (e.target.closest('.delete_quant_sub_btn')) {
+                const block = e.target.closest('.quant_sub_criteria_block');
+                const container = block.closest('.quant_sub_criteria_container');
+                if (container.querySelectorAll('.quant_sub_criteria_block').length > 1) {
+                    block.remove();
+                    updateQuantSubSequence(container);
+                } else {
+                    alert('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
+                }
+            }
+
+            if (e.target.closest('.delete_qual_btn')) {
+                const block = e.target.closest('.qual_criteria_block');
+                const container = block.closest('.quality_main_criterias_container');
+                if (container.querySelectorAll('.qual_criteria_block').length > 1) {
+                    block.remove();
+                    updateQualMainSequence(container);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                } else {
+                    alert('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
+                }
+            }
+
+            if (e.target.closest('.delete_qual_sub_btn')) {
+                const block = e.target.closest('.qual_sub_criteria_block');
+                const container = block.closest('.qual_sub_criterias_container');
+                if (container.querySelectorAll('.qual_sub_criteria_block').length > 1) {
+                    block.remove();
+                    updateQualSubSequence(container);
+                } else {
+                    alert('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
+                }
+            }
+
+            if (e.target.closest('.move_category_up_btn')) {
+                const block = e.target.closest('.category_block');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('category_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                    updateCategorySequence(document.getElementById('categories_container'));
+                }
+            }
+
+            if (e.target.closest('.move_category_down_btn')) {
+                const block = e.target.closest('.category_block');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('category_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                    updateCategorySequence(document.getElementById('categories_container'));
+                }
+            }
+
+            if (e.target.closest('.move_eval_up_btn')) {
+                const block = e.target.closest('.evaluation_list_block');
+                const container = block.closest('.evaluation_lists_container');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('evaluation_list_block')) {
+                    container.insertBefore(block, previous);
+                    updateEvalSequence(container);
+                    updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                }
+            }
+
+            if (e.target.closest('.move_eval_down_btn')) {
+                const block = e.target.closest('.evaluation_list_block');
+                const container = block.closest('.evaluation_lists_container');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('evaluation_list_block')) {
+                    container.insertBefore(next, block);
+                    updateEvalSequence(container);
+                    updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                }
+            }
+
+            if (e.target.closest('.move_quant_up_btn')) {
+                const block = e.target.closest('.quant_criteria_block');
+                const container = block.closest('.quantity_main_criterias_container');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('quant_criteria_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                    updateQuantMainSequence(container);
+                }
+            }
+
+            if (e.target.closest('.move_quant_down_btn')) {
+                const block = e.target.closest('.quant_criteria_block');
+                const container = block.closest('.quantity_main_criterias_container');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('quant_criteria_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                    updateQuantMainSequence(container);
+                }
+            }
+
+            if (e.target.closest('.move_qual_up_btn')) {
+                const block = e.target.closest('.qual_criteria_block');
+                const container = block.closest('.quality_main_criterias_container');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('qual_criteria_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                    updateQualMainSequence(container);
+                }
+            }
+
+            if (e.target.closest('.move_qual_down_btn')) {
+                const block = e.target.closest('.qual_criteria_block');
+                const container = block.closest('.quality_main_criterias_container');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('qual_criteria_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                    updateQualMainSequence(container);
+                }
+            }
+
+            if (e.target.closest('#add_category_btn')) {
+                let newBlock = cloneAndClear('.category_block');
+                document.getElementById('categories_container').appendChild(newBlock);
+                updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                updateCategorySequence(document.getElementById('categories_container'));
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+
+            if (e.target.closest('.add_evaluation_list_btn')) {
+                let parent = e.target.closest('.category_block').querySelector('.evaluation_lists_container');
+                let newBlock = cloneAndClear('.evaluation_list_block');
+                parent.appendChild(newBlock);
+                updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                updateEvalSequence(parent);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+
+            if (e.target.closest('.add_quant_criteria_btn')) {
+                let parent = e.target.closest('.evaluation_list_block').querySelector(
+                    '.quantity_main_criterias_container');
+                let newBlock = cloneAndClear('.quant_criteria_block');
+                parent.appendChild(newBlock);
+                updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                updateQuantMainSequence(parent);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+
+            if (e.target.closest('.add_quant_sub_criteria_btn')) {
+                let parent = e.target.closest('.quant_criteria_block').querySelector(
+                    '.quant_sub_criteria_container');
+                let newBlock = cloneAndClear('.quant_sub_criteria_block');
+                parent.appendChild(newBlock);
+                updateQuantSubSequence(parent);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+
+            if (e.target.closest('.add_qual_criteria_btn')) {
+                let parent = e.target.closest('.evaluation_list_block').querySelector(
+                    '.quality_main_criterias_container');
+                let newBlock = cloneAndClear('.qual_criteria_block');
+                parent.appendChild(newBlock);
+                updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                updateQualMainSequence(parent);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+
+            if (e.target.closest('.add_qual_sub_criteria_btn')) {
+                let parent = e.target.closest('.qual_criteria_block').querySelector(
+                    '.qual_sub_criterias_container');
+                let newBlock = cloneAndClear('.qual_sub_criteria_block');
+                parent.appendChild(newBlock);
+                updateQualSubSequence(parent);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('criteria_type')) {
+                const evalBlock = e.target.closest('.evaluation_list_block');
+                const quantityContainer = evalBlock.querySelector('.quantity_main_criterias_container');
+                const qualityContainer = evalBlock.querySelector('.quality_main_criterias_container');
+                const quantityCheckbox = evalBlock.querySelector('.quantity_criteria_type');
+                const qualityCheckbox = evalBlock.querySelector('.quality_criteria_type');
+                quantityContainer.classList.toggle('hidden', !quantityCheckbox.checked);
+                qualityContainer.classList.toggle('hidden', !qualityCheckbox.checked);
+            }
+        });
+
+        document.getElementById('reset_form_btn').addEventListener('click', function() {
+            if (confirm('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?')) {
+                document.getElementById('jsonForm').reset();
+                document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container')
+                    .forEach(container => container.classList.add('hidden'));
+                updateCategorySequence(document.getElementById('categories_container'));
+                document.querySelectorAll('.evaluation_lists_container').forEach(updateEvalSequence);
+                document.querySelectorAll('.quantity_main_criterias_container').forEach(updateQuantMainSequence);
+                document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
+                document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
+                document.querySelectorAll('.qual_sub_criterias_container').forEach(updateQualSubSequence);
+            }
+        });
+
+        let finalData = null;
+
+        document.getElementById('jsonForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const versionName = document.querySelector('.version_name').value.trim();
+            if (!versionName) {
+                alert('กรุณากรอกชื่อรุ่น');
+                return;
+            }
+
+            const reportTitle = document.querySelector('.report_title').value.trim();
+            const reportDescription = document.querySelector('.report_description').value.trim();
+            if (!reportTitle || !reportDescription) {
+                alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
+                return;
+            }
+
+            finalData = {
+                version_name: versionName,
+                created_by: document.getElementById('auth-user-id')?.value || 1,
+                report_datas: [],
+                categories: []
+            };
+
+            let rd = document.querySelector('.report_datas_block');
+            const assessmentType = rd.querySelector('.assessment_type').value || null;
+            finalData.report_datas.push({
+                report_title: reportTitle,
+                report_description: reportDescription,
+                assessment_type: assessmentType,
+                comment: rd.querySelector('.comment').value || null
+            });
+
+            document.querySelectorAll('#categories_container .category_block').forEach((catBlock, catI) => {
+                const mainCategories = catBlock.querySelector('.main_categories').value.trim();
+                const subCategories = catBlock.querySelector('.sub_categories').value.trim();
+                if (!mainCategories || !subCategories) {
+                    alert(`กรุณากรอกหมวดหมู่หลักและหมวดหมู่ย่อยสำหรับหมวดหมู่ที่ ${catI + 1}`);
+                    return;
                 }
 
-                // 4.2 ในหัวข้อหลักที่เหลือ, ลบ "หัวข้อย่อย" ที่เพิ่มเข้ามา
-                const firstMainTopic = mainTopicsContainer.querySelector('.main-topic-block');
-                if (firstMainTopic) {
-                    const subTopicsContainer = firstMainTopic.querySelector('.sub_topics_container');
-                    const initialSubTopics = 1; // << มีหัวข้อย่อยเริ่มต้น 1 ชุด
-                    while (subTopicsContainer.children.length > initialSubTopics) {
-                        subTopicsContainer.lastChild.remove();
+                let category = {
+                    main_categories: mainCategories,
+                    sub_categories: subCategories,
+                    sequence: Number(catBlock.querySelector('.category_sequence').textContent),
+                    evaluation_lists: []
+                };
+
+                catBlock.querySelectorAll('.evaluation_lists_container .evaluation_list_block').forEach((
+                    evalBlock, evalI) => {
+                    const evalName = evalBlock.querySelector('.eval_name').value.trim();
+                    const sumScore = evalBlock.querySelector('.sum_score').value;
+                    if (!evalName || !sumScore) {
+                        alert(
+                            `กรุณากรอกชื่อรายการประเมินและคะแนนรวมสำหรับรายการที่ ${evalI + 1} ในหมวดหมู่ที่ ${catI + 1}`
+                        );
+                        return;
                     }
 
-                    // 4.3 ในหัวข้อย่อยที่เหลือ, ลบ "รายการ" ที่เพิ่มเข้ามา
-                    const firstSubTopic = subTopicsContainer.querySelector('.sub-topic-block');
-                    if(firstSubTopic) {
-                        const itemsContainer = firstSubTopic.querySelector('.qualitative_items_container');
-                        const initialItems = 1; // << มีรายการเริ่มต้น 1 รายการ
-                        while(itemsContainer.children.length > initialItems) {
-                            itemsContainer.lastChild.remove();
+                    const quantityChecked = evalBlock.querySelector('.quantity_criteria_type')
+                        .checked;
+                    const qualityChecked = evalBlock.querySelector('.quality_criteria_type')
+                        .checked;
+
+                    let evalList = {
+                        name: evalName,
+                        sum_score: Number(sumScore),
+                        sequence: Number(evalBlock.querySelector('.eval_sequence').textContent),
+                        annotation: evalBlock.querySelector('.annotation').value || null,
+                        quantity_main_criterias: [],
+                        quality_main_criterias: []
+                    };
+
+                    if (quantityChecked) {
+                        let valid = true;
+                        evalBlock.querySelectorAll(
+                            '.quantity_main_criterias_container .quant_criteria_block').forEach(
+                            (qMain, qj) => {
+                                const quantName = qMain.querySelector('.quant_name').value
+                                    .trim();
+                                const quantTooltips = qMain.querySelector('.quant_tooltips')
+                                    .value.trim();
+                                if (!quantName || !quantTooltips) {
+                                    alert(
+                                        `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    );
+                                    valid = false;
+                                    return;
+                                }
+
+                                let quantMain = {
+                                    name: quantName,
+                                    tooltips: quantTooltips,
+                                    sequence: Number(qMain.querySelector(
+                                        '.quant_main_sequence').textContent),
+                                    quantity_sub_criterias: []
+                                };
+
+                                qMain.querySelectorAll(
+                                    '.quant_sub_criteria_container .quant_sub_criteria_block'
+                                ).forEach((subQ, sk) => {
+                                    const subName = subQ.querySelector(
+                                        '.quant_sub_name').value.trim();
+                                    const scoreA = subQ.querySelector('.score_a').value;
+                                    const scoreB = subQ.querySelector('.score_b').value;
+                                    if (!subName || !scoreA || !scoreB) {
+                                        alert(
+                                            `กรุณากรอกชื่อเกณฑ์ย่อย, คะแนน A, และคะแนน B สำหรับเกณฑ์ปริมาณย่อยที่ ${sk + 1} ในเกณฑ์ปริมาณหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                        );
+                                        valid = false;
+                                        return;
+                                    }
+
+                                    quantMain.quantity_sub_criterias.push({
+                                        name: subName,
+                                        sequence: Number(subQ.querySelector(
+                                                '.quant_sub_sequence')
+                                            .textContent),
+                                        score_a: Number(scoreA),
+                                        score_b: Number(scoreB)
+                                    });
+                                });
+
+                                if (valid) {
+                                    evalList.quantity_main_criterias.push(quantMain);
+                                }
+                            });
+                        if (!valid) return;
+                    }
+
+                    if (qualityChecked) {
+                        let valid = true;
+                        evalBlock.querySelectorAll(
+                            '.quality_main_criterias_container .qual_criteria_block').forEach((
+                            qMain, qj) => {
+                            const qualName = qMain.querySelector('.qual_name').value.trim();
+                            const qualRatio = qMain.querySelector('.qual_ratio').value;
+                            const qualTooltips = qMain.querySelector('.qual_tooltips').value
+                                .trim();
+                            if (!qualName || !qualRatio || !qualTooltips) {
+                                alert(
+                                    `กรุณากรอกชื่อเกณฑ์, สัดส่วน, และคำอธิบายสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                );
+                                valid = false;
+                                return;
+                            }
+
+                            let qualMain = {
+                                name: qualName,
+                                ratio: Number(qualRatio),
+                                tooltips: qualTooltips,
+                                sequence: Number(qMain.querySelector(
+                                    '.qual_main_sequence').textContent),
+                                quality_sub_criterias: []
+                            };
+
+                            qMain.querySelectorAll(
+                                '.qual_sub_criterias_container .qual_sub_criteria_block'
+                            ).forEach((subQ, sk) => {
+                                const subName = subQ.querySelector('.qual_sub_name')
+                                    .value.trim();
+                                const numScore = subQ.querySelector('.num_score')
+                                    .value;
+                                if (!subName || !numScore) {
+                                    alert(
+                                        `กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    );
+                                    valid = false;
+                                    return;
+                                }
+
+                                qualMain.quality_sub_criterias.push({
+                                    name: subName,
+                                    sequence: Number(subQ.querySelector(
+                                            '.qual_sub_sequence')
+                                        .textContent),
+                                    num_score: Number(numScore)
+                                });
+                            });
+
+                            if (valid) {
+                                evalList.quality_main_criterias.push(qualMain);
+                            }
+                        });
+                        if (!valid) return;
+                    }
+
+                    category.evaluation_lists.push(evalList);
+                });
+
+                if (category.evaluation_lists.length === 0) {
+                    alert(`กรุณาเพิ่มรายการประเมินอย่างน้อย 1 รายการในหมวดหมู่ที่ ${catI + 1}`);
+                    return;
+                }
+
+                finalData.categories.push(category);
+            });
+
+            if (finalData.categories.length === 0) {
+                alert('กรุณาเพิ่มหมวดหมู่การประเมินอย่างน้อย 1 หมวดหมู่');
+                return;
+            }
+
+            showConfirmModal(finalData.version_name);
+        });
+
+        document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {
+            hideConfirmModal();
+            showLoading();
+
+            try {
+                const response = await fetch("{{ route('report-structure.store') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]')?.value ||
+                            document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify(finalData)
+                });
+
+                const data = await response.json();
+
+                // Log the response for debugging
+                console.log('Response from server:', data);
+
+                hideLoading();
+
+                if (response.ok && data.success) {
+                    // Success case (HTTP 201)
+                    showSuccessModal();
+                } else if (response.status === 422) {
+                    // Validation error (HTTP 422)
+                    let errorMessage = 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:\n';
+
+                    // Check for both 'error' and 'errors' to handle potential response variations
+                    const errors = data.error || data.errors || {};
+
+                    if (Object.keys(errors).length > 0) {
+                        // Process validation errors if present
+                        for (const [field, messages] of Object.entries(errors)) {
+                            errorMessage +=
+                                `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}\n`;
                         }
+                    } else {
+                        // Fallback if no specific errors are provided
+                        errorMessage += data.message || 'ไม่พบรายละเอียดข้อผิดพลาด';
                     }
+
+                    alert(errorMessage);
+                } else {
+                    // Other errors (e.g., HTTP 500)
+                    alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถบันทึกข้อมูลได้'));
                 }
+            } catch (error) {
+                // Network or unexpected errors
+                hideLoading();
+                console.error('Fetch error:', error);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
             }
-            
-            // 5. (ทางเลือก) แจ้งเตือนว่าล้างค่าสำเร็จ
-            alert('ล้างข้อมูลในฟอร์มเรียบร้อยแล้ว');
         });
-    }
-});
-</script>
+    </script>
 @endpush
