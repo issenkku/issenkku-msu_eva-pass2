@@ -9,7 +9,6 @@ class Report extends Model
 {
     protected $fillable = [
         'report_data_id',
-        'report_code',
         'status',
     ];
 
