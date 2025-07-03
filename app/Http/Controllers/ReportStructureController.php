@@ -21,8 +21,18 @@ class ReportStructureController extends Controller
     // Get all criteria versions
     public function index()
     {
-        $criteriaVersions = CriteriaVersion::all();
-        return CriteriaVersionResource::collection($criteriaVersions);
+        $criteriaVersions = CriteriaVersion::with('createdByUser')->get();
+        // Map to include user name
+        $result = $criteriaVersions->map(function($item) {
+            $arr = $item->toArray();
+            $arr['created_by'] = $item->createdByUser ? [
+                'id' => $item->createdByUser->id,
+                'name' => $item->createdByUser->name
+            ] : null;
+            $arr['created_by_name'] = $item->createdByUser ? $item->createdByUser->name : null;
+            return $arr;
+        });
+        return response()->json(['data' => $result]);
     }
 
     public function show($id)
