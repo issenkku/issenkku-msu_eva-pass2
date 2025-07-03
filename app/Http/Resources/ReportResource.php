@@ -20,13 +20,13 @@ class ReportResource extends JsonResource
             'criteria_version' => $this->whenLoaded('reportData') && $this->reportData->criteriaVersion
                 ? new CriteriaVersionResource($this->reportData->criteriaVersion)
                 : null,
-            'report_code' => $this->report_code,
             'status' => $this->status,
             'created_at' => $this->created_at?->format('Y-m-d'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             'quantity_scores' => QuantityScoreResource::collection($this->whenLoaded('quantityScores')),
             'quality_scores' => QualityScoreResource::collection($this->whenLoaded('qualityScores')),
             'evidence_answers' => EvidenceAnswerResource::collection($this->whenLoaded('evidenceAnswers')),
+            // ค่อยเพิ่ม resource อื่นๆ ที่ต้องการแสดงผลใน ReportResource นี้ เช่น จากตาราง ASSIGNMENTS หรือ ASSIGNMENTS
         ];
     }
 }
