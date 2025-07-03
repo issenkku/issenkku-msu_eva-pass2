@@ -213,7 +213,7 @@ class ReportStructureController extends Controller
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'required|string',
-            'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
+            'report_datas.*.assessment_type' => 'required|string', //ประเภทของการปนะเมิน เช่น สายสนับสนุน, สายวิชาการ
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',

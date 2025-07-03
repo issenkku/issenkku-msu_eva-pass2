@@ -15,8 +15,9 @@ class ReportSummaryResource extends JsonResource
             'criteria_version' => $this->whenLoaded('reportData') && $this->reportData->criteriaVersion
                 ? new CriteriaVersionResource($this->reportData->criteriaVersion)
                 : null,
-            'report_code' => $this->report_code,
             'status' => $this->status,
+            // ค่อยเพิ่ม resource อื่นๆ ที่ต้องการแสดงผลใน ReportResource นี้ เช่น จากตาราง ASSIGNMENTS หรือ ASSIGNMENTS
+
         ];
     }
 }

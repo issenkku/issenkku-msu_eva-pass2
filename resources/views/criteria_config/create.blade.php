@@ -51,8 +51,8 @@
                                 <select id="assessment_type" required name="assessment_type"
                                     class="assessment_type border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200">
                                     <option value="">-- เลือกประเภทการประเมิน --</option>
-                                    <option value="technical">กลุ่มวิชาการ</option>
-                                    <option value="support">กลุ่มสนับสนุน</option>
+                                    <option value="กลุ่มวิชาการ">กลุ่มวิชาการ</option>
+                                    <option value="กลุ่มสนับสนุน">กลุ่มสนับสนุน</option>
                                 </select>
                             </div>
                             <div>

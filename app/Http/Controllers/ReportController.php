@@ -55,7 +55,6 @@ class ReportController extends Controller
 
             $validated = $request->validate([
                 'report_data_id' => 'required|integer|exists:report_datas,id',
-                'report_code'    => 'required|string|unique:reports,report_code|max:255',
                 'status'         => 'required|string|in:Assigned,Draft,Pending,Completed',
             ]);
 
@@ -85,13 +84,6 @@ class ReportController extends Controller
 
             $validated = $request->validate([
                 'report_data_id' => 'sometimes|required|integer|exists:report_datas,id',
-                'report_code'    => [
-                    'sometimes',
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('reports')->ignore($report->id),
-                ],
                 'status'         => 'sometimes|required|string|in:Assigned,Draft,Pending,Completed',
             ]);
 
@@ -348,7 +340,7 @@ class ReportController extends Controller
             ]);
 
             $updated = [];
-            
+
             foreach ($validated['evidence_list'] as $item) {
                 // ตรวจสอบว่า quality score นี้เป็นของ report นี้หรือไม่ก่อนอัปเดต
                 $result = DB::table('evidence_answers')
