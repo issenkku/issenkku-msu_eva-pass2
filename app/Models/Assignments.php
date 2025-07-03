@@ -2,49 +2,40 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Assignments extends Model
 {
-    // ชื่อตาราง 
-    protected $table = 'assignments';
+    use HasFactory;
 
-    // สามารถกำหนด fillable ได้หากมีการใช้ mass assignment
     protected $fillable = [
-        'period',
-        'start_time',
-        'end_time',
+        'assignment_data_id',
         'report_id',
         'evaluatee',
+        'evaluator',
     ];
 
-    // หากใช้ soft delete:
-    // use \Illuminate\Database\Eloquent\SoftDeletes;
+    public $timestamps = false; // ไม่มี timestamps ในตารางนี้
 
-    /**
-     * Assignment belongs to one Report
-     */
-    public function report(): BelongsTo
+    // Relationships
+    public function assignmentData()
     {
-        return $this->belongsTo(Report::class, 'report_id');
+        return $this->belongsTo(AssignmentData::class);
     }
 
-    /**
-     * Assignment มีผู้รับการประเมินคนเดียว (Evaluatee)
-     */
-    public function evaluatee(): BelongsTo
+    public function report()
+    {
+        return $this->belongsTo(Report::class);
+    }
+
+    public function evaluateeUser()
     {
         return $this->belongsTo(User::class, 'evaluatee');
     }
 
-    /**
-     * Assignment มีหลาย Evaluator
-     */
-    public function evaluators(): HasMany
+    public function evaluatorUser()
     {
-        return $this->hasMany(Evaluator::class, 'assignment_id');
+        return $this->belongsTo(User::class, 'evaluator');
     }
 }
