@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\Departments;
+use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\User;
 
@@ -25,15 +26,14 @@ class AssignmentDataController extends Controller
         ])->get();
 
         $users = User::all();
-        $reports = Reports::all();
+        $report_data = ReportData::all();
         $departments = Departments::all();
 
         $evaluatees = $users; // หรือ filter ตามต้องการ
         $evaluators = $users;
 
-        return view('assignment-data.create', compact('assignmentData', 'users', 'reports', 'departments', 'evaluatees', 'evaluators'));
+        return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -41,16 +41,15 @@ class AssignmentDataController extends Controller
     public function create()
     {
         $departments = Departments::all();
-        $reports = Reports::all();
+
+        $report_data = ReportData::all();
         $users = User::all();
 
         $evaluatees = $users;
         $evaluators = $users;
 
-        return view('assignment-data.create', compact('reports', 'departments', 'evaluatees', 'evaluators'));
+        return view('assignment-data.create', compact('report_data', 'departments', 'evaluatees', 'evaluators'));
     }
-
-
 
     /**
      * Store a newly created resource in storage.
@@ -61,7 +60,7 @@ class AssignmentDataController extends Controller
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'assignments' => 'required|array|min:1',
-            'assignments.*.report_id' => 'required|exists:reports,id',
+            'assignments.*.report_data_id' => 'required|exists:report_datas,id', // แก้ชื่อ table
             'assignments.*.evaluatee' => 'required|exists:users,id',
             'assignments.*.evaluator' => 'required|exists:users,id|different:assignments.*.evaluatee',
         ]);
@@ -69,34 +68,21 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
-            // ✅ สร้าง AssignmentData
             $assignmentData = AssignmentData::create([
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
             foreach ($request->assignments as $assignmentItem) {
-                // ✅ ดึง report_id ที่ส่งมาจากฟอร์ม
-                $reportId = $assignmentItem['report_id'] ?? null;
+                $reportDataId = $assignmentItem['report_data_id'];
 
-                if (!$reportId) {
-                    throw new \Exception('Missing report_id in assignment item');
-                }
-
-                // ✅ ดึง report_data_id จาก reports table
-                $reportDataId = Reports::find($reportId)?->report_data_id;
-
-                if (!$reportDataId) {
-                    throw new \Exception('Report data not found for report_id ' . $reportId);
-                }
-
-                // ✅ สร้าง Report ใหม่ (copy) โดยใช้ report_data_id เดิม
+                // สร้าง Reports ใหม่
                 $report = Reports::create([
                     'report_data_id' => $reportDataId,
                     'status' => 'assigned',
                 ]);
 
-                // ✅ สร้าง Assignment โดยผูกกับ report ใหม่
+                // สร้าง Assignments ใหม่
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
@@ -106,13 +92,18 @@ class AssignmentDataController extends Controller
             }
 
             DB::commit();
-            return response()->json(['message' => 'Assignment and Reports created successfully']);
+
+            return redirect()
+                ->route('assignment-data.create')
+                ->with('success', 'สร้าง Assignment และ Reports สำเร็จแล้ว');
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Creation failed', 'details' => $e->getMessage()], 500);
+
+            return redirect()
+                ->route('assignment-data.create')
+                ->with('error', 'เกิดข้อผิดพลาด: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Display the specified resource.
@@ -149,27 +140,33 @@ class AssignmentDataController extends Controller
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'assignments' => 'required|array|min:1',
-            'assignments.*.report_id' => 'required|exists:reports,id',
+            'assignments.*.report_data_id' => 'required|exists:report_datas,id', // แก้ชื่อ table
             'assignments.*.evaluatee' => 'required|exists:users,id',
             'assignments.*.evaluator' => 'required|exists:users,id|different:assignments.*.evaluatee',
         ]);
 
         DB::beginTransaction();
         try {
-            // อัปเดต AssignmentData
             $assignmentData->update([
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
-            // ลบ assignments เก่า
+            // ลบ assignments เดิม
             $assignmentData->assignments()->delete();
 
-            // สร้าง assignments ใหม่
+            // สร้าง assignments ใหม่ทั้งหมด
             foreach ($request->assignments as $assignmentItem) {
+                $reportDataId = $assignmentItem['report_data_id'];
+
+                $report = Reports::create([
+                    'report_data_id' => $reportDataId,
+                    'status' => 'assigned',
+                ]);
+
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
-                    'report_id' => $assignmentItem['report_id'],
+                    'report_id' => $report->id,
                     'evaluatee' => $assignmentItem['evaluatee'],
                     'evaluator' => $assignmentItem['evaluator'],
                 ]);
@@ -182,7 +179,8 @@ class AssignmentDataController extends Controller
                 'data' => $assignmentData->load('assignments')
             ]);
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+
             return response()->json([
                 'message' => 'Error updating assignment data',
                 'error' => $e->getMessage()
@@ -196,7 +194,7 @@ class AssignmentDataController extends Controller
     public function destroy(AssignmentData $assignmentData)
     {
         try {
-            $assignmentData->delete(); // จะลบ assignments ที่เกี่ยวข้องด้วย เนื่องจากมี cascade
+            $assignmentData->delete(); // ลบ assignments ที่เกี่ยวข้องด้วย cascade
 
             return response()->json([
                 'message' => 'Assignment data deleted successfully'
