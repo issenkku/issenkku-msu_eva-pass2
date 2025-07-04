@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('assignments', function(Blueprint $table){
+        //ASSESSMENT_DATA
+        Schema::create('assignment_datas', function(Blueprint $table){
             $table->id();
-            $table->string('period');
             $table->date('start_time');
             $table->date('end_time');
-            $table->foreignId('report_id')->constrained('reports');
-            $table->foreignId('evaluatee')->constrained('users','id');
             $table->timestamps();
         });
 
-        Schema::create('evaluators', function(Blueprint $table){
-            $table->foreignId('assignment_id')->constrained('assignments')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+        Schema::create('assignments', function(Blueprint $table){
+            $table->foreignId('assignment_data_id')->constrained('assignment_datas')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
+            $table->foreignId('evaluatee')->constrained('users')->onDelete('cascade');
+            $table->foreignId('evaluator')->constrained('users')->onDelete('cascade');
         });
     }
 
@@ -33,6 +33,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('assignments');
-        Schema::dropIfExists('evaluators');
+        Schema::dropIfExists('assignment_datas');
     }
 };

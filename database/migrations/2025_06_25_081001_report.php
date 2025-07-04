@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
             $table->foreignId('report_data_id')->constrained('report_datas');
-            $table->string('report_code', 255)->unique();
             $table->string('status', 255);
             $table->timestamps();
         });
