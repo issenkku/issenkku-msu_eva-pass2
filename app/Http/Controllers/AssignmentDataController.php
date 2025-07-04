@@ -37,19 +37,17 @@ class AssignmentDataController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-public function create(Request $request)
-{
-    dd($request->all());  // แต่ปกติ create() ไม่ควรมี request data
+    public function create()
+    {
+        $departments = Departments::all();
+        $reports = Report::all();
+        $users = User::all();
 
-    $departments = Departments::all();
-    $reports = Report::all();
-    $users = User::all();
+        $evaluatees = $users;
+        $evaluators = $users;
 
-    $evaluatees = $users;
-    $evaluators = $users;
-
-    return view('assignment-data.create', compact('reports', 'departments', 'evaluatees', 'evaluators'));
-}
+        return view('assignment-data.create', compact('reports', 'departments', 'evaluatees', 'evaluators'));
+    }
 
 
 
@@ -86,17 +84,10 @@ public function create(Request $request)
             }
 
             DB::commit();
-
-            return response()->json([
-                'message' => 'Assignment data created successfully',
-                'data' => $assignmentData->load('assignments')
-            ], 201);
+            return redirect()->route('assignment-data.create')->with('success', 'บันทึกข้อมูลเรียบร้อย.');
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json([
-                'message' => 'Error creating assignment data',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' . $e->getMessage());
         }
     }
 

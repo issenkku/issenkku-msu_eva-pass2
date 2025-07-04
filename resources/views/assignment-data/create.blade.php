@@ -1,5 +1,18 @@
 @extends('layouts.app')
 @section('content')
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>สำเร็จ!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>ผิดพลาด!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
     <body class="bg-gray-50 min-h-screen py-8">
         <div class="py-12 max-w-6xl mx-auto px-4">
@@ -77,7 +90,8 @@
                             <select id="evaluatees" name="evaluatees[]" multiple required
                                 class="form-multi-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 @foreach ($evaluatees as $user)
-                                    <option value="{{ $user->id }}" data-department="{{ $user->department_id ?? 'none' }}">
+                                    <option value="{{ $user->id }}"
+                                        data-department="{{ $user->department_id ?? 'none' }}">
                                         {{ $user->name }}
                                     </option>
                                 @endforeach
@@ -453,6 +467,14 @@
                     locale: "th", // ภาษาไทย
                     allowInput: true
                 });
+                window.setTimeout(function() {
+                    const alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(alert => {
+                        // Bootstrap 5 วิธีปิด alert programmatically
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    });
+                }, 5000);
             </script>
     </body>
     <style>
