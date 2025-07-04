@@ -79,6 +79,4 @@ Route::prefix('evaluation')->name('evaluation.')->group(function () {
     Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
 });
 
-Route::view('/criteria', 'criteria_config.index')->name('criteria_config.index');
-Route::view('/criteria-config', 'criteria_config.create')->name('criteria_config.create');
 require __DIR__.'/report.php';

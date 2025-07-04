@@ -21,8 +21,18 @@ class ReportStructureController extends Controller
     // Get all criteria versions
     public function index()
     {
-        $criteriaVersions = CriteriaVersion::all();
-        return CriteriaVersionResource::collection($criteriaVersions);
+        $criteriaVersions = CriteriaVersion::with('createdByUser')->get();
+        // Map to include user name
+        $result = $criteriaVersions->map(function($item) {
+            $arr = $item->toArray();
+            $arr['created_by'] = $item->createdByUser ? [
+                'id' => $item->createdByUser->id,
+                'name' => $item->createdByUser->name
+            ] : null;
+            $arr['created_by_name'] = $item->createdByUser ? $item->createdByUser->name : null;
+            return $arr;
+        });
+        return response()->json(['data' => $result]);
     }
 
     public function show($id)
@@ -203,7 +213,7 @@ class ReportStructureController extends Controller
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'required|string',
-            'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
+            'report_datas.*.assessment_type' => 'required|string', //ประเภทของการปนะเมิน เช่น สายสนับสนุน, สายวิชาการ
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
