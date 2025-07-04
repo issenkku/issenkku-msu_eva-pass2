@@ -11,20 +11,21 @@ use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
+use App\Http\Controllers\AssignmentDataController;
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::prefix('departments')->name('departments.')->group(function () {
-    Route::get('/', [DepartmentsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
-    Route::post('/store', [DepartmentsController::class, 'store'])->name('store');           // บันทึกข้อมูลใหม่
-    Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');      // อัปเดตข้อมูล
-    Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy'); // ลบข้อมูล
+    Route::get('/', [DepartmentsController::class, 'index'])->name('index');
+    Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
+    Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');
+    Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
 });
 
 Route::prefix('settings')->name('settings.')->group(function () {
-    Route::get('/', [SettingsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
+    Route::get('/', [SettingsController::class, 'index'])->name('index');
     Route::post('/store', [SettingsController::class, 'store'])->name('store');
 });
 
@@ -57,16 +58,23 @@ Route::resource('/roles', RoleAndPermissionController::class);
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 Route::prefix('positions')->name('positions.')->group(function () {
-    Route::get('/', [PositionsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
-    Route::post('/store', [PositionsController::class, 'store'])->name('store');           // บันทึกข้อมูลใหม่
-    Route::put('/{id}', [PositionsController::class, 'update'])->name('update');      // อัปเดตข้อมูล
-    Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy'); // ลบข้อมูล
+    Route::get('/', [PositionsController::class, 'index'])->name('index');
+    Route::post('/store', [PositionsController::class, 'store'])->name('store');
+    Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
+    Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
 });
+
+Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
+   Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
+   Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
+   Route::post('/', [AssignmentDataController::class, 'store'])->name('store');  // เปลี่ยนจาก '/store' เป็น '/'
+});
+
+
 
 Route::get('/criteria-config', function () {
     return view('criteria_config.index');
 });
-
 Route::get('/criteria-configs', function () {
     return view('criteria_config.create');
 });

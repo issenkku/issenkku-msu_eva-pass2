@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
+class DatabaseSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -42,6 +42,108 @@ class UserSeeder extends Seeder
             'faculty' => 'มหาวิทยาลัยเทคโนโลยีราชมงคล',
             'university' => 'มหาวิทยาลัยเทคโนโลยีราชมงคลอีสาน'
         ]);
+
+        // สร้างข้อมูลผู้ใช้ 3 คน
+        $users = [
+            [
+                'prefix' => 'ดร.',
+                'name' => 'สมชาย วิศวกรรม',
+                'employee_id' => 'EMP001',
+                'password' => Hash::make('password123'),
+                'email' => 'somchai@university.ac.th',
+                'phone' => '0812345678',
+                'personnel_type' => 'อาจารย์',
+                'bio' => 'อาจารย์ประจำภาควิชาวิศวกรรมคอมพิวเตอร์ มีความเชี่ยวชาญด้านการพัฒนาซอฟต์แวร์',
+                'status' => 'active',
+                'position_id' => 2,
+                'department_id' => 1,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'prefix' => 'ผศ.ดร.',
+                'name' => 'สุวิทย์ การศึกษา',
+                'employee_id' => 'EMP002',
+                'password' => Hash::make('password123'),
+                'email' => 'suwit@university.ac.th',
+                'phone' => '0823456789',
+                'personnel_type' => 'อาจารย์',
+                'bio' => 'ผู้ช่วยศาสตราจารย์ประจำภาควิชาหลักสูตรและการสอน มีความเชี่ยวชาญด้านเทคโนโลยีการศึกษา',
+                'status' => 'active',
+                'position_id' => 2,
+                'department_id' => 2,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'prefix' => 'รศ.ดร.',
+                'name' => 'มาลี เทคโนโลยี',
+                'employee_id' => 'EMP003',
+                'password' => Hash::make('password123'),
+                'email' => 'malee@university.ac.th',
+                'phone' => '0834567890',
+                'personnel_type' => 'อาจารย์',
+                'bio' => 'รองศาสตราจารย์ประจำภาควิชาเทคโนโลยีสารสนเทศ มีความเชี่ยวชาญด้านปัญญาประดิษฐ์',
+                'status' => 'active',
+                'position_id' => 3,
+                'department_id' => 3,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ];
+
+        foreach ($users as $user) {
+            DB::table('users')->insertOrIgnore($user);
+        }
+
+        // สร้างข้อมูล user_histories สำหรับผู้ใช้ทั้ง 3 คน
+        $userHistories = [
+            [
+                'user_id' => 1,
+                'action' => 'สร้างบัญชีผู้ใช้',
+                'action_timestamp' => now()
+            ],
+            [
+                'user_id' => 2,
+                'action' => 'สร้างบัญชีผู้ใช้',
+                'action_timestamp' => now()
+            ],
+            [
+                'user_id' => 3,
+                'action' => 'สร้างบัญชีผู้ใช้',
+                'action_timestamp' => now()
+            ]
+        ];
+
+        foreach ($userHistories as $history) {
+            DB::table('user_histories')->insertOrIgnore($history);
+        }
+
+        $this->command->info('สร้างข้อมูลผู้ใช้ 3 คนเรียบร้อยแล้ว');
+
+        // สร้างข้อมูล criteria version
+        $this->seedCriteriaVersions();
+        
+        // สร้างข้อมูล quantity criteria
+        $this->seedQuantityCriteria();
+        
+        // สร้างข้อมูล quality criteria
+        $this->seedQualityCriteria();
+        
+        // สร้างข้อมูล categories และ evaluation lists
+        $this->seedCategoriesAndEvaluationLists();
+        
+        // สร้างข้อมูล reports
+        $this->seedReports();
+        
+        // สร้างข้อมูล assignments
+        $this->seedAssignments();
+
+        $this->command->info('สร้างข้อมูลทั้งหมดเรียบร้อยแล้ว');
+        $this->command->info('ข้อมูลการเข้าสู่ระบบ:');
+        $this->command->info('Email: somchai@university.ac.th, Password: password123');
+        $this->command->info('Email: suwit@university.ac.th, Password: password123');
+        $this->command->info('Email: malee@university.ac.th, Password: password123');
     }
 
     private function seedCriteriaVersions()
