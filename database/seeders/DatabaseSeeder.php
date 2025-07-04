@@ -40,19 +40,11 @@ class DatabaseSeeder extends Seeder
         
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-<<<<<<< HEAD
-        // Seed Settings
-        DB::table('settings')->insert([
-            'id' => 1,
-            'faculty' => 'คณะวิทยาศาสตร์',
-            'university' => 'มหาวิทยาลยเทคนิคขอนแก่น'
-=======
         $this->call([
             PositionSeeder::class,
             DepartmentSeeder::class,
             UserSeeder::class,
             RoleSeeder::class
->>>>>>> dev
         ]);
 
         // Seed Departments
