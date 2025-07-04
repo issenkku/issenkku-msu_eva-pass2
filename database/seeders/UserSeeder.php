@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
                 "prefix" => "นางสาว",
                 "name" => "Yanasorn Wongpakdee",
                 "employee_id" => "123456789",
-                "password" => "StrongPass123",
+                "password" => bcrypt("StrongPass123"),
                 "email" => "yanasorn.w@kkumail.com",
                 "phone" => "0871593293",
                 "personnel_type" => "สนับสนุน",
@@ -31,19 +31,19 @@ class UserSeeder extends Seeder
             ],
             [
                 "prefix" => "นาย",
-                "name" => "กอ ขอ",
-                "employee_id" => "0415647161",
-                "password" => "StrongPass123",
-                "email" => "darknightsch@gmail.com",
-                "phone" => "0941528156",
-                "personnel_type" => "สนับสนุน",
+                "name" => "Test User",
+                "employee_id" => "999999999",
+                "password" => bcrypt("StrongPassword999"),
+                "email" => "test.user@kkumail.com",
+                "phone" => "0812345678",
+                "personnel_type" => "วิชาการ",
                 "bio" => null,
                 "status" => "active",
-                "position_id" => 1,
-                "department_id" => 1,
+                "position_id" => 2,
+                "department_id" => 2,
                 "created_at" => now(),
                 "updated_at" => now(),
-            ]
+            ],
         ]);
     }
 }
