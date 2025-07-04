@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Setting;
 
-use App\Models\Departments;
+use App\Http\Controllers\Controller;
+use App\Models\Setting\Departments;
 use Illuminate\Http\Request;
 
 class DepartmentsController extends Controller

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Setting;
 
-use App\Models\Positions;
+use App\Http\Controllers\Controller;
+use App\Models\Setting\Positions;
 use Illuminate\Http\Request;
 
 class PositionsController extends Controller

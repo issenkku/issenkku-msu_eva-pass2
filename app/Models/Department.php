@@ -3,18 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User;
 
-class Departments extends Model
+class Department extends Model
 {
     protected $fillable = [
         'department_name',
         'faculty',
     ];
-    public $timestamps = false;
 
-    public function users()
-    {
-        return $this->hasMany(User::class, 'department_id');
+    public function user(){
+        return $this->hasMany(User::class);
     }
 }
-

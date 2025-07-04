@@ -8,10 +8,6 @@ use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
-
 
 class User extends Authenticatable implements CanResetPassword
 {
@@ -59,22 +55,4 @@ class User extends Authenticatable implements CanResetPassword
             'password' => 'hashed',
         ];
     }
-    public function getAuthIdentifierName()
-    {
-        return 'employee_id';
-    }
-
-    public function position(){
-        return $this->belongsTo(Positions::class);
-    }
-
-    public function department(){
-        return $this->belongsTo(Departments::class);
-    }
-
-    // public function sendPasswordResetNotification($token)
-    // {
-    //     $this->notify(new CustomResetPassword($token));
-    // }
-
 }
