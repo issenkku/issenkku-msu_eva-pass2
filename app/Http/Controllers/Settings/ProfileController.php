@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Models\Department;
+use App\Models\Setting\Department;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Position;
+use App\Models\Setting\Position;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -44,16 +44,16 @@ class ProfileController extends Controller
         $validated = $request->validated();
 
         // Handle photo upload
-        if ($request->hasFile('photo')) {
-            // Delete old photo if exists
-            if ($user->photo_url && Storage::disk('public')->exists($user->photo_url)) {
-                Storage::disk('public')->delete($user->photo_url);
-            }
+        // if ($request->hasFile('photo')) {
+        //     // Delete old photo if exists
+        //     if ($user->photo_url && Storage::disk('public')->exists($user->photo_url)) {
+        //         Storage::disk('public')->delete($user->photo_url);
+        //     }
 
-            // Store new photo
-            $photoPath = $request->file('photo')->store('profile-photos', 'public');
-            $validated['photo_url'] = $photoPath;
-        }
+        //     // Store new photo
+        //     $photoPath = $request->file('photo')->store('profile-photos', 'public');
+        //     $validated['photo_url'] = $photoPath;
+        // }
 
         // Handle password update
         if ($request->filled('current_password')) {

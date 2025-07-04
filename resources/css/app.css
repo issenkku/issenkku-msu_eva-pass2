@@ -168,3 +168,16 @@
         @apply bg-background text-foreground;
     }
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .form-input-custom {
+        @apply block w-full bg-gray-100 border-gray-300 rounded-md shadow-sm sm:text-sm text-black py-1 px-3 focus:ring-indigo-500 focus:border-indigo-500;
+    }
+    .form-select-custom {
+        @apply block w-full bg-gray-100 border-gray-300 rounded-md shadow-sm sm:text-sm text-black py-1 px-3 focus:ring-indigo-500 focus:border-indigo-500;
+    }
+}

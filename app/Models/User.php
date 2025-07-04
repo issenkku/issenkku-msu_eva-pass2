@@ -17,7 +17,9 @@ use App\Models\Setting\Department;
 class User extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
+
     use HasFactory, Notifiable, HasRoles, HasApiTokens,CanResetPasswordTrait;
+
 
     /**
      * The attributes that are mass assignable.
@@ -58,7 +60,6 @@ class User extends Authenticatable implements CanResetPassword
             'password' => 'hashed',
         ];
     }
-
     public function getAuthIdentifierName()
     {
         return 'employee_id';
@@ -76,4 +77,5 @@ class User extends Authenticatable implements CanResetPassword
     {
         $this->notify(new CustomResetPassword($token));
     }
+
 }

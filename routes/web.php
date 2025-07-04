@@ -10,7 +10,6 @@ use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
-
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
@@ -82,3 +81,7 @@ Route::prefix('evaluation')->name('evaluation.')->group(function () {
     Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
     Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
 });
+
+Route::view('/criteria', 'criteria_config.index')->name('criteria_config.index');
+Route::view('/criteria-config', 'criteria_config.create')->name('criteria_config.create');
+require __DIR__.'/report.php';
