@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EvaluatorController;
+use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\User\UserController;
 use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;
@@ -73,4 +75,15 @@ Route::get('/criteria-evaluators', function () {
     return view('criteria_config.evaluators');
 });
 
+// ใน web.php - แก้ไขส่วนของ evaluator routes
+Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
+    // Dashboard หลักของผู้ประเมิน - แสดงรายการ assignments ทั้งหมด
+    Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
+    // Route::get('/evaluations/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluations.evaluator_form');
+    // แสดงรายละเอียด assignment เฉพาะ
+    // Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
+
+    // // เริ่มการประเมิน
+    // Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+});
 require __DIR__.'/report.php';
