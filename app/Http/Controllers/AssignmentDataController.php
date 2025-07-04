@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
 use App\Models\Assignments;
-use App\Models\Departments;
+
 use App\Models\ReportData;
 use App\Models\Reports;
+use App\Models\Setting\Departments;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;

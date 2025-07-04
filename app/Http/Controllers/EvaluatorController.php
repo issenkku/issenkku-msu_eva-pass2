@@ -57,7 +57,7 @@ class EvaluatorController extends Controller
 
         // แปลงข้อมูลเพื่อเพิ่มฟิลด์ sequence, format วันที่ และสถานะ
         $formattedAssignments = $assignments->getCollection()->map(function ($assignment, $index) use ($assignments) {
-            $statusInfo = $this->getStatusInfo($assignment->status, $assignment->end_time);
+            $statusInfo = $this->getStatusInfo($assignment->status ?? null, $assignment->end_time);
 
             return (object) [
                 'sequence' => ($assignments->currentPage() - 1) * $assignments->perPage() + $index + 1,
@@ -134,30 +134,41 @@ class EvaluatorController extends Controller
         }
 
         $endDate = \Carbon\Carbon::parse($endTime);
-
         switch ($status) {
-            case 'completed':
-                return ['text' => 'ประเมิณเสร็จสิ้น', 'class' => 'completed', 'color' => '#28a745'];
-            case 'pending_approval':
-                return ['text' => 'รอผลประเมิณ', 'class' => 'pending-approval', 'color' => '#17a2b8'];
-            case 'draft':
-                return ['text' => 'บันทึกแล้ว', 'class' => 'draft', 'color' => '#ffc107'];
             case 'assigned':
-                if ($now > $endDate) {
-                    return ['text' => 'เกินกำหนด', 'class' => 'overdue', 'color' => '#dc3545'];
-                }
-                return ['text' => 'ยังไม่ประเมิณ', 'class' => 'assigned', 'color' => '#6c757d'];
-            case 'in_progress':
-                if ($now > $endDate) {
-                    return ['text' => 'เกินกำหนด', 'class' => 'overdue', 'color' => '#dc3545'];
-                }
-                return ['text' => 'กำลังดำเนินการ', 'class' => 'in-progress', 'color' => '#ffc107'];
+                return [
+                    'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
+                    'class' => 'assigned',
+                    'color' => '#6c757d'
+                ];
+
+            case 'draft':
+                return [
+                    'text' => 'บันทึกแล้ว (รออนุมัติ)',
+                    'class' => 'draft',
+                    'color' => '#ffc107'
+                ];
+
             case 'pending':
+                return [
+                    'text' => 'รอผลประเมิน (รอกดอนุมัติ)',
+                    'class' => 'pending',
+                    'color' => '#17a2b8'
+                ];
+
+            case 'completed':
+                return [
+                    'text' => 'ประเมินเสร็จสิ้น (อนุมัติแล้ว)',
+                    'class' => 'completed',
+                    'color' => '#28a745'
+                ];
+
             default:
-                if ($now > $endDate) {
-                    return ['text' => 'เกินกำหนด', 'class' => 'overdue', 'color' => '#dc3545'];
-                }
-                return ['text' => 'รอดำเนินการ', 'class' => 'pending', 'color' => '#6c757d'];
+                return [
+                    'text' => 'ไม่ทราบสถานะ',
+                    'class' => 'unknown',
+                    'color' => '#6c757d'
+                ];
         }
     }
 

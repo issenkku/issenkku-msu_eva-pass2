@@ -99,10 +99,13 @@
                                                     class="btn-view" title="ดูรายละเอียด">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('evaluator.assignment.evaluate', $assignment->assignment_data_id) }}"
-                                                    class="btn-edit" title="แก้ไข">
-                                                    <i class="fa-solid fa-pen-to-square"></i>
-                                                </a>
+
+                                                @if ($assignment->status_class !== 'completed')
+                                                    <a href="{{ route('evaluator.assignment.evaluate', $assignment->assignment_data_id) }}"
+                                                        class="btn-edit" title="แก้ไข">
+                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                    </a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
