@@ -72,6 +72,10 @@ class User extends Authenticatable implements CanResetPassword
     public function department(){
         return $this->belongsTo(Department::class);
     }
+    
+    public function assignment(){
+        return $this->hasMany(Assignments::class);
+    }
 
     public function sendPasswordResetNotification($token)
     {

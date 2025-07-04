@@ -36,4 +36,9 @@ class Report extends Model
     {
         return $this->hasMany(EvidenceAnswer::class);
     }
+
+    public function assignments()
+    {
+        return $this->hasOne(Assignments::class);
+    }
 }

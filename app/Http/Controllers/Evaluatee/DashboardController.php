@@ -8,81 +8,58 @@ use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request): View
+    // public function index(Request $request): View
+    // {
+    //     $user = $request->user()->load('position', 'department');
+
+    //     // Sample data - replace with your actual data source
+    //     $evaluations = [
+    //         [
+    //             'title' => 'ยังไม่ประเมิน',
+    //             'description' => null,
+    //             'start_date' => '1 เมษายน 2568',
+    //             'end_date' => '15 เมษายน 2568',
+    //             'evaluator' => 'ผู้บังคับบัญชา',
+    //             'status' => 'ยังไม่ประเมิน',
+    //             'id' => 1
+    //         ],
+    //         [
+    //             'title' => 'บันทึกกิจวัตรประจำวัน',
+    //             'description' => null,
+    //             'start_date' => '1 เมษายน 2568',
+    //             'end_date' => '30 เมษายน 2568',
+    //             'evaluator' => 'ตนเอง',
+    //             'status' => 'กำลังดำเนินการ',
+    //             'id' => 2
+    //         ]
+    // }
+
+    public function index(Request $request)
     {
-        $user = $request->user()->load('position', 'department');
+        $user = $request->user()->load([
+            'position',
+            'department',
+            'assignment.assignmentData',
+            'assignment.report.reportData',
+        ]);
 
-        // Sample data - replace with your actual data source
-        $evaluations = [
-            [
-                'title' => 'ยังไม่ประเมิน',
-                'description' => null,
-                'start_date' => '1 เมษายน 2568',
-                'end_date' => '15 เมษายน 2568',
-                'evaluator' => 'ผู้บังคับบัญชา',
-                'status' => 'ยังไม่ประเมิน',
-                'id' => 1
-            ],
-            [
-                'title' => 'บันทึกกิจวัตรประจำวัน',
-                'description' => null,
-                'start_date' => '1 เมษายน 2568',
-                'end_date' => '30 เมษายน 2568',
-                'evaluator' => 'ตนเอง',
-                'status' => 'กำลังดำเนินการ',
-                'id' => 2
-            ],
-            [
-                'title' => 'รอผลการประเมิน',
-                'description' => null,
-                'start_date' => '15 เมษายน 2568',
-                'end_date' => '25 เมษายน 2568',
-                'evaluator' => 'คณะกรรมการ',
-                'status' => 'รอผลการประเมิน',
-                'id' => 3
-            ],
-            [
-                'title' => 'ประเมินแล้ว',
-                'description' => null,
-                'start_date' => '1 เมษายน 2568',
-                'end_date' => '20 เมษายน 2568',
-                'evaluator' => 'ระบบอัตโนมัติ',
-                'status' => 'ประเมินแล้ว',
-                'id' => 4
-            ],
-            [
-                'title' => 'แสดงผลการประเมิน',
-                'description' => null,
-                'start_date' => '20 เมษายน 2568',
-                'end_date' => '30 เมษายน 2568',
-                'evaluator' => 'ผู้ดูแลระบบ',
-                'status' => 'แสดงผลการประเมิน',
-                'id' => 5
-            ]
-        ];
+        $evaluations = $user->assignment->pluck('report')->filter();
 
-        // Calculate status counts
         $statusCounts = [
-            'ทั้งหมด' => count($evaluations),
-            'ยังไม่ประเมิน' => collect($evaluations)->where('status', 'ยังไม่ประเมิน')->count(),
-            'กำลังดำเนินการ' => collect($evaluations)->where('status', 'กำลังดำเนินการ')->count(),
-            'รอผลการประเมิน' => collect($evaluations)->where('status', 'รอผลการประเมิน')->count(),
-            'ประเมินแล้ว' => collect($evaluations)->where('status', 'ประเมินแล้ว')->count(),
-            'แสดงผลการประเมิน' => collect($evaluations)->where('status', 'แสดงผลการประเมิน')->count(),
+            'ทั้งหมด' => $evaluations->count(),
+            'ยังไม่ประเมิน' => $evaluations->where('status', 'Assigned')->count(),
+            'บันทึกร่างประเมิน' => $evaluations->where('status', 'Draft')->count(),
+            'รอผลการประเมิน' => $evaluations->where('status', 'Pending')->count(),
+            'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
-
-        // Calculate completion percentage
-        $completedEvaluations = collect($evaluations)->whereIn('status', ['ประเมินแล้ว', 'แสดงผลการประเมิน'])->count();
-        $completionPercentage = count($evaluations) > 0 ? round(($completedEvaluations / count($evaluations)) * 100) : 0;
 
         return view('evaluatee.dashboard', [
             'user' => $user,
-            'evaluations' => $evaluations,
             'statusCounts' => $statusCounts,
-            'completionPercentage' => $completionPercentage
+            'evaluations' => $evaluations,
         ]);
     }
-
+    
     public function evaluation(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');

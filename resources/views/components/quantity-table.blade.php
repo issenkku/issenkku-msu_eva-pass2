@@ -73,7 +73,7 @@
                                     <input type="text" 
                                         name="tor_compliant[{{ $index }}]" 
                                         class="form-input text-base w-full h-10 rounded border-gray-300 focus:ring-purple-500 focus:border-purple-500" 
-                                        placeholder="ใส่ข้อมูล">
+                                        placeholder="กรอกหน่วยภาระงานที่ทำได้">
                                 @endunless
                             </td>
                         </tr>
