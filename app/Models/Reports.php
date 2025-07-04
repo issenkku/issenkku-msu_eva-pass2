@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Report extends Model
+class Reports extends Model
 {
     protected $fillable = [
         'report_data_id',
-        'report_code',
         'status',
     ];
 
