@@ -6,11 +6,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>ผิดพลาด!</strong> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -49,7 +51,6 @@
                             <option value="{{ $item->id }}">{{ $item->report_title }}</option>
                         @endforeach
                     </select>
-
 
                     <h2 class="text-xl font-semibold text-gray-800 p-6 ">กำหนดผู้ประเมิน / ผู้รับการประเมิน</h2>
                     <!-- ฟิลเตอร์หน่วยงาน -->
@@ -123,7 +124,7 @@
                                 class="form-multi-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 @foreach ($evaluators as $user)
                                     <option value="{{ $user->id }}" data-department="{{ $user->department_id }}">
-                                        {{ $user->name }} - {{ $user->department_name }}
+                                        {{ $user->name }} - {{ $user->department->department_name ?? '' }}
                                     </option>
                                 @endforeach
                             </select>

@@ -33,6 +33,11 @@ Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
    Route::post('/', [AssignmentDataController::class, 'store'])->name('store');  // เปลี่ยนจาก '/store' เป็น '/'
 });
 
+Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
+    Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
+    Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
+    Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+});
 
 
 Route::get('/criteria-config', function () {
@@ -46,14 +51,5 @@ Route::get('/criteria-evaluators', function () {
     return view('criteria_config.evaluators');
 });
 
-// ใน web.php - แก้ไขส่วนของ evaluator routes
-Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
-    // Dashboard หลักของผู้ประเมิน - แสดงรายการ assignments ทั้งหมด
-    Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-    // Route::get('/evaluations/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluations.evaluator_form');
-    // แสดงรายละเอียด assignment เฉพาะ
-    // Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
 
-    // // เริ่มการประเมิน
-    // Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
-});
+
