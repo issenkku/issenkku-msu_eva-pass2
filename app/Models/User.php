@@ -11,8 +11,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
-use App\Models\Setting\Position;
-use App\Models\Setting\Department;
+use App\Models\Setting\Positions;
+use App\Models\Setting\Departments;
 
 class User extends Authenticatable implements CanResetPassword
 {
@@ -66,11 +66,11 @@ class User extends Authenticatable implements CanResetPassword
     }
 
     public function position(){
-        return $this->belongsTo(Position::class);
+        return $this->belongsTo(Positions::class);
     }
 
     public function department(){
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Departments::class);
     }
 
     public function sendPasswordResetNotification($token)

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
 use App\Models\Assignments;
-use App\Models\Departments;
+use App\Models\Setting\Department;
 use App\Models\User;
 use App\Models\Report;
 use Illuminate\Http\Request;
@@ -25,7 +25,7 @@ class AssignmentDataController extends Controller
 
         $users = User::all();
         $reports = Report::all();
-        $departments = Departments::all();
+        $departments = Department::all();
 
         $evaluatees = $users; // หรือ filter ตามต้องการ
         $evaluators = $users;
@@ -39,7 +39,7 @@ class AssignmentDataController extends Controller
      */
     public function create()
     {
-        $departments = Departments::all();
+        $departments = Department::all();
         $reports = Report::all();
         $users = User::all();
 

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting\Department;
-use App\Models\Setting\Position;
+use App\Models\Setting\Departments;
+use App\Models\Setting\Positions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules;
 use Illuminate\Http\Request;
@@ -80,8 +80,8 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(10)->appends($request->query());
-        $departments = Department::all();
-        $positions = Position::all();
+        $departments = Departments::all();
+        $positions = Positions::all();
         $roles = Role::all();
         $user = null;
 
