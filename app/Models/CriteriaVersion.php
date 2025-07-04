@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +14,10 @@ class CriteriaVersion extends Model
         'created_by',
     ];
 
+    public function createdByUser()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

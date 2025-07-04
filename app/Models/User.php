@@ -3,14 +3,23 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\CustomResetPassword;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+use App\Models\Setting\Position;
+use App\Models\Setting\Department;
 
-class User extends Authenticatable
+class User extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+
+    use HasFactory, Notifiable, HasRoles, HasApiTokens,CanResetPasswordTrait;
+
 
     /**
      * The attributes that are mass assignable.
@@ -18,9 +27,17 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'prefix',
         'name',
-        'email',
+        'employee_id',
         'password',
+        'email',
+        'phone',
+        'personnel_type',
+        'bio',
+        'status',
+        'position_id',
+        'department_id',
     ];
 
     /**
@@ -30,7 +47,6 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
-        'remember_token',
     ];
 
     /**
@@ -41,8 +57,25 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
+    public function getAuthIdentifierName()
+    {
+        return 'employee_id';
+    }
+
+    public function position(){
+        return $this->belongsTo(Position::class);
+    }
+
+    public function department(){
+        return $this->belongsTo(Department::class);
+    }
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPassword($token));
+    }
+
 }

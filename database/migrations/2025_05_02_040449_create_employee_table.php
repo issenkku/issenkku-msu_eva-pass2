@@ -23,7 +23,6 @@ return new class extends Migration
             $table->id();
             $table->string('department_name');
             $table->string('faculty');
-            $table->string('description')->nullable();
         });
 
         Schema::create('settings',function (Blueprint $table){
@@ -45,11 +44,13 @@ return new class extends Migration
             $table->string('status');
             $table->foreignId('position_id')->constrained('positions');
             $table->foreignId('department_id')->constrained('departments');
+            $table->rememberToken()->nullable();
             $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->foreignId('user_id')->primary();
+            // $table->foreignId('user_id');
+            $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });

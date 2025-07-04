@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Setting;
 
-use App\Models\Settings;
+use App\Http\Controllers\Controller;
+use App\Models\Setting\Settings;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller

@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Departments extends Model
+class Department extends Model
 {
     protected $fillable = [
         'department_name',
         'faculty',
     ];
-    public $timestamps = false;
+
+    public function user(){
+        return $this->hasMany(User::class);
+    }
 }
