@@ -14,12 +14,14 @@ class CriteriaVersion extends Model
         'created_by',
     ];
 
-
-    // Add this relation to get user info for created_by
     public function createdByUser()
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function creator(): BelongsTo
     {
