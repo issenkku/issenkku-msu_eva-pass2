@@ -10,13 +10,10 @@ use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
+use function Pest\Laravel\json;
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
-
-// Route::get('dashboard', function () {
-//     return Inertia::render('Dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::prefix('departments')->name('departments.')->group(function () {
     Route::get('/', [DepartmentsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
@@ -17,10 +18,10 @@ class UserSeeder extends Seeder
             [
                 "prefix" => "นางสาว",
                 "name" => "Yanasorn Wongpakdee",
-                "employee_id" => "123456789",
-                "password" => "StrongPass123",
-                "email" => "yanasorn.w@kkumail.com",
-                "phone" => "0871593293",
+                "employee_id" => "001",
+                "password" => Hash::make("admin001"),
+                "email" => "admin1@kkumail.com",
+                "phone" => "087-084-0715",
                 "personnel_type" => "สนับสนุน",
                 "bio" => null,
                 "status" => "active",
@@ -32,10 +33,10 @@ class UserSeeder extends Seeder
             [
                 "prefix" => "นาย",
                 "name" => "กอ ขอ",
-                "employee_id" => "0415647161",
-                "password" => "StrongPass123",
-                "email" => "darknightsch@gmail.com",
-                "phone" => "0941528156",
+                "employee_id" => "002",
+                "password" => Hash::make("evaluator001"),
+                "email" => "evaluator001@gmail.com",
+                "phone" => "098-521-1821",
                 "personnel_type" => "สนับสนุน",
                 "bio" => null,
                 "status" => "active",
@@ -43,7 +44,37 @@ class UserSeeder extends Seeder
                 "department_id" => 1,
                 "created_at" => now(),
                 "updated_at" => now(),
-            ]
+            ],
+            [
+                "prefix" => "นาย",
+                "name" => "test evaluatee1",
+                "employee_id" => "003",
+                "password" => Hash::make("evaluatee001"),
+                "email" => "evaluatee001@gmail.com",
+                "phone" => "084-515-5454",
+                "personnel_type" => "วิชาการ",
+                "bio" => null,
+                "status" => "active",
+                "position_id" => 2,
+                "department_id" => 3,
+                "created_at" => now(),
+                "updated_at" => now(),
+            ],
+            [
+                "prefix" => "นาง",
+                "name" => "test evaluatee2",
+                "employee_id" => "004",
+                "password" => Hash::make("evaluatee002"),
+                "email" => "evaluatee002@gmail.com",
+                "phone" => "084-632-3284",
+                "personnel_type" => "วิชาการ",
+                "bio" => null,
+                "status" => "active",
+                "position_id" => 3,
+                "department_id" => 3,
+                "created_at" => now(),
+                "updated_at" => now(),
+            ],
         ]);
     }
 }

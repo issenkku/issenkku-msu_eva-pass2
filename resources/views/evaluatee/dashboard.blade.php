@@ -30,11 +30,11 @@
     </div>
     
     <!-- Evaluation Header -->
-    <!-- <x-evaluation-header 
+    <x-evaluation-header 
         title="รอบที่ 1 : ระหว่างวันที่ 1 เมษายน 2568 - 30 เมษายน 2568"
         period=""
         deadline="1 พฤษภาคม 2568"
-    /> -->
+    />
     
     <!-- Evaluation Summary -->
     <x-evaluation-summary 

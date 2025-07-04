@@ -19,8 +19,7 @@ class RoleSeeder extends Seeder
         $adminRole = Role::create(['name' => 'admin']);
         $managerRole = Role::create(['name' => 'ผู้บริหาร']);
         $evaluatorRole = Role::create(['name' => 'ผู้ประเมิน']);
-        $supportEvaluateeRole = Role::create(['name' => 'ผู้รับการประเมินฝ่ายสนับสนุน']);
-        $academicEvaluateeRole = Role::create(['name' => 'ผู้รับการประเมินฝ่ายวิชาการ']);
+        $evaluateeRole = Role::create(['name' => 'ผู้รับการประเมิน']);
 
         // Create permissions
         $dashboardPermission = Permission::create(['name' => 'Employee Dashboard']);
@@ -30,14 +29,12 @@ class RoleSeeder extends Seeder
         // Assign permissions to roles
         $adminRole->givePermissionTo($admindashboardPermission, 
                     $employeeManageMentPermission);
-        $supportEvaluateeRole->givePermissionTo($dashboardPermission);
-        $academicEvaluateeRole->givePermissionTo($dashboardPermission);
+        $evaluateeRole->givePermissionTo($dashboardPermission);
 
         // Assign role to user
-        $admin = User::find(1); // Example user with ID 1
-        $admin->assignRole($adminRole);
-
-        $user = User::find(2); // Example user with ID 2
-        $user->assignRole($academicEvaluateeRole);
+        User::find(1)->assignRole($adminRole);
+        User::find(2)->assignRole($evaluatorRole);
+        User::find(3)->assignRole($evaluateeRole);
+        User::find(4)->assignRole($evaluateeRole);
     }
 }
