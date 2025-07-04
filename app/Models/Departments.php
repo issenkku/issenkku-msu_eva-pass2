@@ -11,4 +11,10 @@ class Departments extends Model
         'faculty',
     ];
     public $timestamps = false;
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'department_id');
+    }
 }
+

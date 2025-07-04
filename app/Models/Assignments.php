@@ -26,7 +26,7 @@ class Assignments extends Model
 
     public function report()
     {
-        return $this->belongsTo(Report::class);
+        return $this->belongsTo(Reports::class);
     }
 
     public function evaluateeUser()
