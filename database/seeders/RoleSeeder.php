@@ -28,16 +28,20 @@ class RoleSeeder extends Seeder
         $employeeManageMentPermission = Permission::create(['name' => 'Employee Management']);
 
         // Assign permissions to roles
-        $adminRole->givePermissionTo($admindashboardPermission, 
-                    $employeeManageMentPermission);
+        $adminRole->givePermissionTo(
+            $admindashboardPermission,
+            $employeeManageMentPermission
+        );
         $supportEvaluateeRole->givePermissionTo($dashboardPermission);
         $academicEvaluateeRole->givePermissionTo($dashboardPermission);
 
-        // Assign role to user
-        $admin = User::find(1); // Example user with ID 1
-        $admin->assignRole($adminRole);
-
-        $user = User::find(2); // Example user with ID 2
-        $user->assignRole($academicEvaluateeRole);
+        $admin = User::find(1);
+        if ($admin) {
+            $admin->assignRole($adminRole);
+        }
+        $user = User::find(2);
+        if ($user) {
+            $user->assignRole($academicEvaluateeRole);
+        }
     }
 }
