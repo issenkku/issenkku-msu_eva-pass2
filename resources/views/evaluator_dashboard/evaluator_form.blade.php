@@ -537,7 +537,7 @@
         <div class="form-section">
             <div class="section-header">
                 <div>2.6 ภาระงานด้านผลงานวิจัย (ค่าน้ำหนัก 2 คะแนน) มีองค์ประกอบการพิจารณา ดังนี้ </div>
-
+                
                 <button onclick="toggleTip('tip-box-6')">คำแนะนำการกรอกคะแนน</button>
                 <div id="tip-box-6"
                     style="display:none; margin-top:8px; background:#fef3c7; padding:10px; border-radius:6px; color:#92400e;">

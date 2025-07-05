@@ -43,10 +43,10 @@ Route::middleware('guest')->controller(AuthController::class)->group(function(){
     Route::post('/login', 'login');
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::resource('/roles', RoleAndPermissionController::class);
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+// Route::resource('/roles', RoleAndPermissionController::class);
 
 // Route::middleware(['auth:sanctum'])->group(function () {
 //     Route::get('/profile', function (Request $request) {
@@ -72,13 +72,14 @@ Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
 
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
     Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-    Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
+    Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
     Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
 });
 
 
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
+
+Route::get('/evaluator-show', function () {
+    return view('evaluator_dashboard.evaluatee_show');
 });
 Route::get('/criteria-configs', function () {
     return view('criteria_config.create');

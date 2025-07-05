@@ -44,20 +44,14 @@
                             <form method="GET" action="{{ route('evaluator.index') }}">
                                 <select name="status" onchange="this.form.submit()" class="form-select">
                                     <option value="" {{ $statusFilter == '' ? 'selected' : '' }}>แสดงทั้งหมด</option>
-                                    <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>รอดำเนินการ
-                                    </option>
-                                    <option value="in_progress" {{ $statusFilter == 'in_progress' ? 'selected' : '' }}>
-                                        กำลังดำเนินการ</option>
-                                    <option value="completed" {{ $statusFilter == 'completed' ? 'selected' : '' }}>
-                                        ประเมินเสร็จสิ้น</option>
-                                    <option value="pending_approval"
-                                        {{ $statusFilter == 'pending_approval' ? 'selected' : '' }}>รอผลประเมิน</option>
-                                    <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>บันทึกแล้ว
-                                    </option>
                                     <option value="assigned" {{ $statusFilter == 'assigned' ? 'selected' : '' }}>
-                                        ยังไม่ประเมิน</option>
-                                    <option value="overdue" {{ $statusFilter == 'overdue' ? 'selected' : '' }}>เกินกำหนด
-                                    </option>
+                                        ยังไม่ประเมิน (มอบหมายแล้ว)</option>
+                                    <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>บันทึกแล้ว
+                                        (รออนุมัติ)</option>
+                                    <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>รอผลประเมิน
+                                        (รอกดอนุมัติ)</option>
+                                    <option value="completed" {{ $statusFilter == 'completed' ? 'selected' : '' }}>
+                                        ประเมินเสร็จสิ้น (อนุมัติแล้ว)</option>
                                 </select>
                             </form>
                             <button class="btn-export">
@@ -95,7 +89,7 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <a href="{{ route('evaluator.assignment.show', $assignment->assignment_data_id) }}"
+                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->assignment_data_id) }}"
                                                     class="btn-view" title="ดูรายละเอียด">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>

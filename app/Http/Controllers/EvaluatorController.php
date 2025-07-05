@@ -92,12 +92,146 @@ class EvaluatorController extends Controller
             'evaluatorInfo' => $evaluatorInfo,
             'statusFilter' => $statusFilter
         ]);
+        
     }
 
-    // ตัวอย่างฟังก์ชันช่วยเหลือแปลงวันที่และสถานะ (ควรวางใน Controller เดียวกัน)
-    private function formatThaiDate($date)
+    /**
+     * Display assignment details - แสดงรายละเอียดของการประเมิน
+     */
+    public function show(Request $request, $assignmentId)
     {
-        if (!$date) return '-';
+        $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
+        $currentUser = User::find($userId);
+
+        if (!$currentUser) {
+            abort(404, 'ไม่พบผู้ใช้งาน');
+        }
+
+        // ดึงข้อมูลการประเมินรายละเอียด พร้อม join ตาราง departments, positions เพื่อดึงชื่อแผนกและตำแหน่ง
+        $assignment = DB::table('assignments')
+            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
+            ->join('reports', 'assignments.report_id', '=', 'reports.id')
+            ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
+            ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
+            ->leftJoin('departments', 'evaluatee.department_id', '=', 'departments.id')
+            ->leftJoin('positions', 'evaluatee.position_id', '=', 'positions.id')
+            ->join('users as evaluator', 'assignments.evaluator', '=', 'evaluator.id')
+            ->where('assignments.assignment_data_id', $assignmentId)
+            ->where('assignments.evaluator', $currentUser->id)
+            ->select(
+                'assignments.assignment_data_id',
+                'assignments.report_id',
+                'assignment_datas.start_time',
+                'assignment_datas.end_time',
+                'reports.status',
+                'reports.created_at as report_created_at',
+                'reports.updated_at as report_updated_at',
+                'report_datas.report_title',
+                'report_datas.assessment_type',
+                'evaluatee.id as evaluatee_id',
+                'evaluatee.prefix as evaluatee_prefix',
+                'evaluatee.name as evaluatee_name',
+                'evaluatee.employee_id as evaluatee_employee_id',
+                'departments.department_name as evaluatee_department',
+                'positions.name as evaluatee_position',
+                'evaluator.prefix as evaluator_prefix',
+                'evaluator.name as evaluator_name',
+                'evaluator.employee_id as evaluator_employee_id',
+
+            )
+            ->first();
+
+        if (!$assignment) {
+            abort(404, 'ไม่พบรายการประเมินนี้');
+        }
+
+        // แปลงข้อมูลเพื่อแสดงผล
+        $statusInfo = $this->getStatusInfo($assignment->status, $assignment->end_time);
+
+        $assignmentDetails = [
+            'assignment_id' => $assignment->assignment_data_id,
+            'report_id' => $assignment->report_id,
+            'report_title' => $assignment->report_title,
+            'assessment_type' => $assignment->assessment_type,
+            'start_date' => $this->formatThaiDate($assignment->start_time),
+            'end_date' => $this->formatThaiDate($assignment->end_time),
+            'status_text' => $statusInfo['text'],
+            'status_class' => $statusInfo['class'],
+            'status_color' => $statusInfo['color'],
+            'evaluatee' => [
+                'id' => $assignment->evaluatee_id,
+                'name' => $assignment->evaluatee_prefix . $assignment->evaluatee_name,
+                'employee_id' => $assignment->evaluatee_employee_id,
+                'department' => $assignment->evaluatee_department,
+                'position' => $assignment->evaluatee_position,
+            ],
+            'evaluator' => [
+                'name' => $assignment->evaluator_prefix . $assignment->evaluator_name,
+                'employee_id' => $assignment->evaluator_employee_id,
+            ],
+
+            'dates' => [
+                'created_at' => $this->formatThaiDate($assignment->report_created_at),
+                'updated_at' => $this->formatThaiDate($assignment->report_updated_at),
+            ]
+        ];
+
+        // ตรวจสอบว่าสามารถแก้ไขได้หรือไม่
+        $canEdit = in_array($assignment->status, ['assigned', 'draft']) &&
+            now()->lte(\Carbon\Carbon::parse($assignment->end_time));
+
+        // $scores = DB::table('quantity_scores')->where('report_id', 3)->get();
+        // dd('Scores:', $scores);
+
+        $quantityCriteria = DB::table('quantity_main_criterias as qm')
+            ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
+            ->leftJoin('quantity_scores as qscore', function ($join) use ($assignment) {
+                $join->on('qs.id', '=', 'qscore.quantity_sub_criteria_id')
+                    ->where('qscore.report_id', '=', $assignment->report_id);
+            })
+            ->leftJoin('evidence_answers as eanswer', function ($join) use ($assignment) {
+                $join->on('qs.id', '=', 'eanswer.evaluation_list_id')
+                    ->where('eanswer.report_id', '=', $assignment->report_id);
+            })
+            ->select(
+                'qm.id as main_id',
+                'qm.name as main_name',
+                'qm.tooltips as main_tooltips',
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'qs.score_a',
+                'qs.score_b',
+                'qscore.score_C',
+                'qscore.score_D',
+                'eanswer.link as evidence_link'   // ดึง link มาด้วย
+            )
+            ->orderBy('qm.id')
+            ->orderBy('qs.sequence')
+            ->get()
+            ->groupBy('main_id');
+
+
+        // dd($quantityCriteria);
+
+        return view('evaluator_dashboard.evaluatee_show', [
+            'assignment' => $assignmentDetails,
+            'canEdit' => $canEdit,
+            'currentUser' => $currentUser,
+            'quantityCriteria' => $quantityCriteria
+        ]);
+        // return response()->json([
+        //     'assignment' => $assignmentDetails,
+        //     'canEdit' => $canEdit,
+        //     'currentUser' => $currentUser
+        // ]);
+
+    }
+
+
+    private function formatThaiDate($datetime)
+    {
+        if (!$datetime) return '-';
 
         $thaiMonths = [
             1 => 'ม.ค.',
@@ -114,7 +248,7 @@ class EvaluatorController extends Controller
             12 => 'ธ.ค.'
         ];
 
-        $dateObj = \Carbon\Carbon::parse($date);
+        $dateObj = \Carbon\Carbon::parse($datetime);
         $day = $dateObj->day;
         $month = $thaiMonths[$dateObj->month];
         $year = $dateObj->year + 543;
