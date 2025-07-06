@@ -8,7 +8,7 @@ use App\Models\ReportData;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Report>
  */
-class ReportFactory extends Factory
+class ReportsFactory extends Factory
 {
     /**
      * Define the model's default state.

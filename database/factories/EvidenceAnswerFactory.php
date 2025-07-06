@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\EvaluationList;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Report;
+use App\Models\Reports;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\EvidenceAnswer>
@@ -21,7 +21,7 @@ class EvidenceAnswerFactory extends Factory
         return [
             'link' => fake()->url(),
             'evaluation_list_id' => EvaluationList::inRandomOrder()->first()?->id,
-            'report_id' => Report::inRandomOrder()->first()?->id,
+            'report_id' => Reports::inRandomOrder()->first()?->id,
         ];
     }
 }

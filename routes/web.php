@@ -70,16 +70,17 @@ Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
 Route::get('/evaluator-show', function () {
     return view('evaluator_dashboard.evaluatee_show');
 });
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
-});
-Route::get('/criteria-configs', function () {
-    return view('criteria_config.create');
-});
 
-Route::get('/criteria-evaluators', function () {
-    return view('criteria_config.evaluators');
-});
+// preDelete
+// Route::get('/criteria-config', function () {
+//     return view('criteria_config.index');
+// });
+// Route::get('/criteria-configs', function () {
+//     return view('criteria_config.create');
+// });
+// Route::get('/criteria-evaluators', function () {
+//     return view('criteria_config.evaluators');
+// });
 
 
     // // เริ่มการประเมิน
