@@ -111,7 +111,6 @@ class EvaluatorController extends Controller
 
         $currentUser = User::with('department', 'position')->findOrFail($userId);
 
-        // ✅ ดึงข้อมูล Assignment และความสัมพันธ์ที่เกี่ยวข้องทั้งหมด
         $assignment = Assignments::with([
             'assignmentData',
             'report.reportData',
@@ -123,10 +122,10 @@ class EvaluatorController extends Controller
             ->where('assignment_data_id', $assignmentId)
             ->where('evaluator', $userId)
             ->firstOrFail();
+
         $report = $assignment->report;
         $reportData = $report->reportData;
 
-        // ✅ แปลงข้อมูลเพื่อแสดงผล
         $statusInfo = $this->getStatusInfo($report->status, $assignment->assignmentData->end_time);
 
         $assignmentDetails = [
@@ -162,7 +161,9 @@ class EvaluatorController extends Controller
         $canEdit = in_array($report->status, ['assigned', 'draft']) &&
             now()->lte($assignment->assignmentData->end_time);
 
-        // query quantity criteria ยังใช้ DB::table ได้ (หรือ refactor ทีหลัง)
+        $criteriaVersionId = $reportData->criteria_version_id;
+
+        // Quantity Criteria
         $quantityCriteria = DB::table('quantity_main_criterias as qm')
             ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
             ->leftJoin('quantity_scores as qscore', function ($join) use ($report) {
@@ -191,9 +192,7 @@ class EvaluatorController extends Controller
             ->get()
             ->groupBy('main_id');
 
-        // ใช้ criteria_version_id จาก reportData
-        $criteriaVersionId = $reportData->criteria_version_id;
-        // query quality criteria แบบ group by main_id
+        // Quality Criteria
         $qualityCriteria = DB::table('quality_main_criterias as qm')
             ->join('quality_sub_criterias as qs', 'qm.id', '=', 'qs.quality_main_criteria_id')
             ->leftJoin('quality_scores as qscore', function ($join) use ($report) {
@@ -217,28 +216,81 @@ class EvaluatorController extends Controller
                 'qscore.score as filled_score',
                 'eanswer.link as evidence_link'
             )
-            ->where('qs.criteria_version_id', $criteriaVersionId) // จำกัดให้ตรงเวอร์ชัน
+            ->where('qs.criteria_version_id', $criteriaVersionId)
             ->orderBy('qm.sequence')
             ->orderBy('qs.sequence')
             ->get()
             ->groupBy('main_id');
 
-        $categories = Category::with(['evaluationLists' => function ($query) {
-            $query->orderBy('sequence');
-        }])
+        $allMainIds = $quantityCriteria->keys()->merge($qualityCriteria->keys())->unique();
+
+        $mergedCriteria = $allMainIds->mapWithKeys(function ($mainId) use ($quantityCriteria, $qualityCriteria) {
+            return [
+                $mainId => [
+                    'main_id' => $mainId,
+                    'quantity' => $quantityCriteria->get($mainId, collect()),
+                    'quality' => $qualityCriteria->get($mainId, collect()),
+                ]
+            ];
+        });
+
+        // ✅ โหลด Categories พร้อม EvaluationLists และ SubCriterias + MainCriteria
+        $categories = Category::with([
+            'evaluationLists' => function ($query) {
+                $query->orderBy('sequence')->with([
+                    'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                    'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                ]);
+            }
+        ])
             ->where('criteria_version_id', $criteriaVersionId)
             ->orderBy('sequence')
-            ->get();
+            ->get()
+            ->map(function ($category) {
+                $category->sum_score = $category->evaluationLists->sum('sum_score');
+                return $category;
+            });
 
+        $quantityMap = collect($quantityCriteria)
+            ->flatMap(fn($items) => $items)
+            ->keyBy('sub_id');
+
+        $categories->each(function ($category) use ($quantityMap) {
+            foreach ($category->evaluationLists as $list) {
+                foreach ($list->quantitySubCriterias as $sub) {
+                    $data = $quantityMap->get($sub->id);
+                    if ($data) {
+                        $sub->score_c = $data->score_C;
+                        $sub->score_d = $data->score_D;
+                        $sub->evidence_link = $data->evidence_link;
+                    }
+                }
+            }
+        });
+        $qualityMap = collect($qualityCriteria)
+            ->flatMap(fn($items) => $items)
+            ->keyBy('sub_id');
+
+        $categories->each(function ($category) use ($qualityMap) {
+            foreach ($category->evaluationLists as $list) {
+                foreach ($list->qualitySubCriterias as $sub) {
+                    $data = $qualityMap->get($sub->id);
+                    if ($data) {
+                        $sub->filled_score = $data->filled_score;
+                        $sub->evidence_link = $data->evidence_link;
+                    }
+                }
+            }
+        });
         return view('evaluator_dashboard.evaluatee_show', [
             'assignment' => $assignmentDetails,
             'canEdit' => $canEdit,
             'currentUser' => $currentUser,
-            'quantityCriteria' => $quantityCriteria,
-            'qualityCriteria' => $qualityCriteria,
+            'mergedCriteria' => $mergedCriteria,
             'categories' => $categories,
         ]);
     }
+
 
 
 
