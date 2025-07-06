@@ -16,7 +16,7 @@ class User extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
 
-    use HasFactory, Notifiable, HasRoles, HasApiTokens,CanResetPasswordTrait;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, CanResetPasswordTrait;
 
 
     /**
@@ -37,6 +37,15 @@ class User extends Authenticatable implements CanResetPassword
         'position_id',
         'department_id',
     ];
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function position()
+    {
+        return $this->belongsTo(Position::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

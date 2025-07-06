@@ -31,4 +31,5 @@ class ReportData extends Model
     {
         return $this->hasMany(Reports::class);
     }
+    
 }

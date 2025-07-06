@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assignments;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\Reports;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
-use function Pest\Laravel\json;
 
 class EvaluatorController extends Controller
 {
@@ -19,12 +18,16 @@ class EvaluatorController extends Controller
     public function dashboard(Request $request)
     {
         $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
-        $currentUser = User::find($userId);
+
+        if (!$userId) {
+            abort(403, 'Unauthorized');
+        }
+
+        $currentUser = User::with('department', 'position')->find($userId);
 
         if (!$currentUser) {
             abort(404, 'ไม่พบผู้ใช้งาน');
         }
-
         $statusFilter = $request->input('status');
 
         // ดึงข้อมูล assignments แบบ paginate
@@ -92,106 +95,83 @@ class EvaluatorController extends Controller
             'evaluatorInfo' => $evaluatorInfo,
             'statusFilter' => $statusFilter
         ]);
-        
     }
 
     /**
      * Display assignment details - แสดงรายละเอียดของการประเมิน
      */
+
     public function show(Request $request, $assignmentId)
     {
-        $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
-        $currentUser = User::find($userId);
+        $userId = Auth::id() ?? 2;
 
-        if (!$currentUser) {
-            abort(404, 'ไม่พบผู้ใช้งาน');
+        if (!$userId) {
+            abort(403, 'Unauthorized');
         }
 
-        // ดึงข้อมูลการประเมินรายละเอียด พร้อม join ตาราง departments, positions เพื่อดึงชื่อแผนกและตำแหน่ง
-        $assignment = DB::table('assignments')
-            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('reports', 'assignments.report_id', '=', 'reports.id')
-            ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
-            ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
-            ->leftJoin('departments', 'evaluatee.department_id', '=', 'departments.id')
-            ->leftJoin('positions', 'evaluatee.position_id', '=', 'positions.id')
-            ->join('users as evaluator', 'assignments.evaluator', '=', 'evaluator.id')
-            ->where('assignments.assignment_data_id', $assignmentId)
-            ->where('assignments.evaluator', $currentUser->id)
-            ->select(
-                'assignments.assignment_data_id',
-                'assignments.report_id',
-                'assignment_datas.start_time',
-                'assignment_datas.end_time',
-                'reports.status',
-                'reports.created_at as report_created_at',
-                'reports.updated_at as report_updated_at',
-                'report_datas.report_title',
-                'report_datas.assessment_type',
-                'evaluatee.id as evaluatee_id',
-                'evaluatee.prefix as evaluatee_prefix',
-                'evaluatee.name as evaluatee_name',
-                'evaluatee.employee_id as evaluatee_employee_id',
-                'departments.department_name as evaluatee_department',
-                'positions.name as evaluatee_position',
-                'evaluator.prefix as evaluator_prefix',
-                'evaluator.name as evaluator_name',
-                'evaluator.employee_id as evaluator_employee_id',
+        $currentUser = User::with('department', 'position')->findOrFail($userId);
 
-            )
-            ->first();
+        // ✅ ดึงข้อมูล Assignment และความสัมพันธ์ที่เกี่ยวข้องทั้งหมด
+        $assignment = Assignments::with([
+            'assignmentData',
+            'report.reportData',
+            'report.reportData.criteriaVersion',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+            'evaluatorUser'
+        ])
+            ->where('assignment_data_id', $assignmentId)
+            ->where('evaluator', $userId)
+            ->firstOrFail();
+        $report = $assignment->report;
+        $reportData = $report->reportData;
 
-        if (!$assignment) {
-            abort(404, 'ไม่พบรายการประเมินนี้');
-        }
-
-        // แปลงข้อมูลเพื่อแสดงผล
-        $statusInfo = $this->getStatusInfo($assignment->status, $assignment->end_time);
+        // ✅ แปลงข้อมูลเพื่อแสดงผล
+        $statusInfo = $this->getStatusInfo($report->status, $assignment->assignmentData->end_time);
 
         $assignmentDetails = [
             'assignment_id' => $assignment->assignment_data_id,
-            'report_id' => $assignment->report_id,
-            'report_title' => $assignment->report_title,
-            'assessment_type' => $assignment->assessment_type,
-            'start_date' => $this->formatThaiDate($assignment->start_time),
-            'end_date' => $this->formatThaiDate($assignment->end_time),
+            'report_id' => $report->id,
+            'report_title' => $reportData->report_title,
+            'report_description' => $reportData->report_description ?? '-',
+            'comment' => $reportData->comment ?? '-',
+            'assessment_type' => $reportData->assessment_type,
+            'version_name' => optional($reportData->criteriaVersion)->version_name ?? '-',
+            'start_date' => $this->formatThaiDate($assignment->assignmentData->start_time),
+            'end_date' => $this->formatThaiDate($assignment->assignmentData->end_time),
             'status_text' => $statusInfo['text'],
             'status_class' => $statusInfo['class'],
             'status_color' => $statusInfo['color'],
             'evaluatee' => [
-                'id' => $assignment->evaluatee_id,
-                'name' => $assignment->evaluatee_prefix . $assignment->evaluatee_name,
-                'employee_id' => $assignment->evaluatee_employee_id,
-                'department' => $assignment->evaluatee_department,
-                'position' => $assignment->evaluatee_position,
+                'id' => optional($assignment->evaluateeUser)->id,
+                'name' => optional($assignment->evaluateeUser)->prefix . ' ' . optional($assignment->evaluateeUser)->name ?? '-',
+                'employee_id' => optional($assignment->evaluateeUser)->employee_id,
+                'department' => optional(optional($assignment->evaluateeUser)->department)->department_name ?? '-',
+                'position' => optional(optional($assignment->evaluateeUser)->position)->name ?? '-',
             ],
             'evaluator' => [
-                'name' => $assignment->evaluator_prefix . $assignment->evaluator_name,
-                'employee_id' => $assignment->evaluator_employee_id,
+                'name' => optional($assignment->evaluatorUser)->prefix . ' ' . optional($assignment->evaluatorUser)->name,
+                'employee_id' => optional($assignment->evaluatorUser)->employee_id,
             ],
-
             'dates' => [
-                'created_at' => $this->formatThaiDate($assignment->report_created_at),
-                'updated_at' => $this->formatThaiDate($assignment->report_updated_at),
+                'created_at' => $this->formatThaiDate($report->created_at),
+                'updated_at' => $this->formatThaiDate($report->updated_at),
             ]
         ];
 
-        // ตรวจสอบว่าสามารถแก้ไขได้หรือไม่
-        $canEdit = in_array($assignment->status, ['assigned', 'draft']) &&
-            now()->lte(\Carbon\Carbon::parse($assignment->end_time));
+        $canEdit = in_array($report->status, ['assigned', 'draft']) &&
+            now()->lte($assignment->assignmentData->end_time);
 
-        // $scores = DB::table('quantity_scores')->where('report_id', 3)->get();
-        // dd('Scores:', $scores);
-
+        // query quantity criteria ยังใช้ DB::table ได้ (หรือ refactor ทีหลัง)
         $quantityCriteria = DB::table('quantity_main_criterias as qm')
             ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
-            ->leftJoin('quantity_scores as qscore', function ($join) use ($assignment) {
+            ->leftJoin('quantity_scores as qscore', function ($join) use ($report) {
                 $join->on('qs.id', '=', 'qscore.quantity_sub_criteria_id')
-                    ->where('qscore.report_id', '=', $assignment->report_id);
+                    ->where('qscore.report_id', '=', $report->id);
             })
-            ->leftJoin('evidence_answers as eanswer', function ($join) use ($assignment) {
+            ->leftJoin('evidence_answers as eanswer', function ($join) use ($report) {
                 $join->on('qs.id', '=', 'eanswer.evaluation_list_id')
-                    ->where('eanswer.report_id', '=', $assignment->report_id);
+                    ->where('eanswer.report_id', '=', $report->id);
             })
             ->select(
                 'qm.id as main_id',
@@ -204,29 +184,62 @@ class EvaluatorController extends Controller
                 'qs.score_b',
                 'qscore.score_C',
                 'qscore.score_D',
-                'eanswer.link as evidence_link'   // ดึง link มาด้วย
+                'eanswer.link as evidence_link'
             )
             ->orderBy('qm.id')
             ->orderBy('qs.sequence')
             ->get()
             ->groupBy('main_id');
 
+        // ใช้ criteria_version_id จาก reportData
+        $criteriaVersionId = $reportData->criteria_version_id;
+        // query quality criteria แบบ group by main_id
+        $qualityCriteria = DB::table('quality_main_criterias as qm')
+            ->join('quality_sub_criterias as qs', 'qm.id', '=', 'qs.quality_main_criteria_id')
+            ->leftJoin('quality_scores as qscore', function ($join) use ($report) {
+                $join->on('qs.id', '=', 'qscore.quality_sub_criteria_id')
+                    ->where('qscore.report_id', '=', $report->id);
+            })
+            ->leftJoin('evidence_answers as eanswer', function ($join) use ($report) {
+                $join->on('qs.evaluation_list_id', '=', 'eanswer.evaluation_list_id')
+                    ->where('eanswer.report_id', '=', $report->id);
+            })
+            ->select(
+                'qm.id as main_id',
+                'qm.name as main_name',
+                'qm.tooltips as main_tooltips',
+                'qm.sequence as main_sequence',
+                'qm.ratio as main_ratio',
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'qs.num_score',
+                'qscore.score as filled_score',
+                'eanswer.link as evidence_link'
+            )
+            ->where('qs.criteria_version_id', $criteriaVersionId) // จำกัดให้ตรงเวอร์ชัน
+            ->orderBy('qm.sequence')
+            ->orderBy('qs.sequence')
+            ->get()
+            ->groupBy('main_id');
 
-        // dd($quantityCriteria);
+        $categories = Category::with(['evaluationLists' => function ($query) {
+            $query->orderBy('sequence');
+        }])
+            ->where('criteria_version_id', $criteriaVersionId)
+            ->orderBy('sequence')
+            ->get();
 
         return view('evaluator_dashboard.evaluatee_show', [
             'assignment' => $assignmentDetails,
             'canEdit' => $canEdit,
             'currentUser' => $currentUser,
-            'quantityCriteria' => $quantityCriteria
+            'quantityCriteria' => $quantityCriteria,
+            'qualityCriteria' => $qualityCriteria,
+            'categories' => $categories,
         ]);
-        // return response()->json([
-        //     'assignment' => $assignmentDetails,
-        //     'canEdit' => $canEdit,
-        //     'currentUser' => $currentUser
-        // ]);
-
     }
+
 
 
     private function formatThaiDate($datetime)
