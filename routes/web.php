@@ -24,7 +24,7 @@ Route::prefix('departments')->name('departments.')->group(function () {
     Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
 });
 
-Route::prefix('settings')->name('settings.')->group(function () {
+Route::prefix('settings-website')->name('settings.')->group(function () {
     Route::get('/', [SettingsController::class, 'index'])->name('index');
     Route::post('/store', [SettingsController::class, 'store'])->name('store');
 });
@@ -36,8 +36,6 @@ Route::prefix('users')->name('users.')->group(function () {
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
 });
 
-// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-// Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('guest')->controller(AuthController::class)->group(function(){
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login');
@@ -47,13 +45,6 @@ Route::middleware('guest')->controller(AuthController::class)->group(function(){
 //     return $request->user();
 // });
 // Route::resource('/roles', RoleAndPermissionController::class);
-
-// Route::middleware(['auth:sanctum'])->group(function () {
-//     Route::get('/profile', function (Request $request) {
-//         return response()->json($request->user());
-//     });
-//     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
-// });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
@@ -76,10 +67,11 @@ Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
     Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
 });
 
-
-
 Route::get('/evaluator-show', function () {
     return view('evaluator_dashboard.evaluatee_show');
+});
+Route::get('/criteria-config', function () {
+    return view('criteria_config.index');
 });
 Route::get('/criteria-configs', function () {
     return view('criteria_config.create');

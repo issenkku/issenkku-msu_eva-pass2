@@ -4,7 +4,7 @@ namespace App\Models\Setting;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Departments extends Model
 {
     protected $fillable = [
         'department_name',
