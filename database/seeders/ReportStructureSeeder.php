@@ -1,0 +1,103 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\CriteriaVersion;
+use App\Models\ReportData;
+use App\Models\Category;
+use App\Models\EvaluationList;
+use App\Models\QuantityMainCriteria;
+use App\Models\QuantitySubCriteria;
+use App\Models\QualityMainCriteria;
+use App\Models\QualitySubCriteria;
+
+class ReportStructureSeeder extends Seeder
+{
+    public function run()
+    {
+        // 1. Create CriteriaVersion
+        $criteriaVersion = CriteriaVersion::factory()->create();
+
+        // 2. Create related ReportData
+        ReportData::factory()->create([
+            'criteria_version_id' => $criteriaVersion->id,
+        ]);
+
+        // 3. Create two Categories for this CriteriaVersion
+        $categories = [];
+        foreach ([1, 2] as $catSeq) {
+            $categories[$catSeq] = Category::factory()->create([
+                'criteria_version_id' => $criteriaVersion->id,
+                'sequence' => $catSeq,
+            ]);
+        }
+
+        /*
+         * --------- CATEGORY #1 ---------
+         * 1 EvaluationList -> 1 QuantityMain -> Many QuantitySubCriterias
+         */
+        $el1 = EvaluationList::factory()->create([
+            'categorie_id' => $categories[1]->id,
+            'criteria_version_id' => $criteriaVersion->id,
+        ]);
+
+        $qmc = QuantityMainCriteria::factory()->create([
+            'criteria_version_id' => $criteriaVersion->id,
+        ]);
+
+        // Attach N QuantitySubCriterias to QuantityMainCriteria, link to EvaluationList, CriteriaVersion.
+        foreach (range(1, 5) as $seq) {
+            QuantitySubCriteria::factory()->create([
+                'quantity_main_criteria_id' => $qmc->id,
+                'criteria_version_id' => $criteriaVersion->id,
+                'evaluation_list_id' => $el1->id,
+                'sequence' => $seq,
+            ]);
+        }
+
+        /*
+         * --------- CATEGORY #2 ---------
+         * Many EvaluationLists, each -> Many QualityMainCriterias, each -> Many QualitySubCriterias
+         */
+        foreach (range(1, 2) as $listIdx) {
+            $el2 = EvaluationList::factory()->create([
+                'categorie_id' => $categories[2]->id,
+                'criteria_version_id' => $criteriaVersion->id,
+                'sequence' => $listIdx,
+            ]);
+
+            // ### แบ่ง ratio ให้ครบ 100 ###
+            $mainCount = 5;
+            $ratios = [];
+            $remain = 100;
+            for ($i = 0; $i < $mainCount - 1; $i++) {
+                // อย่างน้อย 10 ต่อช่อง (ใส่เงื่อนไขกำหนด lowerbound ได้ถ้าต้องการ)
+                $min = 10;
+                $max = $remain - ($mainCount - $i - 1) * $min;
+                $val = rand($min, $max);
+                $ratios[] = $val;
+                $remain -= $val;
+            }
+            $ratios[] = $remain; // ตัวสุดท้ายคือที่เหลือ
+
+            foreach (range(1, $mainCount) as $seqm) {
+                $qualityMain = QualityMainCriteria::factory()->create([
+                    'criteria_version_id' => $criteriaVersion->id,
+                    'sequence' => $seqm,
+                    'ratio' => $ratios[$seqm - 1]
+                    // ไม่ใส่ evaluation_list_id เพราะไม่มีในตาราง
+                ]);
+
+                foreach (range(1, 3) as $seqs) {
+                    QualitySubCriteria::factory()->create([
+                        'quality_main_criteria_id' => $qualityMain->id,
+                        'criteria_version_id' => $criteriaVersion->id,
+                        'evaluation_list_id' => $el2->id,
+                        'sequence' => $seqs,
+                    ]);
+                }
+            }
+        }
+    }
+}

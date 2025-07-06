@@ -16,7 +16,9 @@ class Assignments extends Model
         'evaluator',
     ];
 
-    public $timestamps = false; // ไม่มี timestamps ในตารางนี้
+    public $timestamps = false;
+
+
 
     // Relationships
     public function assignmentData()
@@ -26,16 +28,16 @@ class Assignments extends Model
 
     public function report()
     {
-        return $this->belongsTo(Report::class);
+        return $this->belongsTo(Reports::class);
     }
 
-    public function evaluateeUser()
+       public function evaluateeUser()
     {
-        return $this->belongsTo(User::class, 'evaluatee');
+        return $this->belongsTo(User::class, 'evaluatee', 'id');
     }
 
     public function evaluatorUser()
     {
-        return $this->belongsTo(User::class, 'evaluator');
+        return $this->belongsTo(User::class, 'evaluator', 'id');
     }
 }

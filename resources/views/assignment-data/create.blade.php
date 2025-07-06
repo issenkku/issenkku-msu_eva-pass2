@@ -6,11 +6,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>ผิดพลาด!</strong> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 
@@ -41,14 +43,12 @@
                     <label for="report_id" class="block text-sm font-medium text-gray-700 mb-2">
                         เกณฑ์การประเมิน :
                     </label>
-                    <select id="report_id" name="report_id" required
+
+                    <select id="report_data_id" name="report_data_id" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">-- กรุณาเลือกเกณฑ์การประเมิน --</option>
-                        @foreach ($reports as $report)
-                            <option value="{{ $report->id }}">
-                                {{ $report->reportData->report_title ?? '[ไม่มีชื่อเกณฑ์]' }}
-                                - {{ \Carbon\Carbon::parse($report->created_at)->format('d/m/Y') }}
-                            </option>
+                        @foreach ($report_data as $item)
+                            <option value="{{ $item->id }}">{{ $item->report_title }}</option>
                         @endforeach
                     </select>
 
@@ -124,7 +124,7 @@
                                 class="form-multi-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 @foreach ($evaluators as $user)
                                     <option value="{{ $user->id }}" data-department="{{ $user->department_id }}">
-                                        {{ $user->name }} - {{ $user->department_name }}
+                                        {{ $user->name }} - {{ $user->department->department_name ?? '' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -390,12 +390,12 @@
 
                         const evaluateesSelected = $('#evaluatees').val() || [];
                         const evaluatorsSelected = $('#evaluators').val() || [];
-                        const reportId = $('#report_id').val();
+                        const reportDataId = $('#report_data_id').val();
                         const startTime = $('#start_time').val();
                         const endTime = $('#end_time').val();
 
                         // Validation
-                        if (!reportId) {
+                        if (!reportDataId) {
                             alert('กรุณาเลือกเกณฑ์การประเมิน');
                             return;
                         }
@@ -425,7 +425,7 @@
                         evaluateesSelected.forEach(evaluatee => {
                             evaluatorsSelected.forEach(evaluator => {
                                 assignments.push({
-                                    report_id: reportId,
+                                    report_data_id: reportDataId,
                                     evaluatee: evaluatee,
                                     evaluator: evaluator
                                 });
@@ -438,8 +438,8 @@
                         assignments.forEach((assignment, index) => {
                             $('<input>').attr({
                                 type: 'hidden',
-                                name: `assignments[${index}][report_id]`,
-                                value: assignment.report_id
+                                name: `assignments[${index}][report_data_id]`,
+                                value: assignment.report_data_id
                             }).appendTo('#evaluation-form');
 
                             $('<input>').attr({

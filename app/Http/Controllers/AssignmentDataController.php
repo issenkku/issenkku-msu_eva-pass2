@@ -4,149 +4,177 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
 use App\Models\Assignments;
-use App\Models\Setting\Department;
+use App\Models\ReportData;
+use App\Models\Reports;
+use App\Models\Setting\Departments;
 use App\Models\User;
-use App\Models\Report;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class AssignmentDataController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $assignmentData = AssignmentData::with([
-            'assignments.evaluateeUser',
-            'assignments.evaluatorUser',
-            'assignments.report',
-        ])->get();
+  
+public function index()
+{
+    $assignmentData = AssignmentData::with([
+        'assignments.evaluateeUser',
+        'assignments.evaluatorUser',
+        'assignments.report',
+    ])->get();
 
-        $users = User::all();
-        $reports = Report::all();
-        $departments = Department::all();
+    $users = User::all();
+    $report_data = ReportData::all();
+    $departments = Departments::all();
 
-        $evaluatees = $users; // หรือ filter ตามต้องการ
-        $evaluators = $users;
+    $evaluatees = $users;
+    $evaluators = $users;
 
-        return view('assignment-data.create', compact('assignmentData', 'users', 'reports', 'departments', 'evaluatees', 'evaluators'));
-    }
+    return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
+}
 
+public function create()
+{
+    $departments = Departments::all();
+    $report_data = ReportData::all();
+    $users = User::all();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $departments = Department::all();
-        $reports = Report::all();
-        $users = User::all();
+    $evaluatees = $users;
+    $evaluators = $users;
 
-        $evaluatees = $users;
-        $evaluators = $users;
-
-        return view('assignment-data.create', compact('reports', 'departments', 'evaluatees', 'evaluators'));
-    }
+    return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
+}
 
 
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'assignments' => 'required|array|min:1',
-            'assignments.*.report_id' => 'required|exists:reports,id',
+            'assignments.*.report_data_id' => 'required|exists:report_datas,id',
             'assignments.*.evaluatee' => 'required|exists:users,id',
-            'assignments.*.evaluator' => 'required|exists:users,id|different:assignments.*.evaluatee',
+            'assignments.*.evaluator' => 'required|exists:users,id',
         ]);
 
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->assignments as $index => $item) {
+                if (isset($item['evaluatee'], $item['evaluator']) && $item['evaluatee'] == $item['evaluator']) {
+                    $validator->errors()->add("assignments.$index.evaluator", 'ผู้ประเมินต้องไม่ตรงกับผู้รับการประเมิน');
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()->route('assignment-data.create')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         DB::beginTransaction();
+
         try {
-            // สร้าง AssignmentData
             $assignmentData = AssignmentData::create([
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
-            // สร้าง Assignments
             foreach ($request->assignments as $assignmentItem) {
+                $report = Reports::create([
+                    'report_data_id' => $assignmentItem['report_data_id'],
+                    'status' => 'assigned',
+                ]);
+
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
-                    'report_id' => $assignmentItem['report_id'],
+                    'report_id' => $report->id,
                     'evaluatee' => $assignmentItem['evaluatee'],
                     'evaluator' => $assignmentItem['evaluator'],
                 ]);
             }
 
             DB::commit();
-            return redirect()->route('assignment-data.create')->with('success', 'บันทึกข้อมูลเรียบร้อย.');
+
+            return redirect()->route('assignment-data.create')->with('success', 'สร้าง Assignment สำเร็จแล้ว');
         } catch (\Exception $e) {
-            DB::rollback();
-            return redirect()->back()->with('error', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error storing assignment data', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all(),
+            ]);
+
+            return redirect()->route('assignment-data.create')
+                ->withErrors(['store_error' => $e->getMessage()])
+                ->withInput();
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(AssignmentData $assignmentData)
     {
         $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
-
         return response()->json($assignmentData);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(AssignmentData $assignmentData)
     {
         $users = User::all();
-        $reports = Report::all();
+        $reports = Reports::all();
         $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
 
         return response()->json([
             'assignmentData' => $assignmentData,
             'users' => $users,
-            'reports' => $reports
+            'reports' => $reports,
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, AssignmentData $assignmentData)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'assignments' => 'required|array|min:1',
-            'assignments.*.report_id' => 'required|exists:reports,id',
+            'assignments.*.report_data_id' => 'required|exists:report_datas,id',
             'assignments.*.evaluatee' => 'required|exists:users,id',
-            'assignments.*.evaluator' => 'required|exists:users,id|different:assignments.*.evaluatee',
+            'assignments.*.evaluator' => 'required|exists:users,id',
         ]);
 
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->assignments as $index => $item) {
+                if (isset($item['evaluatee'], $item['evaluator']) && $item['evaluatee'] == $item['evaluator']) {
+                    $validator->errors()->add("assignments.$index.evaluator", 'ผู้ประเมินต้องไม่ตรงกับผู้รับการประเมิน');
+                }
+            }
+        });
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         DB::beginTransaction();
+
         try {
-            // อัปเดต AssignmentData
             $assignmentData->update([
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
-            // ลบ assignments เก่า
             $assignmentData->assignments()->delete();
 
-            // สร้าง assignments ใหม่
             foreach ($request->assignments as $assignmentItem) {
+                $report = Reports::create([
+                    'report_data_id' => $assignmentItem['report_data_id'],
+                    'status' => 'assigned',
+                ]);
+
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
-                    'report_id' => $assignmentItem['report_id'],
+                    'report_id' => $report->id,
                     'evaluatee' => $assignmentItem['evaluatee'],
                     'evaluator' => $assignmentItem['evaluator'],
                 ]);
@@ -156,32 +184,34 @@ class AssignmentDataController extends Controller
 
             return response()->json([
                 'message' => 'Assignment data updated successfully',
-                'data' => $assignmentData->load('assignments')
+                'data' => $assignmentData->load('assignments'),
             ]);
         } catch (\Exception $e) {
-            DB::rollback();
+            DB::rollBack();
+            Log::error('Error updating assignment data', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all(),
+            ]);
+
             return response()->json([
                 'message' => 'Error updating assignment data',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(AssignmentData $assignmentData)
     {
         try {
-            $assignmentData->delete(); // จะลบ assignments ที่เกี่ยวข้องด้วย เนื่องจากมี cascade
-
+            $assignmentData->delete();
             return response()->json([
-                'message' => 'Assignment data deleted successfully'
+                'message' => 'Assignment data deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error deleting assignment data',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

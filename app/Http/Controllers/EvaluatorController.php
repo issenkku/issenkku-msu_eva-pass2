@@ -1,0 +1,333 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Assignments;
+use App\Models\Category;
+use App\Models\User;
+use App\Models\Reports;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
+class EvaluatorController extends Controller
+{
+    /**
+     * Display evaluator dashboard - หน้าหลักของผู้ประเมิน
+     */
+    public function dashboard(Request $request)
+    {
+        $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
+
+        if (!$userId) {
+            abort(403, 'Unauthorized');
+        }
+
+        $currentUser = User::with('department', 'position')->find($userId);
+
+        if (!$currentUser) {
+            abort(404, 'ไม่พบผู้ใช้งาน');
+        }
+        $statusFilter = $request->input('status');
+
+        // ดึงข้อมูล assignments แบบ paginate
+        $assignments = DB::table('assignments')
+            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
+            ->join('reports', 'assignments.report_id', '=', 'reports.id')
+            ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
+            ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
+            ->where('assignments.evaluator', $currentUser->id);
+
+        if ($statusFilter && $statusFilter !== '') {
+            $assignments->where('reports.status', $statusFilter);
+        }
+
+        $assignments = $assignments->select(
+            'assignments.assignment_data_id as assignment_data_id',
+            'assignment_datas.start_time',
+            'assignment_datas.end_time',
+            'reports.status',
+            'reports.id as report_id',
+            'report_datas.report_title',
+            'report_datas.assessment_type',
+            'evaluatee.id as evaluatee_id',
+            'evaluatee.prefix as evaluatee_prefix',
+            'evaluatee.name as evaluatee_name',
+            'evaluatee.employee_id as evaluatee_employee_id'
+        )
+            ->orderBy('assignment_datas.start_time', 'desc')
+            ->paginate(5);
+
+        // แปลงข้อมูลเพื่อเพิ่มฟิลด์ sequence, format วันที่ และสถานะ
+        $formattedAssignments = $assignments->getCollection()->map(function ($assignment, $index) use ($assignments) {
+            $statusInfo = $this->getStatusInfo($assignment->status ?? null, $assignment->end_time);
+
+            return (object) [
+                'sequence' => ($assignments->currentPage() - 1) * $assignments->perPage() + $index + 1,
+                'assignment_data_id' => $assignment->assignment_data_id,
+                'report_id' => $assignment->report_id,
+                'report_title' => $assignment->report_title,
+                'assessment_type' => $assignment->assessment_type,
+                'evaluatee_id' => $assignment->evaluatee_id,
+                'evaluatee_name' => $assignment->evaluatee_prefix . $assignment->evaluatee_name,
+                'evaluatee_employee_id' => $assignment->evaluatee_employee_id,
+                'start_date' => $this->formatThaiDate($assignment->start_time),
+                'end_date' => $this->formatThaiDate($assignment->end_time),
+                'status_text' => $statusInfo['text'],
+                'status_class' => $statusInfo['class'],
+                'status_color' => $statusInfo['color'],
+            ];
+        });
+
+        // เซ็ต collection ใหม่ใน paginator
+        $assignments->setCollection($formattedAssignments);
+
+        // ตัวอย่างข้อมูล evaluatorInfo แบบง่าย
+        $evaluatorInfo = [
+            'name' => $currentUser->prefix . $currentUser->name,
+            'employee_id' => $currentUser->employee_id,
+            'experience' => $this->calculateExperience($currentUser->created_at),
+            'average_score' => $this->getAverageEvaluationScore($currentUser->id)
+        ];
+
+        return view('evaluator_dashboard.index', [
+            'assignments' => $assignments,
+            'evaluatorInfo' => $evaluatorInfo,
+            'statusFilter' => $statusFilter
+        ]);
+    }
+
+    /**
+     * Display assignment details - แสดงรายละเอียดของการประเมิน
+     */
+
+    public function show(Request $request, $assignmentId)
+    {
+        $userId = Auth::id() ?? 2;
+
+        if (!$userId) {
+            abort(403, 'Unauthorized');
+        }
+
+        $currentUser = User::with('department', 'position')->findOrFail($userId);
+
+        // ✅ ดึงข้อมูล Assignment และความสัมพันธ์ที่เกี่ยวข้องทั้งหมด
+        $assignment = Assignments::with([
+            'assignmentData',
+            'report.reportData',
+            'report.reportData.criteriaVersion',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+            'evaluatorUser'
+        ])
+            ->where('assignment_data_id', $assignmentId)
+            ->where('evaluator', $userId)
+            ->firstOrFail();
+        $report = $assignment->report;
+        $reportData = $report->reportData;
+
+        // ✅ แปลงข้อมูลเพื่อแสดงผล
+        $statusInfo = $this->getStatusInfo($report->status, $assignment->assignmentData->end_time);
+
+        $assignmentDetails = [
+            'assignment_id' => $assignment->assignment_data_id,
+            'report_id' => $report->id,
+            'report_title' => $reportData->report_title,
+            'report_description' => $reportData->report_description ?? '-',
+            'comment' => $reportData->comment ?? '-',
+            'assessment_type' => $reportData->assessment_type,
+            'version_name' => optional($reportData->criteriaVersion)->version_name ?? '-',
+            'start_date' => $this->formatThaiDate($assignment->assignmentData->start_time),
+            'end_date' => $this->formatThaiDate($assignment->assignmentData->end_time),
+            'status_text' => $statusInfo['text'],
+            'status_class' => $statusInfo['class'],
+            'status_color' => $statusInfo['color'],
+            'evaluatee' => [
+                'id' => optional($assignment->evaluateeUser)->id,
+                'name' => optional($assignment->evaluateeUser)->prefix . ' ' . optional($assignment->evaluateeUser)->name ?? '-',
+                'employee_id' => optional($assignment->evaluateeUser)->employee_id,
+                'department' => optional(optional($assignment->evaluateeUser)->department)->department_name ?? '-',
+                'position' => optional(optional($assignment->evaluateeUser)->position)->name ?? '-',
+            ],
+            'evaluator' => [
+                'name' => optional($assignment->evaluatorUser)->prefix . ' ' . optional($assignment->evaluatorUser)->name,
+                'employee_id' => optional($assignment->evaluatorUser)->employee_id,
+            ],
+            'dates' => [
+                'created_at' => $this->formatThaiDate($report->created_at),
+                'updated_at' => $this->formatThaiDate($report->updated_at),
+            ]
+        ];
+
+        $canEdit = in_array($report->status, ['assigned', 'draft']) &&
+            now()->lte($assignment->assignmentData->end_time);
+
+        // query quantity criteria ยังใช้ DB::table ได้ (หรือ refactor ทีหลัง)
+        $quantityCriteria = DB::table('quantity_main_criterias as qm')
+            ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
+            ->leftJoin('quantity_scores as qscore', function ($join) use ($report) {
+                $join->on('qs.id', '=', 'qscore.quantity_sub_criteria_id')
+                    ->where('qscore.report_id', '=', $report->id);
+            })
+            ->leftJoin('evidence_answers as eanswer', function ($join) use ($report) {
+                $join->on('qs.id', '=', 'eanswer.evaluation_list_id')
+                    ->where('eanswer.report_id', '=', $report->id);
+            })
+            ->select(
+                'qm.id as main_id',
+                'qm.name as main_name',
+                'qm.tooltips as main_tooltips',
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'qs.score_a',
+                'qs.score_b',
+                'qscore.score_C',
+                'qscore.score_D',
+                'eanswer.link as evidence_link'
+            )
+            ->orderBy('qm.id')
+            ->orderBy('qs.sequence')
+            ->get()
+            ->groupBy('main_id');
+
+        // ใช้ criteria_version_id จาก reportData
+        $criteriaVersionId = $reportData->criteria_version_id;
+        // query quality criteria แบบ group by main_id
+        $qualityCriteria = DB::table('quality_main_criterias as qm')
+            ->join('quality_sub_criterias as qs', 'qm.id', '=', 'qs.quality_main_criteria_id')
+            ->leftJoin('quality_scores as qscore', function ($join) use ($report) {
+                $join->on('qs.id', '=', 'qscore.quality_sub_criteria_id')
+                    ->where('qscore.report_id', '=', $report->id);
+            })
+            ->leftJoin('evidence_answers as eanswer', function ($join) use ($report) {
+                $join->on('qs.evaluation_list_id', '=', 'eanswer.evaluation_list_id')
+                    ->where('eanswer.report_id', '=', $report->id);
+            })
+            ->select(
+                'qm.id as main_id',
+                'qm.name as main_name',
+                'qm.tooltips as main_tooltips',
+                'qm.sequence as main_sequence',
+                'qm.ratio as main_ratio',
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'qs.num_score',
+                'qscore.score as filled_score',
+                'eanswer.link as evidence_link'
+            )
+            ->where('qs.criteria_version_id', $criteriaVersionId) // จำกัดให้ตรงเวอร์ชัน
+            ->orderBy('qm.sequence')
+            ->orderBy('qs.sequence')
+            ->get()
+            ->groupBy('main_id');
+
+        $categories = Category::with(['evaluationLists' => function ($query) {
+            $query->orderBy('sequence');
+        }])
+            ->where('criteria_version_id', $criteriaVersionId)
+            ->orderBy('sequence')
+            ->get();
+
+        return view('evaluator_dashboard.evaluatee_show', [
+            'assignment' => $assignmentDetails,
+            'canEdit' => $canEdit,
+            'currentUser' => $currentUser,
+            'quantityCriteria' => $quantityCriteria,
+            'qualityCriteria' => $qualityCriteria,
+            'categories' => $categories,
+        ]);
+    }
+
+
+
+    private function formatThaiDate($datetime)
+    {
+        if (!$datetime) return '-';
+
+        $thaiMonths = [
+            1 => 'ม.ค.',
+            2 => 'ก.พ.',
+            3 => 'มี.ค.',
+            4 => 'เม.ย.',
+            5 => 'พ.ค.',
+            6 => 'มิ.ย.',
+            7 => 'ก.ค.',
+            8 => 'ส.ค.',
+            9 => 'ก.ย.',
+            10 => 'ต.ค.',
+            11 => 'พ.ย.',
+            12 => 'ธ.ค.'
+        ];
+
+        $dateObj = \Carbon\Carbon::parse($datetime);
+        $day = $dateObj->day;
+        $month = $thaiMonths[$dateObj->month];
+        $year = $dateObj->year + 543;
+
+        return sprintf('%02d/%s/%d', $day, $month, $year);
+    }
+
+    private function getStatusInfo($status, $endTime)
+    {
+        $now = now();
+        if (!$endTime) {
+            return [
+                'text' => 'สถานะไม่ระบุ',
+                'class' => 'unknown',
+                'color' => '#6c757d'
+            ];
+        }
+
+        $endDate = \Carbon\Carbon::parse($endTime);
+        switch ($status) {
+            case 'assigned':
+                return [
+                    'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
+                    'class' => 'assigned',
+                    'color' => '#6c757d'
+                ];
+
+            case 'draft':
+                return [
+                    'text' => 'บันทึกแล้ว (รออนุมัติ)',
+                    'class' => 'draft',
+                    'color' => '#ffc107'
+                ];
+
+            case 'pending':
+                return [
+                    'text' => 'รอผลประเมิน (รอกดอนุมัติ)',
+                    'class' => 'pending',
+                    'color' => '#17a2b8'
+                ];
+
+            case 'completed':
+                return [
+                    'text' => 'ประเมินเสร็จสิ้น (อนุมัติแล้ว)',
+                    'class' => 'completed',
+                    'color' => '#28a745'
+                ];
+
+            default:
+                return [
+                    'text' => 'ไม่ทราบสถานะ',
+                    'class' => 'unknown',
+                    'color' => '#6c757d'
+                ];
+        }
+    }
+
+    private function calculateExperience($createdAt)
+    {
+        $years = now()->diffInYears($createdAt);
+        return $years > 0 ? $years : 1;
+    }
+
+    private function getAverageEvaluationScore($userId)
+    {
+        // สมมติให้เป็น 4.5 เป็นค่า default
+        return 4.5;
+    }
+}

@@ -13,14 +13,7 @@ class CompleteDataSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Settings
-        DB::table('settings')->insert([
-            [
-                'faculty' => 'คณะสาธารณสุข',
-                'university' => 'มหาวิทยาลัยขอนแก่น',
-            ]
-        ]);
-
+        
         // 2. Criteria Versions
         DB::table('criteria_versions')->insert([
             [
