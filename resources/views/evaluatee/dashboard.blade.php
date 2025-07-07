@@ -3,7 +3,7 @@
 @section('title', 'Dashboard - ระบบประเมิน')
 
 @section('content')
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="max-w-8xl mx-auto space-y-6">
     <!-- Profile Card at Top -->
     <x-profile-card :user="$user"/>
     

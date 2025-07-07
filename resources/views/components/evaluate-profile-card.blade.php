@@ -5,15 +5,15 @@
         <!-- Left Column -->
         <div class="space-y-3">
             <div class="flex">
-                <span class="font-medium text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
+                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
                 <span class="text-gray-700">{{ $user->name ?? '-' }}</span>
             </div>
             <div class="flex">
-                <span class="font-medium text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
+                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
                 <span class="text-gray-700"></span>
             </div>
             <div class="flex">
-                <span class="font-medium text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
+                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
                 <span class="text-gray-700">{{ $user->position->name ?? '-' }}</span>
             </div>
         </div>
@@ -21,15 +21,15 @@
         <!-- Right Column -->
         <div class="space-y-3">
             <div class="flex">
-                <span class="font-medium text-gray-800 w-36 flex-shrink-0">หน่วยงาน/คณะ:</span>
+                <span class="font-bold text-gray-800 w-36 flex-shrink-0">หน่วยงาน/คณะ:</span>
                 <span class="text-gray-700">{{ $user->department->department_name ?? '-' }}</span>
             </div>
             <div class="flex">
-                <span class="font-medium text-gray-800 w-36 flex-shrink-0">ประเภทบุคลากร:</span>
+                <span class="font-bold text-gray-800 w-36 flex-shrink-0">ประเภทบุคลากร:</span>
                 <span class="text-gray-700">{{ $user->personnel_type ?? '-' }}</span>
             </div>
             <div class="flex">
-                <span class="font-medium text-gray-800 w-36 flex-shrink-0">รอบการประเมิน:</span>
+                <span class="font-bold text-gray-800 w-36 flex-shrink-0">รอบการประเมิน:</span>
                 <span class="text-gray-700"></span>
             </div>
         </div>

@@ -1,15 +1,38 @@
 @props(['evaluations', 'statusCounts'])
 
+@php
+    use Carbon\Carbon;
+
+    function formatThaiDate($date)
+    {
+        if (!$date) return '-';
+
+        Carbon::setLocale('th'); 
+        setlocale(LC_TIME, 'th_TH.UTF-8');
+
+        $thaiMonth = $date->translatedFormat('j F'); 
+        $buddhistYear = $date->year + 543;
+        $time = $date->format('H:i');
+
+        return "{$thaiMonth} {$buddhistYear} เวลา {$time} น.";
+    }
+@endphp
+
+
 <div class="bg-white rounded-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
-    
+
     <!-- Status Badges -->
     <div class="flex gap-3 mb-6 flex-wrap">
         @foreach($statusCounts as $status => $count)
-            <x-status-badge :status="$status" :count="$count" />
+            <x-status-badge 
+                :status="$status" 
+                :count="$count" 
+                :active="request('status') === $status" 
+            />
         @endforeach
     </div>
-    
+
     <!-- Table Format -->
     <div class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -25,33 +48,58 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($evaluations as $index => $evaluation)
+                @forelse($evaluations as $index => $assignment)
+                    @php
+                        $report = $assignment->report;
+                        $assignmentData = $assignment->assignmentData;
+                        $evaluator = $assignment->evaluatorUser;
+
+                        $reportTitle = optional(optional($assignmentData)->report)->reportData->report_title
+                            ?? optional($report)->reportData->report_title
+                            ?? '-';
+
+                        $statusFromDB = optional($report)->status ?? 'Assigned';
+                        $statusMapping = [
+                            'Assigned' => 'ยังไม่ประเมิน',
+                            'Draft' => 'กำลังดำเนินการ',
+                            'Pending' => 'รอผลการประเมิน',
+                            'Completed' => 'ประเมินเสร็จสิ้น',
+                        ];
+                        $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
+
+                        $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
+                        $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
+
+                        $evaluatorName = optional($evaluator)->name ?? '-';
+                    @endphp
+
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="p-4 border-b text-gray-500">{{ $index + 1 }}</td>
+
                         <td class="p-4 border-b">
-                            <div class="font-medium text-gray-800">{{ $evaluation['title'] }}</div>
-                            @if(isset($evaluation['description']))
-                                <div class="text-sm text-gray-500 mt-1">{{ $evaluation['description'] }}</div>
-                            @endif
+                            <div class="font-medium text-gray-800">{{ $reportTitle }}</div>
                         </td>
-                        <td class="p-4 border-b text-gray-500">{{ $evaluation['start_date'] ?? '-' }}</td>
-                        <td class="p-4 border-b text-gray-500">{{ $evaluation['end_date'] ?? '-' }}</td>
-                        <td class="p-4 border-b text-gray-500">{{ $evaluation['evaluator'] ?? '-' }}</td>
+
+                        <td class="p-4 border-b text-gray-500">{{ formatThaiDate($start) }}</td>
+                        <td class="p-4 border-b text-gray-500">{{ formatThaiDate($end) }}</td>
+
+                        <td class="p-4 border-b text-gray-500">{{ $evaluatorName }}</td>
+
                         <td class="p-4 border-b text-center">
                             @php
                                 $statusClasses = [
                                     'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                     'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
                                     'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                    'ประเมินแล้ว' => 'bg-green-100 text-green-800',
-                                    'แสดงผลการประเมิน' => 'bg-purple-100 text-purple-800'
+                                    'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                 ];
-                                $statusClass = $statusClasses[$evaluation['status']] ?? 'bg-gray-100 text-gray-800';
+                                $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
                             @endphp
                             <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusClass }}">
-                                {{ $evaluation['status'] }}
+                                {{ $status }}
                             </span>
                         </td>
+
                         <td class="p-4 border-b text-center">
                             @php
                                 $actions = [
@@ -63,18 +111,21 @@
                                         'label' => 'ประเมินต่อ',
                                         'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
                                     ],
-                                    'แสดงผลการประเมิน' => [
-                                        'label' => 'แสดงผล',
-                                        'classes' => 'bg-purple-500 hover:bg-purple-600 text-white'
+                                    'รอผลการประเมิน' => [
+                                        'label' => 'ดูผล',
+                                        'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                    ],
+                                    'ประเมินเสร็จสิ้น' => [
+                                        'label' => 'ดูผล',
+                                        'classes' => 'bg-green-500 hover:bg-green-600 text-white'
                                     ],
                                 ];
-
-                                $action = $actions[$evaluation['status']] ?? null;
+                                $action = $actions[$status] ?? null;
                             @endphp
 
                             @if($action)
-                                <a href="{{ route('evaluation.show', $evaluation['id']) }}"
-                                class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
+                                <a href="{{ route('evaluation.show', $report->id ?? 0) }}"
+                                   class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
                                     {{ $action['label'] }}
                                 </a>
                             @else

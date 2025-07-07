@@ -2,45 +2,22 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
+use App\Models\Assignments;
+use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
 {
-    // public function index(Request $request): View
-    // {
-    //     $user = $request->user()->load('position', 'department');
-
-    //     // Sample data - replace with your actual data source
-    //     $evaluations = [
-    //         [
-    //             'title' => 'ยังไม่ประเมิน',
-    //             'description' => null,
-    //             'start_date' => '1 เมษายน 2568',
-    //             'end_date' => '15 เมษายน 2568',
-    //             'evaluator' => 'ผู้บังคับบัญชา',
-    //             'status' => 'ยังไม่ประเมิน',
-    //             'id' => 1
-    //         ],
-    //         [
-    //             'title' => 'บันทึกกิจวัตรประจำวัน',
-    //             'description' => null,
-    //             'start_date' => '1 เมษายน 2568',
-    //             'end_date' => '30 เมษายน 2568',
-    //             'evaluator' => 'ตนเอง',
-    //             'status' => 'กำลังดำเนินการ',
-    //             'id' => 2
-    //         ]
-    // }
-
     public function index(Request $request)
     {
         $user = $request->user()->load([
             'position',
             'department',
-            'assignment.assignmentData',
+            'assignment.assignmentData', // Load nested relationships
             'assignment.report.reportData',
+            'assignment.evaluatorUser', // Load evaluator user relationship
         ]);
 
         $evaluations = $user->assignment->pluck('report')->filter();
@@ -48,7 +25,7 @@ class DashboardController extends Controller
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
             'ยังไม่ประเมิน' => $evaluations->where('status', 'Assigned')->count(),
-            'บันทึกร่างประเมิน' => $evaluations->where('status', 'Draft')->count(),
+            'กำลังดำเนินการ' => $evaluations->where('status', 'Draft')->count(),
             'รอผลการประเมิน' => $evaluations->where('status', 'Pending')->count(),
             'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
@@ -56,19 +33,92 @@ class DashboardController extends Controller
         return view('evaluatee.dashboard', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $evaluations,
+            'evaluations' => $user->assignment,
         ]);
     }
-    
+
     public function evaluation(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
-        // Handle individual evaluation view/edit
+
+        $report = Report::with([
+            'reportData',
+            'assignments.evaluatorUser',
+            'assignments.assignmentData',
+        ])->findOrFail($id);
+        
+        $currentAssignment = $report->assignments
+        ->where('evaluatee', $user->id)
+        ->first();
+
+        function formatThai($datetime) {
+        if (!$datetime) return '-';
+            \Carbon\Carbon::setLocale('th');
+            setlocale(LC_TIME, 'th_TH.UTF-8');
+            $date = \Carbon\Carbon::parse($datetime);
+            $year = $date->year + 543;
+            return $date->translatedFormat('j F') . " {$year} เวลา " . $date->format('H:i') . ' น.';
+        }
+        
         return view('evaluatee.evaluation', [
             'id' => $id,
-            'user' => $user
+            'user' => $user,
+            'report' => $report,
+            'assignment' => $currentAssignment,
         ]);
     }
+    
+    // public function evaluation(Request $request, $id)
+    // {
+    //     $user = $request->user()->load('position', 'department');
+        
+    //     $assignment = Assignments::with([
+    //         'assignmentData',
+    //         'report.reportData',
+    //         'evaluatorUser:id,name',
+    //     ]);
+        
+    //     // if ($assignment->evaluatee !== $user->id) {
+    //     //     abort(403, 'คุณไม่มีสิทธิ์เข้าถึงการประเมินนี้');
+    //     // }
+        
+    //     $report = $assignment->report;
+    //     $assignmentData = $assignment->assignmentData;
+    //     $evaluator = $assignment->evaluatorUser;
+
+    //     function formatThai($datetime) {
+    //     if (!$datetime) return '-';
+    //         \Carbon\Carbon::setLocale('th');
+    //         setlocale(LC_TIME, 'th_TH.UTF-8');
+    //         $date = \Carbon\Carbon::parse($datetime);
+    //         $year = $date->year + 543;
+    //         return $date->translatedFormat('j F') . " {$year} เวลา " . $date->format('H:i') . ' น.';
+    //     }
+        
+    //     // Map status to Thai
+    //     $statusFromDB = optional($report)->status ?? 'Assigned';
+    //     $statusMapping = [
+    //         'Assigned' => 'ยังไม่ประเมิน',
+    //         'Draft' => 'กำลังดำเนินการ',
+    //         'Pending' => 'รอผลการประเมิน',
+    //         'Completed' => 'ประเมินเสร็จสิ้น',
+    //     ];
+    //     $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
+        
+    //     return view('evaluatee.evaluation', [
+    //         'id' => $id,
+    //         'user' => $user,
+    //         'assignment' => $assignment,
+    //         'report' => $report,
+    //         'assignmentData' => $assignmentData,
+    //         'evaluator' => $evaluator,
+    //         'status' => $status,
+    //         'statusFromDB' => $statusFromDB,
+    //         'startTime' => formatThai(optional($assignmentData)->start_time),
+    //         'endTime' => formatThai(optional($assignmentData)->end_time),
+    //         'canEdit' => in_array($statusFromDB, ['Assigned', 'Draft']),
+    //     ]);
+    // }
 
     public function updateEvaluation(Request $request, $id)
     {

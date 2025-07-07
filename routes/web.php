@@ -94,7 +94,7 @@ Route::prefix('evaluation')->name('evaluation.')->group(function () {
 // ใน web.php - แก้ไขส่วนของ evaluator routes
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
     // Dashboard หลักของผู้ประเมิน - แสดงรายการ assignments ทั้งหมด
-    Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
+    // Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
     // Route::get('/evaluations/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluations.evaluator_form');
     // แสดงรายละเอียด assignment เฉพาะ
     // Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
