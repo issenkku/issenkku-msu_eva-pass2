@@ -44,6 +44,13 @@
     </div>
 
     @stack('scripts')
+    @if (session('success'))
+        <script>
+            alert('{{ session('success') }}');
+        </script>
+    @endif
+
+
 </body>
 
 </html>

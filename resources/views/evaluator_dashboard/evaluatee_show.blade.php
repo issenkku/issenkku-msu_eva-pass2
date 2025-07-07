@@ -115,18 +115,15 @@
                                                 $scoreA = $criteria->score_a;
                                                 $scoreB = $criteria->score_b;
                                                 $scoreC = $criteria->score_c ?? null;
-                                                $scoreD =
-                                                    $criteria->score_d ??
-                                                    ($scoreB > 0 && $scoreC !== null
-                                                        ? round(($scoreA * $scoreC) / $scoreB, 2)
-                                                        : null);
+                                                $scoreD = $criteria->score_d ?? null;
+
                                             @endphp
                                             <tr>
                                                 <td class="text-left">{{ $criteria->name }}</td>
-                                                <td>{{ number_format($scoreA, 2) }}</td>
-                                                <td>{{ number_format($scoreB, 2) }}</td>
-                                                <td>{{ $scoreC !== null ? number_format($scoreC, 2) : '-' }}</td>
-                                                <td>{{ $scoreD !== null ? number_format($scoreD, 2) : '-' }}</td>
+                                                <td>{{ number_format($scoreA) }}</td>
+                                                <td>{{ number_format($scoreB) }}</td>
+                                                <td>{{ $scoreC !== null ? number_format($scoreC) : '-' }}</td>
+                                                <td>{{ $scoreD !== null ? number_format($scoreD) : '-' }}</td>
                                             </tr>
                                         @endforeach
                                     @endforeach
@@ -188,6 +185,7 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ number_format($criteria->num_score, 2) }}</td>
+
                                                 <td>
                                                     {{ is_numeric($criteria->filled_score) ? number_format($criteria->filled_score, 2) : '-' }}
                                                 </td>

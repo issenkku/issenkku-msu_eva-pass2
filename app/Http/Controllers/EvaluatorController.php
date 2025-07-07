@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignments;
 use App\Models\Category;
+use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
 use App\Models\User;
 use App\Models\Reports;
 use Illuminate\Http\Request;
@@ -282,6 +284,7 @@ class EvaluatorController extends Controller
                 }
             }
         });
+
         return view('evaluator_dashboard.evaluatee_show', [
             'assignment' => $assignmentDetails,
             'canEdit' => $canEdit,
@@ -291,7 +294,113 @@ class EvaluatorController extends Controller
         ]);
     }
 
+    public function edit($id)
+    {
+        $userId = Auth::id() ?? 2;
 
+        $assignment = Assignments::with([
+            'assignmentData',
+            'report',
+            'report.reportData.criteriaVersion',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+            'evaluatorUser'
+        ])
+            ->where('assignment_data_id', $id)
+            ->where('evaluator', $userId)
+            ->firstOrFail();
+
+        $criteriaVersionId = $assignment->report->reportData->criteria_version_id ?? null;
+
+        // โหลดคะแนนของ quantity_sub_criterias
+        $quantityScores = DB::table('quantity_scores')
+            ->where('report_id', $assignment->report_id)
+            ->get()
+            ->keyBy('quantity_sub_criteria_id');
+
+        // โหลดคะแนนของ quality_sub_criterias
+        $filledScores = QualityScore::where('report_id', $assignment->report_id)
+            ->pluck('score', 'quality_sub_criteria_id')
+            ->toArray();
+
+        // โหลด evidence ของแต่ละ evaluation_list_id
+        $evidenceAnswers = DB::table('evidence_answers')
+            ->where('report_id', $assignment->report_id)
+            ->get()
+            ->groupBy('evaluation_list_id');
+
+        $categories = collect();
+
+        if ($criteriaVersionId) {
+            $categories = Category::with([
+                'evaluationLists' => function ($query) {
+                    $query->orderBy('sequence')->with([
+                        'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                        'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    ]);
+                }
+            ])
+                ->where('criteria_version_id', $criteriaVersionId)
+                ->orderBy('sequence')
+                ->get();
+        }
+
+        // ผูกคะแนนและ evidence เข้า quantitySubCriterias และ qualitySubCriterias
+        foreach ($categories as $category) {
+            foreach ($category->evaluationLists as $list) {
+
+                // Quantity
+                foreach ($list->quantitySubCriterias as $criteria) {
+                    $score = $quantityScores->get($criteria->id);
+                    if ($score) {
+                        $criteria->score_c = $score->score_C;
+                        $criteria->score_d = $score->score_D;
+                    }
+
+                    // ดึง evidence link
+                    $evidences = $evidenceAnswers->get($criteria->evaluation_list_id);
+                    $criteria->evidence_links = $evidences ? $evidences->pluck('link')->all() : [];
+                }
+
+                // Quality
+                foreach ($list->qualitySubCriterias as $criteria) {
+                    // คะแนนคุณภาพ
+                    $criteria->filled_score = $filledScores[$criteria->id] ?? null;
+
+                    // ดึง evidence link
+                    $evidences = $evidenceAnswers->get($criteria->evaluation_list_id);
+                    $criteria->evidence_links = $evidences ? $evidences->pluck('link')->all() : [];
+                }
+            }
+        }
+
+        return view('evaluator_dashboard.evaluatee_form', compact('assignment', 'categories'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'scores' => 'required|array',
+            'scores.*' => 'nullable|numeric|min:0|max:5',
+        ]);
+
+        foreach ($validated['scores'] as $criteriaId => $score) {
+            if (empty($criteriaId) || $criteriaId == 0) continue;
+
+            QualityScore::updateOrCreate(
+                [
+                    'quality_sub_criteria_id' => $criteriaId,
+                    'report_id' => $id,
+                ],
+                [
+                    'score' => $score,
+                ]
+            );
+        }
+
+
+        return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
+    }
 
 
     private function formatThaiDate($datetime)

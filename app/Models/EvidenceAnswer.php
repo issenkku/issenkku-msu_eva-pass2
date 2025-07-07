@@ -29,6 +29,6 @@ class EvidenceAnswer extends Model
 
     public function report(): BelongsTo
     {
-        return $this->belongsTo(Report::class);
+        return $this->belongsTo(Reports::class);
     }
 }

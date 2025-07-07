@@ -95,7 +95,7 @@
                                                 </a>
 
                                                 @if ($assignment->status_class !== 'completed')
-                                                    <a href="{{ route('evaluator.assignment.evaluate', $assignment->assignment_data_id) }}"
+                                                    <a href="{{ route('evaluator.evaluatee.edit', $assignment->assignment_data_id) }}"
                                                         class="btn-edit" title="แก้ไข">
                                                         <i class="fa-solid fa-pen-to-square"></i>
                                                     </a>
