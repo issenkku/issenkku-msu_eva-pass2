@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
 use App\Models\Assignments;
-
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
@@ -16,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AssignmentDataController extends Controller
 {
+  
 public function index()
 {
     $assignmentData = AssignmentData::with([

@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Models\Setting\Department;
+use App\Models\Setting\Departments;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Setting\Position;
+use App\Models\Setting\Positions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -29,8 +29,8 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        $positions = Position::all(); // Your positions
-        $departments = Department::all(); // Your departments
+        $positions = Positions::all(); // Your positions
+        $departments = Departments::all(); // Your departments
         
         return view('user.profile.edit-profile', compact('user', 'positions', 'departments'));
     }
