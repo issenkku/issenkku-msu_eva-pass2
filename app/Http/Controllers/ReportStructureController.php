@@ -397,23 +397,21 @@ class ReportStructureController extends Controller
     // Delete (DELETE)
     public function destroy($id)
     {
-        $criteriaVersion = CriteriaVersion::findOrFail($id);
+        //$criteriaVersion = CriteriaVersion::findOrFail($id);
 
-        // เช็คว่ามี report_datas ที่อ้างถึง criteriaVersion นี้หรือไม่
+        $relatedReports = \DB::table('reports')
+            ->where('report_data_id', $id)->get();
 
-        // ดึง report_datas ทั้งหมดที่อ้างถึง criteriaVersion นี้
-        $reportDatas = $criteriaVersion->reportDatas;
-        if ($reportDatas->count() > 0) {
-            // ดึง id ของ report_datas ทั้งหมด
-            $reportDataIds = $reportDatas->pluck('id')->unique();
-            // เช็คว่ามี reports ที่อ้างถึง report_datas เหล่านี้หรือไม่
-            $usedInReports = \DB::table('reports')
-                ->whereIn('report_data_id', $reportDataIds)
-                ->count();
-            if ($usedInReports > 0) {
+        \Debugbar::info($relatedReports);
+
+        if ($relatedReports->count() > 0) {
+            // ถ้ามี report ไหนที่ status ไม่ใช่ Completed ห้ามลบ
+            $notCompleted = $relatedReports->where('status', '!=', 'Completed');
+            if ($notCompleted->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'ไม่สามารถลบได้ เนื่องจากมีการใช้งานโครงสร้างเกณฑ์นี้อยู่ในรายงานผลการประเมิน ต้องลบรายงานผลการประเมินที่เกี่ยวข้องก่อน',
+                    'message' => 'ไม่สามารถลบได้ ต้องให้รายงานที่ใช้โครงสร้างนี้ทุกตัวมีสถานะเป็น Completed ก่อน',
+                    'not_completed_count' => $notCompleted->count(),
                 ], 409);
             }
         }
