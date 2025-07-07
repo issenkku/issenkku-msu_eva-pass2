@@ -21,18 +21,8 @@ class ReportStructureController extends Controller
     // Get all criteria versions
     public function index()
     {
-        $criteriaVersions = CriteriaVersion::with('createdByUser')->get();
-        // Map to include user name
-        $result = $criteriaVersions->map(function($item) {
-            $arr = $item->toArray();
-            $arr['created_by'] = $item->createdByUser ? [
-                'id' => $item->createdByUser->id,
-                'name' => $item->createdByUser->name
-            ] : null;
-            $arr['created_by_name'] = $item->createdByUser ? $item->createdByUser->name : null;
-            return $arr;
-        });
-        return response()->json(['data' => $result]);
+        $criteriaVersions = CriteriaVersion::all();
+        return CriteriaVersionResource::collection($criteriaVersions);
     }
 
     public function show($id)
@@ -213,7 +203,7 @@ class ReportStructureController extends Controller
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'required|string',
-            'report_datas.*.assessment_type' => 'required|string', //ประเภทของการปนะเมิน เช่น สายสนับสนุน, สายวิชาการ
+            'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
@@ -398,16 +388,27 @@ class ReportStructureController extends Controller
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
-        try {
-            $criteriaVersion->delete();
-            return response()->json(null, 204);
-        } catch (\Illuminate\Database\QueryException $e) {
-            if (str_contains($e->getMessage(), 'a foreign key constraint fails') && str_contains($e->getMessage(), 'evidence_answers_report_id_foreign')) {
+
+        // เช็คว่ามี report_datas ที่อ้างถึง criteriaVersion นี้หรือไม่
+
+        // ดึง report_datas ทั้งหมดที่อ้างถึง criteriaVersion นี้
+        $reportDatas = $criteriaVersion->reportDatas;
+        if ($reportDatas->count() > 0) {
+            // ดึง id ของ report_datas ทั้งหมด
+            $reportDataIds = $reportDatas->pluck('id')->unique();
+            // เช็คว่ามี reports ที่อ้างถึง report_datas เหล่านี้หรือไม่
+            $usedInReports = \DB::table('reports')
+                ->whereIn('report_data_id', $reportDataIds)
+                ->count();
+            if ($usedInReports > 0) {
                 return response()->json([
-                    'message' => 'ไม่สามารถลบได้เนื่องจากมีการใช้งานเกณฑ์ประเมินเวอร์ชั่นนี้อยู่'
+                    'success' => false,
+                    'message' => 'ไม่สามารถลบได้ เนื่องจากมีการใช้งานโครงสร้างเกณฑ์นี้อยู่ในรายงานผลการประเมิน ต้องลบรายงานผลการประเมินที่เกี่ยวข้องก่อน',
                 ], 409);
             }
-            throw $e;
         }
+
+        $criteriaVersion->delete();
+        return response()->json(null, 204);
     }
 }

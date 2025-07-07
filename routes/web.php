@@ -61,7 +61,7 @@ Route::prefix('positions')->name('positions.')->group(function () {
 Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
    Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
    Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
-   Route::post('/', [AssignmentDataController::class, 'store'])->name('store');  // เปลี่ยนจาก '/store' เป็น '/'
+   Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
 });
 
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {

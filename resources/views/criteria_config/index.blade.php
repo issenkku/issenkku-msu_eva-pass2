@@ -2,17 +2,6 @@
 @extends('layouts.app')
 
 @section('content')
-    @if(request('success'))
-        <div class="alert alert-success fixed top-0 left-0 w-full z-50 flex justify-center" style="pointer-events:none;">
-            อัปเดตข้อมูลสำเร็จ
-        </div>
-        <script>
-            setTimeout(function() {
-                const alert = document.querySelector('.alert-success');
-                if(alert) alert.remove();
-            }, 2000);
-        </script>
-    @endif
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Page Header -->
@@ -37,7 +26,57 @@
         </div>
     </div>
     <script>
+        // Unified showAlert function, globally available
+        // Modal-based alert (replaces browser alert)
+        function showAlert(message, type = 'success') {
+            let modal = document.getElementById('custom-alert-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'custom-alert-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.innerHTML = `
+                    <div id="custom-alert-box" class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
+                        <div class="flex justify-center mb-4">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full ${type === 'error' ? 'bg-red-100' : 'bg-green-100'}">
+                                ${type === 'error' ? '<svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' : '<svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>'}
+                            </span>
+                        </div>
+                        <div class="text-lg font-semibold mb-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}">${type === 'error' ? 'เกิดข้อผิดพลาด' : 'สำเร็จ'}</div>
+                        <div class="mb-4 text-gray-700">${message}</div>
+                        <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                // update content if already exists
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.querySelector('#custom-alert-box').className = `bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in`;
+                modal.querySelector('#custom-alert-box').innerHTML = `
+                    <div class="flex justify-center mb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full ${type === 'error' ? 'bg-red-100' : 'bg-green-100'}">
+                            ${type === 'error' ? '<svg class=\"w-7 h-7 text-red-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6 18L18 6M6 6l12 12\"/></svg>' : '<svg class=\"w-7 h-7 text-green-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M5 13l4 4L19 7\"/></svg>'}
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold mb-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}">${type === 'error' ? 'เกิดข้อผิดพลาด' : 'สำเร็จ'}</div>
+                    <div class="mb-4 text-gray-700">${message}</div>
+                    <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                `;
+                modal.style.display = '';
+            }
+            // Close on OK
+            modal.querySelector('#custom-alert-ok').onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Show success alert if redirected with ?success=1
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success')) {
+                showAlert('อัปเดตข้อมูลสำเร็จ', 'success');
+            }
             fetchCriteriaVersions();
         });
 
@@ -149,9 +188,9 @@
             })
             .then(res => {
                 if (res.ok) {
-                    // Remove card from UI
-                    btn.closest('.bg-gray-100').remove();
                     hideDeleteModal();
+                    showAlert('ลบข้อมูลสำเร็จ', 'success');
+                    setTimeout(() => { window.location.reload(); }, 1200);
                 } else {
                     return res.json().then(data => { throw new Error(data.message || 'ลบไม่สำเร็จ'); });
                 }
@@ -163,15 +202,6 @@
                 btn.disabled = false;
                 hideDeleteModal();
             });
-
-        // แจ้งเตือนแบบ alert bar ด้านบน
-            function showAlert(message, type = 'success') {
-                let alert = document.createElement('div');
-                alert.className = `alert fixed top-0 left-0 w-full z-50 flex justify-center pointer-events-none`;
-                alert.innerHTML = `<div class="mt-6 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-6 py-3 rounded shadow-lg text-lg font-semibold flex items-center">${type === 'error' ? '<span class=font-bold style=font-size:1.3em;margin-right:8px;>!</span>' : '<span class=font-bold style=font-size:1.3em;margin-right:8px;>✔</span>'}${message}</div>`;
-                document.body.appendChild(alert);
-                setTimeout(() => { alert.remove(); }, 2500);
-            }
         }
     </script>
         </div>
