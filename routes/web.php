@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Evaluatee\DashboardController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
@@ -13,9 +14,11 @@ use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\AssignmentDataController;
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+use function Pest\Laravel\json;
+
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+})->name('home');
 
 Route::prefix('departments')->name('departments.')->group(function () {
     Route::get('/', [DepartmentsController::class, 'index'])->name('index');
@@ -41,10 +44,10 @@ Route::middleware('guest')->controller(AuthController::class)->group(function(){
     Route::post('/login', 'login');
 });
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-// Route::resource('/roles', RoleAndPermissionController::class);
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+Route::resource('/roles', RoleAndPermissionController::class);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
@@ -71,19 +74,17 @@ Route::get('/evaluator-show', function () {
     return view('evaluator_dashboard.evaluatee_show');
 });
 
-// preDelete
-// Route::get('/criteria-config', function () {
-//     return view('criteria_config.index');
-// });
-// Route::get('/criteria-configs', function () {
-//     return view('criteria_config.create');
-// });
-// Route::get('/criteria-evaluators', function () {
-//     return view('criteria_config.evaluators');
-// });
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
+Route::put('/evaluation/{id}', [DashboardController::class, 'updateEvaluation'])->name('evaluation.update');
+
+// Additional routes for evaluation system
+Route::prefix('evaluation')->name('evaluation.')->group(function () {
+    Route::get('/create', [DashboardController::class, 'create'])->name('create');
+    Route::post('/store', [DashboardController::class, 'store'])->name('store');
+    Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
+    Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
+});
 
 
-    // // เริ่มการประเมิน
-    // Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
-// });
 require __DIR__.'/report.php';

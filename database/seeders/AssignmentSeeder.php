@@ -1,0 +1,41 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+
+class AssignmentSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        DB::table('assignment_datas')->insert([
+            [
+                'start_time' => Carbon::parse('2025-01-01'),
+                'end_time' => Carbon::parse('2025-03-31'),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        ]);
+
+        DB::table('assignments')->insert([
+            [
+                'assignment_data_id' => 1,
+                'report_id' => 1,
+                'evaluatee' => 3,
+                'evaluator' => 2,
+            ],
+            [
+                'assignment_data_id' => 1,
+                'report_id' => 2,
+                'evaluatee' => 4,
+                'evaluator' => 2,
+            ],
+        ]);
+    }
+}
