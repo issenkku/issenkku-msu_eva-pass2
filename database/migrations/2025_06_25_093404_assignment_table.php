@@ -21,7 +21,7 @@ return new class extends Migration
 
         Schema::create('assignments', function(Blueprint $table){
             $table->foreignId('assignment_data_id')->constrained('assignment_datas')->onDelete('cascade');
-            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade')->unique();
             $table->foreignId('evaluatee')->constrained('users')->onDelete('cascade');
             $table->foreignId('evaluator')->constrained('users')->onDelete('cascade');
         });
