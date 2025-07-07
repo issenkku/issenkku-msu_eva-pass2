@@ -23,11 +23,44 @@
                 <div class="flex justify-center py-10 text-gray-500">Loading...</div>
             </div>
         </form>
+        <div id="update-success-alert" class="hidden fixed top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 text-lg font-semibold">
+            อัปเดตข้อมูลสำเร็จ
+        </div>
     </div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         fetchVersionDetails();
+        document.getElementById('editVersionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const url = form.action;
+            const formData = new FormData(form);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(res => {
+                if (res.ok) return res.json();
+                return res.json().then(data => { throw data; });
+            })
+            .then(data => {
+                window.location.href = "{{ route('criteria_config.index') }}?success=1";
+            })
+            .catch(err => {
+                let msg = 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล';
+                if (err && err.errors && err.errors.version_name) {
+                    msg = err.errors.version_name[0];
+                }
+                alert(msg);
+            });
+        });
     });
     function fetchVersionDetails() {
         const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}";
@@ -52,6 +85,7 @@
             document.getElementById('criteria-details').innerHTML = '<div class="text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
         });
     }
+    // showSuccessAlert() ไม่จำเป็นอีกต่อไป เพราะ redirect ไปหน้า index พร้อม query success=1
     function renderVersionDetails(data) {
         let html = '';
         html += `<div class="bg-white rounded-lg shadow-lg p-8 mb-8">

@@ -382,7 +382,7 @@ class ReportStructureController extends Controller
         ]);
 
         // $authUser = Auth::guard('api')->user();
-        $version = CriteriaVersion::where('version_id', $id)->first();
+        $version = CriteriaVersion::where('id', $id)->first();
 
         // $validated['created_by'] = $authUser->user_id;
 
@@ -398,7 +398,16 @@ class ReportStructureController extends Controller
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
-        $criteriaVersion->delete();
-        return response()->json(null, 204);
+        try {
+            $criteriaVersion->delete();
+            return response()->json(null, 204);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (str_contains($e->getMessage(), 'a foreign key constraint fails') && str_contains($e->getMessage(), 'evidence_answers_report_id_foreign')) {
+                return response()->json([
+                    'message' => 'ไม่สามารถลบได้เนื่องจากมีการใช้งานเกณฑ์ประเมินเวอร์ชั่นนี้อยู่'
+                ], 409);
+            }
+            throw $e;
+        }
     }
 }

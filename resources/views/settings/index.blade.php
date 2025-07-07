@@ -253,12 +253,12 @@
                                 <!-- จำนวนวันแจ้งเตือน -->
                                 <div class="form-group-custom">
                                     <label for="notification_days" class="form-label-custom">
-                                        จำนวนวันแจ้งเตือน <span style="color: #dc3545;">*</span>
+                                        จำนวนวันแจ้งเตือนทางอีเมล <span style="color: #dc3545;">*</span>
                                     </label>
                                     <div class="input-group-custom">
                                         <input type="number" name="notification_days" id="notification_days"
                                             class="form-control form-control-custom" 
-                                            placeholder="กรุณาระบุจำนวนวัน (1-30 วัน)"
+                                            placeholder="กรุณาระบุจำนวนวันล่วงหน้าที่ต้องการให้แจ้งเตือน (1-30 วัน)"
                                             min="1" max="30"
                                             value="{{ old('notification_days', $setting->notification_days ?? 7) }}" 
                                             required>
@@ -272,7 +272,7 @@
                                     @enderror
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle me-1"></i>
-                                        จำนวนวันที่จะแจ้งเตือนก่อนถึงกำหนดสิ้นสุดการประเมิน (1-30 วัน)
+                                        ระบบจะส่งอีเมลแจ้งเตือนก่อนถึงวันสิ้นสุดการประเมินตามจำนวนวันที่ระบุ (1-30 วัน)
                                     </small>
                                 </div>
 

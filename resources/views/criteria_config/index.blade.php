@@ -2,6 +2,17 @@
 @extends('layouts.app')
 
 @section('content')
+    @if(request('success'))
+        <div class="alert alert-success fixed top-0 left-0 w-full z-50 flex justify-center" style="pointer-events:none;">
+            อัปเดตข้อมูลสำเร็จ
+        </div>
+        <script>
+            setTimeout(function() {
+                const alert = document.querySelector('.alert-success');
+                if(alert) alert.remove();
+            }, 2000);
+        </script>
+    @endif
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Page Header -->
@@ -77,14 +88,14 @@
         let deleteTargetId = null;
         let deleteTargetBtn = null;
 
-        // Modal HTML
+        // Modal HTML (top bar style)
         function ensureDeleteModal() {
             if (deleteModal) return;
             deleteModal = document.createElement('div');
             deleteModal.id = 'delete-modal';
-            deleteModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden';
+            deleteModal.className = 'fixed top-0 left-0 w-full z-50 flex justify-center hidden';
             deleteModal.innerHTML = `
-                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 text-center relative animate-fade-in">
+                <div class="mt-6 bg-white border border-red-200 rounded-xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
                     <div class="mx-auto mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
                         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </div>
@@ -101,9 +112,7 @@
             deleteModal.querySelector('#cancel-delete-btn').onclick = function() {
                 hideDeleteModal();
             };
-            deleteModal.addEventListener('click', function(e) {
-                if (e.target === deleteModal) hideDeleteModal();
-            });
+            // ไม่ต้องปิด modal เมื่อคลิกพื้นหลัง
             deleteModal.querySelector('#confirm-delete-btn').onclick = function() {
                 if (deleteTargetId && deleteTargetBtn) {
                     doDeleteCriteriaVersion(deleteTargetId, deleteTargetBtn);
@@ -129,7 +138,7 @@
 
         function doDeleteCriteriaVersion(id, btn) {
             btn.disabled = true;
-            fetch(`/reports/${id}`, {
+            fetch(`/report-version/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
@@ -148,10 +157,21 @@
                 }
             })
             .catch(err => {
-                alert('เกิดข้อผิดพลาด: ' + err.message);
+                let msg = err.message;
+                console.error('Delete error:', msg);
+                showAlert('เกิดข้อผิดพลาด: ' + msg, 'error');
                 btn.disabled = false;
                 hideDeleteModal();
             });
+
+        // แจ้งเตือนแบบ alert bar ด้านบน
+            function showAlert(message, type = 'success') {
+                let alert = document.createElement('div');
+                alert.className = `alert fixed top-0 left-0 w-full z-50 flex justify-center pointer-events-none`;
+                alert.innerHTML = `<div class="mt-6 ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-6 py-3 rounded shadow-lg text-lg font-semibold flex items-center">${type === 'error' ? '<span class=font-bold style=font-size:1.3em;margin-right:8px;>!</span>' : '<span class=font-bold style=font-size:1.3em;margin-right:8px;>✔</span>'}${message}</div>`;
+                document.body.appendChild(alert);
+                setTimeout(() => { alert.remove(); }, 2500);
+            }
         }
     </script>
         </div>
