@@ -397,12 +397,10 @@ class ReportStructureController extends Controller
     // Delete (DELETE)
     public function destroy($id)
     {
-        //$criteriaVersion = CriteriaVersion::findOrFail($id);
+        $criteriaVersion = CriteriaVersion::findOrFail($id);
 
         $relatedReports = \DB::table('reports')
             ->where('report_data_id', $id)->get();
-
-        \Debugbar::info($relatedReports);
 
         if ($relatedReports->count() > 0) {
             // ถ้ามี report ไหนที่ status ไม่ใช่ Completed ห้ามลบ
@@ -410,7 +408,7 @@ class ReportStructureController extends Controller
             if ($notCompleted->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'ไม่สามารถลบได้ ต้องให้รายงานที่ใช้โครงสร้างนี้ทุกตัวมีสถานะเป็น Completed ก่อน',
+                    'message' => 'ไม่สามารถลบได้ เนื่องจากมีการประเมินที่ใช้โครงสร้างเกณฑ์นี้อยู่ ต้องให้การประเมินครบถ้วนก่อน',
                     'not_completed_count' => $notCompleted->count(),
                 ], 409);
             }
