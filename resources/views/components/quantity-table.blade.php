@@ -14,70 +14,60 @@
             <thead class="bg-purple-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-sm font-medium text-gray-700 border-b border-r border-gray-200">
-                        รายการประเมิน
+                        รายการที่ประเมิน
                     </th>
                     <th class="px-6 py-3 text-center text-sm font-medium text-gray-700 border-b border-gray-200">
-                        หน่วยภาระงานที่ทำได้
+                        หน่วยภาระงานที่ทำได้ (ตาม TOR)
                     </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse($evaluationItems as $index => $item)
                     @php
-                        $isMain = preg_match('/^\d+\./', $item['title'] ?? '') && !preg_match('/^\d+\.\d+/', $item['title']);
+                        $isMain = $item['is_main'] ?? (preg_match('/^\d+\./', $item['title'] ?? '') && !preg_match('/^\d+\.\d+/', $item['title']));
                     @endphp
                     <tr class="hover:bg-gray-50 {{ $isMain ? 'bg-purple-50 font-semibold' : '' }}">
                         <td class="px-6 py-4 text-base text-gray-800 border-r border-gray-200">
-                            {{ $item['title'] ?? "รายการที่ " . ($index + 1) }}
+                            @if($isMain)
+                                {{ $item['title'] ?? "รายการที่ " . ($index + 1) }}
+                            @else
+                                {{ ($item['title'] ?? "รายการที่ " . ($index + 1)) }}
+                            @endif
                             @if(!empty($item['subtitle']))
                                 <div class="text-sm text-gray-600 mt-1">{{ $item['subtitle'] }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-left">
+                        <td class="px-6 py-4 text-left border-r border-gray-200">
                             @if($readonly)
                                 <div class="text-base text-gray-800 ml-2">
                                     {{ $item['tor_compliant'] ?? 'ไม่ระบุ' }}
                                 </div>
                             @elseif(!$isMain)
                                 <input type="text" 
-                                    name="tor_compliant[{{ $index }}]" 
+                                    name="quantity_list[{{ $index }}][score_C]" 
                                     value="{{ $item['tor_compliant'] ?? '' }}"
-                                    class="form-input text-base w-full h-10 ml-2 rounded border-gray-300 focus:ring-purple-500 focus:border-purple-500" 
+                                    class="form-input text-base w-full h-10 ml-2 px-3 rounded border-gray-300 focus:ring-purple-500 focus:border-purple-500" 
                                     placeholder="ใส่ข้อมูล">
+                                
+                                <input type="hidden" 
+                                    name="quantity_list[{{ $index }}][quantity_sub_criteria_id]" 
+                                    value="{{ $item['sub_criteria_id'] ?? $item['quantity_sub_criteria_id'] ?? $item['id'] }}">
+                                
                             @endif
                         </td>
                     </tr>
                 @empty
-                    @php
-                        $defaultItems = [
-                            ['title' => '1. เป้าหมายงาน (40 คะแนน)'],
-                            ['title' => '1.1 ภาระงานในหน้าที่'],
-                            ['title' => '1.2 ภาระด้านการพัฒนาระบบงาน'],
-                            ['title' => '1.3 ภาระงานด้านการขึ้นทะเบียน'],
-                            ['title' => '1.4 ภาระด้านการศึกษาวิจัย'],
-                            ['title' => '1.5 ภาระงานพัฒนาเจ้าหน้าที่'],
-                            ['title' => '1.6 ภาระด้านวิจัย']
-                        ];
-                    @endphp
-
-                    @foreach($defaultItems as $index => $item)
-                        @php
-                            $isMain = preg_match('/^\d+\./', $item['title']) && !preg_match('/^\d+\.\d+/', $item['title']);
-                        @endphp
-                        <tr class="hover:bg-gray-50 {{ $isMain ? 'bg-purple-50 font-semibold' : '' }}">
-                            <td class="px-6 py-4 text-base text-gray-800 border-r border-gray-200">
-                                {{ $item['title'] }}
-                            </td>
-                            <td class="px-6 py-4 text-left">
-                                @unless($isMain)
-                                    <input type="text" 
-                                        name="tor_compliant[{{ $index }}]" 
-                                        class="form-input text-base w-full h-10 rounded border-gray-300 focus:ring-purple-500 focus:border-purple-500" 
-                                        placeholder="กรอกหน่วยภาระงานที่ทำได้">
-                                @endunless
-                            </td>
-                        </tr>
-                    @endforeach
+                    <tr>
+                        <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-lg font-medium">ไม่พบเกณฑ์การประเมิน</p>
+                                <p class="text-sm">กรุณาติดต่อผู้ดูแลระบบเพื่อตั้งค่าเกณฑ์การประเมิน</p>
+                            </div>
+                        </td>
+                    </tr>
                 @endforelse
 
                 {{-- Evidence field only at the end --}}

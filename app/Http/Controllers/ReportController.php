@@ -139,20 +139,34 @@ class ReportController extends Controller
                 'quantity_list' => 'required|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
-                'quantity_list.*.score_D' => 'nullable|numeric',
             ]);
 
             $created = [];
+
             foreach ($validated['quantity_list'] as $item) {
-                $quantity_score = QuantityScore::create([
-                    'quantity_sub_criteria_id' => $item['quantity_sub_criteria_id'],
+                $subCriteria = \App\Models\QuantitySubCriteria::find($item['quantity_sub_criteria_id']);
+                $scoreC = $item['score_C'] ?? null;
+
+                // Calculate score_D using the formula
+                $scoreD = null;
+                if ($scoreC !== null && $subCriteria && $subCriteria->score_b != 0) {
+                    $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
+                }
+
+                $quantityScore = QuantityScore::create([
+                    'quantity_sub_criteria_id' => $subCriteria->id,
                     'report_id' => $reportId,
-                    'score_C' => $item['score_C'] ?? null,
-                    'score_D' => $item['score_D'] ?? null,
+                    'score_C' => $scoreC,
+                    'score_D' => $scoreD,
                 ]);
-                $created[] = $quantity_score;
+
+                $report->status = 'Pending';
+                $report->save();
+
+                $created[] = $quantityScore;
             }
-            return QuantityScoreResource::collection(collect($created));
+            return redirect()->route('dashboard')->with('success', 'บันทึกคะแนนสำเร็จแล้ว');
+            // return QuantityScoreResource::collection(collect($created));
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
         }
