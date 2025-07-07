@@ -109,9 +109,18 @@
                 // item = CriteriaVersionResource
                 const card = document.createElement('div');
                 card.className = 'bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col justify-between';
+                // Fix: support both created_by (object) and created_by_name (string or null)
+                let creatorName = '-';
+                if (item.created_by && typeof item.created_by === 'object' && item.created_by.name) {
+                    creatorName = item.created_by.name;
+                } else if (item.created_by_name) {
+                    creatorName = item.created_by_name;
+                } else if (typeof item.created_by === 'string') {
+                    creatorName = item.created_by;
+                }
                 card.innerHTML = `
                     <h3 class="text-xl font-semibold text-gray-900">${item.version_name || 'ไม่ระบุชื่อเวอร์ชัน'}</h3>
-                    <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${item.created_by && item.created_by.name ? item.created_by.name : (item.created_by_name ?? '-')}</span></p>
+                    <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${creatorName}</span></p>
                     <div class="flex space-x-2 mt-auto">
                         <a href="/criteria-config/${item.id}/edit" class="flex-1 text-center px-4 py-2 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500">แก้ไข</a>
                         <button type="button" onclick="showDeleteModal(${item.id}, this)" class="flex-1 text-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-500 hover:text-white">ลบ</button>
