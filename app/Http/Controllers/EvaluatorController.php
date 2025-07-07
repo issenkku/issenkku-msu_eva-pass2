@@ -38,9 +38,11 @@ class EvaluatorController extends Controller
             ->join('reports', 'assignments.report_id', '=', 'reports.id')
             ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
             ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
-            ->where('assignments.evaluator', $currentUser->id);
+            ->where('assignments.evaluator', $currentUser->id)
+            ->whereNotIn('reports.status', ['assigned', 'draft']);
 
         if ($statusFilter && $statusFilter !== '') {
+            
             $assignments->where('reports.status', $statusFilter);
         }
 

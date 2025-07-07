@@ -44,10 +44,6 @@
                             <form method="GET" action="{{ route('evaluator.index') }}">
                                 <select name="status" onchange="this.form.submit()" class="form-select">
                                     <option value="" {{ $statusFilter == '' ? 'selected' : '' }}>แสดงทั้งหมด</option>
-                                    <option value="assigned" {{ $statusFilter == 'assigned' ? 'selected' : '' }}>
-                                        ยังไม่ประเมิน (มอบหมายแล้ว)</option>
-                                    <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>บันทึกแล้ว
-                                        (รออนุมัติ)</option>
                                     <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>รอผลประเมิน
                                         (รอกดอนุมัติ)</option>
                                     <option value="completed" {{ $statusFilter == 'completed' ? 'selected' : '' }}>
