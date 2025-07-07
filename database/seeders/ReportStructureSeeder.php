@@ -40,6 +40,9 @@ class ReportStructureSeeder extends Seeder
         $el1 = EvaluationList::factory()->create([
             'categorie_id' => $categories[1]->id,
             'criteria_version_id' => $criteriaVersion->id,
+            // 'sequence' => 1,
+            'sum_score' => 40,
+
         ]);
 
         $qmc = QuantityMainCriteria::factory()->create([
@@ -60,33 +63,48 @@ class ReportStructureSeeder extends Seeder
          * --------- CATEGORY #2 ---------
          * Many EvaluationLists, each -> Many QualityMainCriterias, each -> Many QualitySubCriterias
          */
-        foreach (range(1, 2) as $listIdx) {
+
+        $maxSumScore = 30;
+        $evaluationListCount = 7;
+
+        $scores = [];
+        $remain = $maxSumScore;
+        for ($i = 0; $i < $evaluationListCount - 1; $i++) {
+            $min = 1; // Minimum score per EvaluationList
+            $max = $remain - ($evaluationListCount - $i - 1) * $min;
+            $val = rand($min, $max);
+            $scores[] = $val;
+            $remain -= $val;
+        }
+        $scores[] = $remain; // Last score takes the remainder
+
+
+        for ($listIdx = 1; $listIdx <= $evaluationListCount; $listIdx++) {
             $el2 = EvaluationList::factory()->create([
                 'categorie_id' => $categories[2]->id,
                 'criteria_version_id' => $criteriaVersion->id,
                 'sequence' => $listIdx,
+                'sum_score' => $scores[$listIdx - 1], // Assign distributed sum_score
             ]);
 
-            // ### แบ่ง ratio ให้ครบ 100 ###
+            // ### Divide ratio to total 100 ###
             $mainCount = 5;
             $ratios = [];
             $remain = 100;
             for ($i = 0; $i < $mainCount - 1; $i++) {
-                // อย่างน้อย 10 ต่อช่อง (ใส่เงื่อนไขกำหนด lowerbound ได้ถ้าต้องการ)
-                $min = 10;
+                $min = 10; // Minimum ratio per QualityMainCriteria
                 $max = $remain - ($mainCount - $i - 1) * $min;
                 $val = rand($min, $max);
                 $ratios[] = $val;
                 $remain -= $val;
             }
-            $ratios[] = $remain; // ตัวสุดท้ายคือที่เหลือ
+            $ratios[] = $remain; // Last ratio takes the remainder
 
             foreach (range(1, $mainCount) as $seqm) {
                 $qualityMain = QualityMainCriteria::factory()->create([
                     'criteria_version_id' => $criteriaVersion->id,
                     'sequence' => $seqm,
-                    'ratio' => $ratios[$seqm - 1]
-                    // ไม่ใส่ evaluation_list_id เพราะไม่มีในตาราง
+                    'ratio' => $ratios[$seqm - 1],
                 ]);
 
                 foreach (range(1, 3) as $seqs) {

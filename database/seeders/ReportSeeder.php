@@ -3,13 +3,13 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Report;
 use App\Models\EvidenceAnswer;
 use App\Models\EvaluationList;
 use App\Models\QuantitySubCriteria;
 use App\Models\QuantityScore;
 use App\Models\QualitySubCriteria;
 use App\Models\QualityScore;
+use App\Models\Report;
 
 class ReportSeeder extends Seeder
 {
