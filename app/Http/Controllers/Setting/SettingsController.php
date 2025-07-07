@@ -34,6 +34,12 @@ class SettingsController extends Controller
                 'max:255',
                 'regex:/^[ก-๙a-zA-Z\s]+$/u' // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
             ],
+            'notification_days' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:30'
+            ],
         ], [
             // ข้อความแจ้งเตือนแบบกำหนดเอง
             'university.regex' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
@@ -41,7 +47,11 @@ class SettingsController extends Controller
             'university.required' => 'กรุณากรอกชื่อมหาวิทยาลัย',
             'faculty.required' => 'กรุณากรอกชื่อคณะ',
             'university.max' => 'ชื่อมหาวิทยาลัยต้องไม่เกิน 255 ตัวอักษร',
-            'faculty.max' => 'ชื่อคณะต้องไม่เกิน 255 ตัวอักษร'
+            'faculty.max' => 'ชื่อคณะต้องไม่เกิน 255 ตัวอักษร',
+            'notification_days.required' => 'กรุณาระบุจำนวนวันแจ้งเตือน',
+            'notification_days.integer' => 'จำนวนวันแจ้งเตือนต้องเป็นตัวเลขเท่านั้น',
+            'notification_days.min' => 'จำนวนวันแจ้งเตือนต้องไม่น้อยกว่า 1 วัน',
+            'notification_days.max' => 'จำนวนวันแจ้งเตือนต้องไม่เกิน 30 วัน'
         ]);
 
         // เช็คเพิ่มเติมด้วย PHP function (สำรอง)
@@ -60,13 +70,13 @@ class SettingsController extends Controller
         if ($request->has('id')) {
             // อัปเดตข้อมูลเดิม
             $setting = Settings::findOrFail($request->id);
-            $setting->update($request->only(['university', 'faculty']));
+            $setting->update($request->only(['university', 'faculty', 'notification_days']));
             $message = 'อัปเดตข้อมูลสำเร็จ!';
         } else {
             // สร้างข้อมูลใหม่ หรือ upsert
             Settings::updateOrCreate(
                 ['id' => 1], // เงื่อนไขค้นหา
-                $request->only(['university', 'faculty'])
+                $request->only(['university', 'faculty', 'notification_days'])
             );
             $message = 'บันทึกข้อมูลสำเร็จ!';
         }
