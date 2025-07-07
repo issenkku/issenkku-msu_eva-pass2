@@ -89,13 +89,13 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->assignment_data_id) }}"
+                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->report_id) }}"
                                                     class="btn-view" title="ดูรายละเอียด">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
 
                                                 @if ($assignment->status_class !== 'completed')
-                                                    <a href="{{ route('evaluator.evaluatee.edit', $assignment->assignment_data_id) }}"
+                                                    <a href="{{ route('evaluator.evaluatee.edit', $assignment->report_id) }}"
                                                         class="btn-edit" title="แก้ไข">
                                                         <i class="fa-solid fa-pen-to-square"></i>
                                                     </a>

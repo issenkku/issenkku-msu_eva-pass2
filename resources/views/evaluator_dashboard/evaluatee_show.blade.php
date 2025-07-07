@@ -202,10 +202,8 @@
 
         <!-- Back Button -->
         <div class="action-section">
-            <button type="button" class="btn-back" onclick="window.history.back()">
-                <i class="fas fa-arrow-left"></i>
-                ย้อนกลับ
-            </button>
+            <button type="button" class="btn-back"  onclick="window.location='{{ route('evaluator.index') }}'">  <i class="fas fa-arrow-left"></i>
+                ย้อนกลับ</button>
         </div>
     </div>
 

@@ -38,7 +38,7 @@ Route::prefix('users')->name('users.')->group(function () {
 
 // Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('guest')->controller(AuthController::class)->group(function(){
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login');
 });
@@ -65,11 +65,12 @@ Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
 
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
     Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-
     Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
     Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
-    Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+    Route::put('/assignment/{assignmentDataId}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+    Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
 });
+
 
 
 

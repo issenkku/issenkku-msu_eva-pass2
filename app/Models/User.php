@@ -75,14 +75,6 @@ class User extends Authenticatable implements CanResetPassword
         return 'employee_id';
     }
 
-    public function position(){
-        return $this->belongsTo(Positions::class);
-    }
-
-    public function department(){
-        return $this->belongsTo(Departments::class);
-    }
-
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new CustomResetPassword($token));

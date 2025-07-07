@@ -121,7 +121,7 @@ class EvaluatorController extends Controller
             'evaluateeUser.position',
             'evaluatorUser'
         ])
-            ->where('assignment_data_id', $assignmentId)
+            ->where('report_id', $assignmentId)
             ->where('evaluator', $userId)
             ->firstOrFail();
 
@@ -236,7 +236,7 @@ class EvaluatorController extends Controller
             ];
         });
 
-        // ✅ โหลด Categories พร้อม EvaluationLists และ SubCriterias + MainCriteria
+        //  โหลด Categories พร้อม EvaluationLists และ SubCriterias + MainCriteria
         $categories = Category::with([
             'evaluationLists' => function ($query) {
                 $query->orderBy('sequence')->with([
@@ -306,7 +306,7 @@ class EvaluatorController extends Controller
             'evaluateeUser.position',
             'evaluatorUser'
         ])
-            ->where('assignment_data_id', $id)
+            ->where('report_id', $id)
             ->where('evaluator', $userId)
             ->firstOrFail();
 
@@ -398,10 +398,24 @@ class EvaluatorController extends Controller
             );
         }
 
+        //  ถ้ามี input ชื่อ 'change_status' ส่งมาด้วยจากฟอร์ม
+        if ($request->has('change_status')) {
+            Reports::where('id', $id)->update([
+                'status' => 'completed',
+            ]);
+        }
 
         return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
     }
 
+    public function reject($reportId)
+    {
+        $report = Reports::findOrFail($reportId);
+        $report->status = 'assigned'; // หรือ status ที่คุณต้องการ
+        $report->save();
+
+        return redirect()->route('evaluator.index')->with('success', 'ไม่อนุมัติแบบประเมินเรียบร้อยแล้ว');
+    }
 
     private function formatThaiDate($datetime)
     {
@@ -447,7 +461,7 @@ class EvaluatorController extends Controller
                 return [
                     'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
                     'class' => 'assigned',
-                    'color' => '#6c757d'
+                    'color' => '#FF0000'
                 ];
 
             case 'draft':
