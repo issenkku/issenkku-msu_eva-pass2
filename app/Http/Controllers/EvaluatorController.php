@@ -8,6 +8,7 @@ use App\Models\QualityScore;
 use App\Models\QualitySubCriteria;
 use App\Models\User;
 use App\Models\Reports;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,7 @@ class EvaluatorController extends Controller
             ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
             ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
             ->where('assignments.evaluator', $currentUser->id)
-            ->whereNotIn('reports.status', ['assigned', 'draft']);
+            ->whereNotIn('reports.status', ['Assigned', 'Draft']);
 
         if ($statusFilter && $statusFilter !== '') {
             
@@ -162,7 +163,7 @@ class EvaluatorController extends Controller
             ]
         ];
 
-        $canEdit = in_array($report->status, ['assigned', 'draft']) &&
+        $canEdit = in_array($report->status, ['Assigned', 'Draft']) &&
             now()->lte($assignment->assignmentData->end_time);
 
         $criteriaVersionId = $reportData->criteria_version_id;
@@ -403,7 +404,7 @@ class EvaluatorController extends Controller
         //  ถ้ามี input ชื่อ 'change_status' ส่งมาด้วยจากฟอร์ม
         if ($request->has('change_status')) {
             Reports::where('id', $id)->update([
-                'status' => 'completed',
+                'status' => 'Completed',
             ]);
         }
 
@@ -413,7 +414,7 @@ class EvaluatorController extends Controller
     public function reject($reportId)
     {
         $report = Reports::findOrFail($reportId);
-        $report->status = 'assigned'; // หรือ status ที่คุณต้องการ
+        $report->status = 'Assigned'; // หรือ status ที่คุณต้องการ
         $report->save();
 
         return redirect()->route('evaluator.index')->with('success', 'ไม่อนุมัติแบบประเมินเรียบร้อยแล้ว');
@@ -438,7 +439,7 @@ class EvaluatorController extends Controller
             12 => 'ธ.ค.'
         ];
 
-        $dateObj = \Carbon\Carbon::parse($datetime);
+        $dateObj = Carbon::parse($datetime);
         $day = $dateObj->day;
         $month = $thaiMonths[$dateObj->month];
         $year = $dateObj->year + 543;
@@ -457,12 +458,12 @@ class EvaluatorController extends Controller
             ];
         }
 
-        $endDate = \Carbon\Carbon::parse($endTime);
+        $endDate = Carbon::parse($endTime);
         switch ($status) {
-            case 'assigned':
+            case 'Assigned':
                 return [
                     'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
-                    'class' => 'assigned',
+                    'class' => 'Assigned',
                     'color' => '#FF0000'
                 ];
 
@@ -473,17 +474,17 @@ class EvaluatorController extends Controller
                     'color' => '#ffc107'
                 ];
 
-            case 'pending':
+            case 'Pending':
                 return [
                     'text' => 'รอผลประเมิน (รอกดอนุมัติ)',
-                    'class' => 'pending',
+                    'class' => 'Pending',
                     'color' => '#17a2b8'
                 ];
 
-            case 'completed':
+            case 'Completed':
                 return [
                     'text' => 'ประเมินเสร็จสิ้น (อนุมัติแล้ว)',
-                    'class' => 'completed',
+                    'class' => 'Completed',
                     'color' => '#28a745'
                 ];
 

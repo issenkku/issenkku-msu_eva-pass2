@@ -203,12 +203,11 @@
                                                                 -
                                                             @endif
                                                         </td>
-
                                                         <td>
                                                             <input type="number" name="scores[{{ $criteria->id }}]"
                                                                 value="{{ old('scores.' . $criteria->id, $criteria->filled_score ?? '') }}"
-                                                                min="0" max="5" step="0.1" />
-
+                                                                min="0" max="5" step="0.1"
+                                                                class="score-input" />
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -634,6 +633,23 @@
 
         .btn-warning:hover {
             background-color: #fbbf24;
+        }
+
+        .score-input {
+            width: 50%;
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .score-input:focus {
+            border-color: #3b82f6;
+            /* สีฟ้า */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+            outline: none;
         }
     </style>
 @endsection

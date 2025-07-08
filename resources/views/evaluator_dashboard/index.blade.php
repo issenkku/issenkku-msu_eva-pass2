@@ -44,9 +44,9 @@
                             <form method="GET" action="{{ route('evaluator.index') }}">
                                 <select name="status" onchange="this.form.submit()" class="form-select">
                                     <option value="" {{ $statusFilter == '' ? 'selected' : '' }}>แสดงทั้งหมด</option>
-                                    <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>รอผลประเมิน
+                                    <option value="Pending" {{ $statusFilter == 'Pending' ? 'selected' : '' }}>รอผลประเมิน
                                         (รอกดอนุมัติ)</option>
-                                    <option value="completed" {{ $statusFilter == 'completed' ? 'selected' : '' }}>
+                                    <option value="Completed" {{ $statusFilter == 'Completed' ? 'selected' : '' }}>
                                         ประเมินเสร็จสิ้น (อนุมัติแล้ว)</option>
                                 </select>
                             </form>
@@ -90,7 +90,7 @@
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
 
-                                                @if ($assignment->status_class !== 'completed')
+                                                @if ($assignment->status_class !== 'Completed')
                                                     <a href="{{ route('evaluator.evaluatee.edit', $assignment->report_id) }}"
                                                         class="btn-edit" title="แก้ไข">
                                                         <i class="fa-solid fa-pen-to-square"></i>
