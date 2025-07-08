@@ -28,8 +28,8 @@
                                     <td class="item-name">{{ $evaluatorInfo['name'] }}</td>
                                     <td>
                                         รหัสผู้ประเมิน: {{ $evaluatorInfo['employee_id'] }} <br>
-                                        ประสบการณ์: {{ $evaluatorInfo['experience'] }} ปี <br>
-                                        คะแนนเฉลี่ย: {{ number_format($evaluatorInfo['average_score'], 1) }}/5.0
+                                        ตำแหน่ง: {{ $evaluatorInfo['position'] }} <br>
+                                        แผนก: {{ $evaluatorInfo['department'] }} <br>
                                     </td>
                                 </tr>
                             </tbody>
@@ -44,13 +44,9 @@
                             <form method="GET" action="{{ route('evaluator.index') }}">
                                 <select name="status" onchange="this.form.submit()" class="form-select">
                                     <option value="" {{ $statusFilter == '' ? 'selected' : '' }}>แสดงทั้งหมด</option>
-                                    <option value="assigned" {{ $statusFilter == 'assigned' ? 'selected' : '' }}>
-                                        ยังไม่ประเมิน (มอบหมายแล้ว)</option>
-                                    <option value="draft" {{ $statusFilter == 'draft' ? 'selected' : '' }}>บันทึกแล้ว
-                                        (รออนุมัติ)</option>
-                                    <option value="pending" {{ $statusFilter == 'pending' ? 'selected' : '' }}>รอผลประเมิน
+                                    <option value="Pending" {{ $statusFilter == 'Pending' ? 'selected' : '' }}>รอผลประเมิน
                                         (รอกดอนุมัติ)</option>
-                                    <option value="completed" {{ $statusFilter == 'completed' ? 'selected' : '' }}>
+                                    <option value="Completed" {{ $statusFilter == 'Completed' ? 'selected' : '' }}>
                                         ประเมินเสร็จสิ้น (อนุมัติแล้ว)</option>
                                 </select>
                             </form>
@@ -89,13 +85,13 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->assignment_data_id) }}"
+                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->report_id) }}"
                                                     class="btn-view" title="ดูรายละเอียด">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
 
-                                                @if ($assignment->status_class !== 'completed')
-                                                    <a href="{{ route('evaluator.assignment.evaluate', $assignment->assignment_data_id) }}"
+                                                @if ($assignment->status_class !== 'Completed')
+                                                    <a href="{{ route('evaluator.evaluatee.edit', $assignment->report_id) }}"
                                                         class="btn-edit" title="แก้ไข">
                                                         <i class="fa-solid fa-pen-to-square"></i>
                                                     </a>

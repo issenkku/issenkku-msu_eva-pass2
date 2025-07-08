@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Assignments;
 use App\Models\Category;
+use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
 use App\Models\User;
 use App\Models\Reports;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -36,9 +39,11 @@ class EvaluatorController extends Controller
             ->join('reports', 'assignments.report_id', '=', 'reports.id')
             ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
             ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
-            ->where('assignments.evaluator', $currentUser->id);
+            ->where('assignments.evaluator', $currentUser->id)
+            ->whereNotIn('reports.status', ['Assigned', 'Draft']);
 
         if ($statusFilter && $statusFilter !== '') {
+
             $assignments->where('reports.status', $statusFilter);
         }
 
@@ -86,6 +91,8 @@ class EvaluatorController extends Controller
         $evaluatorInfo = [
             'name' => $currentUser->prefix . $currentUser->name,
             'employee_id' => $currentUser->employee_id,
+            'department' => optional($currentUser->department)->department_name ?? '-',
+            'position' => optional($currentUser->position)->name ?? '-',
             'experience' => $this->calculateExperience($currentUser->created_at),
             'average_score' => $this->getAverageEvaluationScore($currentUser->id)
         ];
@@ -111,7 +118,6 @@ class EvaluatorController extends Controller
 
         $currentUser = User::with('department', 'position')->findOrFail($userId);
 
-        // ✅ ดึงข้อมูล Assignment และความสัมพันธ์ที่เกี่ยวข้องทั้งหมด
         $assignment = Assignments::with([
             'assignmentData',
             'report.reportData',
@@ -120,13 +126,13 @@ class EvaluatorController extends Controller
             'evaluateeUser.position',
             'evaluatorUser'
         ])
-            ->where('assignment_data_id', $assignmentId)
+            ->where('report_id', $assignmentId)
             ->where('evaluator', $userId)
             ->firstOrFail();
+
         $report = $assignment->report;
         $reportData = $report->reportData;
 
-        // ✅ แปลงข้อมูลเพื่อแสดงผล
         $statusInfo = $this->getStatusInfo($report->status, $assignment->assignmentData->end_time);
 
         $assignmentDetails = [
@@ -135,6 +141,7 @@ class EvaluatorController extends Controller
             'report_title' => $reportData->report_title,
             'report_description' => $reportData->report_description ?? '-',
             'comment' => $reportData->comment ?? '-',
+            'comment_report' => $report->comment ?? '-',
             'assessment_type' => $reportData->assessment_type,
             'version_name' => optional($reportData->criteriaVersion)->version_name ?? '-',
             'start_date' => $this->formatThaiDate($assignment->assignmentData->start_time),
@@ -159,10 +166,12 @@ class EvaluatorController extends Controller
             ]
         ];
 
-        $canEdit = in_array($report->status, ['assigned', 'draft']) &&
+        $canEdit = in_array($report->status, ['Assigned', 'Draft']) &&
             now()->lte($assignment->assignmentData->end_time);
 
-        // query quantity criteria ยังใช้ DB::table ได้ (หรือ refactor ทีหลัง)
+        $criteriaVersionId = $reportData->criteria_version_id;
+
+        // Quantity Criteria
         $quantityCriteria = DB::table('quantity_main_criterias as qm')
             ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
             ->leftJoin('quantity_scores as qscore', function ($join) use ($report) {
@@ -191,9 +200,7 @@ class EvaluatorController extends Controller
             ->get()
             ->groupBy('main_id');
 
-        // ใช้ criteria_version_id จาก reportData
-        $criteriaVersionId = $reportData->criteria_version_id;
-        // query quality criteria แบบ group by main_id
+        // Quality Criteria
         $qualityCriteria = DB::table('quality_main_criterias as qm')
             ->join('quality_sub_criterias as qs', 'qm.id', '=', 'qs.quality_main_criteria_id')
             ->leftJoin('quality_scores as qscore', function ($join) use ($report) {
@@ -217,30 +224,203 @@ class EvaluatorController extends Controller
                 'qscore.score as filled_score',
                 'eanswer.link as evidence_link'
             )
-            ->where('qs.criteria_version_id', $criteriaVersionId) // จำกัดให้ตรงเวอร์ชัน
+            ->where('qs.criteria_version_id', $criteriaVersionId)
             ->orderBy('qm.sequence')
             ->orderBy('qs.sequence')
             ->get()
             ->groupBy('main_id');
 
-        $categories = Category::with(['evaluationLists' => function ($query) {
-            $query->orderBy('sequence');
-        }])
+        $allMainIds = $quantityCriteria->keys()->merge($qualityCriteria->keys())->unique();
+
+        $mergedCriteria = $allMainIds->mapWithKeys(function ($mainId) use ($quantityCriteria, $qualityCriteria) {
+            return [
+                $mainId => [
+                    'main_id' => $mainId,
+                    'quantity' => $quantityCriteria->get($mainId, collect()),
+                    'quality' => $qualityCriteria->get($mainId, collect()),
+                ]
+            ];
+        });
+
+        //  โหลด Categories พร้อม EvaluationLists และ SubCriterias + MainCriteria
+        $categories = Category::with([
+            'evaluationLists' => function ($query) {
+                $query->orderBy('sequence')->with([
+                    'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                    'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                ]);
+            }
+        ])
             ->where('criteria_version_id', $criteriaVersionId)
             ->orderBy('sequence')
-            ->get();
+            ->get()
+            ->map(function ($category) {
+                $category->sum_score = $category->evaluationLists->sum('sum_score');
+                return $category;
+            });
+
+        $quantityMap = collect($quantityCriteria)
+            ->flatMap(fn($items) => $items)
+            ->keyBy('sub_id');
+
+        $categories->each(function ($category) use ($quantityMap) {
+            foreach ($category->evaluationLists as $list) {
+                foreach ($list->quantitySubCriterias as $sub) {
+                    $data = $quantityMap->get($sub->id);
+                    if ($data) {
+                        $sub->score_c = $data->score_C;
+                        $sub->score_d = $data->score_D;
+                        $sub->evidence_link = $data->evidence_link;
+                    }
+                }
+            }
+        });
+        $qualityMap = collect($qualityCriteria)
+            ->flatMap(fn($items) => $items)
+            ->keyBy('sub_id');
+
+        $categories->each(function ($category) use ($qualityMap) {
+            foreach ($category->evaluationLists as $list) {
+                foreach ($list->qualitySubCriterias as $sub) {
+                    $data = $qualityMap->get($sub->id);
+                    if ($data) {
+                        $sub->filled_score = $data->filled_score;
+                        $sub->evidence_link = $data->evidence_link;
+                    }
+                }
+            }
+        });
 
         return view('evaluator_dashboard.evaluatee_show', [
             'assignment' => $assignmentDetails,
             'canEdit' => $canEdit,
             'currentUser' => $currentUser,
-            'quantityCriteria' => $quantityCriteria,
-            'qualityCriteria' => $qualityCriteria,
+            'mergedCriteria' => $mergedCriteria,
             'categories' => $categories,
         ]);
     }
 
+    public function edit($id)
+    {
+        $userId = Auth::id() ?? 2;
 
+        $assignment = Assignments::with([
+            'assignmentData',
+            'report',
+            'report.reportData.criteriaVersion',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+            'evaluatorUser'
+        ])
+            ->where('report_id', $id)
+            ->where('evaluator', $userId)
+            ->firstOrFail();
+
+        $criteriaVersionId = $assignment->report->reportData->criteria_version_id ?? null;
+
+        // โหลดคะแนนของ quantity_sub_criterias
+        $quantityScores = DB::table('quantity_scores')
+            ->where('report_id', $assignment->report_id)
+            ->get()
+            ->keyBy('quantity_sub_criteria_id');
+
+        // โหลดคะแนนของ quality_sub_criterias
+        $filledScores = QualityScore::where('report_id', $assignment->report_id)
+            ->pluck('score', 'quality_sub_criteria_id')
+            ->toArray();
+
+        // โหลด evidence ของแต่ละ evaluation_list_id
+        $evidenceAnswers = DB::table('evidence_answers')
+            ->where('report_id', $assignment->report_id)
+            ->get()
+            ->groupBy('evaluation_list_id');
+
+        $categories = collect();
+
+        if ($criteriaVersionId) {
+            $categories = Category::with([
+                'evaluationLists' => function ($query) {
+                    $query->orderBy('sequence')->with([
+                        'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                        'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    ]);
+                }
+            ])
+                ->where('criteria_version_id', $criteriaVersionId)
+                ->orderBy('sequence')
+                ->get();
+        }
+
+        // ผูกคะแนนและ evidence เข้า quantitySubCriterias และ qualitySubCriterias
+        foreach ($categories as $category) {
+            foreach ($category->evaluationLists as $list) {
+
+                // Quantity
+                foreach ($list->quantitySubCriterias as $criteria) {
+                    $score = $quantityScores->get($criteria->id);
+                    if ($score) {
+                        $criteria->score_c = $score->score_C;
+                        $criteria->score_d = $score->score_D;
+                    }
+
+                    // ดึง evidence link
+                    $evidences = $evidenceAnswers->get($criteria->evaluation_list_id);
+                    $criteria->evidence_links = $evidences ? $evidences->pluck('link')->all() : [];
+                }
+
+                // Quality
+                foreach ($list->qualitySubCriterias as $criteria) {
+                    // คะแนนคุณภาพ
+                    $criteria->filled_score = $filledScores[$criteria->id] ?? null;
+
+                    // ดึง evidence link
+                    $evidences = $evidenceAnswers->get($criteria->evaluation_list_id);
+                    $criteria->evidence_links = $evidences ? $evidences->pluck('link')->all() : [];
+                }
+            }
+        }
+
+        return view('evaluator_dashboard.evaluatee_form', compact('assignment', 'categories'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'scores' => 'required|array',
+            'scores.*' => 'required|numeric|min:0|max:5', 
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        foreach ($validated['scores'] as $criteriaId => $score) {
+            if (empty($criteriaId) || $criteriaId == 0) continue;
+
+            QualityScore::updateOrCreate(
+                [
+                    'quality_sub_criteria_id' => $criteriaId,
+                    'report_id' => $id,
+                ],
+                [
+                    'score' => $score,
+                ]
+            );
+        }
+
+        Reports::where('id', $id)->update([
+            'comment' => $request->input('comment'),
+            'status' => $request->has('change_status') ? 'Completed' : DB::raw('status'),
+        ]);
+
+        return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
+    }
+
+    public function reject($reportId)
+    {
+        $report = Reports::findOrFail($reportId);
+        $report->status = 'Assigned'; // หรือ status ที่คุณต้องการ
+        $report->save();
+
+        return redirect()->route('evaluator.index')->with('success', 'ไม่อนุมัติแบบประเมินเรียบร้อยแล้ว');
+    }
 
     private function formatThaiDate($datetime)
     {
@@ -261,7 +441,7 @@ class EvaluatorController extends Controller
             12 => 'ธ.ค.'
         ];
 
-        $dateObj = \Carbon\Carbon::parse($datetime);
+        $dateObj = Carbon::parse($datetime);
         $day = $dateObj->day;
         $month = $thaiMonths[$dateObj->month];
         $year = $dateObj->year + 543;
@@ -280,13 +460,13 @@ class EvaluatorController extends Controller
             ];
         }
 
-        $endDate = \Carbon\Carbon::parse($endTime);
+        $endDate = Carbon::parse($endTime);
         switch ($status) {
-            case 'assigned':
+            case 'Assigned':
                 return [
                     'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
-                    'class' => 'assigned',
-                    'color' => '#6c757d'
+                    'class' => 'Assigned',
+                    'color' => '#FF0000'
                 ];
 
             case 'draft':
@@ -296,17 +476,17 @@ class EvaluatorController extends Controller
                     'color' => '#ffc107'
                 ];
 
-            case 'pending':
+            case 'Pending':
                 return [
                     'text' => 'รอผลประเมิน (รอกดอนุมัติ)',
-                    'class' => 'pending',
+                    'class' => 'Pending',
                     'color' => '#17a2b8'
                 ];
 
-            case 'completed':
+            case 'Completed':
                 return [
                     'text' => 'ประเมินเสร็จสิ้น (อนุมัติแล้ว)',
-                    'class' => 'completed',
+                    'class' => 'Completed',
                     'color' => '#28a745'
                 ];
 

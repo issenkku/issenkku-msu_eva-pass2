@@ -14,6 +14,7 @@ class Reports extends Model
     protected $fillable = [
         'report_data_id',
         'status',
+        'comment',
     ];
 
     protected $casts = [

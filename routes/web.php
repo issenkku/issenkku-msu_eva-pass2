@@ -39,7 +39,9 @@ Route::prefix('users')->name('users.')->group(function () {
     Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
 });
 
-Route::middleware('guest')->controller(AuthController::class)->group(function(){
+// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+// Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login');
 });
@@ -49,8 +51,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::resource('/roles', RoleAndPermissionController::class);
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
 Route::prefix('positions')->name('positions.')->group(function () {
     Route::get('/', [PositionsController::class, 'index'])->name('index');
     Route::post('/store', [PositionsController::class, 'store'])->name('store');
@@ -68,6 +70,9 @@ Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
     Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
     Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
     Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+    Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
+    Route::put('/assignment/{assignmentDataId}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+    Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
 });
 
 Route::get('/evaluator-show', function () {
@@ -85,6 +90,5 @@ Route::prefix('evaluation')->name('evaluation.')->group(function () {
     Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
     Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
 });
-
 
 require __DIR__.'/report.php';
