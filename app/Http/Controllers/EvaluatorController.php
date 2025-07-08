@@ -43,7 +43,7 @@ class EvaluatorController extends Controller
             ->whereNotIn('reports.status', ['Assigned', 'Draft']);
 
         if ($statusFilter && $statusFilter !== '') {
-            
+
             $assignments->where('reports.status', $statusFilter);
         }
 
@@ -141,6 +141,7 @@ class EvaluatorController extends Controller
             'report_title' => $reportData->report_title,
             'report_description' => $reportData->report_description ?? '-',
             'comment' => $reportData->comment ?? '-',
+            'comment_report' => $report->comment ?? '-',
             'assessment_type' => $reportData->assessment_type,
             'version_name' => optional($reportData->criteriaVersion)->version_name ?? '-',
             'start_date' => $this->formatThaiDate($assignment->assignmentData->start_time),
@@ -386,7 +387,8 @@ class EvaluatorController extends Controller
     {
         $validated = $request->validate([
             'scores' => 'required|array',
-            'scores.*' => 'nullable|numeric|min:0|max:5',
+            'scores.*' => 'required|numeric|min:0|max:5', 
+            'comment' => 'nullable|string|max:2000',
         ]);
 
         foreach ($validated['scores'] as $criteriaId => $score) {
@@ -403,12 +405,10 @@ class EvaluatorController extends Controller
             );
         }
 
-        //  ถ้ามี input ชื่อ 'change_status' ส่งมาด้วยจากฟอร์ม
-        if ($request->has('change_status')) {
-            Reports::where('id', $id)->update([
-                'status' => 'Completed',
-            ]);
-        }
+        Reports::where('id', $id)->update([
+            'comment' => $request->input('comment'),
+            'status' => $request->has('change_status') ? 'Completed' : DB::raw('status'),
+        ]);
 
         return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
     }

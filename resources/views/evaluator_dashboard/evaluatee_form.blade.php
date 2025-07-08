@@ -207,7 +207,15 @@
                                                             <input type="number" name="scores[{{ $criteria->id }}]"
                                                                 value="{{ old('scores.' . $criteria->id, $criteria->filled_score ?? '') }}"
                                                                 min="0" max="5" step="0.1"
-                                                                class="score-input" />
+                                                                class="score-input @error('scores.' . $criteria->id) is-invalid @enderror" />
+
+                                                            @error('scores.' . $criteria->id)
+                                                                <div class="invalid-feedback"
+                                                                    style="color: red; font-size: 0.875rem;">
+                                                                    {{ $message }}
+                                                                </div>
+                                                            @enderror
+
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -219,6 +227,16 @@
                         @endif
                     </div>
                 @endforeach
+            </div>
+            <!-- Comment Box -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h3>ความคิดเห็นเพิ่มเติม</h3>
+                </div>
+                <div class="card-body">
+                    <textarea name="comment" rows="4" class="score-input" placeholder="ระบุความคิดเห็นเพิ่มเติมที่นี่..."
+                        style="width: 100%; resize: vertical;">{{ old('comment', $assignment->report->comment ?? '') }}</textarea>
+                </div>
             </div>
 
             <!-- ปุ่มส่งข้อมูล -->
@@ -241,8 +259,23 @@
 
     <script>
         function confirmSubmit() {
+            // เก็บ input ที่เป็นคะแนนทั้งหมด
+            const scoreInputs = document.querySelectorAll('.score-input[type="number"]');
+            let emptyFound = false;
+
+            // ตรวจสอบว่า input ตัวเลขช่องใดว่างหรือไม่
+            scoreInputs.forEach(input => {
+                if (input.value === '' || input.value === null) {
+                    emptyFound = true;
+                }
+            });
+
+            if (emptyFound) {
+                alert("กรุณากรอกคะแนนให้ครบทุกช่องก่อนบันทึกข้อมูล");
+                return; // ไม่ส่งฟอร์ม
+            }
+
             if (confirm("คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?")) {
-                // เพิ่ม input เพื่อ flag ว่าจะอัปเดต status ด้วย
                 const form = document.querySelector('form');
                 const input = document.createElement('input');
                 input.type = 'hidden';
@@ -252,6 +285,7 @@
                 form.submit();
             }
         }
+
 
         function confirmReject() {
             if (confirm("คุณแน่ใจหรือไม่ว่าต้องการไม่อนุมัติแบบประเมินนี้?")) {
@@ -650,6 +684,10 @@
             /* สีฟ้า */
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
             outline: none;
+        }
+
+        .is-invalid {
+            border-color: #dc3545;
         }
     </style>
 @endsection

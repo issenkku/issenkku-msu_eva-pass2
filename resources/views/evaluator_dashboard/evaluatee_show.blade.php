@@ -199,10 +199,22 @@
                 @endif
             </div>
         @endforeach
+        <!-- Additional Comment Section -->
+        <div class="info-card">
+            <div class="card-header" style="background-color: #fef9c3;">
+                <h3 style="color: #92400e;">ความคิดเห็นเพิ่มเติมจากผู้ประเมิน</h3>
+            </div>
+            <div class="card-body">
+                <p style="white-space: pre-wrap; color: #374151;">
+                    {{ $assignment['comment_report'] ?? '-' }}
+                </p>
+            </div>
+        </div>
 
         <!-- Back Button -->
         <div class="action-section">
-            <button type="button" class="btn-back"  onclick="window.location='{{ route('evaluator.index') }}'">  <i class="fas fa-arrow-left"></i>
+            <button type="button" class="btn-back" onclick="window.location='{{ route('evaluator.index') }}'"> <i
+                    class="fas fa-arrow-left"></i>
                 ย้อนกลับ</button>
         </div>
     </div>
