@@ -33,17 +33,28 @@ class NotifyEndDate extends Command
         
         foreach ($items as $item) {
             foreach ($item->assignments as $assignment) {
-                $user = $assignment->evaluatorUser; // หรือ evaluateeUser ตามต้องการ
-                if ($user && $user->email) {
+                // เช็คว่ามี report และสถานะเป็น Completed หรือไม่
+                if (isset($assignment->report) && $assignment->report && $assignment->report->status === 'Completed') {
+                    continue; // ข้ามถ้าเสร็จแล้ว
+                }
+                // ส่งให้ทั้ง evaluator และ evaluatee (ถ้ามีอีเมล)
+                $recipients = [];
+                if (isset($assignment->evaluatorUser) && $assignment->evaluatorUser && $assignment->evaluatorUser->email) {
+                    $recipients[] = $assignment->evaluatorUser;
+                }
+                if (isset($assignment->evaluateeUser) && $assignment->evaluateeUser && $assignment->evaluateeUser->email) {
+                    $recipients[] = $assignment->evaluateeUser;
+                }
+                foreach ($recipients as $user) {
                     try {
                         $carbonDate = Carbon::parse($item->end_time);
                         $thaiYear = $carbonDate->year + 543;
                         $endDateTh = $carbonDate->format('d/m/') . substr($thaiYear, -2);
-                        
+
                         // คำนวณจำนวนวันที่เหลือ
                         $daysLeft = $today->diffInDays($carbonDate, false);
                         $daysLeftText = $daysLeft == 0 ? 'วันนี้' : "อีก {$daysLeft} วัน";
-                        
+
                         Mail::raw(
                             "แจ้งเตือนวันสิ้นสุดการประเมิน: กำหนดสิ้นสุดการประเมินคือ ({$endDateTh}) {$daysLeftText} กรุณาตรวจสอบและดำเนินการประเมินให้เรียบร้อยก่อนถึงกำหนด",
                             function ($message) use ($user, $item, $endDateTh, $daysLeftText) {

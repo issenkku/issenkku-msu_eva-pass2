@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class EvaluatorController extends Controller
 {
@@ -103,10 +104,6 @@ class EvaluatorController extends Controller
             'statusFilter' => $statusFilter
         ]);
     }
-
-    /**
-     * Display assignment details - แสดงรายละเอียดของการประเมิน
-     */
 
     public function show(Request $request, $assignmentId)
     {
@@ -410,6 +407,11 @@ class EvaluatorController extends Controller
             'status' => $request->has('change_status') ? 'Completed' : DB::raw('status'),
         ]);
 
+        // ส่งอีเมลแจ้งเตือนเมื่อประเมินเสร็จ
+        if ($request->has('change_status')) {
+            $this->sendEvaluationCompletedMail($id);
+        }
+
         return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
     }
 
@@ -509,5 +511,30 @@ class EvaluatorController extends Controller
     {
         // สมมติให้เป็น 4.5 เป็นค่า default
         return 4.5;
+    }
+
+        // อีเมลแจ้งเตือนเมื่อประเมินเสร็จ
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (!$report) return;
+
+        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (!$assignment) return;
+        $user = \App\Models\User::find($assignment->evaluatee);
+        if (!$user || !$user->email) return;
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+        ];
+
+        \Mail::send('emails.evaluation_completed', $mailData, function($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+        });
     }
 }

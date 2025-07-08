@@ -1,4 +1,4 @@
-@extends('layouts.user-management-page')
+@extends('layouts.app')
 
 @php
     $personnelTypes = [
