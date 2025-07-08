@@ -28,8 +28,8 @@
                                     <td class="item-name">{{ $evaluatorInfo['name'] }}</td>
                                     <td>
                                         รหัสผู้ประเมิน: {{ $evaluatorInfo['employee_id'] }} <br>
-                                        ประสบการณ์: {{ $evaluatorInfo['experience'] }} ปี <br>
-                                        คะแนนเฉลี่ย: {{ number_format($evaluatorInfo['average_score'], 1) }}/5.0
+                                        ตำแหน่ง: {{ $evaluatorInfo['position'] }} <br>
+                                        แผนก: {{ $evaluatorInfo['department'] }} <br>
                                     </td>
                                 </tr>
                             </tbody>

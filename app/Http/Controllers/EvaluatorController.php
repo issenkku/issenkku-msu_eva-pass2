@@ -91,6 +91,8 @@ class EvaluatorController extends Controller
         $evaluatorInfo = [
             'name' => $currentUser->prefix . $currentUser->name,
             'employee_id' => $currentUser->employee_id,
+            'department' => optional($currentUser->department)->department_name ?? '-',
+            'position' => optional($currentUser->position)->name ?? '-',
             'experience' => $this->calculateExperience($currentUser->created_at),
             'average_score' => $this->getAverageEvaluationScore($currentUser->id)
         ];
