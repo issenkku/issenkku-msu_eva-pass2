@@ -84,20 +84,25 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <div class="action-buttons">
+                                            <div
+                                                style="display: flex; gap: 8px; align-items: center; justify-content: center;">
                                                 <a href="{{ route('evaluator.evaluatee.show', $assignment->report_id) }}"
-                                                    class="btn-view" title="ดูรายละเอียด">
+                                                    style="background: #e0f2fe; color: #0284c7; padding: 8px 12px; border-radius: 6px; text-decoration: none;"
+                                                    title="ดูรายละเอียด">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
 
                                                 @if ($assignment->status_class !== 'Completed')
                                                     <a href="{{ route('evaluator.evaluatee.edit', $assignment->report_id) }}"
-                                                        class="btn-edit" title="แก้ไข">
+                                                        style="background: #fef3c7; color: #d97706; padding: 8px 12px; border-radius: 6px; text-decoration: none;"
+                                                        title="แก้ไข">
                                                         <i class="fa-solid fa-pen-to-square"></i>
                                                     </a>
                                                 @endif
                                             </div>
                                         </td>
+
+
                                     </tr>
                                 @empty
                                     <tr>
@@ -122,8 +127,6 @@
             </div>
         </div>
     </div>
-
-    
 @endsection
 
 @push('scripts')
