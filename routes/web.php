@@ -63,6 +63,12 @@ Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group
     });
 });
 
+Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
+    Route::get('/evaluatee-dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
+    Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+});
+
 
 Route::middleware('guest')->controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
@@ -77,18 +83,3 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__.'/report.php';
-
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
-});
-Route::get('/criteria-configs', function () {
-    return view('criteria_config.create');
-});
-
-Route::get('/criteria-evaluators', function () {
-    return view('criteria_config.evaluators');
-});
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
-Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');

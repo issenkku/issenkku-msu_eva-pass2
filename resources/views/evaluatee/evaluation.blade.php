@@ -1,4 +1,4 @@
-@extends('layouts.user-evaluation')
+@extends('layouts.app')
 
 @section('title', 'Evaluation - ระบบประเมิน')
 

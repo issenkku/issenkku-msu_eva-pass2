@@ -59,7 +59,7 @@ class AuthController extends Controller
         } elseif ($user->hasRole('ผู้ประเมิน')) {
             $redirect = '/evaluator-dashboard';
         } elseif ($user->hasRole('ผู้รับการประเมิน')) {
-            $redirect = '/dashboard';
+            $redirect = '/evaluatee-dashboard';
         }
         return response()->json(['redirect' => $redirect]);
     }
