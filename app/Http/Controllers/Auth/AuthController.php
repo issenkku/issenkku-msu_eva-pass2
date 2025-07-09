@@ -49,7 +49,39 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate(); // prevent session fixation
-        return redirect()->intended('/users');
+
+        $redirectUrl = $this->getRedirectUrlForUser($user);
+    
+        return redirect($redirectUrl);
+    }
+
+    private function getRedirectUrlForUser($user)
+    {
+        $redirectRules = [
+            ['type' => 'role', 'name' => 'admin', 'url' => '/users'],
+            
+            ['type' => 'permission', 'name' => 'Employee Management', 'url' => '/users'],
+            ['type' => 'permission', 'name' => 'Admin Dashboard', 'url' => '/admin/dashboard'],
+            
+            ['type' => 'role', 'name' => 'ผู้บริหาร', 'url' => '/dashboard'],
+            ['type' => 'role', 'name' => 'ผู้ประเมิน', 'url' => '/dashboard'],
+            
+            // Default for evaluatees and others
+            ['type' => 'role', 'name' => 'ผู้รับการประเมิน', 'url' => '/dashboard'],
+            ['type' => 'permission', 'name' => 'Employee Dashboard', 'url' => '/dashboard'],
+        ];
+        
+        // Check each rule in order
+        foreach ($redirectRules as $rule) {
+            if ($rule['type'] === 'role' && $user->hasRole($rule['name'])) {
+                return $rule['url'];
+            } elseif ($rule['type'] === 'permission' && $user->hasPermissionTo($rule['name'])) {
+                return $rule['url'];
+            }
+        }
+        
+        // Default fallback
+        return '/dashboard';
     }
 
     public function logout(Request $request)

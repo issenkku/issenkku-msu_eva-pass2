@@ -33,7 +33,7 @@ Route::prefix('settings')->name('settings.')->group(function () {
     Route::post('/store', [SettingsController::class, 'store'])->name('store');
 });
 
-Route::prefix('users')->name('users.')->group(function () {
+Route::middleware(['permission:Employee Management'])->prefix('users')->name('users.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
     Route::post('/', [UserController::class, 'store'])->name('store');
     Route::put('/{user}', [UserController::class, 'update'])->name('update');
@@ -50,7 +50,7 @@ Route::middleware('guest')->controller(AuthController::class)->group(function(){
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::resource('/roles', RoleAndPermissionController::class);
+Route::middleware(['permission:Role Management'])->resource('/roles', RoleAndPermissionController::class);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
@@ -67,8 +67,6 @@ Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
    Route::post('/', [AssignmentDataController::class, 'store'])->name('store');  // เปลี่ยนจาก '/store' เป็น '/'
 });
 
-
-
 Route::get('/criteria-config', function () {
     return view('criteria_config.index');
 });
@@ -80,9 +78,13 @@ Route::get('/criteria-evaluators', function () {
     return view('criteria_config.evaluators');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
-Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+Route::middleware(['permission:Employee Dashboard'])->group(function() {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
+    Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+});
+
+
 
 // ใน web.php - แก้ไขส่วนของ evaluator routes
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
