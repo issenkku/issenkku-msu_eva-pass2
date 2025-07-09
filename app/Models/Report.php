@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Report extends Model
 {
     use HasFactory;
+    
+    protected $table = 'reports';
+
     protected $fillable = [
         'report_data_id',
         'status',
@@ -37,5 +40,10 @@ class Report extends Model
     public function evidenceAnswers()
     {
         return $this->hasMany(EvidenceAnswer::class);
+    }
+
+    public function assignments()
+    {
+        return $this->hasOne(Assignments::class);
     }
 }
