@@ -15,7 +15,7 @@ use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\AssignmentDataController;
 use function Pest\Laravel\json;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum','role:admin'])->group(function () {
     Route::prefix('departments')->name('departments.')->group(function () {
         Route::get('/', [DepartmentsController::class, 'index'])->name('index');
         Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
@@ -41,6 +41,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
+        Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
+        Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
+        Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
+    });
+
+    Route::resource('/roles', RoleAndPermissionController::class);
+});
+
+Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group(function () {
+    Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
+        Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
+        Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
+        Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+        Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
+        Route::put('/assignment/{assignmentDataId}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+        Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
+    });
 });
 
 
@@ -52,41 +71,9 @@ Route::middleware('guest')->controller(AuthController::class)->group(function ()
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::resource('/roles', RoleAndPermissionController::class);
+
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
-
-
-Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
-   Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
-   Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
-   Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
-});
-
-Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
-    Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-    Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
-    Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
-    Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
-    Route::put('/assignment/{assignmentDataId}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
-    Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
-});
-
-Route::get('/evaluator-show', function () {
-    return view('evaluator_dashboard.evaluatee_show');
-});
-
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
-Route::put('/evaluation/{id}', [DashboardController::class, 'updateEvaluation'])->name('evaluation.update');
-
-// Additional routes for evaluation system
-Route::prefix('evaluation')->name('evaluation.')->group(function () {
-    Route::get('/create', [DashboardController::class, 'create'])->name('create');
-    Route::post('/store', [DashboardController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
-    Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
-});
-
 require __DIR__.'/report.php';
+

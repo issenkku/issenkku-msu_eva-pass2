@@ -49,7 +49,19 @@ class AuthController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate(); // prevent session fixation
-        return redirect()->intended('/users');
+
+        // กำหนด path redirect ตาม role (ส่งกลับไปให้ JS ใช้ window.location.href = response.data.redirect)
+        $redirect = '/';
+        if ($user->hasRole('admin')) {
+            $redirect = '/users';
+        } elseif ($user->hasRole('ผู้บริหาร')) {
+            $redirect = '/manager-dashboard';
+        } elseif ($user->hasRole('ผู้ประเมิน')) {
+            $redirect = '/evaluator-dashboard';
+        } elseif ($user->hasRole('ผู้รับการประเมิน')) {
+            $redirect = '/dashboard';
+        }
+        return response()->json(['redirect' => $redirect]);
     }
 
     public function logout(Request $request)

@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        {{-- <div class="mb-4">
+        <div class="mb-4">
             <label class="block mb-1 font-medium">ผู้ใช้ที่ได้รับบทบาทนี้</label>
             <div class="grid grid-cols-2 gap-2">
                 @foreach($users as $user)
@@ -38,7 +38,7 @@
                     </label>
                 @endforeach
             </div>
-        </div> --}}
+        </div>
 
         <div class="flex justify-end space-x-2">
             <a href="{{ route('roles.index') }}" class="px-4 py-2 bg-gray-300 rounded">ยกเลิก</a>
