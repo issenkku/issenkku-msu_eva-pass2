@@ -5,6 +5,7 @@ use App\Http\Controllers\Evaluatee\DashboardController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\AssignmentsController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\AssignmentDataController;
 use function Pest\Laravel\json;
+use App\Http\Controllers\DashboardController;
 
 Route::middleware(['auth:sanctum','role:admin'])->group(function () {
     Route::prefix('departments')->name('departments.')->group(function () {
@@ -52,7 +54,6 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
     Route::resource('/roles', RoleAndPermissionController::class);
 });
 
-
     Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
         Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
         Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
@@ -62,13 +63,11 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
         Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
 
-
 Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
     Route::get('/evaluatee-dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 });
-
 
 Route::middleware('guest')->controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
@@ -79,7 +78,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__.'/report.php';
+
+// Main dashboard route
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

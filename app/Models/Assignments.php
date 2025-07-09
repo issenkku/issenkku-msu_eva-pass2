@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Assignments extends Model
 {
@@ -18,8 +19,6 @@ class Assignments extends Model
 
     public $timestamps = false;
 
-
-
     // Relationships
     public function assignmentData()
     {
@@ -31,7 +30,7 @@ class Assignments extends Model
         return $this->belongsTo(Reports::class);
     }
 
-       public function evaluateeUser()
+    public function evaluateeUser()
     {
         return $this->belongsTo(User::class, 'evaluatee', 'id');
     }

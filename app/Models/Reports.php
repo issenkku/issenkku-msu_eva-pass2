@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Reports extends Model
 {
+    use HasFactory;
+    
     protected $table = 'reports';
 
-    use HasFactory;
     protected $fillable = [
         'report_data_id',
         'status',
@@ -42,9 +43,8 @@ class Reports extends Model
         return $this->hasMany(EvidenceAnswer::class);
     }
 
-    // assignments relationship: a report has many assignments
     public function assignments()
     {
-        return $this->hasMany(Assignments::class, 'report_id');
+        return $this->hasOne(Assignments::class);
     }
 }
