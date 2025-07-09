@@ -3,12 +3,14 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\User\UserController;
 use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
@@ -35,7 +37,7 @@ Route::prefix('users')->name('users.')->group(function () {
 
 // Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 // Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('guest')->controller(AuthController::class)->group(function(){
+Route::middleware('guest')->controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login');
 });
@@ -52,8 +54,8 @@ Route::resource('/roles', RoleAndPermissionController::class);
 //     Route::put('/profile', [UserProfileController::class, 'update'])->name('profile.update');
 // });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
 Route::prefix('positions')->name('positions.')->group(function () {
     Route::get('/', [PositionsController::class, 'index'])->name('index'); // แสดงข้อมูลทั้งหมด
     Route::post('/store', [PositionsController::class, 'store'])->name('store');           // บันทึกข้อมูลใหม่
@@ -75,4 +77,8 @@ Route::get('/criteria-evaluators', function () {
 
 Route::view('/criteria', 'criteria_config.index')->name('criteria_config.index');
 Route::view('/criteria-config', 'criteria_config.create')->name('criteria_config.create');
-require __DIR__.'/report.php';
+require __DIR__ . '/report.php';
+
+
+// Main dashboard route
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
