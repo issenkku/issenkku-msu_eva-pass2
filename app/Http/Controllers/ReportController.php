@@ -160,13 +160,9 @@ class ReportController extends Controller
                     'score_D' => $scoreD,
                 ]);
 
-                $report->status = 'Pending';
-                $report->save();
-
                 $created[] = $quantityScore;
             }
-            return redirect()->route('dashboard')->with('success', 'บันทึกคะแนนสำเร็จแล้ว');
-            // return QuantityScoreResource::collection(collect($created));
+            return QuantityScoreResource::collection(collect($created));
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
         }

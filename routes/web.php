@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Evaluatee\DashboardController;
+use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
@@ -81,15 +82,7 @@ Route::get('/criteria-evaluators', function () {
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
-Route::put('/evaluation/{id}', [DashboardController::class, 'updateEvaluation'])->name('evaluation.update');
-
-// Additional routes for evaluation system
-Route::prefix('evaluation')->name('evaluation.')->group(function () {
-    Route::get('/create', [DashboardController::class, 'create'])->name('create');
-    Route::post('/store', [DashboardController::class, 'store'])->name('store');
-    Route::get('/{id}/edit', [DashboardController::class, 'edit'])->name('edit');
-    Route::delete('/{id}', [DashboardController::class, 'destroy'])->name('destroy');
-});
+Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 
 // ใน web.php - แก้ไขส่วนของ evaluator routes
 Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {

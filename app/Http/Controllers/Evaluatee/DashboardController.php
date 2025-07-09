@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Evaluatee;
 
 use App\Models\Assignments;
+use App\Models\EvidenceAnswer;
+use App\Models\QualityMainCriteria;
+use App\Models\QualityScore;
+use App\Models\QuantityMainCriteria;
+use App\Models\QuantityScore;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -70,67 +75,138 @@ class DashboardController extends Controller
         $startTimeFormatted = $startTime ? $formatThai($startTime) : '-';
         $endTimeFormatted = $endTime ? $formatThai($endTime) : '-';
 
-        $criteriaVersion = $assignment->$report->reportData->criteriaVersion ?? null;
+        $criteriaVersion = $assignment->report->reportData->criteriaVersion ?? null;
         $quantityMainCriterias = $criteriaVersion ? $criteriaVersion->quantityMainCriterias : collect();
 
-        // dd([
-        //     'report_id' => $report->id,
-        //     'report_data' => $report->reportData ? 'exists' : 'null',
-        //     'criteria_version' => $report ? $report->reportData->criteriaVersion->version_name : 'null',
-        //     'evaluationLists' => $report ? $report->reportData->criteriaVersion->evaluationLists->map(function($main){
-        //         return [
-        //             'id' => $main->id,
-        //             'name' => $main->name,
-        //             'qualitySubCriterias' => $main->qualitySubCriterias->count(),
-        //         ];
-        //     }) : 'null',
-        //     'main_criterias' => $report ? $report->reportData->criteriaVersion->quantityMainCriterias->map(function($main) {
-        //         return [
-        //             'id' => $main->id,
-        //             'name' => $main->name,
-        //             'tooltips' => $main->tooltips,
-        //             'sub_criterias_count' => $main->quantitySubCriterias->count(),
-        //             'sub_criterias' => $main->quantitySubCriterias->map(function($sub) {
-        //                 return [
-        //                     'id' => $sub->id,
-        //                     'name' => $sub->name,
-        //                     'sequence' => $sub->sequence,
-        //                     'score_a' => $sub->score_a,
-        //                     'score_b' => $sub->score_b,
-        //                 ];
-        //             })
-        //         ];
-        //     }) : 'null - quantityMainCriterias is null'
-        // ]);
+        $quantityScores = QuantityScore::where('report_id', $id)
+        ->get()
+        ->keyBy('quantity_sub_criteria_id');
+
+        $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
+        ->get()
+        ->keyBy('evaluation_list_id');
+
+        $evidenceMap = $evidenceAnswers->mapWithKeys(function ($item) {
+            return [$item->evaluation_list_id => $item->link];
+        });
+
+        $readonly = $request->boolean('readonly');
 
         $evaluationItems = [];
-    
+
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
-            $quantityMainCriterias = $report->reportData->criteriaVersion->quantityMainCriterias;
-            
-            foreach ($quantityMainCriterias as $mainCriteria) {
-                // Add main criteria as a header row
+            $evaluationLists = $report->reportData->criteriaVersion->evaluationLists;
+            $firstList = $evaluationLists->first();
+
+            if ($firstList) {
                 $evaluationItems[] = [
-                    'title' => $mainCriteria->name,
-                    'subtitle' => $mainCriteria->tooltips,
+                    'title' => $firstList->name,
+                    'subtitle' => $firstList->annotation, 
                     'is_main' => true,
-                    'main_criteria_id' => $mainCriteria->id,
+                    'is_evaluation_list' => true,
+                    'evaluation_list_id' => $firstList->id,
                 ];
+
+                $mainCriteriaIds = $firstList->quantitySubCriterias->pluck('quantity_main_criteria_id')->unique();
                 
-                // Add sub criterias
-                foreach ($mainCriteria->quantitySubCriterias as $subCriteria) {
-                    $evaluationItems[] = [
-                        'title' => $subCriteria->name,
-                        'subtitle' => null,
-                        'is_main' => false,
-                        'sequence' => $subCriteria->sequence,
-                        'sub_criteria_id' => $subCriteria->id,
-                        'score_a' => $subCriteria->score_a,
-                        'score_b' => $subCriteria->score_b,
-                        'tor_compliant' => '', // This will be filled by user or from existing data
-                        'user_score' => '', // This will be filled by user or from existing data
-                        'evidence' => '', // This will be filled by user or from existing data
-                    ];
+                foreach ($mainCriteriaIds as $mainCriteriaId) {
+                    $mainCriteria = QuantityMainCriteria::find($mainCriteriaId);
+                    
+                    if ($mainCriteria) {
+                        $evaluationItems[] = [
+                            'title' => $mainCriteria->name,
+                            'subtitle' => $mainCriteria->tooltips,
+                            'is_main' => true,
+                            'is_evaluation_list' => false,
+                            'main_criteria_id' => $mainCriteria->id,
+                            'evaluation_list_id' => $firstList->id,
+                        ];
+
+                        $subCriterias = $firstList->quantitySubCriterias->where('quantity_main_criteria_id', $mainCriteriaId);
+                        
+                        foreach ($subCriterias as $subCriteria) {
+                            $quantityScore = $quantityScores[$subCriteria->id] ?? null;
+                            $evidenceLink = $evidenceAnswers[$firstList->id]->link ?? '';
+
+                            $evaluationItems[] = [
+                                'title' => $subCriteria->name,
+                                'subtitle' => null,
+                                'is_main' => false,
+                                'is_evaluation_list' => false,
+                                'sequence' => $subCriteria->sequence,
+                                'sub_criteria_id' => $subCriteria->id,
+                                'main_criteria_id' => $mainCriteria->id,
+                                'evaluation_list_id' => $firstList->id,
+                                'score_a' => $subCriteria->score_a,
+                                'score_b' => $subCriteria->score_b,
+                                'tor_compliant' => $quantityScore?->score_C ?? '', 
+                                'user_score' => '',
+                                'evidence' => $evidenceLink, 
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $qualityScores = QualityScore::where('report_id', $id)
+            ->get()
+            ->keyBy('quality_sub_criteria_id');
+
+        $qualityItems = [];
+
+        if ($report && $report->reportData && $report->reportData->criteriaVersion) {
+            $evaluationLists = $report->reportData->criteriaVersion->evaluationLists;
+            
+            foreach ($evaluationLists->skip(1) as $lists) {
+                $qualityItems[] = [
+                    'title' => $lists->name,
+                    'subtitle' => $lists->annotation, 
+                    'is_main' => true,
+                    'is_evaluation_list' => true,
+                    'evaluation_list_id' => $lists->id,
+                ];
+
+                $mainCriteriaIds = $lists->qualitySubCriterias->pluck('quality_main_criteria_id')->unique();
+                
+                foreach ($mainCriteriaIds as $mainCriteriaId) {
+                    $mainCriteria = QualityMainCriteria::find($mainCriteriaId);
+                    
+                    if ($mainCriteria) {
+                        $qualityItems[] = [
+                            'title' => $mainCriteria->name,
+                            'subtitle' => $mainCriteria->tooltips,
+                            'is_main' => true,
+                            'is_evaluation_list' => false,
+                            'main_criteria_id' => $mainCriteria->id,
+                            'evaluation_list_id' => $lists->id,
+                        ];
+
+                        $subCriterias = $lists->qualitySubCriterias->where('quality_main_criteria_id', $mainCriteriaId);
+                        
+                        foreach ($subCriterias as $subCriteria) {
+                            $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                            $evidenceLink = $evidenceAnswers[$lists->id]->link ?? '';
+                            
+                            $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
+                            $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
+
+                            $qualityItems[] = [
+                                'title' => $subCriteria->name,
+                                'subtitle' => null,
+                                'is_main' => false,
+                                'is_evaluation_list' => false,
+                                'sequence' => $subCriteria->sequence,
+                                'sub_criteria_id' => $subCriteria->id,
+                                'main_criteria_id' => $mainCriteria->id,
+                                'evaluation_list_id' => $lists->id,
+                                'num_score' => $subCriteria->num_score,
+                                'user_selected' => $userSelected,
+                                'score' => $qualityScore?->score ?? '',
+                                'evidence' => $evidenceLink, 
+                            ];
+                        }
+                    }
                 }
             }
         }
@@ -139,20 +215,8 @@ class DashboardController extends Controller
             'id', 'user', 'report', 'assignment', 'formatThai',
             'evaluatorName', 'startTime', 'endTime', 'reportName',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
-            'quantityMainCriterias', 'evaluationItems'
+            'quantityMainCriterias', 'evaluationItems', 'qualityItems', 'evidenceMap',
+            'readonly'
         ));
-    }
-
-    public function updateEvaluation(Request $request, $id)
-    {
-        // Handle evaluation update
-        $request->validate([
-            'status' => 'required|string',
-            // Add other validation rules
-        ]);
-
-        // Update evaluation logic here
-        
-        return redirect()->route('dashboard')->with('success', 'อัปเดตการประเมินเรียบร้อยแล้ว');
     }
 }

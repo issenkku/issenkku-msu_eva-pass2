@@ -112,7 +112,7 @@
                                         'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
                                     ],
                                     'รอผลการประเมิน' => [
-                                        'label' => 'ดูผล',
+                                        'label' => 'ดูการกรอกข้อมูล',
                                         'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
                                     ],
                                     'ประเมินเสร็จสิ้น' => [
@@ -121,10 +121,16 @@
                                     ],
                                 ];
                                 $action = $actions[$status] ?? null;
+
+                                $url = route('evaluation.show', ['id' => $report->id ?? 0]);
+
+                                if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
+                                    $url .= '?readonly=1';
+                                }
                             @endphp
 
                             @if($action)
-                                <a href="{{ route('evaluation.show', $report->id ?? 0) }}"
+                                <a href="{{ $url }}"
                                    class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
                                     {{ $action['label'] }}
                                 </a>
