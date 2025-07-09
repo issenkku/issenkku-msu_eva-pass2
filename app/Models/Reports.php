@@ -41,4 +41,10 @@ class Reports extends Model
     {
         return $this->hasMany(EvidenceAnswer::class);
     }
+
+    // assignments relationship: a report has many assignments
+    public function assignments()
+    {
+        return $this->hasMany(Assignments::class, 'report_id');
+    }
 }

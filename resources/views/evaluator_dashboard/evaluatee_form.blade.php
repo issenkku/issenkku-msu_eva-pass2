@@ -6,7 +6,7 @@
         </script>
     @endif
 
-    <form action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
+    <form id="approve_eva" action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -193,12 +193,10 @@
                                                     <tr>
                                                         <td class="text-left">{{ $criteria->name }}</td>
                                                         <td>
-                                                            @if ($criteria->evidenceAnswers && $criteria->evidenceAnswers->count() > 0)
-                                                                @foreach ($criteria->evidenceAnswers as $evidence)
-                                                                    <a href="{{ $evidence->link }}" target="_blank">
-                                                                        ดูหลักฐาน
-                                                                    </a><br>
-                                                                @endforeach
+                                                            @if ($criteria->evidence_links)
+                                                                <a href="{{ $criteria->evidence_links[0] }}" target="_blank">
+                                                                    ดูหลักฐาน
+                                                                </a><br>
                                                             @else
                                                                 -
                                                             @endif
@@ -276,7 +274,7 @@
             }
 
             if (confirm("คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?")) {
-                const form = document.querySelector('form');
+                const form = document.querySelector('#approve_eva');
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'change_status';

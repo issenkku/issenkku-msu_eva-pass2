@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Debugbar; // Assuming you have installed Laravel Debugbar for debugging
 
 class EvaluatorController extends Controller
 {
@@ -348,10 +349,11 @@ class EvaluatorController extends Controller
                 ->get();
         }
 
+        
+
         // ผูกคะแนนและ evidence เข้า quantitySubCriterias และ qualitySubCriterias
         foreach ($categories as $category) {
             foreach ($category->evaluationLists as $list) {
-
                 // Quantity
                 foreach ($list->quantitySubCriterias as $criteria) {
                     $score = $quantityScores->get($criteria->id);
@@ -382,6 +384,7 @@ class EvaluatorController extends Controller
 
     public function update(Request $request, $id)
     {
+        \Log::info('Update evaluation scores for report ID: ' . $id);
         $validated = $request->validate([
             'scores' => 'required|array',
             'scores.*' => 'required|numeric|min:0|max:5', 

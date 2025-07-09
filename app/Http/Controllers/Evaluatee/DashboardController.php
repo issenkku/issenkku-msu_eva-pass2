@@ -8,7 +8,7 @@ use App\Models\QualityMainCriteria;
 use App\Models\QualityScore;
 use App\Models\QuantityMainCriteria;
 use App\Models\QuantityScore;
-use App\Models\Report;
+use App\Models\Reports;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Controllers\Controller;
@@ -46,15 +46,16 @@ class DashboardController extends Controller
     {
         $user = $request->user()->load('position', 'department');
 
-        $report = Report::with([
+        $report = Reports::with([
             'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
             'assignments.evaluatorUser',
             'assignments.assignmentData',
         ])->findOrFail($id);
         
-        $assignment = $report->assignments;
+        // Find the assignment for the current user
+        $assignment = $report->assignments->where('evaluatee', $user->id)->first();
 
-        if (!$assignment || $assignment->evaluatee !== $user->id) {
+        if (!$assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 

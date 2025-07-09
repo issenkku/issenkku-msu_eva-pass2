@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Evaluatee;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Report;
+use App\Models\Reports;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\QuantityScore;
 use App\Models\QualityScore;
@@ -16,7 +16,7 @@ class EvaluationScoreController extends Controller
 {
     protected $allowedEditStatuses = ['Assigned', 'Draft'];
     
-    protected function checkReportEditableStatus(Report $report, $action)
+    protected function checkReportEditableStatus(Reports $report, $action)
     {
         if (!in_array($report->status, $this->allowedEditStatuses)) {
             return response()->json([
@@ -31,7 +31,7 @@ class EvaluationScoreController extends Controller
     {
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             $statusCheck = $this->checkReportEditableStatus($report, 'process evaluation scores');
             if ($statusCheck) return $statusCheck;

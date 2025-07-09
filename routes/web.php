@@ -52,16 +52,16 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
     Route::resource('/roles', RoleAndPermissionController::class);
 });
 
-Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group(function () {
+
     Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
         Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
         Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
         Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
         Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
-        Route::put('/assignment/{assignmentDataId}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+        Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
         Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
-});
+
 
 Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
     Route::get('/evaluatee-dashboard', [DashboardController::class, 'index'])->name('dashboard');
