@@ -50,10 +50,28 @@ class AssignmentPerReportSeeder extends Seeder
             }
 
             // QuantityScore for each QuantitySubCriteria (for this report)
-            foreach (QuantitySubCriteria::all() as $qsub) {
+            $quantitySubs = QuantitySubCriteria::all();
+            $maxSum = 40;
+            $currentSum = 0;
+            $remaining = count($quantitySubs);
+
+            foreach ($quantitySubs as $i => $qsub) {
+                $remaining = count($quantitySubs) - $i;
+                $maxForThis = min($maxSum - $currentSum, 40); // cannot exceed 40
+                // For the last subcriteria, use all the remaining points; else, random between 1 and the limit
+                if ($remaining == 1) {
+                    $scoreD = max($maxSum - $currentSum, 0);
+                } else {
+                    $scoreD = fake()->numberBetween(1, max($maxForThis - ($remaining - 1), 1));
+                }
+                // Avoid negative or over-allocating
+                $scoreD = max(0, min($scoreD, $maxForThis));
+                $currentSum += $scoreD;
+
                 QuantityScore::factory()->create([
                     'quantity_sub_criteria_id' => $qsub->id,
                     'report_id'                => $report->id,
+                    'score_D'                  => $scoreD,
                 ]);
             }
 

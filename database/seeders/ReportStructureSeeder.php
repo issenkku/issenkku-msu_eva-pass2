@@ -65,7 +65,7 @@ class ReportStructureSeeder extends Seeder
          */
 
         $maxSumScore = 30;
-        $evaluationListCount = 7;
+        $evaluationListCount = 2;
 
         $scores = [];
         $remain = $maxSumScore;
@@ -88,7 +88,7 @@ class ReportStructureSeeder extends Seeder
             ]);
 
             // ### Divide ratio to total 100 ###
-            $mainCount = 5;
+            $mainCount = 1;
             $ratios = [];
             $remain = 100;
             for ($i = 0; $i < $mainCount - 1; $i++) {

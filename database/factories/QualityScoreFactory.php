@@ -19,7 +19,7 @@ class QualityScoreFactory extends Factory
     public function definition(): array
     {
         return [
-            'score' => fake()->randomFloat(2, 1, 10),
+            'score' => fake()->randomFloat(2, 1, 6),
             'quality_sub_criteria_id' => QualitySubCriteria::inRandomOrder()->first()?->id,
             'report_id' => Report::inRandomOrder()->first()?->id,
         ];
