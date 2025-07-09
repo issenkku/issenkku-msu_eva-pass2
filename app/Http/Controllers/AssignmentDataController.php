@@ -8,44 +8,49 @@ use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AssignmentDataController extends Controller
 {
-  
-public function index()
-{
-    $assignmentData = AssignmentData::with([
-        'assignments.evaluateeUser',
-        'assignments.evaluatorUser',
-        'assignments.report',
-    ])->get();
+    public function index()
+    {
+        $assignmentData = AssignmentData::with([
+            'assignments.evaluateeUser',
+            'assignments.evaluatorUser',
+            'assignments.report',
+        ])->get();
 
-    $users = User::all();
-    $report_data = ReportData::all();
-    $departments = Departments::all();
+        $users = User::all();
+        $reportData = ReportData::all();
+        $departments = Departments::all();
 
-    $evaluatees = $users;
-    $evaluators = $users;
+        return view('assignment-data.create', [
+            'assignmentData' => $assignmentData,
+            'users' => $users,
+            'report_data' => $reportData,
+            'departments' => $departments,
+            'evaluatees' => $users,
+            'evaluators' => $users,
+        ]);
+    }
 
-    return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
-}
+    public function create()
+    {
+        $users = User::all();
+        $reportData = ReportData::all();
+        $departments = Departments::all();
 
-public function create()
-{
-    $departments = Departments::all();
-    $report_data = ReportData::all();
-    $users = User::all();
-
-    $evaluatees = $users;
-    $evaluators = $users;
-
-    return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
-}
-
+        return view('assignment-data.create', [
+            'report_data' => $reportData,
+            'departments' => $departments,
+            'users' => $users,
+            'evaluatees' => $users,
+            'evaluators' => $users,
+        ]);
+    }
 
     public function store(Request $request)
     {
@@ -60,14 +65,15 @@ public function create()
 
         $validator->after(function ($validator) use ($request) {
             foreach ($request->assignments as $index => $item) {
-                if (isset($item['evaluatee'], $item['evaluator']) && $item['evaluatee'] == $item['evaluator']) {
+                if ($item['evaluatee'] == $item['evaluator']) {
                     $validator->errors()->add("assignments.$index.evaluator", 'ผู้ประเมินต้องไม่ตรงกับผู้รับการประเมิน');
                 }
             }
         });
 
         if ($validator->fails()) {
-            return redirect()->route('assignment-data.create')
+            return redirect()
+                ->route('assignment-data.create')
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -80,32 +86,36 @@ public function create()
                 'end_time' => $request->end_time,
             ]);
 
-            foreach ($request->assignments as $assignmentItem) {
+            foreach ($request->assignments as $item) {
                 $report = Reports::create([
-                    'report_data_id' => $assignmentItem['report_data_id'],
+                    'report_data_id' => $item['report_data_id'],
                     'status' => 'assigned',
                 ]);
 
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $assignmentItem['evaluatee'],
-                    'evaluator' => $assignmentItem['evaluator'],
+                    'evaluatee' => $item['evaluatee'],
+                    'evaluator' => $item['evaluator'],
                 ]);
             }
 
             DB::commit();
 
-            return redirect()->route('assignment-data.create')->with('success', 'สร้าง Assignment สำเร็จแล้ว');
+            return redirect()
+                ->route('assignment-data.create')
+                ->with('success', 'สร้าง Assignment สำเร็จแล้ว');
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Error storing assignment data', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->all(),
             ]);
 
-            return redirect()->route('assignment-data.create')
+            return redirect()
+                ->route('assignment-data.create')
                 ->withErrors(['store_error' => $e->getMessage()])
                 ->withInput();
         }
@@ -113,7 +123,12 @@ public function create()
 
     public function show(AssignmentData $assignmentData)
     {
-        $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
+        $assignmentData->load([
+            'assignments.evaluateeUser',
+            'assignments.evaluatorUser',
+            'assignments.report',
+        ]);
+
         return response()->json($assignmentData);
     }
 
@@ -121,7 +136,12 @@ public function create()
     {
         $users = User::all();
         $reports = Reports::all();
-        $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
+
+        $assignmentData->load([
+            'assignments.evaluateeUser',
+            'assignments.evaluatorUser',
+            'assignments.report',
+        ]);
 
         return response()->json([
             'assignmentData' => $assignmentData,
@@ -143,7 +163,7 @@ public function create()
 
         $validator->after(function ($validator) use ($request) {
             foreach ($request->assignments as $index => $item) {
-                if (isset($item['evaluatee'], $item['evaluator']) && $item['evaluatee'] == $item['evaluator']) {
+                if ($item['evaluatee'] == $item['evaluator']) {
                     $validator->errors()->add("assignments.$index.evaluator", 'ผู้ประเมินต้องไม่ตรงกับผู้รับการประเมิน');
                 }
             }
@@ -166,17 +186,17 @@ public function create()
 
             $assignmentData->assignments()->delete();
 
-            foreach ($request->assignments as $assignmentItem) {
+            foreach ($request->assignments as $item) {
                 $report = Reports::create([
-                    'report_data_id' => $assignmentItem['report_data_id'],
+                    'report_data_id' => $item['report_data_id'],
                     'status' => 'assigned',
                 ]);
 
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $assignmentItem['evaluatee'],
-                    'evaluator' => $assignmentItem['evaluator'],
+                    'evaluatee' => $item['evaluatee'],
+                    'evaluator' => $item['evaluator'],
                 ]);
             }
 
@@ -188,6 +208,7 @@ public function create()
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Error updating assignment data', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -205,6 +226,7 @@ public function create()
     {
         try {
             $assignmentData->delete();
+
             return response()->json([
                 'message' => 'Assignment data deleted successfully',
             ]);
