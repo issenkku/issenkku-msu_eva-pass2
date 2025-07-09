@@ -241,12 +241,12 @@
 
             <!-- ปุ่มส่งข้อมูล -->
             <div class="action-section">
-                <button type="button" class="btn btn-secondary"
+                <button type="button" class="btn-back secondary"
                     onclick="window.location='{{ route('evaluator.index') }}'">ยกเลิก</button>
 
-                <button type="button" class="btn btn-primary" onclick="confirmSubmit()">บันทึกข้อมูล</button>
+                <button type="button" class="btn-back primary" onclick="confirmSubmit()">บันทึกข้อมูล</button>
 
-                <button type="button" class="btn btn-warning" onclick="confirmReject()">ไม่อนุมัติ</button>
+                <button type="button" class="btn-back warning" onclick="confirmReject()">ไม่อนุมัติ</button>
             </div>
     </form>
 
@@ -689,5 +689,34 @@
         .is-invalid {
             border-color: #dc3545;
         }
+
+        .secondary {
+            background-color: #6b7280;
+            color: #111827;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .primary {
+            background-color: #2563eb;
+            color: #111827;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .warning {
+            background-color: #facc15;
+            color: #111827;
+        }
+
+        .btn-warning:hover {
+            background-color: #fbbf24;
+        }
+    </style>
+    <style>
     </style>
 @endsection
