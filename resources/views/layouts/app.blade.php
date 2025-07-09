@@ -275,21 +275,35 @@
                 </h1>
                 <nav>
                     <ul class="nav nav-pills align-items-center gap-2">
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="/">หน้าแรก</a>
-                        </li>
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/dashboard">หน้าแรก</a>
+                            </li>
+                        @endif
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/evaluator-dashboard">หน้าการประเมิน</a>
+                            </li>
+                        @endif
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าการประเมิน</a>
+                            </li>
+                        @endif
+                        
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/dashboard">หน้าแรก</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ route('users.index') }}">จัดการสมาชิก</a>
                         </li>
-                        @endif
                         <li class="nav-item">
                             <a class="nav-link text-white" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a>
                         </li>
-                        @if(auth()->user() && auth()->user()->hasRole('admin'))
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 ตั้งค่า

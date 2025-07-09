@@ -53,9 +53,9 @@ class AuthController extends Controller
         // กำหนด path redirect ตาม role (ส่งกลับไปให้ JS ใช้ window.location.href = response.data.redirect)
         $redirect = '/';
         if ($user->hasRole('admin')) {
-            $redirect = '/users';
+            $redirect = '/dashboard';
         } elseif ($user->hasRole('ผู้บริหาร')) {
-            $redirect = '/manager-dashboard';
+            $redirect = '/dashboard';
         } elseif ($user->hasRole('ผู้ประเมิน')) {
             $redirect = '/evaluator-dashboard';
         } elseif ($user->hasRole('ผู้รับการประเมิน')) {

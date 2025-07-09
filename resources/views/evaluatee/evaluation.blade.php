@@ -62,7 +62,7 @@
         @endif
 
         <div class="flex justify-center gap-4 mt-8">
-            <a href="{{ route('dashboard') }}" class="px-6 py-2 bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
+            <a href="/evaluatee-dashboard" class="px-6 py-2 bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
 
             @unless($readonly)
                 <button type="submit" onclick="setFormStatus('Draft')" class="bg-pink-400 text-white px-6 py-2 rounded-md hover:bg-pink-500 w-40">
@@ -95,48 +95,4 @@ function setFormStatus(status) {
     document.getElementById('formStatus').value = status;
 }
 </script>
-
-<!-- <script>
-function saveDraft() {
-    const form = document.getElementById('evaluationForm');
-    const inputs = form.querySelectorAll('input, textarea, select');
-
-    const draftData = {};
-
-    inputs.forEach(input => {
-        if (!input.name) return;
-        if (input.type === 'hidden' || input.type === 'submit' || input.type === 'button') return;
-
-        if (input.type === 'checkbox') {
-            draftData[input.name] = input.checked;
-        } else {
-            draftData[input.name] = input.value;
-        }
-    });
-
-    localStorage.setItem('evaluationDraft', JSON.stringify(draftData));
-    alert('บันทึกร่างสำเร็จแล้ว');
-}
-</script>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('evaluationDraft');
-    if (!saved) return;
-
-    const draftData = JSON.parse(saved);
-
-    for (const name in draftData) {
-        const fields = document.querySelectorAll(`[name="${name}"]`);
-
-        fields.forEach(field => {
-            if (field.type === 'checkbox') {
-                field.checked = draftData[name];
-            } else {
-                field.value = draftData[name];
-            }
-        });
-    }
-});
-</script> -->
 @endsection

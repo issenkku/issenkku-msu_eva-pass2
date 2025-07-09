@@ -341,21 +341,21 @@ class CompleteDataSeeder extends Seeder
             [
                 'id' => 1,
                 'report_data_id' => 1,
-                'status' => 'draft',
+                'status' => 'Draft',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 2,
                 'report_data_id' => 2,
-                'status' => 'submitted',
+                'status' => 'Completed',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'id' => 3,
                 'report_data_id' => 1,
-                'status' => 'approved',
+                'status' => 'Pending',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

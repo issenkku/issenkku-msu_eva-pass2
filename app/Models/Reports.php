@@ -45,6 +45,6 @@ class Reports extends Model
 
     public function assignments()
     {
-        return $this->hasOne(Assignments::class);
+        return $this->hasOne(Assignments::class,'report_id');
     }
 }

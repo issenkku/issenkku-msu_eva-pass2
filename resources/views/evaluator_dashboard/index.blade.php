@@ -14,7 +14,7 @@
 
         <div class="main-content">
             <div class="content-left">
-                <div class="table-card">
+                {{-- <div class="table-card">
                     <div class="table-container">
                         <table class="evaluation-table">
                             <thead>
@@ -35,7 +35,8 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> --}}
+                <x-user-info-card :user="$evaluatorInfo" />
 
                 <div class="table-card" style="margin-top: 2rem;">
                     <div class="table-header">

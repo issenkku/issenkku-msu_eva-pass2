@@ -271,9 +271,9 @@
 
                                     // Color logic
                                     $statusClass = match ($status) {
-                                        'COMPLETED' => 'bg-green-100 text-green-800',
-                                        'PENDING' => 'bg-yellow-100 text-yellow-800',
-                                        'DRAFT' => 'bg-gray-100 text-gray-800',
+                                        'Completed' => 'bg-green-100 text-green-800',
+                                        'Pending' => 'bg-yellow-100 text-yellow-800',
+                                        'Draft' => 'bg-gray-100 text-gray-800',
                                         default => 'bg-blue-100 text-blue-800',
                                     };
                                 @endphp
@@ -372,12 +372,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Status Chart
-            const statusLabels = ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'];
+            const statusLabels = ['Assigned', 'Draft', 'Pending', 'Completed'];
             const statusData = [
-                {{ $statusCounts_chart['ASSIGNED'] ?? 0 }},
-                {{ $statusCounts_chart['DRAFT'] ?? 0 }},
-                {{ $statusCounts_chart['PENDING'] ?? 0 }},
-                {{ $statusCounts_chart['COMPLETED'] ?? 0 }}
+                {{ $statusCounts_chart['Assigned'] ?? 0 }},
+                {{ $statusCounts_chart['Draft'] ?? 0 }},
+                {{ $statusCounts_chart['Pending'] ?? 0 }},
+                {{ $statusCounts_chart['Completed'] ?? 0 }}
             ];
             const statusCtx = document.getElementById('statusChart').getContext('2d');
             new Chart(statusCtx, {

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Evaluatee\DashboardController;
+use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
@@ -52,8 +52,10 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
     });
 
     Route::resource('/roles', RoleAndPermissionController::class);
+
 });
 
+Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group(function () {
     Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
         Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
         Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
@@ -62,11 +64,16 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
         Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
         Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
+});
 
 Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
-    Route::get('/evaluatee-dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
-    Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+    Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('dashboard');
+    Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
+    Route::post('/evaluation/{id}/scores', [DashboardEvaluateeController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+});
+
+Route::middleware(['auth:sanctum','role:admin|ผู้บริหาร'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
 Route::middleware('guest')->controller(AuthController::class)->group(function () {
@@ -82,5 +89,3 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__.'/report.php';
 
-// Main dashboard route
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

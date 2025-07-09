@@ -17,7 +17,7 @@ class ReportsFactory extends Factory
      */
     public function definition(): array
     {
-        $status = ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'];
+        $status = ['Assigned', 'Draft', 'Pending', 'Completed'];
 
         return [
             'status' => fake()->randomElement($status),
