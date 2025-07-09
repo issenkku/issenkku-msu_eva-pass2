@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
 use App\Models\QuantityScore;
 use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -18,11 +16,12 @@ use App\Http\Resources\ReportSummaryResource;
 use App\Http\Resources\QuantityScoreResource;
 use App\Http\Resources\QualityScoreResource;
 use App\Http\Resources\EvidenceAnswerResource;
+use App\Models\Report;
 
 class ReportController extends Controller
 {
     // สถานะที่อนุญาตให้แก้ไขข้อมูล
-    protected $allowedEditStatuses = ['Assigned', 'Draft'];
+    protected $allowedEditStatuses = ['ASSIGNED', 'DRAFT'];
 
     // GET /reports
     public function index()
@@ -34,7 +33,7 @@ class ReportController extends Controller
     public function show($id)
     {
         try {
-            $report = Report::with(['quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+            $report = Report::with(['assignments','quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -44,18 +43,18 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         try {
-            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
+            if ($request->has('status') && !in_array($request->status, ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'])) {
                 return response()->json([
                     'message' => 'Invalid status value',
                     'errors' => [
-                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                        'status' => ['Status must be one of: ASSIGNED, DRAFT, PENDING, COMPLETED']
                     ]
                 ], 422);
             }
 
             $validated = $request->validate([
                 'report_data_id' => 'required|integer|exists:report_datas,id',
-                'status'         => 'required|string|in:Assigned,Draft,Pending,Completed',
+                'status'         => 'required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
             $report = Report::create($validated);
@@ -73,18 +72,18 @@ class ReportController extends Controller
     {
         try {
             $report = Report::findOrFail($id);
-            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
+            if ($request->has('status') && !in_array($request->status, ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'])) {
                 return response()->json([
                     'message' => 'Invalid status value',
                     'errors' => [
-                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                        'status' => ['Status must be one of: ASSIGNED, DRAFT, PENDING, COMPLETED']
                     ]
                 ], 422);
             }
 
             $validated = $request->validate([
                 'report_data_id' => 'sometimes|required|integer|exists:report_datas,id',
-                'status'         => 'sometimes|required|string|in:Assigned,Draft,Pending,Completed',
+                'status'         => 'sometimes|required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
             $report->update($validated);
@@ -118,7 +117,7 @@ class ReportController extends Controller
     {
         if (!in_array($report->status, $this->allowedEditStatuses)) {
             return response()->json([
-                'message' => "Cannot {$action}. Report must be in Assigned or Draft status."
+                'message' => "Cannot {$action}. Report must be in ASSIGNED or DRAFT status."
             ], 403);
         }
 
