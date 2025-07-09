@@ -44,16 +44,16 @@ class EvaluationScoreController extends Controller
             ]);
 
             $validated = $request->validate([
-                'quantity_list' => 'required|array',
-                'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
+                'quantity_list' => 'nullable|array',
+                'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
                 
-                'quality_list' => 'required|array',
-                'quality_list.*.quality_sub_criteria_id' => 'required|integer|exists:quality_sub_criterias,id',
+                'quality_list' => 'nullable|array',
+                'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric',
                 
-                'evidence_list' => 'required|array',
-                'evidence_list.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
+                'evidence_list' => 'nullable|array',
+                'evidence_list.*.evaluation_list_id' => 'nullable|integer|exists:evaluation_lists,id',
                 'evidence_list.*.link' => 'nullable|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',

@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Auth;
 use Illuminate\Http\Request;
 use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -61,12 +61,10 @@ class AuthController extends Controller
             ['type' => 'role', 'name' => 'admin', 'url' => '/users'],
             
             ['type' => 'permission', 'name' => 'Employee Management', 'url' => '/users'],
-            ['type' => 'permission', 'name' => 'Admin Dashboard', 'url' => '/admin/dashboard'],
             
             ['type' => 'role', 'name' => 'ผู้บริหาร', 'url' => '/dashboard'],
             ['type' => 'role', 'name' => 'ผู้ประเมิน', 'url' => '/dashboard'],
             
-            // Default for evaluatees and others
             ['type' => 'role', 'name' => 'ผู้รับการประเมิน', 'url' => '/dashboard'],
             ['type' => 'permission', 'name' => 'Employee Dashboard', 'url' => '/dashboard'],
         ];

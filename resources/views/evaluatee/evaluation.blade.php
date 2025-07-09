@@ -73,6 +73,21 @@
                 </button>
             @endunless
         </div>
+
+        <!-- <div class="sticky bottom-0 py-4 px-4 z-10">
+            <div class="flex justify-center gap-4">
+                <a href="{{ route('dashboard') }}" class="px-6 py-2 shadow bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
+
+                @unless($readonly)
+                    <button type="submit" onclick="setFormStatus('Draft')" class="bg-pink-400 shadow text-white px-6 py-2 rounded-md hover:bg-pink-500 w-40">
+                        บันทึกร่าง
+                    </button>
+                    <button type="submit" onclick="setFormStatus('Pending')" class="bg-purple-600 shadow text-white px-6 py-2 rounded-md hover:bg-purple-700 w-40" id="submitBtn">
+                        ส่งแบบประเมิน
+                    </button>
+                @endunless
+            </div>
+        </div> -->
     </form>
 </div>
 
