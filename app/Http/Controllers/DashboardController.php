@@ -24,13 +24,15 @@ class DashboardController extends Controller
         $endDate = $request->input('end_time');
         $departmentName = $request->input('department_name');
 
-        if (!$startDate && !$endDate) {
-            $latestPeriod = AssignmentData::latest('end_time')->first();
-            if ($latestPeriod) {
-                $startDate = $latestPeriod->start_time;
-                $endDate = $latestPeriod->end_time;
-            }
-        }
+        // Fetch all departments for the filter dropdown
+        $departments = Department::all();
+
+        // If no filters are provided, don't set default dates to ensure all data is fetched
+        // $latestPeriod = AssignmentData::latest('end_time')->first();
+        // if (!$startDate && !$endDate && $latestPeriod) {
+        //     $startDate = $latestPeriod->start_time;
+        //     $endDate = $latestPeriod->end_time;
+        // }
 
         // Base query for reports
         $reportsQuery = Report::query()
@@ -44,7 +46,6 @@ class DashboardController extends Controller
                 'assignment_datas.id as assignment_data_id',
                 'assignment_datas.start_time',
                 'assignment_datas.end_time',
-
                 'evaluatees.department_id as evaluatee_department_id',
                 'evaluatees.id as evaluatee_id',
                 'evaluatees.name as evaluatee_name',
@@ -52,10 +53,8 @@ class DashboardController extends Controller
                 'evaluatees.position_id as evaluatee_position_id',
                 'evaluatees_position.name as evaluatee_position_name',
                 'evaluatees_dept.department_name as evaluatee_department_name',
-
                 'evaluators.id as evaluator_id',
                 'evaluators.name as evaluator_name',
-
                 'reports.id as report_id',
                 'reports.status as report_status',
                 'reports.created_at as report_created_at',
@@ -63,85 +62,61 @@ class DashboardController extends Controller
                 'reports.report_data_id as report_data_id'
             )->orderBy('reports.updated_at', 'desc');
 
-
         // Apply date filters if provided
-        // if ($startDate) {
-        //     $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
-        // }
+        if ($startDate) {
+            $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
+        }
 
-        // if ($endDate) {
-        //     $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
-        // }
+        if ($endDate) {
+            $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
+        }
 
-        // // Apply department filter if provided
-        // if ($departmentName) {
-        //     $reportsQuery->join('departments', 'evaluatees.department_id', '=', 'departments.id')
-        //         ->where('departments.name', $departmentName);
-        // }
+        // Apply department filter if provided
+        if ($departmentName) {
+            $reportsQuery->where('evaluatees_dept.department_name', $departmentName);
+        }
 
         // Get total participants (unique evaluatees)
-        // $totalParticipants = $reportsQuery->distinct('evaluatees.id')->count('evaluatees.id');
         $totalParticipants = $reportsQuery->count('evaluatees.id');
+        // $totalParticipants = $reportsQuery->distinct('evaluatees.id')->count('evaluatees.id');
 
-        // Get total score per report
-        // $scorePerReport = $this->getScorePerReport($reportsQuery->get());
-
-        // $assignments = $this->getAssignmentsWithScores($reportsQuery);
-        // // Calculate average score
+        // Calculate average score
         $averageScore = $this->calculateAverageScore($reportsQuery->get());
 
         // Status Chart (Bar Chart)
         $statusCounts = $this->statusCounts($reportsQuery->get());
+
         // Score Distribution Chart (Scatter Plot)
         $scatterData = $this->scatterData($reportsQuery->get());
 
+        // Get reports with scores
         $reportsWithScores = $this->reportsWithScores($reportsQuery->get());
 
-        // // Count passed and failed participants
-        // $passThreshold = 60; // Assuming 60 is the passing threshold
-        // $passFailData = $this->getPassFailData($reportsQuery->get(), $passThreshold);
-
-        // Calculate pass rate
-        // $passRate = $totalParticipants > 0 ? round(($passFailData['passedCount'] / $totalParticipants) * 100, 1) : 0;
-
-        // // Get participants with scores for the table
-        // $users = $this->getUsersWithScores($reportsQuery);
-
-        // // Get scatter plot data for score distribution
-        // $scatterData = $this->getScatterData($users);
-
-        // // Get all departments for filter dropdown
-        // $departments = Department::all();
-
-        // // Build evaluation period string
-        // $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
+        // Evaluation period for display
+        $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
 
         return view('dashboard.index', [
             // 'reports' => $groupedMainCriterias,
 
             'totalParticipants' => $totalParticipants,
             'averageScore' => $averageScore,
+            'departments' => $departments,
             'statusCounts_chart' => $statusCounts,
             'scatterData_chart' => $scatterData,
             // 'reports' => $reportsQuery->get(),
-
             'reports' => $reportsWithScores,
+            'evaluationPeriod' => $evaluationPeriod,
         ]);
 
-
-
-
         // return response()->json([
-        //     // 'reports' => $groupedMainCriterias,
-
         //     'totalParticipants' => $totalParticipants,
         //     'averageScore' => $averageScore,
+        //     'departments' => $departments,
         //     'statusCounts_chart' => $statusCounts,
         //     'scatterData_chart' => $scatterData,
         //     // 'reports' => $reportsQuery->get(),
-
         //     'reports' => $reportsWithScores,
-
+        //     'evaluationPeriod' => $evaluationPeriod,
         // ]);
     }
 
@@ -153,7 +128,6 @@ class DashboardController extends Controller
 
         $totalScore = 0;
         $reportCount = 0;
-
 
         foreach ($reports as $report) {
             $quantityScore = QuantityScore::where('report_id', $report->report_id)
@@ -200,13 +174,12 @@ class DashboardController extends Controller
 
                 $groupedMainCriterias[$evalListId][$mainCriteriaId][] = $subCriteria;
             }
-            // 2. Now process the grouped data
+            // Process the grouped data
             $arrScoreEva = [];
             foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
                 foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    // $sum_score_Eva = (float)$subCriterias[0]->sum_score;
                     $sum_score_Eva = (float)$subCriterias[0]->sum_score;
-                    $ratio = (float)$subCriterias[0]->ratio; // ratio may not always be int!
+                    $ratio = (float)$subCriterias[0]->ratio;
                     $SumMaxScoreSub = [];
                     $SumAccScoreSub = [];
                     foreach ($subCriterias as $subCriteria) {
@@ -227,14 +200,11 @@ class DashboardController extends Controller
                 }
             }
             $qualityScore = array_sum($arrScoreEva);
-            // logger("mss-quantityScore : " . $quantityScore);
-            // logger("mss-qualityScore : " . $qualityScore);
 
-            $totalScore += ($quantityScore + $qualityScore); // Assuming quantity and quality scores are averaged
+            $totalScore += ($quantityScore + $qualityScore);
             $reportCount++;
         }
-        return  round($totalScore / $reportCount, 2);
-        // return  $totalScore ;
+        return round($totalScore / $reportCount, 2);
     }
 
     private function statusCounts($reports)
@@ -276,11 +246,9 @@ class DashboardController extends Controller
 
         $i = 1;
         foreach ($reports as $report) {
-            // --- Calculate quantity score ---
             $quantityScore = QuantityScore::where('report_id', $report->report_id)
                 ->sum('score_D') ?? 0;
 
-            // --- Calculate quality score ---
             $qualityData = DB::table('quality_scores')
                 ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
                 ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
@@ -351,10 +319,9 @@ class DashboardController extends Controller
 
             $totalScore = ($quantityScore + $qualityScore);
 
-            // Build the output for Chart.js
             $scatterData[] = [
-                'x' => $i++,                 // or $report->report_id if you prefer
-                'y' => round($totalScore, 2) // rounded to 2 decimal points
+                'x' => $i++,
+                'y' => round($totalScore, 2)
             ];
         }
 
@@ -454,8 +421,8 @@ class DashboardController extends Controller
                 "evaluator_name" => $report->evaluator_name,
                 'report_id' => $report->report_id,
                 'status' => $report->report_status,
-                'created_at' => date('Y-m-d',strtotime($report->report_created_at)),
-                'updated_at' => date('Y-m-d',strtotime($report->report_updated_at)),
+                'created_at' => date('Y-m-d', strtotime($report->report_created_at)),
+                'updated_at' => date('Y-m-d', strtotime($report->report_updated_at)),
                 'quantity_score' => round($quantityScore, 2),
                 'quality_score' => round($qualityScore, 2),
                 'score' => round($quantityScore + $qualityScore, 2),
@@ -464,191 +431,12 @@ class DashboardController extends Controller
         return $reports_score;
     }
 
-    // private function getPassFailData($reports, $threshold)
-    // {
-    //     $passedCount = 0;
-    //     $failedCount = 0;
-    //     $evaluateeScores = [];
+    private function getEvaluationPeriod($startDate, $endDate)
+    {
+        if ($startDate && $endDate) {
+            return Carbon::parse($startDate)->format('M d, Y') . ' - ' . Carbon::parse($endDate)->format('M d, Y');
+        }
 
-    //     foreach ($reports as $report) {
-    //         $evaluateeId = $report->evaluatee;
-
-    //         // Calculate score for this report
-    //         $qualityScore = DB::table('quality_scores')
-    //             ->where('report_id', $report->id)
-    //             ->avg('score') ?? 0;
-
-    //         $quantityScore = DB::table('quantity_scores')
-    //             ->where('report_id', $report->id)
-    //             ->selectRaw('AVG((score_C + score_D) / 2) as avg_score')
-    //             ->value('avg_score') ?? 0;
-
-    //         $reportScore = ($qualityScore + $quantityScore) / 2;
-
-    //         // Store the highest score for each evaluatee
-    //         if (!isset($evaluateeScores[$evaluateeId]) || $reportScore > $evaluateeScores[$evaluateeId]) {
-    //             $evaluateeScores[$evaluateeId] = $reportScore;
-    //         }
-    //     }
-
-    //     // Count passed and failed based on the highest score for each evaluatee
-    //     foreach ($evaluateeScores as $score) {
-    //         if ($score >= $threshold) {
-    //             $passedCount++;
-    //         } else {
-    //             $failedCount++;
-    //         }
-    //     }
-
-    //     return [
-    //         'passedCount' => $passedCount,
-    //         'failedCount' => $failedCount
-    //     ];
-    // }
-
-    // private function getUsersWithScores($reportsQuery)
-    // {
-    //     $evaluateeIds = $reportsQuery->pluck('evaluatees.id')->unique();
-
-    //     $users = User::whereIn('id', $evaluateeIds)->get();
-
-    //     foreach ($users as $user) {
-    //         // Get the latest report for this user
-    //         $latestReport = Report::join('assignments', 'reports.id', '=', 'assignments.report_id')
-    //             ->where('assignments.evaluatee', $user->id)
-    //             ->orderBy('reports.updated_at', 'desc')
-    //             ->first();
-
-    //         if ($latestReport) {
-    //             // Calculate score for this report
-    //             $qualityScore = DB::table('quality_scores')
-    //                 ->where('report_id', $latestReport->id)
-    //                 ->avg('score') ?? 0;
-
-    //             $quantityScore = DB::table('quantity_scores')
-    //                 ->where('report_id', $latestReport->id)
-    //                 ->selectRaw('AVG((score_C + score_D) / 2) as avg_score')
-    //                 ->value('avg_score') ?? 0;
-
-    //             $user->score = round(($qualityScore + $quantityScore) / 2, 1);
-    //         } else {
-    //             $user->score = 0;
-    //         }
-    //     }
-
-    //     return $users;
-    // }
-
-    // private function getScatterData($users)
-    // {
-    //     $scatterData = [];
-
-    //     foreach ($users as $index => $user) {
-    //         $scatterData[] = [
-    //             'x' => $index + 1, // Using index for x-axis
-    //             'y' => $user->score
-    //         ];
-    //     }
-
-    //     return $scatterData;
-    // }
-
-    // private function getEvaluationPeriod($startDate, $endDate)
-    // {
-    //     if ($startDate && $endDate) {
-    //         return Carbon::parse($startDate)->format('M d, Y') . ' - ' . Carbon::parse($endDate)->format('M d, Y');
-    //     }
-
-    //     // If no dates provided, get the most recent evaluation period
-    //     $latestPeriod = AssignmentData::latest('end_time')->first();
-
-    //     if ($latestPeriod) {
-    //         return Carbon::parse($latestPeriod->start_time)->format('M d, Y') . ' - ' .
-    //             Carbon::parse($latestPeriod->end_time)->format('M d, Y');
-    //     }
-
-    //     return 'Current Period';
-    // }
-
-    // /**
-    //  * Get chart data for AJAX updates
-    //  */
-    // public function getChartData(Request $request)
-    // {
-    //     // Get filter parameters
-    //     $startDate = $request->input('start_time');
-    //     $endDate = $request->input('end_time');
-    //     $departmentName = $request->input('department_name');
-
-    //     // Use the same query logic as in the index method
-    //     $reportsQuery = Report::query()
-    //         ->join('assignments', 'reports.id', '=', 'assignments.report_id')
-    //         ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-    //         ->join('users as evaluatees', 'assignments.evaluatee', '=', 'evaluatees.id');
-
-    //     // Apply the same filters
-    //     if ($startDate) {
-    //         $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
-    //     }
-
-    //     if ($endDate) {
-    //         $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
-    //     }
-
-    //     if ($departmentName) {
-    //         $reportsQuery->join('departments', 'evaluatees.department_id', '=', 'departments.id')
-    //             ->where('departments.name', $departmentName);
-    //     }
-
-    //     // Get the required data
-    //     $passFailData = $this->getPassFailData($reportsQuery->get(), 60);
-    //     $users = $this->getUsersWithScores($reportsQuery);
-    //     $scatterData = $this->getScatterData($users);
-
-    //     // Return data as JSON
-    //     return response()->json([
-    //         'passFailData' => [
-    //             'failed' => $passFailData['failedCount'],
-    //             'passed' => $passFailData['passedCount']
-    //         ],
-    //         'scatterData' => $scatterData
-    //     ]);
-    // }
-
-    /**
-     * Export dashboard data to Excel
-     */
-    // public function exportData(Request $request)
-    // {
-    //     // Get filter parameters
-    //     $startDate = $request->input('start_time');
-    //     $endDate = $request->input('end_time');
-    //     $departmentName = $request->input('department_name');
-
-    //     // Build query with filters
-    //     $reportsQuery = Reports::query()
-    //         ->join('assignments', 'reports.id', '=', 'assignments.report_id')
-    //         ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-    //         ->join('users as evaluatees', 'assignments.evaluatee', '=', 'evaluatees.id');
-
-    //     // Apply filters
-    //     if ($startDate) {
-    //         $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
-    //     }
-
-    //     if ($endDate) {
-    //         $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
-    //     }
-
-    //     if ($departmentName) {
-    //         $reportsQuery->join('departments', 'evaluatees.department_id', '=', 'departments.id')
-    //             ->where('departments.name', $departmentName);
-    //     }
-
-    //     // Get users with scores
-    //     $users = $this->getUsersWithScores($reportsQuery);
-
-    //     // Create Excel file using Laravel Excel or similar library
-    //     return Excel::download(new UsersExport($users), 'evaluation_results.xlsx');
-    // }
+        return 'All Periods';
+    }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('styles')
+@section('content')
     <style>
         /* Custom animations */
         @keyframes fadeIn {
@@ -57,53 +57,6 @@
             }
         }
     </style>
-@endsection
-
-@section('content')
-    {{-- <!-- Filter Modal -->
-    <div id="filterModal"
-        class="fixed inset-0 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 transition">
-        <div class="bg-white px-8 py-6 rounded-xl shadow-2xl max-w-lg w-full relative animate-fadeIn">
-            <button id="closeFilterModal"
-                class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
-            <h2 class="text-xl font-bold mb-6 text-gray-800">Filter Assessments</h2>
-            <form id="filterForm" method="get" class="space-y-5">
-                <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">Start Date</label>
-                        <input name="start_time" type="date" value="{{ request('start_time', '') }}"
-                            class="text-black rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
-                    </div>
-
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">End Date</label>
-                        <input name="end_time" type="date" value="{{ request('end_time', '') }}"
-                            class="text-black rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
-                    </div>
-                </div>
-                <div>
-                    <label class="block mb-1 text-gray-700 font-medium text-sm">Department</label>
-                    <select name="department_name"
-                        class="text-black rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                        <option value="">All Departments</option>
-                        @foreach ($departments ?? [] as $dept)
-                            <option value="{{ $dept->name }}"
-                                {{ request('department_name') == $dept->name ? 'selected' : '' }}>
-                                {{ $dept->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" id="cancelFilterModal"
-                        class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">Cancel</button>
-                    <button type="submit"
-                        class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Apply
-                        Filter</button>
-                </div>
-            </form>
-        </div>
-    </div> --}}
 
     <div class="min-h-screen py-8 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -113,16 +66,55 @@
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                     <p class="text-gray-600">Overview of assessment results and performance metrics</p>
                 </div>
-                <!-- Button to open filter modal -->
+                <!-- Filter Summary -->
                 <div class="mb-6">
-                    {{-- Display filter summary --}}
                     @if (request('start_time') || request('end_time') || request('department_name'))
-                        <span class="ml-4 inline-flex text-sm border px-2 py-1 rounded bg-gray-100">
+                        <span class="text-black ml-4 inline-flex text-sm border px-2 py-1 rounded bg-gray-100">
                             Filtered
                         </span>
                     @endif
                 </div>
             </div>
+
+            <!-- Filter Inputs -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fadeIn">
+                <h2 class="text-xl font-bold mb-6 text-gray-800">Filter Assessments</h2>
+                <form id="filterForm" method="get" class="space-y-1">
+                    <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">Start Date</label>
+                            <input name="start_time" type="date" value="{{ request('start_time', '') }}"
+                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">End Date</label>
+                            <input name="end_time" type="date" value="{{ request('end_time', '') }}"
+                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 text-sm">Department</label>
+                            <select name="department_name"
+                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                                <option value="">All Departments</option>
+                                @foreach ($departments ?? [] as $dept)
+                                    <option value="{{ $dept->department_name }}"
+                                        {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                        {{ $dept->department_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2 pt-2">
+                        <button type="button" onclick="resetFilters()"
+                            class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">Reset</button>
+                        <button type="submit"
+                            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">Apply
+                            Filter</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Statistics Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <!-- Total Participants -->
@@ -160,7 +152,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             <!-- Charts Row -->
@@ -170,19 +161,13 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-semibold text-gray-900">Evaluation Results</h3>
                         <div class="flex space-x-2">
-                            <button id="downloadChartBtn" class="text-gray-400 hover:text-gray-600 transition-colors" title="Download Chart">
+                            <button id="downloadChartBtn" class="text-gray-400 hover:text-gray-600 transition-colors"
+                                title="Download Chart">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                        d="M4 16v1a0 3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
                             </button>
-                            {{-- <button class="text-gray-400 hover:text-gray-600 transition-colors" title="More Options">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                                    </path>
-                                </svg>
-                            </button> --}}
                         </div>
                     </div>
                     <div class="h-80">
@@ -201,13 +186,6 @@
                                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
                             </button>
-                            {{-- <button class="text-gray-400 hover:text-gray-600 transition-colors" title="More Options">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
-                                    </path>
-                                </svg>
-                            </button> --}}
                         </div>
                     </div>
                     <div class="h-80">
@@ -226,14 +204,14 @@
                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3 m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                     </path>
                                 </svg>
                                 Export Excel
                             </button>
                             <div class="relative">
-                                <input type="text" id="searchInput" placeholder="Search users..."
-                                    class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <input type="text" id="searchInput" placeholder="Search evaluatee name..."
+                                    class="text-black w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -247,13 +225,14 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table id="userParticipant" class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     ลำดับ
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th
+                                    class="px competição-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Evaluatee Name
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -297,7 +276,6 @@
                                         'DRAFT' => 'bg-gray-100 text-gray-800',
                                         default => 'bg-blue-100 text-blue-800',
                                     };
-
                                 @endphp
                                 <tr class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -324,12 +302,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">{{ $score }}</div>
-                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
-                                                <div class="bg-gradient-to-r from-blue-500 to-purple-600 h-2.5 rounded-full"
-                                                    style="width: {{ min($score, 100) }}%"></div>
-                                            </div>
+                                        <div class="text-sm text-center font-medium text-gray-900">{{ $score }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -382,13 +355,21 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function resetFilters() {
+            document.querySelector('input[name="start_time"]').value = '';
+            document.querySelector('input[name="end_time"]').value = '';
+            document.querySelector('select[name="department_name"]').value = '';
+            document.getElementById('filterForm').submit();
+        }
+    </script>
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
-
         document.addEventListener('DOMContentLoaded', function() {
             // Status Chart
             const statusLabels = ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'];
@@ -518,12 +499,10 @@
                 let hasMatch = false;
 
                 rows.forEach(row => {
-                    const userName = row.querySelector('td:first-child .text-sm.font-medium')
-                        .textContent.toLowerCase();
-                    const userEmail = row.querySelector('td:first-child .text-sm.text-gray-500')
+                    const userName = row.querySelector('td:nth-child(2) .text-sm.font-medium')
                         .textContent.toLowerCase();
 
-                    if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+                    if (userName.includes(searchTerm)) {
                         row.style.display = '';
                         hasMatch = true;
                     } else {
@@ -559,7 +538,6 @@
                     'ชื่อผู้ประเมิน',
                     'สร้างเมื่อ',
                     'แก้ไขเมื่อ',
-                    // 'สถานะ'
                 ]);
 
                 (window.reports || []).forEach((report, index) => {
@@ -573,11 +551,10 @@
                         report.score ?? '',
                         report.quantity_score ?? '',
                         report.quality_score ?? '',
-                        report.comment ?? '', // may be empty
+                        report.comment ?? '',
                         report.evaluator_name || '',
                         report.created_at || '',
                         report.updated_at || '',
-                        // report.status || ''
                     ]);
                 });
 
