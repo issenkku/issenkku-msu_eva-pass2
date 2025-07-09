@@ -7,7 +7,7 @@
 
 <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
     <div class="bg-purple-100 px-6 py-4">
-        <h2 class="text-lg font-semibold text-gray-800">{{ $title }}</h2>
+        <h2 class="text-xl font-semibold text-gray-800">{{ $title }}</h2>
     </div>
 
     <div class="p-4 space-y-6">
