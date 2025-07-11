@@ -85,9 +85,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/',function(){
-    redirect()->route('login');
-});
+// Route::get('/',function(){
+//     redirect()->route('login');
+// });
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
