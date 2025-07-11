@@ -23,7 +23,7 @@
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
 
     <!-- Status Badges -->
-    <div class="flex gap-3 mb-6 flex-wrap">
+    {{-- <div class="flex gap-3 mb-6 flex-wrap">
         @foreach($statusCounts as $status => $count)
             <x-status-badge 
                 :status="$status" 
@@ -31,7 +31,7 @@
                 :active="request('status') === $status" 
             />
         @endforeach
-    </div>
+    </div> --}}
 
     <!-- Table Format -->
     <div class="overflow-x-auto">

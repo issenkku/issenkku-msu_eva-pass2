@@ -345,9 +345,9 @@
 
     @stack('scripts')
     @if (session('success'))
-        <script>
+        {{-- <script>
             alert('{{ session('success') }}');
-        </script>
+        </script> --}}
 
         <script>
             // Smooth scrolling for anchor links

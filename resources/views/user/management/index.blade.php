@@ -17,9 +17,7 @@
     </div>
 
     <div class="flex flex-wrap gap-4 mb-4">
-        <x-search-bar />
-        <!-- <x-filter label="ตำแหน่ง" name="position_id" :options="$positions" /> -->
-        <x-filter label="ประเภทบุคลากร" name="personnel_type_id" :options="$personnelTypes" />
+        <x-search-bar /> <!-- <<<< เรียกใช้งาน Component -->
     </div>
 
     <div class="overflow-x-auto">

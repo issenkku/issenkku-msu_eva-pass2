@@ -64,8 +64,22 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        // เริ่มต้น Query Builder พร้อมกับ Eager Loading ที่จำเป็น
         $query = User::with(['position', 'roles']);
 
+        // --- เพิ่ม Logic การค้นหา ---
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            // กรองข้อมูลจากคอลัมน์ 'name' และสามารถเพิ่มคอลัมน์อื่นได้
+            // เช่น ค้นหาจากรหัสพนักงานด้วย
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('employee_id', 'like', '%' . $searchTerm . '%');
+            });
+        }
+        // -------------------------
+
+        // --- Filter ที่มีอยู่เดิม ---
         if ($request->filled('department_id')) {
             $query->where('department_id', $request->department_id);
         }
@@ -73,17 +87,24 @@ class UserController extends Controller
             $query->where('position_id', $request->position_id);
         }
         if ($request->filled('personnel_type')) {
+            // หมายเหตุ: ถ้า filter นี้มาจาก <x-filter> ที่คุณให้มาก่อนหน้า
+            // ชื่อ name อาจจะเป็น 'personnel_type_id' ไม่ใช่ 'personnel_type'
+            // กรุณาตรวจสอบให้ตรงกัน
             $query->where('personnel_type', $request->personnel_type);
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+        // -------------------------
 
-        $users = $query->paginate(10)->appends($request->query());
+        // ดึงข้อมูลพร้อม Pagination และส่งต่อ Query String ทั้งหมด
+        $users = $query->latest()->paginate(10)->withQueryString();
+
+        // ดึงข้อมูลสำหรับ Dropdown/Filter
         $departments = Departments::all();
         $positions = Positions::all();
         $roles = Role::all();
-        $user = null;
+        $user = null; // สำหรับฟอร์มสร้างผู้ใช้ใหม่
 
         return view('user.management.index', compact('users', 'departments', 'positions', 'roles', 'user'));
     }
