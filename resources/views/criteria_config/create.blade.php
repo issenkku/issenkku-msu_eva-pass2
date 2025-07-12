@@ -26,7 +26,7 @@
                             <input id="version_name" required name="version_name"
                                 class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
                                 placeholder="เช่น Demo Version 2024">
-                            <input type="hidden" id="auth-user-id" value="{{ Auth::id() }}">
+                            <input type="hidden" id="auth-user-id" value="{{ Auth::user()->id }}">
                         </div>
                         <div>
                             <label for="report_title" class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span

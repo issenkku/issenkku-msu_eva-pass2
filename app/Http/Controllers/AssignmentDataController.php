@@ -83,7 +83,7 @@ public function create()
             foreach ($request->assignments as $assignmentItem) {
                 $report = Reports::create([
                     'report_data_id' => $assignmentItem['report_data_id'],
-                    'status' => 'assigned',
+                    'status' => 'Assigned',
                 ]);
 
                 Assignments::create([

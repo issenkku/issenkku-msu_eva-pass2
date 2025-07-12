@@ -1,10 +1,10 @@
 @extends('layouts.app')
 @section('content')
-    @if (session('success'))
+    {{-- @if (session('success'))
         <script>
             alert('{{ session('success') }}');
         </script>
-    @endif
+    @endif --}}
 
     <form id="approve_eva" action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
         @csrf
@@ -144,22 +144,13 @@
                                 <div class="evidence-box">
                                     <h6>ลิงก์หลักฐาน:</h6>
                                     <ul>
-                                        @foreach ($quantityLists as $list)
-                                            @foreach ($list->quantitySubCriterias as $criteria)
-                                                @if (!empty($criteria->evidence_links))
-                                                    <li>
-                                                        {{ $criteria->name }}:
-                                                        @foreach ($criteria->evidence_links as $index => $link)
-                                                            <a href="{{ $link }}" target="_blank">ดูหลักฐาน
-                                                            </a>
-                                                            @if (!$loop->last)
-                                                                ,
-                                                            @endif
-                                                        @endforeach
-                                                    </li>
-                                                @endif
-                                            @endforeach
-                                        @endforeach
+                                        @if (!empty($quantityLists[0]->quantitySubCriterias[0]->evidence_links[0]))
+                                            <li>
+                                                <a href="{{ $quantityLists[0]->quantitySubCriterias[0]->evidence_links[0] }}" target="_blank">ดูหลักฐาน</a>
+                                            </li>
+                                        @else
+                                            <li>ไม่มีหลักฐาน</li>
+                                        @endif
                                     </ul>
                                 </div>
 
@@ -173,55 +164,106 @@
                         @endphp
 
                         @if ($qualityLists->isNotEmpty())
-                            <div class="criteria-section quality-section">
-                                <div class="criteria-header">
-                                    <h5>คุณภาพการสอน</h5>
-                                    <span class="criteria-subtitle">ประเมินจากนักศึกษาและการสังเกตการสอน</span>
-                                </div>
-                                <div class="table-container">
-                                    <table class="evaluation-table">
-                                        <thead>
-                                            <tr>
-                                                <th>ชื่อเกณฑ์ย่อย</th>
-                                                <th>ลิงก์หลักฐาน</th>
-                                                <th>คะแนนที่ให้</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($qualityLists as $list)
-                                                @foreach ($list->qualitySubCriterias as $criteria)
-                                                    <tr>
-                                                        <td class="text-left">{{ $criteria->name }}</td>
-                                                        <td>
-                                                            @if ($criteria->evidence_links)
-                                                                <a href="{{ $criteria->evidence_links[0] }}" target="_blank">
-                                                                    ดูหลักฐาน
-                                                                </a><br>
-                                                            @else
-                                                                -
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <input type="number" name="scores[{{ $criteria->id }}]"
-                                                                value="{{ old('scores.' . $criteria->id, $criteria->filled_score ?? '') }}"
-                                                                min="0" max="5" step="0.1"
-                                                                class="score-input @error('scores.' . $criteria->id) is-invalid @enderror" />
+                            @forEach($qualityLists as $listcard)
+                                <div class="criteria-section quality-section">
+                                    <div class="criteria-header">
+                                        <h5>{{$listcard->name}}</h5>
+                                        <span class="criteria-subtitle">{{$listcard->annotation}}</span>
+                                    </div>
+                                    <div class="table-container">
+                                        <table class="evaluation-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ชื่อเกณฑ์ย่อย</th>
+                                                    <th>คะแนนที่ให้</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php
+                                                    $current_main_id = "";
+                                                @endphp
+                                                @foreach($listcard->qualitySubCriterias as $list_eva)
+                                                    @php
+                                                        $main_id = $list_eva->mainCriteria->id;
+                                                    @endphp
+                                                    @if ($list_eva->quality_main_criteria_id === $current_main_id)
+                                                        <tr>
+                                                            <td class="text-left">{{ $list_eva->name }}</td>
+                                                            {{-- <td>
+                                                                @if (!empty($list_eva->evidence_link[0]))
+                                                                    <a href="{{ $list_eva->evidence_link[0] }}"
+                                                                        target="_blank">ดูหลักฐาน</a>
+                                                                @else
+                                                                    -
+                                                                @endif
+                                                            </td> --}}
+                                                            <td>
+                                                                <input type="number" name="scores[{{ $list_eva->id }}]"
+                                                                    value=""
+                                                                    min="0" max="{{$list_eva->num_score}}" step="0.1"
+                                                                    class="score-input @error('scores.' . $list_eva->id) is-invalid @enderror" />
 
-                                                            @error('scores.' . $criteria->id)
-                                                                <div class="invalid-feedback"
-                                                                    style="color: red; font-size: 0.875rem;">
-                                                                    {{ $message }}
-                                                                </div>
-                                                            @enderror
+                                                                @error('scores.' . $list_eva->id)
+                                                                    <div class="invalid-feedback"
+                                                                        style="color: red; font-size: 0.875rem;">
+                                                                        {{ $message }}
+                                                                    </div>
+                                                                @enderror
 
-                                                        </td>
-                                                    </tr>
+                                                            </td>
+                                                        </tr>
+                                                    @else
+                                                    @php
+                                                        $current_main_id = $main_id;
+                                                    @endphp
+                                                        <tr class="bg-lime-100">
+                                                            <td class="text-left">{{$list_eva->mainCriteria->name}}</td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="text-left">{{ $list_eva->name }}</td>
+                                                            {{-- <td>
+                                                                @if (!empty($list_eva->evidence_links[0]))
+                                                                    <a href="{{ $list_eva->evidence_links[0] }}" target="_blank">
+                                                                        ดูหลักฐาน
+                                                                    </a><br>
+                                                                @else
+                                                                    -
+                                                                @endif
+                                                            </td> --}}
+                                                            <td>
+                                                                <input type="number" name="scores[{{ $list_eva->id }}]"
+                                                                    value=""
+                                                                    min="0" max="{{$list_eva->num_score}}" step="0.1"
+                                                                    class="score-input @error('scores.' . $list_eva->id) is-invalid @enderror" />
+
+                                                                @error('scores.' . $list_eva->id)
+                                                                    <div class="invalid-feedback"
+                                                                        style="color: red; font-size: 0.875rem;">
+                                                                        {{ $message }}
+                                                                    </div>
+                                                                @enderror
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endforeach
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="evidence-box">
+                                        <h6>ลิงก์หลักฐาน:</h6>
+                                        <ul>
+                                            @if (!empty($listcard->qualitySubCriterias[0]->evidence_links[0]))
+                                                <li>
+                                                    <a href="{{ $listcard->qualitySubCriterias[0]->evidence_links[0] }}" target="_blank">ดูหลักฐาน</a>
+                                                </li>
+                                            @else
+                                                <li>ไม่มีหลักฐาน</li>
+                                            @endif
+                                        </ul>
+                                    </div>
                                 </div>
-                            </div>
+                            @endforeach
                         @endif
                     </div>
                 @endforeach
@@ -254,14 +296,38 @@
         @method('PUT')
     </form>
 
+    <div id="submitConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">ยืนยันการบันทึกข้อมูล</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-600">
+                        คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3 space-x-4">
+                    <button id="cancelSubmitModalBtn" class="btn btn-secondary w-28">
+                        ยกเลิก
+                    </button>
+                    <button id="confirmSubmitModalBtn" class="btn btn-primary w-28">
+                        ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         function confirmSubmit() {
-            // เก็บ input ที่เป็นคะแนนทั้งหมด
+            // 1. ตรวจสอบคะแนนเหมือนเดิม
             const scoreInputs = document.querySelectorAll('.score-input[type="number"]');
             let emptyFound = false;
-
-            // ตรวจสอบว่า input ตัวเลขช่องใดว่างหรือไม่
             scoreInputs.forEach(input => {
                 if (input.value === '' || input.value === null) {
                     emptyFound = true;
@@ -270,20 +336,54 @@
 
             if (emptyFound) {
                 alert("กรุณากรอกคะแนนให้ครบทุกช่องก่อนบันทึกข้อมูล");
-                return; // ไม่ส่งฟอร์ม
+                return; 
             }
 
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?")) {
-                const form = document.querySelector('#approve_eva');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'change_status';
-                input.value = '1';
-                form.appendChild(input);
-                form.submit();
+            // 2. เปิด Modal แทนการใช้ confirm()
+            const modal = document.getElementById('submitConfirmationModal');
+            if (modal) {
+                modal.classList.remove('hidden');
             }
         }
 
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('submitConfirmationModal');
+            const cancelBtn = document.getElementById('cancelSubmitModalBtn');
+            const confirmBtn = document.getElementById('confirmSubmitModalBtn');
+
+            if (!modal || !cancelBtn || !confirmBtn) {
+                return; // ป้องกัน error ถ้าไม่มี modal ในหน้า
+            }
+
+            // ปุ่มยกเลิก
+            cancelBtn.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+
+            // ปุ่มยืนยัน
+            confirmBtn.addEventListener('click', function() {
+                const form = document.querySelector('#approve_eva');
+                if (form) {
+                    // สร้าง hidden input เพื่อบอกว่าเป็นการส่งแบบอนุมัติ
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'change_status';
+                    input.value = '1'; 
+                    form.appendChild(input);
+                    
+                    // ปิด Modal แล้วส่งฟอร์ม
+                    modal.classList.add('hidden');
+                    form.submit();
+                }
+            });
+
+            // (ทางเลือก) ปิด Modal เมื่อคลิกพื้นหลัง
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
 
         function confirmReject() {
             if (confirm("คุณแน่ใจหรือไม่ว่าต้องการไม่อนุมัติแบบประเมินนี้?")) {

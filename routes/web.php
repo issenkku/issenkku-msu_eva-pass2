@@ -67,27 +67,61 @@ Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group
 });
 
 Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
-    Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('dashboard');
+    Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
     Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
-    Route::post('/evaluation/{id}/scores', [DashboardEvaluateeController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+    Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 });
 
 Route::middleware(['auth:sanctum','role:admin|ผู้บริหาร'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-Route::middleware('guest')->controller(AuthController::class)->group(function () {
-    Route::get('/login', 'showLoginForm')->name('login');
-    Route::post('/login', 'login');
+Route::middleware('guest')->group(function () {
+    // 1. ถ้าเข้า path "/" และยังไม่ล็อกอิน ให้ไปที่หน้า login
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
+
+    // 2. ย้าย Route ของ AuthController มาไว้ในกลุ่มนี้เพื่อความเป็นระเบียบ
+    Route::controller(AuthController::class)->group(function () {
+        Route::get('/login', 'showLoginForm')->name('login');
+        Route::post('/login', 'login');
+    });
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('auth:sanctum')->group(function () {
+    // 3. ถ้าเข้า path "/" และล็อกอินแล้ว ให้ redirect ตาม role
+    Route::get('/', function (Request $request) {
+        $user = $request->user();
 
-// Route::get('/',function(){
-//     redirect()->route('login');
-// });
+        if ($user->hasRole('admin') || $user->hasRole('ผู้บริหาร')) {
+            // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
+            return redirect()->route('dashboard'); // ชื่อ route ของ admin dashboard
+        }
+
+        if ($user->hasRole('ผู้ประเมิน')) {
+            // ถ้าเป็นผู้ประเมิน ให้ไปที่ dashboard ของผู้ประเมิน
+            return redirect()->route('evaluator.index');
+        }
+
+        if ($user->hasRole('ผู้รับการประเมิน')) {
+            // ถ้าเป็นผู้รับการประเมิน ให้ไปที่ dashboard ของผู้รับการประเมิน
+            return redirect()->route('evaluatee.dashboard'); // ชื่อ route ของ evaluatee dashboard
+        }
+        
+        // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
+        // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
+        auth()->logout();
+        return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
+
+    })->name('home'); // ตั้งชื่อ route นี้ว่า 'home'
+
+    // Route สำหรับ /user
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+});
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

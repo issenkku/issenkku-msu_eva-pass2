@@ -11,6 +11,7 @@ use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class EvaluationScoreController extends Controller
 {
@@ -129,16 +130,47 @@ class EvaluationScoreController extends Controller
 
             $status = $validated['status'];
             $report->status = $status;
-            $report->save();
+            // $report->save();
+            if($report->save() && $status === 'Pending') {
+                $this->sendEvaluationCompletedMail($reportId);
+            }
 
             DB::commit();
 
             $message = $status === 'Draft' ? 'บันทึกข้อมูลเรียบร้อยแล้ว' : 'ส่งรายงานเรียบร้อยแล้ว';
-            return redirect()->route('dashboard')->with('success', $message);
+
+            return redirect('/evaluatee-dashboard')->with('success', $message);
 
         } catch (Exception $e) {
             DB::rollback();
             return response()->json(['message' => 'Error processing evaluation scores', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    // อีเมลแจ้งเตือนเมื่อส่งแบบประเมิน
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (!$report) return;
+
+        // สมมติว่าต้องการแจ้งเตือน evaluator (ผู้ประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (!$assignment) return;
+        $user = \App\Models\User::find($assignment->evaluator);
+        $evaluatee = \App\Models\User::find($assignment->evaluatee);
+        if (!$user || !$user->email) return;
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+            'evaluatee_name' => $evaluatee->name,
+        ];
+
+        \Mail::send('emails.evalautee_Pending', $mailData, function($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
+        });
     }
 }

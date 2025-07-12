@@ -110,7 +110,7 @@ class EvaluatorController extends Controller
 
     public function show(Request $request, $assignmentId)
     {
-        $userId = Auth::id() ?? 2;
+        $userId = Auth::id();
 
         if (!$userId) {
             abort(403, 'Unauthorized');
@@ -389,7 +389,7 @@ class EvaluatorController extends Controller
         \Log::info('Update evaluation scores for report ID: ' . $id);
         $validated = $request->validate([
             'scores' => 'required|array',
-            'scores.*' => 'required|numeric|min:0|max:5', 
+            'scores.*' => 'required|numeric|min:0', 
             'comment' => 'nullable|string|max:2000',
         ]);
 
@@ -518,7 +518,7 @@ class EvaluatorController extends Controller
         return 4.5;
     }
 
-        // อีเมลแจ้งเตือนเมื่อประเมินเสร็จ
+    // อีเมลแจ้งเตือนเมื่อประเมินเสร็จ
     private function sendEvaluationCompletedMail($reportId)
     {
         $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
