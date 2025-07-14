@@ -55,6 +55,31 @@
             />
         </div>
 
+        {{-- Comments Section - Only show when status is Completed --}}
+        @if(isset($report->status) && $report->status === 'Completed')
+            <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">
+                <h3 class="text-lg font-semibold text-purple-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                        </path>
+                    </svg>
+                    ความคิดเห็นจากผู้ประเมิน
+                </h3>
+                
+                @if(isset($report->comment) && !empty($report->comment))
+                    <div class="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+                        <div class="prose max-w-none text-gray-700">
+                            {!! nl2br(e($report->comment)) !!}
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-white rounded-lg p-4 border border-blue-100 shadow-sm">
+                        <p class="text-gray-500 italic">ไม่มีความคิดเห็นเพิ่มเติม</p>
+                    </div>
+                @endif
+        @endif
+
         <input type="hidden" name="status" id="formStatus" value="submitted">
 
         @if($readonly)
@@ -73,22 +98,15 @@
                 </button>
             @endunless
         </div>
-
-        <!-- <div class="sticky bottom-0 py-4 px-4 z-10">
-            <div class="flex justify-center gap-4">
-                <a href="{{ route('dashboard') }}" class="px-6 py-2 shadow bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
-
-                @unless($readonly)
-                    <button type="submit" onclick="setFormStatus('Draft')" class="bg-pink-400 shadow text-white px-6 py-2 rounded-md hover:bg-pink-500 w-40">
-                        บันทึกร่าง
-                    </button>
-                    <button type="submit" onclick="setFormStatus('Pending')" class="bg-purple-600 shadow text-white px-6 py-2 rounded-md hover:bg-purple-700 w-40" id="submitBtn">
-                        ส่งแบบประเมิน
-                    </button>
-                @endunless
-            </div>
-        </div> -->
     </form>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p class="text-gray-700 text-lg">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
+    </div>
 </div>
 
 <!-- Confirmation Modal -->
@@ -123,6 +141,27 @@
     </div>
 </div>
 
+<!-- Success Modal -->
+<div id="success_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="success-modal-content">
+        <div class="text-center">
+            <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-3">ส่งข้อมูลสำเร็จ</h3>
+            <p class="text-gray-600 mb-6">ส่งข้อมูลการประเมินเรียบร้อยแล้ว</p>
+            <p class="text-gray-500 text-sm mb-6">กำลังเปลี่ยนเส้นทางใน <span id="countdown">3</span> วินาที...</p>
+            <div class="flex justify-center space-x-4">
+                <button id="redirectNowBtn" class="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    ไปหน้าแดชบอร์ดทันที
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Mobile-friendly spacing -->
 <style>
 @media (max-width: 768px) {
@@ -142,65 +181,78 @@ function setFormStatus(status) {
     document.getElementById('formStatus').value = status;
 }
 
-// ===== โค้ดสำหรับ Modal (ส่วนที่เพิ่มเข้ามา) =====
 document.addEventListener('DOMContentLoaded', function() {
     const evaluationForm = document.getElementById('evaluationForm');
     const openModalBtn = document.getElementById('openModalBtn');
     const confirmationModal = document.getElementById('confirmationModal');
-    const modalContent = document.getElementById('modal-content'); // << เพิ่ม
+    const modalContent = document.getElementById('modal-content');
     const cancelModalBtn = document.getElementById('cancelModalBtn');
     const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+    const loadingOverlay = document.getElementById('loading_overlay');
 
     if (!openModalBtn || !confirmationModal) {
         return;
     }
     
-    // ===== ฟังก์ชันสำหรับเปิด-ปิด Modal พร้อม Animation =====
-    function openModal() {
-        confirmationModal.classList.remove('hidden');
-        // ใช้ setTimeout เล็กน้อยเพื่อให้ CSS transition ทำงานได้
+    // ===== Modal Animation Functions =====
+    function openModal(modal, content) {
+        modal.classList.remove('hidden');
         setTimeout(() => {
-            confirmationModal.classList.remove('opacity-0');
-            modalContent.classList.remove('scale-95', 'opacity-0');
-            modalContent.classList.add('scale-100', 'opacity-100');
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
         }, 10);
     }
     
-    function closeModal() {
-        modalContent.classList.remove('scale-100', 'opacity-100');
-        modalContent.classList.add('scale-95', 'opacity-0');
-        confirmationModal.classList.add('opacity-0');
-        // รอให้ animation จบแล้วค่อยซ่อน
+    function closeModal(modal, content) {
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        modal.classList.add('opacity-0');
         setTimeout(() => {
-            confirmationModal.classList.add('hidden');
-        }, 300); // 300ms คือ duration ของ transition
+            modal.classList.add('hidden');
+        }, 300);
     }
-    // =======================================================
 
-    // เมื่อกดปุ่ม "ส่งแบบประเมิน" ให้เปิด Modal
-    openModalBtn.addEventListener('click', openModal);
+    function showLoading() {
+        loadingOverlay.classList.remove('hidden');
+    }
 
-    // เมื่อกดปุ่ม "ยกเลิก" ใน Modal ให้ปิด Modal
-    cancelModalBtn.addEventListener('click', closeModal);
+    function hideLoading() {
+        loadingOverlay.classList.add('hidden');
+    }
 
-    // เมื่อกดปุ่ม "ยืนยัน" ใน Modal
-    confirmSubmitBtn.addEventListener('click', function() {
-        setFormStatus('Pending');
-        closeModal(); // ปิด Modal ก่อน
-        
-        // ส่งฟอร์มหลังจากปิด Modal ไปแล้วเล็กน้อย
-        setTimeout(() => {
-            if (evaluationForm) {
-                evaluationForm.submit();
-            }
-        }, 350);
+    // ===== Event Listeners =====
+    
+    // เปิด confirmation modal
+    openModalBtn.addEventListener('click', () => {
+        openModal(confirmationModal, modalContent);
     });
 
-    // ปิด Modal เมื่อคลิกที่พื้นหลังสีเทา
+    // ปิด confirmation modal
+    cancelModalBtn.addEventListener('click', () => {
+        closeModal(confirmationModal, modalContent);
+    });
+
+    // ปิด modal เมื่อคลิกพื้นหลัง
     confirmationModal.addEventListener('click', function(event) {
         if (event.target === confirmationModal) {
-            closeModal();
+            closeModal(confirmationModal, modalContent);
         }
+    });
+
+    // ยืนยันการส่งแบบประเมิน
+    confirmSubmitBtn.addEventListener('click', function() {
+        // ปิด confirmation modal
+        closeModal(confirmationModal, modalContent);
+        
+        // รอให้ modal ปิดแล้วแสดง loading และส่งฟอร์ม
+        setTimeout(() => {
+            setFormStatus('Pending');
+            showLoading();
+            
+            // ส่งฟอร์มแบบปกติ
+            evaluationForm.submit();
+        }, 350);
     });
 });
 </script>

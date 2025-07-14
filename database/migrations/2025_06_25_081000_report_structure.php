@@ -40,7 +40,7 @@ return new class extends Migration
             $table->string('name');
             $table->decimal('sum_score', 5, 2);
             $table->integer('sequence');
-            $table->string('annotation')->nullable()->change();
+            $table->string('annotation')->nullable();
             $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
         });

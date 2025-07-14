@@ -322,8 +322,32 @@
         </div>
     </div>
 
+    <!-- Loading Overlay -->
+    <div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-4">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-6"></div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">กำลังส่งข้อมูล</h3>
+            <p class="text-gray-600">กรุณารอสักครู่...</p>
+        </div>
+    </div>
 
     <script>
+        // Show loading overlay
+        function showLoading() {
+            const loadingOverlay = document.getElementById('loading_overlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.remove('hidden');
+            }
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            const loadingOverlay = document.getElementById('loading_overlay');
+            if (loadingOverlay) {
+                loadingOverlay.classList.add('hidden');
+            }
+        }
+
         function confirmSubmit() {
             // 1. ตรวจสอบคะแนนเหมือนเดิม
             const scoreInputs = document.querySelectorAll('.score-input[type="number"]');
@@ -346,50 +370,114 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('submitConfirmationModal');
-            const cancelBtn = document.getElementById('cancelSubmitModalBtn');
-            const confirmBtn = document.getElementById('confirmSubmitModalBtn');
-
-            if (!modal || !cancelBtn || !confirmBtn) {
-                return; // ป้องกัน error ถ้าไม่มี modal ในหน้า
-            }
-
-            // ปุ่มยกเลิก
-            cancelBtn.addEventListener('click', function() {
-                modal.classList.add('hidden');
-            });
-
-            // ปุ่มยืนยัน
-            confirmBtn.addEventListener('click', function() {
-                const form = document.querySelector('#approve_eva');
-                if (form) {
-                    // สร้าง hidden input เพื่อบอกว่าเป็นการส่งแบบอนุมัติ
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'change_status';
-                    input.value = '1'; 
-                    form.appendChild(input);
-                    
-                    // ปิด Modal แล้วส่งฟอร์ม
-                    modal.classList.add('hidden');
-                    form.submit();
-                }
-            });
-
-            // (ทางเลือก) ปิด Modal เมื่อคลิกพื้นหลัง
-            modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
-        });
-
         function confirmReject() {
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการไม่อนุมัติแบบประเมินนี้?")) {
-                document.getElementById('reject-form').submit();
+            const modal = document.getElementById('rejectConfirmationModal');
+            if (modal) {
+                modal.classList.remove('hidden');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Submit Modal Elements
+            const submitModal = document.getElementById('submitConfirmationModal');
+            const cancelSubmitBtn = document.getElementById('cancelSubmitModalBtn');
+            const confirmSubmitBtn = document.getElementById('confirmSubmitModalBtn');
+
+            // Reject Modal Elements
+            const rejectModal = document.getElementById('rejectConfirmationModal');
+            const cancelRejectBtn = document.getElementById('cancelRejectModalBtn');
+            const confirmRejectBtn = document.getElementById('confirmRejectModalBtn');
+
+            // Submit Modal Event Listeners
+            if (submitModal && cancelSubmitBtn && confirmSubmitBtn) {
+                // ปุ่มยกเลิกการส่ง
+                cancelSubmitBtn.addEventListener('click', function() {
+                    submitModal.classList.add('hidden');
+                });
+
+                // ปุ่มยืนยันการส่ง
+                confirmSubmitBtn.addEventListener('click', function() {
+                    const form = document.querySelector('#approve_eva');
+                    if (form) {
+                        // แสดง loading overlay
+                        showLoading();
+
+                        // สร้าง hidden input เพื่อบอกว่าเป็นการส่งแบบอนุมัติ
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'change_status';
+                        input.value = '1'; 
+                        form.appendChild(input);
+                        
+                        // ปิด Modal แล้วส่งฟอร์ม
+                        submitModal.classList.add('hidden');
+                        
+                        // เพิ่มการจัดการ error สำหรับกรณีที่ส่งข้อมูลไม่สำเร็จ
+                        form.addEventListener('submit', function() {
+                            // ถ้า form ถูก submit แล้วแต่ยังอยู่ในหน้าเดิม (เกิด error) ให้ซ่อน loading
+                            setTimeout(function() {
+                                hideLoading();
+                            }, 5000); // ซ่อน loading หลังจาก 5 วินาที
+                        });
+                        
+                        form.submit();
+                    }
+                });
+
+                // ปิด Modal เมื่อคลิกพื้นหลัง
+                submitModal.addEventListener('click', function(event) {
+                    if (event.target === submitModal) {
+                        submitModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Reject Modal Event Listeners
+            if (rejectModal && cancelRejectBtn && confirmRejectBtn) {
+                // ปุ่มยกเลิกการปฏิเสธ
+                cancelRejectBtn.addEventListener('click', function() {
+                    rejectModal.classList.add('hidden');
+                });
+
+                // ปุ่มยืนยันการปฏิเสธ
+                confirmRejectBtn.addEventListener('click', function() {
+                    const rejectForm = document.getElementById('reject-form');
+                    if (rejectForm) {
+                        // แสดง loading overlay
+                        showLoading();
+
+                        // ปิด Modal แล้วส่งฟอร์ม
+                        rejectModal.classList.add('hidden');
+                        
+                        // เพิ่มการจัดการ error สำหรับกรณีที่ส่งข้อมูลไม่สำเร็จ
+                        rejectForm.addEventListener('submit', function() {
+                            setTimeout(function() {
+                                hideLoading();
+                            }, 5000);
+                        });
+                        
+                        rejectForm.submit();
+                    }
+                });
+
+                // ปิด Modal เมื่อคลิกพื้นหลัง
+                rejectModal.addEventListener('click', function(event) {
+                    if (event.target === rejectModal) {
+                        rejectModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // ซ่อน loading overlay เมื่อหน้าโหลดเสร็จ (กรณีที่ redirect กลับมา)
+            window.addEventListener('load', function() {
+                hideLoading();
+            });
+
+            // ซ่อน loading overlay เมื่อกลับมาที่หน้านี้
+            window.addEventListener('pageshow', function() {
+                hideLoading();
+            });
+        });
     </script>
     <style>
         /* Reset and Base Styles */
