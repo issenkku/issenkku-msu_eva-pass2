@@ -29,6 +29,7 @@ class ReportData extends Model
 
     public function reports(): HasMany
     {
-        return $this->hasMany(Report::class);
+        return $this->hasMany(Reports::class);
     }
+    
 }

@@ -11,14 +11,14 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
-use App\Models\Setting\Position;
-use App\Models\Setting\Department;
+use App\Models\Setting\Positions;
+use App\Models\Setting\Departments;
 
 class User extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
 
-    use HasFactory, Notifiable, HasRoles, HasApiTokens,CanResetPasswordTrait;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, CanResetPasswordTrait;
 
 
     /**
@@ -60,17 +60,27 @@ class User extends Authenticatable implements CanResetPassword
             'password' => 'hashed',
         ];
     }
+
     public function getAuthIdentifierName()
     {
         return 'employee_id';
     }
 
     public function position(){
-        return $this->belongsTo(Position::class);
+        return $this->belongsTo(Positions::class);
     }
 
     public function department(){
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Departments::class);
+    }
+    
+    public function assignment(){
+        return $this->hasMany(Assignments::class, 'evaluatee', 'id');
+    }
+
+    public function evaluatorAssignments()
+    {
+        return $this->hasMany(Assignments::class, 'evaluator', 'id');
     }
 
     public function sendPasswordResetNotification($token)

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('report_data_id')->constrained('report_datas')->onDelete('cascade');
             $table->string('status', 255);
+            $table->text('comment')->nullable();
             $table->timestamps();
         });
         Schema::create('quantity_scores', function (Blueprint $table) {
@@ -25,7 +26,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['quantity_sub_criteria_id', 'report_id'], 'quantity_scores_all_idx');
-
         });
         Schema::create('quality_scores', function (Blueprint $table) {
             $table->foreignId('quality_sub_criteria_id')->constrained('quality_sub_criterias')->onDelete('cascade');
@@ -34,7 +34,6 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['quality_sub_criteria_id', 'report_id'], 'quality_scores_all_idx');
-
         });
         Schema::create('evidence_answers', function (Blueprint $table) {
             $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');

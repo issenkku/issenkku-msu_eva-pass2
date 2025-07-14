@@ -35,7 +35,7 @@ class DashboardController extends Controller
         // }
 
         // Base query for reports
-        $reportsQuery = Report::query()
+        $reportsQuery = Reports::query()
             ->join('assignments', 'reports.id', '=', 'assignments.report_id')
             ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
             ->join('users as evaluatees', 'assignments.evaluatee', '=', 'evaluatees.id')
@@ -210,25 +210,25 @@ class DashboardController extends Controller
     private function statusCounts($reports)
     {
         $statusCounts = [
-            'ASSIGNED' => 0,
-            'DRAFT' => 0,
-            'PENDING' => 0,
-            'COMPLETED' => 0
+            'Assigned' => 0,
+            'Draft' => 0,
+            'Pending' => 0,
+            'Completed' => 0
         ];
 
         foreach ($reports as $report) {
             switch ($report->report_status) {
-                case 'ASSIGNED':
-                    $statusCounts['ASSIGNED']++;
+                case 'Assigned':
+                    $statusCounts['Assigned']++;
                     break;
-                case 'DRAFT':
-                    $statusCounts['DRAFT']++;
+                case 'Draft':
+                    $statusCounts['Draft']++;
                     break;
-                case 'PENDING':
-                    $statusCounts['PENDING']++;
+                case 'Pending':
+                    $statusCounts['Pending']++;
                     break;
-                case 'COMPLETED':
-                    $statusCounts['COMPLETED']++;
+                case 'Completed':
+                    $statusCounts['Completed']++;
                     break;
             }
         }

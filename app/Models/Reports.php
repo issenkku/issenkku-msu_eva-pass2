@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Report extends Model
+class Reports extends Model
 {
     use HasFactory;
     
@@ -15,6 +15,7 @@ class Report extends Model
     protected $fillable = [
         'report_data_id',
         'status',
+        'comment',
     ];
 
     protected $casts = [
@@ -44,6 +45,6 @@ class Report extends Model
 
     public function assignments()
     {
-        return $this->hasOne(Assignments::class);
+        return $this->hasOne(Assignments::class,'report_id');
     }
 }

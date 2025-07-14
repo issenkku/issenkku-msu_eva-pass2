@@ -9,7 +9,7 @@ use App\Models\QuantitySubCriteria;
 use App\Models\QuantityScore;
 use App\Models\QualitySubCriteria;
 use App\Models\QualityScore;
-use App\Models\Report;
+use App\Models\Reports;
 
 class ReportSeeder extends Seeder
 {
@@ -21,7 +21,7 @@ class ReportSeeder extends Seeder
         // 1. Create or get one Report (use id=1 if possible)
         // $report = Report::find(1);
         // if (!$report) {
-        $report = Report::factory()->create([
+        $report = Reports::factory()->create([
             // 'id'     => 1,
             // 'status' => 'Assigned', // หรือเปลี่ยนตาม field ที่โมเดลคุณต้องการ
             // 'report_data_id' => ReportData::inRandomOrder()->first()?->id, // Uncomment if you have ReportData model

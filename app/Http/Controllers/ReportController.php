@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Reports;
 use App\Models\QuantityScore;
 use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
@@ -16,7 +17,6 @@ use App\Http\Resources\ReportSummaryResource;
 use App\Http\Resources\QuantityScoreResource;
 use App\Http\Resources\QualityScoreResource;
 use App\Http\Resources\EvidenceAnswerResource;
-use App\Models\Report;
 
 class ReportController extends Controller
 {
@@ -26,7 +26,7 @@ class ReportController extends Controller
     // GET /reports
     public function index()
     {
-        $reports = Report::all();
+        $reports = Reports::all();
         return ReportSummaryResource::collection($reports);
     }
 
@@ -57,7 +57,7 @@ class ReportController extends Controller
                 'status'         => 'required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
-            $report = Report::create($validated);
+            $report = Reports::create($validated);
             return new ReportResource($report);
         } catch (ValidationException $e) {
             return response()->json([
@@ -71,8 +71,8 @@ class ReportController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $report = Report::findOrFail($id);
-            if ($request->has('status') && !in_array($request->status, ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'])) {
+            $report = Reports::findOrFail($id);
+            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
                 return response()->json([
                     'message' => 'Invalid status value',
                     'errors' => [
@@ -102,7 +102,7 @@ class ReportController extends Controller
     public function destroy($id)
     {
         try {
-            $report = Report::findOrFail($id);
+            $report = Reports::findOrFail($id);
             $report->delete();
             return response()->json(['message' => 'Report deleted successfully']);
         } catch (ModelNotFoundException $e) {
@@ -128,7 +128,7 @@ class ReportController extends Controller
     public function addQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Quantity score');
@@ -138,18 +138,28 @@ class ReportController extends Controller
                 'quantity_list' => 'required|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
-                'quantity_list.*.score_D' => 'nullable|numeric',
             ]);
 
             $created = [];
+
             foreach ($validated['quantity_list'] as $item) {
-                $quantity_score = QuantityScore::create([
-                    'quantity_sub_criteria_id' => $item['quantity_sub_criteria_id'],
+                $subCriteria = \App\Models\QuantitySubCriteria::find($item['quantity_sub_criteria_id']);
+                $scoreC = $item['score_C'] ?? null;
+
+                // Calculate score_D using the formula
+                $scoreD = null;
+                if ($scoreC !== null && $subCriteria && $subCriteria->score_b != 0) {
+                    $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
+                }
+
+                $quantityScore = QuantityScore::create([
+                    'quantity_sub_criteria_id' => $subCriteria->id,
                     'report_id' => $reportId,
-                    'score_C' => $item['score_C'] ?? null,
-                    'score_D' => $item['score_D'] ?? null,
+                    'score_C' => $scoreC,
+                    'score_D' => $scoreD,
                 ]);
-                $created[] = $quantity_score;
+
+                $created[] = $quantityScore;
             }
             return QuantityScoreResource::collection(collect($created));
         } catch (ModelNotFoundException $e) {
@@ -160,7 +170,7 @@ class ReportController extends Controller
     public function updateQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update quantity scores');
@@ -213,7 +223,7 @@ class ReportController extends Controller
     public function addQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Quality score');
@@ -243,7 +253,7 @@ class ReportController extends Controller
     public function updateQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update quality scores');
@@ -294,7 +304,7 @@ class ReportController extends Controller
     public function addEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Evidence answers');
@@ -325,7 +335,7 @@ class ReportController extends Controller
     public function updateEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update evidence answers');

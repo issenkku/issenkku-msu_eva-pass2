@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\QuantitySubCriteria;
-use App\Models\Report;
+use App\Models\Reports;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\QuantityScore>
@@ -22,7 +22,7 @@ class QuantityScoreFactory extends Factory
             'score_C' => fake()->numberBetween(1, 5),
             'score_D' => fake()->numberBetween(1, 40),
             'quantity_sub_criteria_id' => QuantitySubCriteria::inRandomOrder()->first()?->id,
-            'report_id' => Report::inRandomOrder()->first()?->id,
+            'report_id' => Reports::inRandomOrder()->first()?->id,
         ];
     }
 }

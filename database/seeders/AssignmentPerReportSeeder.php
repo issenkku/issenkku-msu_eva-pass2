@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Assignments;
 use App\Models\AssignmentData;
-use App\Models\Report;
+use App\Models\Reports;
 use App\Models\User;
 use App\Models\EvidenceAnswer;
 use App\Models\EvaluationList;
@@ -19,7 +19,7 @@ class AssignmentPerReportSeeder extends Seeder
     public function run(): void
     {
         // 1. Create N Reports (example: 5)
-        $reports = Report::factory()->count(5)->create();
+        $reports = Reports::factory()->count(5)->create();
 
         $assignmentData = AssignmentData::factory()->create();
 

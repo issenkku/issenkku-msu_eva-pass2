@@ -19,12 +19,15 @@ class Assignments extends Model
 
     public $timestamps = false;
 
-
-
     // Relationships
     public function assignmentData()
     {
         return $this->belongsTo(AssignmentData::class);
+    }
+
+    public function report()
+    {
+        return $this->belongsTo(Reports::class);
     }
 
     public function evaluateeUser()
@@ -35,10 +38,5 @@ class Assignments extends Model
     public function evaluatorUser()
     {
         return $this->belongsTo(User::class, 'evaluator', 'id');
-    }
-
-    public function report(): BelongsTo
-    {
-        return $this->belongsTo(Report::class);
     }
 }

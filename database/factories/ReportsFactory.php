@@ -8,7 +8,7 @@ use App\Models\ReportData;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Report>
  */
-class ReportFactory extends Factory
+class ReportsFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,7 +17,7 @@ class ReportFactory extends Factory
      */
     public function definition(): array
     {
-        $status = ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'];
+        $status = ['Assigned', 'Draft', 'Pending', 'Completed'];
 
         return [
             'status' => fake()->randomElement($status),
