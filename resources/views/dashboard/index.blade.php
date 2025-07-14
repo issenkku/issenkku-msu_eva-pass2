@@ -342,7 +342,7 @@
                     <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-500">
                             Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span
-                                class="font-medium">{{ $totalParticipants ?? 50 }}</span> results
+                                class="font-medium">{{ $totalParticipants }}</span> results
                         </div>
                         <div class="flex space-x-2">
                             <button
