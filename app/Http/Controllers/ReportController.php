@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
+use App\Models\Reports;
 use App\Models\QuantityScore;
 use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -22,19 +21,19 @@ use App\Http\Resources\EvidenceAnswerResource;
 class ReportController extends Controller
 {
     // สถานะที่อนุญาตให้แก้ไขข้อมูล
-    protected $allowedEditStatuses = ['Assigned', 'Draft'];
+    protected $allowedEditStatuses = ['ASSIGNED', 'DRAFT'];
 
     // GET /reports
     public function index()
     {
-        $reports = Report::all();
+        $reports = Reports::all();
         return ReportSummaryResource::collection($reports);
     }
 
     public function show($id)
     {
         try {
-            $report = Report::with(['quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+            $report = Report::with(['assignments','quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -44,21 +43,21 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         try {
-            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
+            if ($request->has('status') && !in_array($request->status, ['ASSIGNED', 'DRAFT', 'PENDING', 'COMPLETED'])) {
                 return response()->json([
                     'message' => 'Invalid status value',
                     'errors' => [
-                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                        'status' => ['Status must be one of: ASSIGNED, DRAFT, PENDING, COMPLETED']
                     ]
                 ], 422);
             }
 
             $validated = $request->validate([
                 'report_data_id' => 'required|integer|exists:report_datas,id',
-                'status'         => 'required|string|in:Assigned,Draft,Pending,Completed',
+                'status'         => 'required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
-            $report = Report::create($validated);
+            $report = Reports::create($validated);
             return new ReportResource($report);
         } catch (ValidationException $e) {
             return response()->json([
@@ -72,19 +71,19 @@ class ReportController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $report = Report::findOrFail($id);
+            $report = Reports::findOrFail($id);
             if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
                 return response()->json([
                     'message' => 'Invalid status value',
                     'errors' => [
-                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                        'status' => ['Status must be one of: ASSIGNED, DRAFT, PENDING, COMPLETED']
                     ]
                 ], 422);
             }
 
             $validated = $request->validate([
                 'report_data_id' => 'sometimes|required|integer|exists:report_datas,id',
-                'status'         => 'sometimes|required|string|in:Assigned,Draft,Pending,Completed',
+                'status'         => 'sometimes|required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
             $report->update($validated);
@@ -103,7 +102,7 @@ class ReportController extends Controller
     public function destroy($id)
     {
         try {
-            $report = Report::findOrFail($id);
+            $report = Reports::findOrFail($id);
             $report->delete();
             return response()->json(['message' => 'Report deleted successfully']);
         } catch (ModelNotFoundException $e) {
@@ -118,7 +117,7 @@ class ReportController extends Controller
     {
         if (!in_array($report->status, $this->allowedEditStatuses)) {
             return response()->json([
-                'message' => "Cannot {$action}. Report must be in Assigned or Draft status."
+                'message' => "Cannot {$action}. Report must be in ASSIGNED or DRAFT status."
             ], 403);
         }
 
@@ -129,7 +128,7 @@ class ReportController extends Controller
     public function addQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Quantity score');
@@ -171,7 +170,7 @@ class ReportController extends Controller
     public function updateQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update quantity scores');
@@ -224,7 +223,7 @@ class ReportController extends Controller
     public function addQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Quality score');
@@ -254,7 +253,7 @@ class ReportController extends Controller
     public function updateQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update quality scores');
@@ -305,7 +304,7 @@ class ReportController extends Controller
     public function addEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Evidence answers');
@@ -336,7 +335,7 @@ class ReportController extends Controller
     public function updateEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Report::findOrFail($reportId);
+            $report = Reports::findOrFail($reportId);
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update evidence answers');

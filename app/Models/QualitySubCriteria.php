@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class QualitySubCriteria extends Model
 {
+    use HasFactory;
     protected $table = 'quality_sub_criterias';
     public $timestamps = false;
 
@@ -26,7 +28,7 @@ class QualitySubCriteria extends Model
 
     public function criteriaVersion(): BelongsTo
     {
-        return $this->belongsTo(CriteriaVersion::class , 'criteria_version_id');
+        return $this->belongsTo(CriteriaVersion::class, 'criteria_version_id');
     }
 
     public function qualityScores()
@@ -37,5 +39,9 @@ class QualitySubCriteria extends Model
     public function evaluationList(): BelongsTo
     {
         return $this->belongsTo(EvaluationList::class, 'evaluation_list_id');
+    }
+    public function evidenceAnswers()
+    {
+        return $this->hasMany(EvidenceAnswer::class, 'evaluation_list_id', 'evaluation_list_id');
     }
 }

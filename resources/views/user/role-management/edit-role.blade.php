@@ -1,4 +1,4 @@
-@extends('layouts.user-management-page')
+@extends('layouts.app')
 
 @section('content')
 <div class="p-6 max-w-3xl mx-auto">

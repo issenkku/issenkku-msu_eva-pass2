@@ -8,7 +8,7 @@
                 <p class="text-gray-600 text-lg">กรุณากรอกข้อมูลเกณฑ์การประเมินให้ครบถ้วนเพื่อสร้างเกณฑ์ที่สมบูรณ์</p>
             </div>
 
-            <form id="jsonForm" action="{{ route('report-structure.store') }}" method="POST" class="space-y-8">
+            <form id="jsonForm" action="{{ route('report-structure.store') }}" method="POST" class="space-y-8" novalidate>
                 @csrf
 
                 <!-- Report Datas -->
@@ -26,7 +26,7 @@
                             <input id="version_name" required name="version_name"
                                 class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
                                 placeholder="เช่น Demo Version 2024">
-                            <input type="hidden" id="auth-user-id" value="{{ Auth::id() }}">
+                            <input type="hidden" id="auth-user-id" value="{{ Auth::user()->id }}">
                         </div>
                         <div>
                             <label for="report_title" class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
@@ -683,6 +683,69 @@
             document.getElementById('confirm_modal').classList.remove('hidden');
         }
 
+        // Modal-based alert for validation error
+        function showValidationErrorModal(message) {
+            let modal = document.getElementById('custom-alert-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'custom-alert-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.innerHTML = `
+                    <div id="custom-alert-box" class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
+                        <div class="flex justify-center mb-4">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                                <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </span>
+                        </div>
+                        <div class="text-lg font-semibold mb-2 text-red-600">กรอกข้อมูลไม่ครบถ้วน</div>
+                        <div class="mb-4 text-gray-700">${message}</div>
+                        <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.querySelector('#custom-alert-box').className = `bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in`;
+                modal.querySelector('#custom-alert-box').innerHTML = `
+                    <div class="flex justify-center mb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                            <svg class=\"w-7 h-7 text-red-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6 18L18 6M6 6l12 12\"/></svg>
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold mb-2 text-red-600">กรอกข้อมูลไม่ครบถ้วน</div>
+                    <div class="mb-4 text-gray-700">${message}</div>
+                    <button id=\"custom-alert-ok\" class=\"mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none\">ตกลง</button>
+                `;
+                modal.style.display = '';
+            }
+            modal.querySelector('#custom-alert-ok').onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+        // // Validate required fields before showing confirm modal
+        document.getElementById('jsonForm').addEventListener('submit', function(e) {
+            // Prevent default submit for custom validation
+            e.preventDefault();
+            // Basic required fields
+            const versionName = document.getElementById('version_name').value.trim();
+            const reportTitle = document.getElementById('report_title').value.trim();
+            const reportDescription = document.getElementById('report_description').value.trim();
+            const assessmentType = document.getElementById('assessment_type').value.trim();
+            let errorMsg = '';
+            if (!versionName) errorMsg += 'กรุณากรอกชื่อรุ่น\n';
+            if (!reportTitle) errorMsg += 'กรุณากรอกชื่อเกณฑ์\n';
+            if (!reportDescription) errorMsg += 'กรุณากรอกรายละเอียดเกณฑ์\n';
+            if (!assessmentType) errorMsg += 'กรุณาเลือกประเภทการประเมิน\n';
+            if (errorMsg) {
+                showValidationErrorModal(errorMsg.replace(/\n/g, '<br>'));
+                return false;
+            }
+            // If valid, show confirm modal
+            showConfirmModal(versionName);
+        }, true);
+
         function hideConfirmModal() {
             document.getElementById('confirm_modal').classList.add('hidden');
         }
@@ -706,72 +769,72 @@
                 const block = e.target.closest('.category_block');
                 const container = document.getElementById('categories_container');
                 if (confirm('ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
-                    if (container.querySelectorAll('.category_block').length > 1) {
-                        block.remove();
-                        updateCategorySequence(container);
-                        updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
-                    } else {
-                        alert('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
-                    }
+            if (container.querySelectorAll('.category_block').length > 1) {
+                block.remove();
+                updateCategorySequence(container);
+                updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+            } else {
+                showValidationErrorModal('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
+            }
                 }
             }
 
             if (e.target.closest('.delete_eval_btn')) {
                 const block = e.target.closest('.evaluation_list_block');
                 const container = block.closest('.evaluation_lists_container');
-                if (container.querySelectorAll('.evaluation_list_block').length > 1) {
-                    block.remove();
-                    updateEvalSequence(container);
-                    updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
-                } else {
-                    alert('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
-                }
+            if (container.querySelectorAll('.evaluation_list_block').length > 1) {
+                block.remove();
+                updateEvalSequence(container);
+                updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+            } else {
+                showValidationErrorModal('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
+            }
             }
 
             if (e.target.closest('.delete_quant_btn')) {
                 const block = e.target.closest('.quant_criteria_block');
                 const container = block.closest('.quantity_main_criterias_container');
-                if (container.querySelectorAll('.quant_criteria_block').length > 1) {
-                    block.remove();
-                    updateQuantMainSequence(container);
-                    updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
-                } else {
-                    alert('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
-                }
+            if (container.querySelectorAll('.quant_criteria_block').length > 1) {
+                block.remove();
+                updateQuantMainSequence(container);
+                updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+            } else {
+                showValidationErrorModal('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
+            }
             }
 
             if (e.target.closest('.delete_quant_sub_btn')) {
                 const block = e.target.closest('.quant_sub_criteria_block');
                 const container = block.closest('.quant_sub_criteria_container');
-                if (container.querySelectorAll('.quant_sub_criteria_block').length > 1) {
-                    block.remove();
-                    updateQuantSubSequence(container);
-                } else {
-                    alert('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
-                }
+            if (container.querySelectorAll('.quant_sub_criteria_block').length > 1) {
+                block.remove();
+                updateQuantSubSequence(container);
+            } else {
+                showValidationErrorModal('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
+            }
             }
 
             if (e.target.closest('.delete_qual_btn')) {
                 const block = e.target.closest('.qual_criteria_block');
                 const container = block.closest('.quality_main_criterias_container');
-                if (container.querySelectorAll('.qual_criteria_block').length > 1) {
-                    block.remove();
-                    updateQualMainSequence(container);
-                    updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
-                } else {
-                    alert('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
-                }
+            if (container.querySelectorAll('.qual_criteria_block').length > 1) {
+                block.remove();
+                updateQualMainSequence(container);
+                updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+            } else {
+                showValidationErrorModal('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
+            }
             }
 
             if (e.target.closest('.delete_qual_sub_btn')) {
                 const block = e.target.closest('.qual_sub_criteria_block');
                 const container = block.closest('.qual_sub_criterias_container');
-                if (container.querySelectorAll('.qual_sub_criteria_block').length > 1) {
-                    block.remove();
-                    updateQualSubSequence(container);
-                } else {
-                    alert('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
-                }
+            if (container.querySelectorAll('.qual_sub_criteria_block').length > 1) {
+                block.remove();
+                updateQualSubSequence(container);
+            } else {
+                showValidationErrorModal('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
+            }
             }
 
             if (e.target.closest('.move_category_up_btn')) {
@@ -947,17 +1010,24 @@
         });
 
         document.getElementById('reset_form_btn').addEventListener('click', function() {
-            if (confirm('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่?')) {
-                document.getElementById('jsonForm').reset();
-                document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container')
-                    .forEach(container => container.classList.add('hidden'));
-                updateCategorySequence(document.getElementById('categories_container'));
-                document.querySelectorAll('.evaluation_lists_container').forEach(updateEvalSequence);
-                document.querySelectorAll('.quantity_main_criterias_container').forEach(updateQuantMainSequence);
-                document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
-                document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
-                document.querySelectorAll('.qual_sub_criterias_container').forEach(updateQualSubSequence);
-            }
+            showValidationErrorModal('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่? <br><br><button id="confirm-reset-btn" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ยืนยัน</button>');
+            setTimeout(() => {
+                const confirmBtn = document.getElementById('confirm-reset-btn');
+                if (confirmBtn) {
+                    confirmBtn.onclick = function() {
+                        document.getElementById('custom-alert-modal').style.display = 'none';
+                        document.getElementById('jsonForm').reset();
+                        document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container')
+                            .forEach(container => container.classList.add('hidden'));
+                        updateCategorySequence(document.getElementById('categories_container'));
+                        document.querySelectorAll('.evaluation_lists_container').forEach(updateEvalSequence);
+                        document.querySelectorAll('.quantity_main_criterias_container').forEach(updateQuantMainSequence);
+                        document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
+                        document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
+                        document.querySelectorAll('.qual_sub_criterias_container').forEach(updateQualSubSequence);
+                    };
+                }
+            }, 100);
         });
 
         let finalData = null;
@@ -967,14 +1037,14 @@
 
             const versionName = document.querySelector('.version_name').value.trim();
             if (!versionName) {
-                alert('กรุณากรอกชื่อรุ่น');
+                //alert('กรุณากรอกชื่อรุ่น');
                 return;
             }
 
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
             if (!reportTitle || !reportDescription) {
-                alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
+                //alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
                 return;
             }
 
@@ -998,7 +1068,7 @@
                 const mainCategories = catBlock.querySelector('.main_categories').value.trim();
                 const subCategories = catBlock.querySelector('.sub_categories').value.trim();
                 if (!mainCategories || !subCategories) {
-                    alert(`กรุณากรอกหมวดหมู่หลักและหมวดหมู่ย่อยสำหรับหมวดหมู่ที่ ${catI + 1}`);
+                    //alert(`กรุณากรอกหมวดหมู่หลักและหมวดหมู่ย่อยสำหรับหมวดหมู่ที่ ${catI + 1}`);
                     return;
                 }
 
@@ -1014,9 +1084,9 @@
                     const evalName = evalBlock.querySelector('.eval_name').value.trim();
                     const sumScore = evalBlock.querySelector('.sum_score').value;
                     if (!evalName || !sumScore) {
-                        alert(
-                            `กรุณากรอกชื่อรายการประเมินและคะแนนรวมสำหรับรายการที่ ${evalI + 1} ในหมวดหมู่ที่ ${catI + 1}`
-                        );
+                        // alert(
+                        //     `กรุณากรอกชื่อรายการประเมินและคะแนนรวมสำหรับรายการที่ ${evalI + 1} ในหมวดหมู่ที่ ${catI + 1}`
+                        // );
                         return;
                     }
 
@@ -1044,9 +1114,9 @@
                                 const quantTooltips = qMain.querySelector('.quant_tooltips')
                                     .value.trim();
                                 if (!quantName || !quantTooltips) {
-                                    alert(
-                                        `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
-                                    );
+                                    // alert(
+                                    //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    // );
                                     valid = false;
                                     return;
                                 }
@@ -1125,9 +1195,7 @@
                                 const numScore = subQ.querySelector('.num_score')
                                     .value;
                                 if (!subName || !numScore) {
-                                    alert(
-                                        `กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
-                                    );
+                                    showValidationErrorModal(`กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`);
                                     valid = false;
                                     return;
                                 }
@@ -1152,7 +1220,7 @@
                 });
 
                 if (category.evaluation_lists.length === 0) {
-                    alert(`กรุณาเพิ่มรายการประเมินอย่างน้อย 1 รายการในหมวดหมู่ที่ ${catI + 1}`);
+                    showValidationErrorModal(`กรุณาเพิ่มรายการประเมินอย่างน้อย 1 รายการในหมวดหมู่ที่ ${catI + 1}`);
                     return;
                 }
 
@@ -1160,7 +1228,7 @@
             });
 
             if (finalData.categories.length === 0) {
-                alert('กรุณาเพิ่มหมวดหมู่การประเมินอย่างน้อย 1 หมวดหมู่');
+                showValidationErrorModal('กรุณาเพิ่มหมวดหมู่การประเมินอย่างน้อย 1 หมวดหมู่');
                 return;
             }
 

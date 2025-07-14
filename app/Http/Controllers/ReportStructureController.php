@@ -213,7 +213,7 @@ class ReportStructureController extends Controller
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'required|string',
-            'report_datas.*.assessment_type' => 'required|string', //ประเภทของการปนะเมิน เช่น สายสนับสนุน, สายวิชาการ
+            'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
@@ -382,7 +382,7 @@ class ReportStructureController extends Controller
         ]);
 
         // $authUser = Auth::guard('api')->user();
-        $version = CriteriaVersion::where('version_id', $id)->first();
+        $version = CriteriaVersion::where('id', $id)->first();
 
         // $validated['created_by'] = $authUser->user_id;
 
@@ -398,6 +398,22 @@ class ReportStructureController extends Controller
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
+
+        $relatedReports = \DB::table('reports')
+            ->where('report_data_id', $id)->get();
+
+        if ($relatedReports->count() > 0) {
+            // ถ้ามี report ไหนที่ status ไม่ใช่ Completed ห้ามลบ
+            $notCompleted = $relatedReports->where('status', '!=', 'Completed');
+            if ($notCompleted->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ไม่สามารถลบได้ เนื่องจากมีการประเมินที่ใช้โครงสร้างเกณฑ์นี้อยู่ ต้องให้การประเมินครบถ้วนก่อน',
+                    'not_completed_count' => $notCompleted->count(),
+                ], 409);
+            }
+        }
+
         $criteriaVersion->delete();
         return response()->json(null, 204);
     }

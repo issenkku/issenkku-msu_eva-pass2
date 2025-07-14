@@ -8,7 +8,6 @@
 ```json
 {
   "report_data_id": 1,
-  "report_code": "RPT-2023-001",
   "status": "Draft"
 }
 ```
@@ -22,7 +21,6 @@
 ```json
 {
   "report_data_id": 2,
-  "report_code": "RPT-2023-002",
   "status": "Completed"
 }
 ```

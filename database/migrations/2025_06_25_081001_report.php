@@ -13,32 +13,31 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('report_data_id')->constrained('report_datas');
+            $table->foreignId('report_data_id')->constrained('report_datas')->onDelete('cascade');
             $table->string('status', 255);
+            $table->text('comment')->nullable();
             $table->timestamps();
         });
         Schema::create('quantity_scores', function (Blueprint $table) {
-            $table->foreignId('quantity_sub_criteria_id')->constrained('quantity_sub_criterias');
-            $table->foreignId('report_id')->constrained('reports');
+            $table->foreignId('quantity_sub_criteria_id')->constrained('quantity_sub_criterias')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->decimal('score_C', 5, 2)->nullable();
             $table->decimal('score_D', 5, 2)->nullable();
             $table->timestamps();
 
             $table->index(['quantity_sub_criteria_id', 'report_id'], 'quantity_scores_all_idx');
-
         });
         Schema::create('quality_scores', function (Blueprint $table) {
-            $table->foreignId('quality_sub_criteria_id')->constrained('quality_sub_criterias');
-            $table->foreignId('report_id')->constrained('reports');
+            $table->foreignId('quality_sub_criteria_id')->constrained('quality_sub_criterias')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->decimal('score', 5, 2)->nullable();
             $table->timestamps();
 
             $table->index(['quality_sub_criteria_id', 'report_id'], 'quality_scores_all_idx');
-
         });
         Schema::create('evidence_answers', function (Blueprint $table) {
-            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists');
-            $table->foreignId('report_id')->constrained('reports');
+            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');
+            $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->text('link')->nullable();
             $table->timestamps();
 

@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Evaluatee\DashboardController;
+use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\UserProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\AssignmentsController;
@@ -14,87 +15,115 @@ use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\AssignmentDataController;
-
 use function Pest\Laravel\json;
+use App\Http\Controllers\DashboardController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::middleware(['auth:sanctum','role:admin'])->group(function () {
+    Route::prefix('departments')->name('departments.')->group(function () {
+        Route::get('/', [DepartmentsController::class, 'index'])->name('index');
+        Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
+        Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
+    });
 
-Route::prefix('departments')->name('departments.')->group(function () {
-    Route::get('/', [DepartmentsController::class, 'index'])->name('index');
-    Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
-    Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');
-    Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
+    Route::prefix('settings-website')->name('settings.')->group(function () {
+        Route::get('/', [SettingsController::class, 'index'])->name('index');
+        Route::post('/store', [SettingsController::class, 'store'])->name('store');
+    });
+
+    Route::prefix('positions')->name('positions.')->group(function () {
+        Route::get('/', [PositionsController::class, 'index'])->name('index');
+        Route::post('/store', [PositionsController::class, 'store'])->name('store');
+        Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::put('/{user}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
+        Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
+        Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
+        Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
+    });
+
+    Route::resource('/roles', RoleAndPermissionController::class);
+
 });
 
-Route::prefix('settings')->name('settings.')->group(function () {
-    Route::get('/', [SettingsController::class, 'index'])->name('index');
-    Route::post('/store', [SettingsController::class, 'store'])->name('store');
+Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group(function () {
+    Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
+        Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
+        Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
+        Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+        Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
+        Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+        Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
+    });
 });
 
-Route::middleware(['permission:Employee Management'])->prefix('users')->name('users.')->group(function () {
-    Route::get('/', [UserController::class, 'index'])->name('index');
-    Route::post('/', [UserController::class, 'store'])->name('store');
-    Route::put('/{user}', [UserController::class, 'update'])->name('update');
-    Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
-});
-
-// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-// Route::post('/login', [AuthController::class, 'login']);
-Route::middleware('guest')->controller(AuthController::class)->group(function(){
-    Route::get('/login', 'showLoginForm')->name('login');
-    Route::post('/login', 'login');
-});
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-Route::middleware(['permission:Role Management'])->resource('/roles', RoleAndPermissionController::class);
-
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-Route::prefix('positions')->name('positions.')->group(function () {
-    Route::get('/', [PositionsController::class, 'index'])->name('index');
-    Route::post('/store', [PositionsController::class, 'store'])->name('store');
-    Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
-    Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
-});
-
-Route::prefix('assignment-data')->name('assignment-data.')->group(function () {
-   Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
-   Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
-   Route::post('/', [AssignmentDataController::class, 'store'])->name('store');  // เปลี่ยนจาก '/store' เป็น '/'
-});
-
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
-});
-Route::get('/criteria-configs', function () {
-    return view('criteria_config.create');
-});
-
-Route::get('/criteria-evaluators', function () {
-    return view('criteria_config.evaluators');
-});
-
-Route::middleware(['permission:Employee Dashboard'])->group(function() {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/evaluation/{id}', [DashboardController::class, 'evaluation'])->name('evaluation.show');
+Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
+    Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
+    Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 });
 
-
-
-// ใน web.php - แก้ไขส่วนของ evaluator routes
-Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
-    // Dashboard หลักของผู้ประเมิน - แสดงรายการ assignments ทั้งหมด
-    // Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-    // Route::get('/evaluations/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluations.evaluator_form');
-    // แสดงรายละเอียด assignment เฉพาะ
-    // Route::get('/assignment/{id}', [EvaluatorController::class, 'showAssignment'])->name('assignment.show');
-
-    // // เริ่มการประเมิน
-    // Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+Route::middleware(['auth:sanctum','role:admin|ผู้บริหาร'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
+
+Route::middleware('guest')->group(function () {
+    // 1. ถ้าเข้า path "/" และยังไม่ล็อกอิน ให้ไปที่หน้า login
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
+
+    // 2. ย้าย Route ของ AuthController มาไว้ในกลุ่มนี้เพื่อความเป็นระเบียบ
+    Route::controller(AuthController::class)->group(function () {
+        Route::get('/login', 'showLoginForm')->name('login');
+        Route::post('/login', 'login');
+    });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    // 3. ถ้าเข้า path "/" และล็อกอินแล้ว ให้ redirect ตาม role
+    Route::get('/', function (Request $request) {
+        $user = $request->user();
+
+        if ($user->hasRole('admin') || $user->hasRole('ผู้บริหาร')) {
+            // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
+            return redirect()->route('dashboard'); // ชื่อ route ของ admin dashboard
+        }
+
+        if ($user->hasRole('ผู้ประเมิน')) {
+            // ถ้าเป็นผู้ประเมิน ให้ไปที่ dashboard ของผู้ประเมิน
+            return redirect()->route('evaluator.index');
+        }
+
+        if ($user->hasRole('ผู้รับการประเมิน')) {
+            // ถ้าเป็นผู้รับการประเมิน ให้ไปที่ dashboard ของผู้รับการประเมิน
+            return redirect()->route('evaluatee.dashboard'); // ชื่อ route ของ evaluatee dashboard
+        }
+        
+        // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
+        // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
+        auth()->logout();
+        return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
+
+    })->name('home'); // ตั้งชื่อ route นี้ว่า 'home'
+
+    // Route สำหรับ /user
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+});
+
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
 require __DIR__.'/report.php';
+

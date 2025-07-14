@@ -7,7 +7,7 @@
             <!-- Page Header -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-bold text-gray-800">
-                    ชื่อหน้า
+                    กำหนดเกณฑ์การประเมิน
                 </h2>
                 <a href="{{ route('criteria_config.create') }}" class="px-5 py-2 bg-lime-400 text-gray-800 font-semibold rounded-md hover:bg-lime-300">
                     เพิ่มเกณฑ์
@@ -26,7 +26,57 @@
         </div>
     </div>
     <script>
+        // Unified showAlert function, globally available
+        // Modal-based alert (replaces browser alert)
+        function showAlert(message, type = 'success') {
+            let modal = document.getElementById('custom-alert-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'custom-alert-modal';
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.innerHTML = `
+                    <div id="custom-alert-box" class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
+                        <div class="flex justify-center mb-4">
+                            <span class="inline-flex items-center justify-center w-12 h-12 rounded-full ${type === 'error' ? 'bg-red-100' : 'bg-green-100'}">
+                                ${type === 'error' ? '<svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' : '<svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>'}
+                            </span>
+                        </div>
+                        <div class="text-lg font-semibold mb-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}">${type === 'error' ? 'เกิดข้อผิดพลาด' : 'สำเร็จ'}</div>
+                        <div class="mb-4 text-gray-700">${message}</div>
+                        <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                // update content if already exists
+                modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+                modal.style.background = 'rgba(0,0,0,0.6)';
+                modal.querySelector('#custom-alert-box').className = `bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in`;
+                modal.querySelector('#custom-alert-box').innerHTML = `
+                    <div class="flex justify-center mb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full ${type === 'error' ? 'bg-red-100' : 'bg-green-100'}">
+                            ${type === 'error' ? '<svg class=\"w-7 h-7 text-red-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6 18L18 6M6 6l12 12\"/></svg>' : '<svg class=\"w-7 h-7 text-green-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M5 13l4 4L19 7\"/></svg>'}
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold mb-2 ${type === 'error' ? 'text-red-600' : 'text-green-600'}">${type === 'error' ? 'เกิดข้อผิดพลาด' : 'สำเร็จ'}</div>
+                    <div class="mb-4 text-gray-700">${message}</div>
+                    <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                `;
+                modal.style.display = '';
+            }
+            // Close on OK
+            modal.querySelector('#custom-alert-ok').onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Show success alert if redirected with ?success=1
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success')) {
+                showAlert('อัปเดตข้อมูลสำเร็จ', 'success');
+            }
             fetchCriteriaVersions();
         });
 
@@ -59,9 +109,18 @@
                 // item = CriteriaVersionResource
                 const card = document.createElement('div');
                 card.className = 'bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col justify-between';
+                // Fix: support both created_by (object) and created_by_name (string or null)
+                let creatorName = '-';
+                if (item.created_by && typeof item.created_by === 'object' && item.created_by.name) {
+                    creatorName = item.created_by.name;
+                } else if (item.created_by_name) {
+                    creatorName = item.created_by_name;
+                } else if (typeof item.created_by === 'string') {
+                    creatorName = item.created_by;
+                }
                 card.innerHTML = `
                     <h3 class="text-xl font-semibold text-gray-900">${item.version_name || 'ไม่ระบุชื่อเวอร์ชัน'}</h3>
-                    <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${item.created_by && item.created_by.name ? item.created_by.name : (item.created_by_name ?? '-')}</span></p>
+                    <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${creatorName}</span></p>
                     <div class="flex space-x-2 mt-auto">
                         <a href="/criteria-config/${item.id}/edit" class="flex-1 text-center px-4 py-2 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500">แก้ไข</a>
                         <button type="button" onclick="showDeleteModal(${item.id}, this)" class="flex-1 text-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-500 hover:text-white">ลบ</button>
@@ -77,14 +136,14 @@
         let deleteTargetId = null;
         let deleteTargetBtn = null;
 
-        // Modal HTML
+        // Modal HTML (top bar style)
         function ensureDeleteModal() {
             if (deleteModal) return;
             deleteModal = document.createElement('div');
             deleteModal.id = 'delete-modal';
-            deleteModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden';
+            deleteModal.className = 'fixed top-0 left-0 w-full z-50 flex justify-center hidden';
             deleteModal.innerHTML = `
-                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 text-center relative animate-fade-in">
+                <div class="mt-6 bg-white border border-red-200 rounded-xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
                     <div class="mx-auto mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
                         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </div>
@@ -101,9 +160,7 @@
             deleteModal.querySelector('#cancel-delete-btn').onclick = function() {
                 hideDeleteModal();
             };
-            deleteModal.addEventListener('click', function(e) {
-                if (e.target === deleteModal) hideDeleteModal();
-            });
+            // ไม่ต้องปิด modal เมื่อคลิกพื้นหลัง
             deleteModal.querySelector('#confirm-delete-btn').onclick = function() {
                 if (deleteTargetId && deleteTargetBtn) {
                     doDeleteCriteriaVersion(deleteTargetId, deleteTargetBtn);
@@ -129,7 +186,7 @@
 
         function doDeleteCriteriaVersion(id, btn) {
             btn.disabled = true;
-            fetch(`/reports/${id}`, {
+            fetch(`/report-version/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Accept': 'application/json',
@@ -140,15 +197,17 @@
             })
             .then(res => {
                 if (res.ok) {
-                    // Remove card from UI
-                    btn.closest('.bg-gray-100').remove();
                     hideDeleteModal();
+                    showAlert('ลบข้อมูลสำเร็จ', 'success');
+                    setTimeout(() => { window.location.reload(); }, 1200);
                 } else {
                     return res.json().then(data => { throw new Error(data.message || 'ลบไม่สำเร็จ'); });
                 }
             })
             .catch(err => {
-                alert('เกิดข้อผิดพลาด: ' + err.message);
+                let msg = err.message;
+                console.error('Delete error:', msg);
+                showAlert('เกิดข้อผิดพลาด: ' + msg, 'error');
                 btn.disabled = false;
                 hideDeleteModal();
             });

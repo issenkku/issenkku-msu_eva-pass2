@@ -8,7 +8,8 @@ class Settings extends Model
 {
     protected $fillable = [
         'faculty',
-        'university'
+        'university',
+        'notification_days'
     ];
 
     public $timestamps = false; // Assuming you don't want timestamps for this model

@@ -6,11 +6,12 @@
 ])
 
 @php
-    $class = $type === 'primary' 
-        ? 'bg-purple-600 hover:bg-purple-700 text-white'
-        : ($type === 'danger' 
-            ? 'bg-red-500 hover:bg-red-600 text-white' 
-            : 'bg-gray-300 text-black');
+    $class = match ($type) {
+        'primary' => 'bg-lime-400 hover:bg-lime-400 text-gray-800 font-semibold',
+        'danger'  => 'bg-red-500 hover:bg-red-600 text-white',
+        'warning' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+        default   => 'bg-gray-300 hover:bg-gray-400 text-gray-800',
+    };
 @endphp
 
 <button 

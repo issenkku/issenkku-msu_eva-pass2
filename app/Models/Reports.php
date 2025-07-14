@@ -4,13 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Report extends Model
+class Reports extends Model
 {
+    use HasFactory;
+    
+    protected $table = 'reports';
+
     protected $fillable = [
         'report_data_id',
-        'report_code',
         'status',
+        'comment',
     ];
 
     protected $casts = [
@@ -36,5 +41,10 @@ class Report extends Model
     public function evidenceAnswers()
     {
         return $this->hasMany(EvidenceAnswer::class);
+    }
+
+    public function assignments()
+    {
+        return $this->hasOne(Assignments::class,'report_id');
     }
 }

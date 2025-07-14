@@ -1,4 +1,4 @@
-@extends('layout')
+@extends('layouts.app')
 @section('content')
     <style>
         .form-container {
@@ -250,6 +250,32 @@
                                     @enderror
                                 </div>
 
+                                <!-- จำนวนวันแจ้งเตือน -->
+                                <div class="form-group-custom">
+                                    <label for="notification_days" class="form-label-custom">
+                                        จำนวนวันแจ้งเตือนทางอีเมล <span style="color: #dc3545;">*</span>
+                                    </label>
+                                    <div class="input-group-custom">
+                                        <input type="number" name="notification_days" id="notification_days"
+                                            class="form-control form-control-custom" 
+                                            placeholder="กรุณาระบุจำนวนวันล่วงหน้าที่ต้องการให้แจ้งเตือน (1-30 วัน)"
+                                            min="1" max="30"
+                                            value="{{ old('notification_days', $setting->notification_days ?? 7) }}" 
+                                            required>
+                                        <i class="form-icon fas fa-bell"></i>
+                                    </div>
+                                    @error('notification_days')
+                                        <div class="alert alert-custom">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            {{ $message }}
+                                        </div>
+                                    @enderror
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        ระบบจะส่งอีเมลแจ้งเตือนก่อนถึงวันสิ้นสุดการประเมินตามจำนวนวันที่ระบุ (1-30 วัน)
+                                    </small>
+                                </div>
+
                                 <!-- แสดงข้อมูลปัจจุบัน -->
                                 @if(isset($settings) && $setting)
                                     <div class="form-group-custom">
@@ -262,6 +288,9 @@
                                             </p>
                                             <p>
                                                 <strong>คณะ:</strong> {{ $setting->faculty }}
+                                            </p>
+                                            <p>
+                                                <strong>จำนวนวันแจ้งเตือน:</strong> {{ $setting->notification_days ?? 7 }} วัน
                                             </p>
                                             <small>
                                                 อัปเดตล่าสุด: {{ $setting->updated_at->format('d/m/Y H:i') }} น.
