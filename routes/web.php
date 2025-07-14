@@ -1,11 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Settings\RoleAndPermissionController;
-use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EvaluatorController;
-use App\Http\Controllers\AssignmentsController;
 use App\Http\Controllers\User\UserController;
 use Inertia\Inertia;
 use App\Http\Controllers\Setting\DepartmentsController;

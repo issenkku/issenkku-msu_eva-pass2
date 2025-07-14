@@ -6,7 +6,7 @@
         </script>
     @endif
 
-    <form action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
+    <form id="main-form" action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -234,8 +234,7 @@
                     <h3>ความคิดเห็นเพิ่มเติม</h3>
                 </div>
                 <div class="card-body">
-                    <textarea name="comment" rows="4" class="score-input" placeholder="ระบุความคิดเห็นเพิ่มเติมที่นี่..."
-                        style="width: 100%; resize: vertical;">{{ old('comment', $assignment->report->comment ?? '') }}</textarea>
+                    <textarea id="summernote" name="comment" style="min-height: 150px;">{{ old('comment', $assignment->report->comment ?? '') }}</textarea>
                 </div>
             </div>
 
@@ -243,9 +242,7 @@
             <div class="action-section">
                 <button type="button" class="btn-back secondary"
                     onclick="window.location='{{ route('evaluator.index') }}'">ยกเลิก</button>
-
                 <button type="button" class="btn-back primary" onclick="confirmSubmit()">บันทึกข้อมูล</button>
-
                 <button type="button" class="btn-back warning" onclick="confirmReject()">ไม่อนุมัติ</button>
             </div>
     </form>
@@ -257,26 +254,27 @@
     </form>
 
 
+
     <script>
         function confirmSubmit() {
-            // เก็บ input ที่เป็นคะแนนทั้งหมด
             const scoreInputs = document.querySelectorAll('.score-input[type="number"]');
             let emptyFound = false;
 
-            // ตรวจสอบว่า input ตัวเลขช่องใดว่างหรือไม่
             scoreInputs.forEach(input => {
-                if (input.value === '' || input.value === null) {
+                // ตรวจเฉพาะช่องที่ไม่ได้ disabled และไม่ได้ hidden
+                if (!input.disabled && input.offsetParent !== null && (input.value === '' || input.value ===
+                        null)) {
                     emptyFound = true;
                 }
             });
 
             if (emptyFound) {
                 alert("กรุณากรอกคะแนนให้ครบทุกช่องก่อนบันทึกข้อมูล");
-                return; // ไม่ส่งฟอร์ม
+                return;
             }
 
             if (confirm("คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?")) {
-                const form = document.querySelector('form');
+                const form = document.getElementById('main-form');
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = 'change_status';
@@ -292,6 +290,22 @@
                 document.getElementById('reject-form').submit();
             }
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            $('#summernote').summernote({
+                placeholder: 'กรุณากรอกความคิดเห็นเพิ่มเติม...',
+                tabsize: 2,
+                height: 150,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+        });
     </script>
     <style>
         /* Reset and Base Styles */
@@ -716,7 +730,5 @@
         .btn-warning:hover {
             background-color: #fbbf24;
         }
-    </style>
-    <style>
     </style>
 @endsection

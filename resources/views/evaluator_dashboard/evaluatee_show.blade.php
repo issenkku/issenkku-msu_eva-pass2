@@ -206,7 +206,7 @@
             </div>
             <div class="card-body">
                 <p style="white-space: pre-wrap; color: #374151;">
-                    {{ $assignment['comment_report'] ?? '-' }}
+                    {!! $assignment['comment_report'] ?? '-' !!}
                 </p>
             </div>
         </div>
@@ -544,7 +544,7 @@
 
         .evidence-box li {
             margin-bottom: 6px;
-            color: #374151;
+            c olor: #374151;
         }
     </style>
 @endsection
