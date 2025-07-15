@@ -23,9 +23,9 @@ return new class extends Migration
         Schema::create('report_datas', function (Blueprint $table) {
             $table->id();
             $table->string('report_title');
-            $table->text('report_description');
+            $table->text('report_description')->nullable();
             $table->string('assessment_type');
-            $table->text('comment');
+            $table->text('comment')->nullable();
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
         });
         Schema::create('categories', function (Blueprint $table) {
@@ -49,7 +49,7 @@ return new class extends Migration
         Schema::create('quantity_main_criterias', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('tooltips');
+            $table->text('tooltips')->nullable();
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
         });
         Schema::create('quantity_sub_criterias', function (Blueprint $table) {
@@ -68,7 +68,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->integer('ratio');
-            $table->text('tooltips');
+            $table->text('tooltips')->nullable();
             $table->integer('sequence');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
         });

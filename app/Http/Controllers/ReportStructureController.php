@@ -212,7 +212,7 @@ class ReportStructureController extends Controller
 
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
-            'report_datas.*.report_description' => 'required|string',
+            'report_datas.*.report_description' => 'required|nullable|string',
             'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
@@ -221,27 +221,27 @@ class ReportStructureController extends Controller
             'categories.*.sub_categories' => 'required|string',
             'categories.*.sequence' => 'required|integer|min:1',
 
-            'categories.*.evaluation_lists' => 'nullable|array|min:1',
+            'categories.*.evaluation_lists' => 'sometimes|array|min:1',
             'categories.*.evaluation_lists.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
 
-            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'nullable|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
-            'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'required|string',
-            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'nullable|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'required|nullable|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
 
-            'categories.*.evaluation_lists.*.quality_main_criterias' => 'nullable|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'required|string',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'required|nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'nullable|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
@@ -399,7 +399,7 @@ class ReportStructureController extends Controller
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
 
-        $relatedReports = \DB::table('reports')
+        $relatedReports = DB::table('reports')
             ->where('report_data_id', $id)->get();
 
         if ($relatedReports->count() > 0) {
