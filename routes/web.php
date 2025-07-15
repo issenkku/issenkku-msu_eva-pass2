@@ -116,11 +116,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     })->name('home'); // ตั้งชื่อ route นี้ว่า 'home'
 
-    // Route สำหรับ /user
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
 });
 
 require __DIR__ . '/settings.php';
