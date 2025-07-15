@@ -90,6 +90,9 @@ class AssignmentDataController extends Controller
                     'evaluatee' => $assignmentItem['evaluatee'],
                     'evaluator' => $assignmentItem['evaluator'],
                 ]);
+
+                // Send email notification for each report created
+                $this->sendEvaluationCompletedMail($report->id);
             }
 
             DB::commit();
@@ -214,5 +217,40 @@ class AssignmentDataController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (! $report) {
+            return;
+        }
+
+        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (! $assignment) {
+            return;
+        }
+        $user = \App\Models\User::find($assignment->evaluatee);
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $evaluator_name = \App\Models\User::find($assignment->evaluator);
+        if (! $evaluator_name || ! $evaluator_name->email) {
+            return;
+        }
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+            'evaluator_name' => $evaluator_name->name,
+        ];
+
+        \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+        });
     }
 }
