@@ -17,7 +17,7 @@ jobs:
     steps:
       # 1. เช็คเอาท์โค้ดจาก Repository
       - name: Checkout Code
-        uses: newnag/checkout@v4
+        uses: actions/checkout@v4
 
       # 2. ตั้งค่า PHP และ Cache Dependencies ของ Composer
       - name: Setup PHP
