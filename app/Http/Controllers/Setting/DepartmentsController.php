@@ -14,6 +14,7 @@ class DepartmentsController extends Controller
     public function index()
     {
         $departments = Departments::paginate(5);
+
         return view('departments.index', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);
@@ -31,7 +32,7 @@ class DepartmentsController extends Controller
 
         // ตรวจสอบชื่อภาควิชาซ้ำ
         $existingDepartment = Departments::where('department_name', $request->department_name)->first();
-        
+
         if ($existingDepartment) {
             return redirect()->back()
                 ->withInput()
@@ -60,7 +61,7 @@ class DepartmentsController extends Controller
         $existingDepartment = Departments::where('department_name', $request->department_name)
             ->where('id', '!=', $id)
             ->first();
-        
+
         if ($existingDepartment) {
             return redirect()->back()
                 ->withInput()

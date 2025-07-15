@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Assignments;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ReportSummaryResource extends JsonResource

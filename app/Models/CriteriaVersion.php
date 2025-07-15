@@ -1,15 +1,16 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CriteriaVersion extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'criteria_versions';
 
     protected $fillable = [
@@ -21,6 +22,7 @@ class CriteriaVersion extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

@@ -8,44 +8,42 @@ use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AssignmentDataController extends Controller
 {
-  
-public function index()
-{
-    $assignmentData = AssignmentData::with([
-        'assignments.evaluateeUser',
-        'assignments.evaluatorUser',
-        'assignments.report',
-    ])->get();
+    public function index()
+    {
+        $assignmentData = AssignmentData::with([
+            'assignments.evaluateeUser',
+            'assignments.evaluatorUser',
+            'assignments.report',
+        ])->get();
 
-    $users = User::all();
-    $report_data = ReportData::all();
-    $departments = Departments::all();
+        $users = User::all();
+        $report_data = ReportData::all();
+        $departments = Departments::all();
 
-    $evaluatees = $users;
-    $evaluators = $users;
+        $evaluatees = $users;
+        $evaluators = $users;
 
-    return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
-}
+        return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
+    }
 
-public function create()
-{
-    $departments = Departments::all();
-    $report_data = ReportData::all();
-    $users = User::all();
+    public function create()
+    {
+        $departments = Departments::all();
+        $report_data = ReportData::all();
+        $users = User::all();
 
-    $evaluatees = $users;
-    $evaluators = $users;
+        $evaluatees = $users;
+        $evaluators = $users;
 
-    return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
-}
-
+        return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
+    }
 
     public function store(Request $request)
     {
@@ -114,6 +112,7 @@ public function create()
     public function show(AssignmentData $assignmentData)
     {
         $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
+
         return response()->json($assignmentData);
     }
 
@@ -205,6 +204,7 @@ public function create()
     {
         try {
             $assignmentData->delete();
+
             return response()->json([
                 'message' => 'Assignment data deleted successfully',
             ]);

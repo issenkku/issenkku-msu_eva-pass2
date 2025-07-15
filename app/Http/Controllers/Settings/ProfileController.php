@@ -5,23 +5,22 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Models\Setting\Departments;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Setting\Positions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     /**
      * Show the user's profile settings page.
      */
-
     public function show(Request $request)
     {
-        $user = $request->user()->load('position', 'department','roles');
+        $user = $request->user()->load('position', 'department', 'roles');
 
         return view('user.profile.show-profile', compact('user'));
     }
@@ -31,7 +30,7 @@ class ProfileController extends Controller
         $user = auth()->user();
         $positions = Positions::all(); // Your positions
         $departments = Departments::all(); // Your departments
-        
+
         return view('user.profile.edit-profile', compact('user', 'positions', 'departments'));
     }
 
@@ -57,17 +56,17 @@ class ProfileController extends Controller
 
         // Handle password update
         if ($request->filled('current_password')) {
-            if (!Hash::check($request->current_password, $user->password)) {
+            if (! Hash::check($request->current_password, $user->password)) {
                 return back()->withErrors(['current_password' => 'รหัสผ่านปัจจุบันไม่ถูกต้อง']);
             }
-            
+
             if ($request->filled('password')) {
                 $validated['password'] = Hash::make($request->password);
             }
         }
 
         // Remove password fields if not updating password
-        if (!$request->filled('password')) {
+        if (! $request->filled('password')) {
             unset($validated['current_password'], $validated['password'], $validated['password_confirmation']);
         }
 

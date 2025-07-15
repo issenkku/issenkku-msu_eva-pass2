@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CriteriaVersion;
-use Illuminate\Http\Request;
 use App\Http\Resources\CriteriaVersionResource;
-use App\Models\ReportData;
 use App\Models\Category;
+use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
-use App\Models\QuantityMainCriteria;
-use App\Models\QuantitySubCriteria;
 use App\Models\QualityMainCriteria;
 use App\Models\QualitySubCriteria;
+use App\Models\QuantityMainCriteria;
+use App\Models\QuantitySubCriteria;
+use App\Models\ReportData;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -23,15 +23,17 @@ class ReportStructureController extends Controller
     {
         $criteriaVersions = CriteriaVersion::with('createdByUser')->get();
         // Map to include user name
-        $result = $criteriaVersions->map(function($item) {
+        $result = $criteriaVersions->map(function ($item) {
             $arr = $item->toArray();
             $arr['created_by'] = $item->createdByUser ? [
                 'id' => $item->createdByUser->id,
-                'name' => $item->createdByUser->name
+                'name' => $item->createdByUser->name,
             ] : null;
             $arr['created_by_name'] = $item->createdByUser ? $item->createdByUser->name : null;
+
             return $arr;
         });
+
         return response()->json(['data' => $result]);
     }
 
@@ -40,9 +42,9 @@ class ReportStructureController extends Controller
         try {
             // ตรวจสอบว่ามีเวอร์ชัน
             $versionExists = CriteriaVersion::where('id', $id)->exists();
-            if (!$versionExists) {
+            if (! $versionExists) {
                 return response()->json([
-                    'message' => 'CriteriaVersion not found'
+                    'message' => 'CriteriaVersion not found',
                 ], 404);
             }
 
@@ -85,14 +87,14 @@ class ReportStructureController extends Controller
                     },
                     'categories.evaluationLists.qualitySubCriterias.mainCriteria' => function ($query) {
                         $query->select('id', 'name', 'ratio', 'tooltips', 'sequence');
-                    }
+                    },
                 ])
                 ->where('id', $id)
                 ->first();
 
-            if (!$version) {
+            if (! $version) {
                 return response()->json([
-                    'message' => 'Error retrieving CriteriaVersion data'
+                    'message' => 'Error retrieving CriteriaVersion data',
                 ], 500);
             }
 
@@ -124,16 +126,16 @@ class ReportStructureController extends Controller
                                 $mainId = $qSub->quantity_main_criteria_id;
                                 $main = $qSub->mainCriteria;
 
-                                if (!$main) {
+                                if (! $main) {
                                     continue; // ข้ามถ้าไม่มี main criteria
                                 }
 
-                                if (!isset($quantityMainMap[$mainId])) {
+                                if (! isset($quantityMainMap[$mainId])) {
                                     $quantityMainMap[$mainId] = [
                                         'quantity_main_criteria_id' => $main->id,
                                         'name' => $main->name,
                                         'tooltips' => $main->tooltips,
-                                        'quantity_sub_criterias' => []
+                                        'quantity_sub_criterias' => [],
                                     ];
                                 }
 
@@ -141,8 +143,8 @@ class ReportStructureController extends Controller
                                     'quantity_sub_criteria_id' => $qSub->id,
                                     'name' => $qSub->name,
                                     'sequence' => $qSub->sequence,
-                                    'score_a' => (float)$qSub->score_a,
-                                    'score_b' => (float)$qSub->score_b,
+                                    'score_a' => (float) $qSub->score_a,
+                                    'score_b' => (float) $qSub->score_b,
                                 ];
                             }
 
@@ -153,18 +155,18 @@ class ReportStructureController extends Controller
                                 $mainId = $qSub->quality_main_criteria_id;
                                 $main = $qSub->mainCriteria;
 
-                                if (!$main) {
+                                if (! $main) {
                                     continue; // ข้ามถ้าไม่มี main criteria
                                 }
 
-                                if (!isset($qualityMainMap[$mainId])) {
+                                if (! isset($qualityMainMap[$mainId])) {
                                     $qualityMainMap[$mainId] = [
                                         'quality_main_criteria_id' => $main->id, // ใช้ $main->id ไม่ใช่ $main->name
                                         'name' => $main->name,
                                         'ratio' => $main->ratio,
                                         'tooltips' => $main->tooltips,
                                         'sequence' => $main->sequence,
-                                        'quality_sub_criterias' => []
+                                        'quality_sub_criterias' => [],
                                     ];
                                 }
 
@@ -172,14 +174,14 @@ class ReportStructureController extends Controller
                                     'quality_sub_criteria_id' => $qSub->id,
                                     'name' => $qSub->name,
                                     'sequence' => $qSub->sequence,
-                                    'num_score' => (float)$qSub->num_score,
+                                    'num_score' => (float) $qSub->num_score,
                                 ];
                             }
 
                             return [
                                 'evaluation_id' => $evalList->id,
                                 'name' => $evalList->name,
-                                'sum_score' => (float)$evalList->sum_score,
+                                'sum_score' => (float) $evalList->sum_score,
                                 'sequence' => $evalList->sequence,
                                 'annotation' => $evalList->annotation,
                                 'quantity_main_criterias' => array_values($quantityMainMap),
@@ -191,17 +193,17 @@ class ReportStructureController extends Controller
             ];
 
             return response()->json([
-                'data' => $formattedResponse
+                'data' => $formattedResponse,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error fetching criteria version: ' . $e->getMessage());
+            Log::error('Error fetching criteria version: '.$e->getMessage());
+
             return response()->json([
                 'message' => 'Failed to retrieve criteria version',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     // Create new (POST)
     public function store(Request $request)
@@ -213,7 +215,7 @@ class ReportStructureController extends Controller
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'required|nullable|string',
-            'report_datas.*.assessment_type' => 'required|string', //ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
+            'report_datas.*.assessment_type' => 'required|string', // ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
@@ -253,17 +255,17 @@ class ReportStructureController extends Controller
                 // 1. Create Criteria Version
                 $version = CriteriaVersion::create([
                     'version_name' => $validated['version_name'],
-                    'created_by'   => $validated['created_by'],
+                    'created_by' => $validated['created_by'],
                 ]);
 
                 // 2. Create Report Datas
                 foreach ($validated['report_datas'] as $reportDatum) {
                     ReportData::create([
                         'criteria_version_id' => $version->id,
-                        'report_title'        => $reportDatum['report_title'],
-                        'report_description'  => $reportDatum['report_description'],
-                        'assessment_type'     => $reportDatum['assessment_type'],
-                        'comment'             => $reportDatum['comment'] ?? null,
+                        'report_title' => $reportDatum['report_title'],
+                        'report_description' => $reportDatum['report_description'],
+                        'assessment_type' => $reportDatum['assessment_type'],
+                        'comment' => $reportDatum['comment'] ?? null,
                     ]);
                 }
 
@@ -271,41 +273,41 @@ class ReportStructureController extends Controller
                 foreach ($validated['categories'] as $categoryData) {
                     $category = Category::create([
                         'criteria_version_id' => $version->id,
-                        'main_categories'     => $categoryData['main_categories'],
-                        'sub_categories'      => $categoryData['sub_categories'],
-                        'sequence'            => $categoryData['sequence'],
+                        'main_categories' => $categoryData['main_categories'],
+                        'sub_categories' => $categoryData['sub_categories'],
+                        'sequence' => $categoryData['sequence'],
                     ]);
 
                     // Evaluation Lists
-                    if (!empty($categoryData['evaluation_lists'])) {
+                    if (! empty($categoryData['evaluation_lists'])) {
                         foreach ($categoryData['evaluation_lists'] as $evalListData) {
                             $evaluationList = EvaluationList::create([
                                 'categorie_id' => $category->id,
                                 'criteria_version_id' => $version->id,
-                                'name'        => $evalListData['name'],
-                                'sum_score'   => $evalListData['sum_score'],
-                                'sequence'    => $evalListData['sequence'],
-                                'annotation'  => $evalListData['annotation'] ?? null,
+                                'name' => $evalListData['name'],
+                                'sum_score' => $evalListData['sum_score'],
+                                'sequence' => $evalListData['sequence'],
+                                'annotation' => $evalListData['annotation'] ?? null,
                             ]);
 
                             // Quantity Main Criterias
-                            if (!empty($evalListData['quantity_main_criterias'])) {
+                            if (! empty($evalListData['quantity_main_criterias'])) {
                                 foreach ($evalListData['quantity_main_criterias'] as $qMain) {
                                     $quantityMainCriteria = QuantityMainCriteria::create([
                                         'criteria_version_id' => $version->id,
                                         'name' => $qMain['name'],
                                         'tooltips' => $qMain['tooltips'],
                                     ]);
-                                    if (!empty($qMain['quantity_sub_criterias'])) {
+                                    if (! empty($qMain['quantity_sub_criterias'])) {
                                         foreach ($qMain['quantity_sub_criterias'] as $qSub) {
                                             QuantitySubCriteria::create([
                                                 'criteria_version_id' => $version->id,
                                                 'quantity_main_criteria_id' => $quantityMainCriteria->id,
                                                 'evaluation_list_id' => $evaluationList->id,
-                                                'name'      => $qSub['name'],
-                                                'sequence'  => $qSub['sequence'],
-                                                'score_a'   => $qSub['score_a'],
-                                                'score_b'   => $qSub['score_b'],
+                                                'name' => $qSub['name'],
+                                                'sequence' => $qSub['sequence'],
+                                                'score_a' => $qSub['score_a'],
+                                                'score_b' => $qSub['score_b'],
                                             ]);
                                         }
                                     }
@@ -313,23 +315,23 @@ class ReportStructureController extends Controller
                             }
 
                             // Quality Main Criterias
-                            if (!empty($evalListData['quality_main_criterias'])) {
+                            if (! empty($evalListData['quality_main_criterias'])) {
                                 foreach ($evalListData['quality_main_criterias'] as $qlMain) {
                                     $qualityMainCriteria = QualityMainCriteria::create([
                                         'criteria_version_id' => $version->id,
-                                        'name'               => $qlMain['name'],
-                                        'ratio'              => $qlMain['ratio'],
-                                        'tooltips'           => $qlMain['tooltips'],
-                                        'sequence'           => $qlMain['sequence'],
+                                        'name' => $qlMain['name'],
+                                        'ratio' => $qlMain['ratio'],
+                                        'tooltips' => $qlMain['tooltips'],
+                                        'sequence' => $qlMain['sequence'],
                                     ]);
-                                    if (!empty($qlMain['quality_sub_criterias'])) {
+                                    if (! empty($qlMain['quality_sub_criterias'])) {
                                         foreach ($qlMain['quality_sub_criterias'] as $qlSub) {
                                             QualitySubCriteria::create([
                                                 'quality_main_criteria_id' => $qualityMainCriteria->id,
                                                 'criteria_version_id' => $version->id,
                                                 'evaluation_list_id' => $evaluationList->id,
-                                                'name'      => $qlSub['name'],
-                                                'sequence'  => $qlSub['sequence'],
+                                                'name' => $qlSub['name'],
+                                                'sequence' => $qlSub['sequence'],
                                                 'num_score' => $qlSub['num_score'],
                                             ]);
                                         }
@@ -353,21 +355,23 @@ class ReportStructureController extends Controller
                     // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
                     'categories.evaluationLists.quantitySubCriterias.mainCriteria',
                     'categories.evaluationLists.qualitySubCriterias.mainCriteria',
-                ])
+                ]),
             ], 201);
         } catch (ValidationException $e) {
-            Log::error('Validation error in store: ' . json_encode($e->errors()));
+            Log::error('Validation error in store: '.json_encode($e->errors()));
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
-                'error' => $e->errors()
+                'error' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Server error in store: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Server error in store: '.$e->getMessage(), ['exception' => $e]);
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred: ' . $e->getMessage()
+                'message' => 'An error occurred: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -390,7 +394,7 @@ class ReportStructureController extends Controller
 
         return response()->json([
             'message' => 'Criteria version updated successfully',
-            'data' => new CriteriaVersionResource($version)
+            'data' => new CriteriaVersionResource($version),
         ]);
     }
 
@@ -415,6 +419,7 @@ class ReportStructureController extends Controller
         }
 
         $criteriaVersion->delete();
+
         return response()->json(null, 204);
     }
 }

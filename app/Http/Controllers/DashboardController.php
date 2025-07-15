@@ -2,18 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Report;
-use App\Models\User;
-use App\Models\Department;
 use App\Models\AssignmentData;
-use App\Models\Assignment;
-use App\Exports\UsersExport;
+use App\Models\Department;
 use App\Models\QuantityScore;
 use App\Models\Reports;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -167,10 +162,10 @@ class DashboardController extends Controller
                 $evalListId = $subCriteria->evaluation_list_id;
                 $mainCriteriaId = $subCriteria->quality_main_criteria_id;
 
-                if (!isset($groupedMainCriterias[$evalListId])) {
+                if (! isset($groupedMainCriterias[$evalListId])) {
                     $groupedMainCriterias[$evalListId] = [];
                 }
-                if (!isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
+                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
                     $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
                 }
 
@@ -180,13 +175,13 @@ class DashboardController extends Controller
             $arrScoreEva = [];
             foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
                 foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float)$subCriterias[0]->sum_score;
-                    $ratio = (float)$subCriterias[0]->ratio;
+                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
+                    $ratio = (float) $subCriterias[0]->ratio;
                     $SumMaxScoreSub = [];
                     $SumAccScoreSub = [];
                     foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float)$subCriteria->num_score, 2);
-                        $score = round((float)$subCriteria->score, 2);
+                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
+                        $score = round((float) $subCriteria->score, 2);
                         if ($maxScorePerSub > 0) {
                             $SumMaxScoreSub[] = $maxScorePerSub;
                             $SumAccScoreSub[] = $score;
@@ -206,6 +201,7 @@ class DashboardController extends Controller
             $totalScore += ($quantityScore + $qualityScore);
             $reportCount++;
         }
+
         return round($totalScore / $reportCount, 2);
     }
 
@@ -215,7 +211,7 @@ class DashboardController extends Controller
             'Assigned' => 0,
             'Draft' => 0,
             'Pending' => 0,
-            'Completed' => 0
+            'Completed' => 0,
         ];
 
         foreach ($reports as $report) {
@@ -284,10 +280,10 @@ class DashboardController extends Controller
                 $evalListId = $subCriteria->evaluation_list_id;
                 $mainCriteriaId = $subCriteria->quality_main_criteria_id;
 
-                if (!isset($groupedMainCriterias[$evalListId])) {
+                if (! isset($groupedMainCriterias[$evalListId])) {
                     $groupedMainCriterias[$evalListId] = [];
                 }
-                if (!isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
+                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
                     $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
                 }
 
@@ -297,13 +293,13 @@ class DashboardController extends Controller
             $arrScoreEva = [];
             foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
                 foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float)$subCriterias[0]->sum_score;
-                    $ratio = (float)$subCriterias[0]->ratio;
+                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
+                    $ratio = (float) $subCriterias[0]->ratio;
                     $SumMaxScoreSub = [];
                     $SumAccScoreSub = [];
                     foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float)$subCriteria->num_score, 2);
-                        $score = round((float)$subCriteria->score, 2);
+                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
+                        $score = round((float) $subCriteria->score, 2);
                         if ($maxScorePerSub > 0) {
                             $SumMaxScoreSub[] = $maxScorePerSub;
                             $SumAccScoreSub[] = $score;
@@ -324,7 +320,7 @@ class DashboardController extends Controller
 
             $scatterData[] = [
                 'x' => $i++,
-                'y' => round($totalScore, 2)
+                'y' => round($totalScore, 2),
             ];
         }
 
@@ -375,10 +371,10 @@ class DashboardController extends Controller
                 $evalListId = $subCriteria->evaluation_list_id;
                 $mainCriteriaId = $subCriteria->quality_main_criteria_id;
 
-                if (!isset($groupedMainCriterias[$evalListId])) {
+                if (! isset($groupedMainCriterias[$evalListId])) {
                     $groupedMainCriterias[$evalListId] = [];
                 }
-                if (!isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
+                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
                     $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
                 }
 
@@ -387,13 +383,13 @@ class DashboardController extends Controller
             $arrScoreEva = [];
             foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
                 foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float)$subCriterias[0]->sum_score;
-                    $ratio = (float)$subCriterias[0]->ratio;
+                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
+                    $ratio = (float) $subCriterias[0]->ratio;
                     $SumMaxScoreSub = [];
                     $SumAccScoreSub = [];
                     foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float)$subCriteria->num_score, 2);
-                        $score = round((float)$subCriteria->score, 2);
+                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
+                        $score = round((float) $subCriteria->score, 2);
                         if ($maxScorePerSub > 0) {
                             $SumMaxScoreSub[] = $maxScorePerSub;
                             $SumAccScoreSub[] = $score;
@@ -411,18 +407,18 @@ class DashboardController extends Controller
             $qualityScore = array_sum($arrScoreEva);
 
             $reports_score[] = [
-                "assignment_data_id" => $report->assignment_data_id,
-                "start_time" => $report->start_time,
-                "end_time" => $report->end_time,
-                "evaluatee_department_id" => $report->evaluatee_department_id,
-                "evaluatee_id" => $report->evaluatee_id,
-                "evaluatee_name" => $report->evaluatee_name,
-                "evaluatee_personnel_type" => $report->evaluatee_personnel_type,
-                "evaluatee_position_id" => $report->evaluatee_position_id,
-                "evaluatee_position_name" => $report->evaluatee_position_name,
-                "evaluatee_department_name" => $report->evaluatee_department_name,
-                "evaluator_id" => $report->evaluator_id,
-                "evaluator_name" => $report->evaluator_name,
+                'assignment_data_id' => $report->assignment_data_id,
+                'start_time' => $report->start_time,
+                'end_time' => $report->end_time,
+                'evaluatee_department_id' => $report->evaluatee_department_id,
+                'evaluatee_id' => $report->evaluatee_id,
+                'evaluatee_name' => $report->evaluatee_name,
+                'evaluatee_personnel_type' => $report->evaluatee_personnel_type,
+                'evaluatee_position_id' => $report->evaluatee_position_id,
+                'evaluatee_position_name' => $report->evaluatee_position_name,
+                'evaluatee_department_name' => $report->evaluatee_department_name,
+                'evaluator_id' => $report->evaluator_id,
+                'evaluator_name' => $report->evaluator_name,
                 'report_id' => $report->report_id,
                 'status' => $report->report_status,
                 'created_at' => date('Y-m-d', strtotime($report->report_created_at)),
@@ -432,13 +428,14 @@ class DashboardController extends Controller
                 'score' => round($quantityScore + $qualityScore, 2),
             ];
         }
+
         return $reports_score;
     }
 
     private function getEvaluationPeriod($startDate, $endDate)
     {
         if ($startDate && $endDate) {
-            return Carbon::parse($startDate)->format('M d, Y') . ' - ' . Carbon::parse($endDate)->format('M d, Y');
+            return Carbon::parse($startDate)->format('M d, Y').' - '.Carbon::parse($endDate)->format('M d, Y');
         }
 
         return 'All Periods';
