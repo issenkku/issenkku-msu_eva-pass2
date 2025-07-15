@@ -45,16 +45,16 @@ class EvaluationScoreController extends Controller
             ]);
 
             $validated = $request->validate([
-                'quantity_list' => 'required|array',
-                'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
+                'quantity_list' => 'nullable|array',
+                'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
                 
-                'quality_list' => 'required|array',
-                'quality_list.*.quality_sub_criteria_id' => 'required|integer|exists:quality_sub_criterias,id',
+                'quality_list' => 'nullable|array',
+                'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric',
                 
-                'evidence_list' => 'required|array',
-                'evidence_list.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
+                'evidence_list' => 'nullable|array',
+                'evidence_list.*.evaluation_list_id' => 'nullable|integer|exists:evaluation_lists,id',
                 'evidence_list.*.link' => 'nullable|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
@@ -67,47 +67,49 @@ class EvaluationScoreController extends Controller
             QualityScore::where('report_id', $reportId)->delete();
             EvidenceAnswer::where('report_id', $reportId)->delete();
 
-            // Create fresh records
-            foreach ($validated['quantity_list'] as $item) {
-                $subCriteriaId = is_array($item['quantity_sub_criteria_id']) 
-                    ? $item['quantity_sub_criteria_id'][0] 
-                    : (int) $item['quantity_sub_criteria_id'];
-                    
-                $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
-                $scoreC = $item['score_C'] ?? null;
+            if (isset($validated['quantity_list'])) {
+                foreach ($validated['quantity_list'] as $item) {
+                    $subCriteriaId = is_array($item['quantity_sub_criteria_id']) 
+                        ? $item['quantity_sub_criteria_id'][0] 
+                        : (int) $item['quantity_sub_criteria_id'];
 
-                if ($scoreC === null) {
-                    continue; // skip this item
+                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $scoreC = $item['score_C'] ?? null;
+
+                    if ($scoreC === null) {
+                        continue;
+                    }
+
+                    $scoreD = null;
+                    if ($subCriteria && $subCriteria->score_b != 0) {
+                        $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
+                    }
+
+                    QuantityScore::create([
+                        'quantity_sub_criteria_id' => $subCriteriaId,
+                        'report_id' => $reportId,
+                        'score_C' => $scoreC,
+                        'score_D' => $scoreD,
+                    ]);
                 }
-
-                $scoreD = null;
-                if ($scoreC !== null && $subCriteria && $subCriteria->score_b != 0) {
-                    $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
-                }
-
-                QuantityScore::create([
-                    'quantity_sub_criteria_id' => $subCriteriaId,
-                    'report_id' => $reportId,
-                    'score_C' => $scoreC,
-                    'score_D' => $scoreD,
-                ]);
             }
 
-            foreach ($validated['quality_list'] as $item) {
-                $score = $item['score'] ?? null;
+            // ✅ Quality loop with check
+            if (isset($validated['quality_list'])) {
+                foreach ($validated['quality_list'] as $item) {
+                    $score = $item['score'] ?? null;
+                    if ($score === null) continue;
 
-                if ($score === null) {
-                    continue; // skip this item
+                    $subCriteriaId = is_array($item['quality_sub_criteria_id']) 
+                        ? $item['quality_sub_criteria_id'][0] 
+                        : (int) $item['quality_sub_criteria_id'];
+
+                    QualityScore::create([
+                        'quality_sub_criteria_id' => $subCriteriaId,
+                        'report_id' => $reportId,
+                        'score' => $score,
+                    ]);
                 }
-                $subCriteriaId = is_array($item['quality_sub_criteria_id']) 
-                    ? $item['quality_sub_criteria_id'][0] 
-                    : (int) $item['quality_sub_criteria_id'];
-
-                QualityScore::create([
-                    'quality_sub_criteria_id' => $subCriteriaId,
-                    'report_id' => $reportId,
-                    'score' => $item['score'] ?? null,
-                ]);
             }
 
             foreach ($validated['evidence_list'] as $item) {

@@ -269,7 +269,7 @@
     <div class="min-h-screen bg-gray-50">
         <!-- Header -->
         <header class="bg-black shadow-sm">
-            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center ">
                 <h1 class="text-lg font-semibold text-white">
                     ระบบประเมินบุคลากร
                 </h1>

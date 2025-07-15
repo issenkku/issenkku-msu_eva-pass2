@@ -75,6 +75,7 @@ class DashboardEvaluateeController extends Controller
         $assessmentType = $assignment && $assignment->report->reportData ? $assignment->report->reportData->assessment_type : 'ไม่พบชื่อรายงาน';
         $startTimeFormatted = $startTime ? $formatThai($startTime) : '-';
         $endTimeFormatted = $endTime ? $formatThai($endTime) : '-';
+        $reportComment = $assignment && $assignment->report->reportData ? $assignment->report->reportData->comment : '-';
 
         $criteriaVersion = $assignment->report->reportData->criteriaVersion ?? null;
         $quantityMainCriterias = $criteriaVersion ? $criteriaVersion->quantityMainCriterias : collect();
