@@ -64,12 +64,16 @@ Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->grou
 
 Route::middleware(['auth:sanctum', 'role:ผู้รับการประเมิน'])->group(function () {
     Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
-    Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
+});
+
+Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|ผู้รับการประเมิน'])->group(function () {
+    Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
 });
 
 Route::middleware('guest')->group(function () {

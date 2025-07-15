@@ -281,7 +281,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors" onclick="openReportDetails('{{ $report['report_id'] }}')">
                                             ดูรายละเอียด
                                         </button>
                                     </td>
@@ -542,6 +542,10 @@
                 // Hide loading indicator
                 document.getElementById('loading-state').style.display = 'none';
             }, 1000);
+        }
+
+        function openReportDetails(reportId) {
+            window.open(`/dashboard/${reportId}`, '_blank') ;
         }
     </script>
 @endpush
