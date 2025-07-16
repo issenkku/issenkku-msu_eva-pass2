@@ -34,7 +34,7 @@ class ReportController extends Controller
     public function show($id)
     {
         try {
-            $report = Report::with(['quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+            $report = Reports::with(['assignments','quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -111,18 +111,9 @@ class ReportController extends Controller
         }
     }
 
-    protected function validateStatus(Request $request)
-    {
-        if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
-            abort(response()->json([
-                'message' => 'Invalid status value',
-                'errors' => [
-                    'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
-                ]
-            ], 422));
-        }
-    }
-
+    /**
+     * ตรวจสอบว่า report อยู่ในสถานะที่สามารถแก้ไขได้หรือไม่
+     */
     protected function checkReportEditableStatus(Reports $report, $action)
     {
         if (! in_array($report->status, $this->allowedEditStatuses)) {
