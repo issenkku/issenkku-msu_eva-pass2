@@ -383,7 +383,7 @@ class EvaluatorController extends Controller
 
     public function update(Request $request, $id)
     {
-        \Log::info('Update evaluation scores for report ID: '.$id);
+        // \Log::info('Update evaluation scores for report ID: '.$id);
         $validated = $request->validate([
             'scores' => 'required|array',
             'scores.*' => 'required|numeric|min:0',
