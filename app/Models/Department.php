@@ -9,7 +9,7 @@ class Department extends Model
 {
     protected $fillable = [
         'department_name',
-        'faculty',
+        //'faculty',
     ];
 
     public function user()

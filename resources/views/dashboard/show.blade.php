@@ -256,7 +256,7 @@
 
         <!-- Back Button -->
         <div class="action-section">
-            <button type="button" class="btn-back" onclick="window.location='{{ route('evaluator.index') }}'"> <i
+            <button type="button" class="btn-back" onclick="window.location='{{ route('dashboard') }}'"> <i
                     class="fas fa-arrow-left"></i>
                 ย้อนกลับ</button>
         </div>

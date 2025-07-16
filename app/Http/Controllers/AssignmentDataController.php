@@ -250,7 +250,7 @@ class AssignmentDataController extends Controller
 
         \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
             $message->to($user->email, $user->name)
-                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+                ->subject('แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน');
         });
     }
 }

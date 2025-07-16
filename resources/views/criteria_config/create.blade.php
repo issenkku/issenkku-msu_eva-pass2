@@ -57,10 +57,10 @@
                             </div>
                             <div>
                                 <label for="comment"
-                                    class="block text-sm font-medium text-gray-700 mb-2">ความคิดเห็นเพิ่มเติม</label>
+                                    class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
                                 <input id="comment"
                                     class="comment border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
-                                    placeholder="ความคิดเห็นเพิ่มเติม">
+                                    placeholder="หมายเหตุ">
                             </div>
                         </div>
                     </div>

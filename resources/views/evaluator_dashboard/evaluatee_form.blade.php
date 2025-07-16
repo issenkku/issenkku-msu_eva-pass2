@@ -421,6 +421,7 @@
                         });
                         
                         form.submit();
+                        //window.location.href = "/evaluator-dashboard"; // Redirect ไปยังหน้า index
                     }
                 });
 
