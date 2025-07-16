@@ -80,7 +80,7 @@ public function create()
                 'end_time' => $request->end_time,
             ]);
 
-            foreach ($request->assignments as $item) {
+            foreach ($request->assignments as $assignmentItem) {
                 $report = Reports::create([
                     'report_data_id' => $assignmentItem['report_data_id'],
                     'status' => 'assigned',
@@ -89,8 +89,8 @@ public function create()
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $item['evaluatee'],
-                    'evaluator' => $item['evaluator'],
+                    'evaluatee' => $assignmentItem['evaluatee'],
+                    'evaluator' => $assignmentItem['evaluator'],
                 ]);
 
                 // Send email notification for each report created
@@ -178,7 +178,7 @@ public function create()
 
             $assignmentData->assignments()->delete();
 
-            foreach ($request->assignments as $item) {
+            foreach ($request->assignments as $assignmentItem) {
                 $report = Reports::create([
                     'report_data_id' => $assignmentItem['report_data_id'],
                     'status' => 'assigned',
@@ -187,8 +187,8 @@ public function create()
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $item['evaluatee'],
-                    'evaluator' => $item['evaluator'],
+                    'evaluatee' => $assignmentItem['evaluatee'],
+                    'evaluator' => $assignmentItem['evaluator'],
                 ]);
             }
 
