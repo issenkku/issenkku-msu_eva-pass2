@@ -45,6 +45,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if ($user->status === 'inactive') {
+            return response()->json([
+                'message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'
+            ], 413);
+        }
+
         RateLimiter::clear($key);
 
         Auth::login($user);
