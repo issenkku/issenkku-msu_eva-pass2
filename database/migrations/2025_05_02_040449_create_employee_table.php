@@ -57,7 +57,7 @@ return new class extends Migration
 
         Schema::create('user_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->text('action');
             $table->timestamp('action_timestamp');
         });
