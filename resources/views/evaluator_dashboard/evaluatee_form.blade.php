@@ -282,7 +282,7 @@
             <div class="action-section">
                 <button type="button" class="btn-back secondary"
                     onclick="window.location='{{ route('evaluator.index') }}'">ยกเลิก</button>
-                <button type="button" class="btn-back primary" onclick="confirmSubmit()">บันทึกข้อมูล</button>
+                <button type="button" class="btn-back primary" onclick="confirmSubmit()">รับรองผลการประเมิน</button>
                 <button type="button" class="btn-back warning" onclick="confirmReject()">ไม่อนุมัติ</button>
             </div>
     </form>
