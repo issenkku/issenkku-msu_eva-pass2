@@ -95,7 +95,7 @@ class UserSeeder extends Seeder
                 "name" => "test manager 006",
                 "employee_id" => "006",
                 "password" => Hash::make("password006"),
-                "email" => "evaluatee2@gmail.com",
+                "email" => "manager@gmail.com",
                 "phone" => "084-632-32847",
                 "personnel_type" => "สนับสนุน",
                 "bio" => null,

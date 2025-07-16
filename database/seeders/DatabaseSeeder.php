@@ -22,7 +22,6 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             CompleteDataSeeder::class,
             // ReportStructureSeeder::class,
-            ReportStructureSeederReal::class,
             // ReportSeeder::class,
             AssignmentPerReportSeeder::class,
         ]);

@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\AssignmentData;
-use App\Models\Report;
+use App\Models\Reports;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,7 +21,7 @@ class AssignmentFactory extends Factory
     {
         return [
             'assignment_data_id' => AssignmentData::factory(),
-            'report_id' => Report::factory(),
+            'report_id' => Reports::factory(),
             'evaluatee' => User::factory(),
             'evaluator' => User::factory(),
         ];
