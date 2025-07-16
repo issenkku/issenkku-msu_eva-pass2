@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\Category;
 use App\Models\Department;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Models\User;
-use App\Models\Assignments;
-use App\Models\Category;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller

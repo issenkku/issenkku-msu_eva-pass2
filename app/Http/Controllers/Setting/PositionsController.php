@@ -24,7 +24,7 @@ class PositionsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            //'description' => 'nullable|string|max:500',
+            // 'description' => 'nullable|string|max:500',
         ]);
 
         // ตรวจสอบชื่อตำแหน่งซ้ำ
@@ -38,7 +38,7 @@ class PositionsController extends Controller
 
         Positions::create([
             'name' => $request->name,
-            //'description' => $request->description,
+            // 'description' => $request->description,
         ]);
 
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
@@ -51,7 +51,7 @@ class PositionsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            //'description' => 'nullable|string|max:500',
+            // 'description' => 'nullable|string|max:500',
         ]);
 
         // ตรวจสอบชื่อตำแหน่งซ้ำ (ยกเว้นตัวเอง)
@@ -68,7 +68,7 @@ class PositionsController extends Controller
         $positions = Positions::findOrFail($id);
         $positions->update([
             'name' => $request->name,
-            //'description' => $request->description,
+            // 'description' => $request->description,
         ]);
 
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');

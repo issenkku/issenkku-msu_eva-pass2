@@ -32,7 +32,8 @@ class ReportController extends Controller
     public function show($id)
     {
         try {
-            $report = Reports::with(['assignments','quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+            $report = Reports::with(['assignments', 'quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);

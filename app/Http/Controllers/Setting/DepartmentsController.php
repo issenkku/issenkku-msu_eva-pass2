@@ -27,7 +27,7 @@ class DepartmentsController extends Controller
     {
         $request->validate([
             'department_name' => 'required|string|max:255',
-            //'faculty' => 'required|string|max:255',
+            // 'faculty' => 'required|string|max:255',
         ]);
 
         // ตรวจสอบชื่อภาควิชาซ้ำ
@@ -41,7 +41,7 @@ class DepartmentsController extends Controller
 
         Departments::create([
             'department_name' => $request->department_name,
-            //'faculty' => $request->faculty,
+            // 'faculty' => $request->faculty,
         ]);
 
         return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
@@ -54,7 +54,7 @@ class DepartmentsController extends Controller
     {
         $request->validate([
             'department_name' => 'required|string|max:255',
-            //'faculty' => 'required|string|max:255',
+            // 'faculty' => 'required|string|max:255',
         ]);
 
         // ตรวจสอบชื่อภาควิชาซ้ำ (ยกเว้นตัวเอง)
@@ -71,7 +71,7 @@ class DepartmentsController extends Controller
         $department = Departments::findOrFail($id);
         $department->update([
             'department_name' => $request->department_name,
-            //'faculty' => $request->faculty,
+            // 'faculty' => $request->faculty,
         ]);
 
         return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');

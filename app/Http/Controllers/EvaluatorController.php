@@ -8,7 +8,6 @@ use App\Models\QualityScore;
 use App\Models\Reports;
 use App\Models\User;
 use Carbon\Carbon;
-use Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

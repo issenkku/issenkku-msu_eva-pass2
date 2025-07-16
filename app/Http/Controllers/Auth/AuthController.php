@@ -47,7 +47,7 @@ class AuthController extends Controller
 
         if ($user->status === 'inactive') {
             return response()->json([
-                'message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'
+                'message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
             ], 413);
         }
 

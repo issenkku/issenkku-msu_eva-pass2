@@ -70,7 +70,7 @@ Route::middleware(['auth:sanctum', 'role:ผู้รับการประเ
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    //Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
+    // Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
 });
 
