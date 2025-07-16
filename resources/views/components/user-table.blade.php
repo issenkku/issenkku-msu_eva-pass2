@@ -17,7 +17,7 @@
     </td>
     <td class="p-4 text-center">{{ $employee['contact'] }}</td>
     <td class="p-4 text-center space-x-2">
-        <x-button type="primary" text="แก้ไข" class="text-sm" 
+        <x-button type="warning" text="แก้ไข" class="text-sm" 
             onclick='openEditModal({
                 id: {{ $employee["id"] }},
                 prefix: "{{ $employee["prefix"] ?? "" }}",

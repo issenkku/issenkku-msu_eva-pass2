@@ -134,16 +134,13 @@
                         <div class="evidence-box">
                             <h6>ลิงก์หลักฐาน:</h6>
                             <ul>
-                                @foreach ($quantityLists as $list)
-                                    @foreach ($list->quantitySubCriterias as $criteria)
-                                        @if (!empty($criteria->evidence_link))
-                                            <li>
-                                                {{ $criteria->name }}:
-                                                <a href="{{ $criteria->evidence_link }}" target="_blank">ดูหลักฐาน</a>
-                                            </li>
-                                        @endif
-                                    @endforeach
-                                @endforeach
+                                @if (!empty($quantityLists[0]->quantitySubCriterias[0]->evidence_link))
+                                    <li>
+                                        <a href="{{ $quantityLists[0]->quantitySubCriterias[0]->evidence_link }}" target="_blank">ดูหลักฐาน</a>
+                                    </li>
+                                @else
+                                    <li>ไม่มีหลักฐาน</li>
+                                @endif
                             </ul>
                         </div>
                     </div>
@@ -156,46 +153,92 @@
                 @endphp
 
                 @if ($qualityLists->isNotEmpty())
-                    <div class="criteria-section quality-section">
-                        <div class="criteria-header">
-                            <h5>คุณภาพการสอน</h5>
-                            <span class="criteria-subtitle">ประเมินจากนักศึกษาและการสังเกตการสอน</span>
-                        </div>
-                        <div class="table-container">
-                            <table class="evaluation-table">
-                                <thead>
-                                    <tr>
-                                        <th>ชื่อเกณฑ์ย่อย</th>
-                                        <th>ลิงก์หลักฐาน</th>
-                                        <th>คะแนนเต็ม</th>
-                                        <th>คะแนนที่ให้</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($qualityLists as $list)
-                                        @foreach ($list->qualitySubCriterias as $criteria)
-                                            <tr>
-                                                <td class="text-left">{{ $criteria->name }}</td>
-                                                <td>
-                                                    @if (!empty($criteria->evidence_link))
-                                                        <a href="{{ $criteria->evidence_link }}"
-                                                            target="_blank">ดูหลักฐาน</a>
-                                                    @else
-                                                        -
-                                                    @endif
-                                                </td>
-                                                <td>{{ number_format($criteria->num_score, 2) }}</td>
-
-                                                <td>
-                                                    {{ is_numeric($criteria->filled_score) ? number_format($criteria->filled_score, 2) : '-' }}
-                                                </td>
-                                            </tr>
+                    @foreach ($qualityLists as $listcard)
+                        <div class="criteria-section quality-section">
+                            <div class="criteria-header">
+                                <h5>{{$listcard->name}}</h5>
+                                <span class="criteria-subtitle">{{$listcard->annotation}}</span>
+                            </div>
+                            <div class="table-container">
+                                <table class="evaluation-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ชื่อเกณฑ์ย่อย</th>
+                                            {{-- <th>ลิงก์หลักฐาน</th> --}}
+                                            <th>คะแนนเต็ม</th>
+                                            <th>คะแนนที่ให้</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $current_main_id = "";
+                                        @endphp
+                                        @foreach ($listcard->qualitySubCriterias as $list_eva)
+                                                @php
+                                                    $main_id = $list_eva->mainCriteria->id;
+                                                @endphp
+                                                @if ($list_eva->quality_main_criteria_id === $current_main_id)
+                                                    <tr>
+                                                        <td class="text-left">{{ $list_eva->name }}</td>
+                                                        {{-- <td>
+                                                            @if (!empty($list_eva->evidence_link))
+                                                                <a href="{{ $list_eva->evidence_link }}"
+                                                                    target="_blank">ดูหลักฐาน</a>
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td> --}}
+                                                        <td>{{ number_format($list_eva->num_score, 2) }}</td>
+        
+                                                        <td>
+                                                            {{ is_numeric($list_eva->filled_score) ? number_format($list_eva->filled_score, 2) : '-' }}
+                                                        </td>
+                                                    </tr>
+                                                @else
+                                                @php
+                                                    $current_main_id = $main_id;
+                                                @endphp
+                                                    <tr class="bg-lime-100">
+                                                        <td class="text-left">{{$list_eva->mainCriteria->name}}</td>
+                                                        {{-- <td></td> --}}
+                                                        <td></td>
+                                                        <td></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="text-left">{{ $list_eva->name }}</td>
+                                                        {{-- <td>
+                                                            @if (!empty($list_eva->evidence_link))
+                                                                <a href="{{ $list_eva->evidence_link }}"
+                                                                    target="_blank">ดูหลักฐาน</a>
+                                                            @else
+                                                                -
+                                                            @endif
+                                                        </td> --}}
+                                                        <td>{{ number_format($list_eva->num_score, 2) }}</td>
+        
+                                                        <td>
+                                                            {{ is_numeric($list_eva->filled_score) ? number_format($list_eva->filled_score, 2) : '-' }}
+                                                        </td>
+                                                    </tr>
+                                                @endif
                                         @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="evidence-box">
+                                <h6>ลิงก์หลักฐาน:</h6>
+                                <ul>
+                                    @if (!empty($listcard->qualitySubCriterias[0]->evidence_link))
+                                        <li>
+                                            <a href="{{ $listcard->qualitySubCriterias[0]->evidence_link }}" target="_blank">ดูหลักฐาน</a>
+                                        </li>
+                                    @else
+                                        <li>ไม่มีหลักฐาน</li>
+                                    @endif
+                                </ul>
+                            </div>
+                        </div>  
+                    @endforeach
                 @endif
             </div>
         @endforeach

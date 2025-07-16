@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class AssignmentData extends Model
 {
     use HasFactory;
+
     protected $table = 'assignment_datas';
+
     protected $fillable = [
         'start_time',
         'end_time',

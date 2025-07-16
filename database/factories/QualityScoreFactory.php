@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\QualitySubCriteria;
-use App\Models\Report;
+use App\Models\Reports;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\QualityScore>
@@ -19,9 +19,9 @@ class QualityScoreFactory extends Factory
     public function definition(): array
     {
         return [
-            'score' => fake()->randomFloat(2, 1, 10),
+            'score' => fake()->randomFloat(2, 1, 6),
             'quality_sub_criteria_id' => QualitySubCriteria::inRandomOrder()->first()?->id,
-            'report_id' => Report::inRandomOrder()->first()?->id,
+            'report_id' => Reports::inRandomOrder()->first()?->id,
         ];
     }
 }

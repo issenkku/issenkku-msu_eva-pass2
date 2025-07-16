@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Reports extends Model
 {
+    use HasFactory;
+
     protected $table = 'reports';
 
-    use HasFactory;
     protected $fillable = [
         'report_data_id',
         'status',
@@ -40,5 +41,10 @@ class Reports extends Model
     public function evidenceAnswers()
     {
         return $this->hasMany(EvidenceAnswer::class);
+    }
+
+    public function assignments()
+    {
+        return $this->hasOne(Assignments::class, 'report_id');
     }
 }

@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\ReportData;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Report>
  */
-class ReportFactory extends Factory
+class ReportsFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,12 +17,7 @@ class ReportFactory extends Factory
      */
     public function definition(): array
     {
-        $status = [
-            'Assigned',
-            'Draft',
-            'Pending',
-            'Completed'
-        ];
+        $status = ['Assigned', 'Draft', 'Pending', 'Completed'];
 
         return [
             'status' => fake()->randomElement($status),

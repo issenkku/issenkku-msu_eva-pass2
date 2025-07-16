@@ -23,11 +23,130 @@
                 <div class="flex justify-center py-10 text-gray-500">Loading...</div>
             </div>
         </form>
+        <div id="update-success-alert" class="hidden fixed top-8 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50 text-lg font-semibold">
+            อัปเดตข้อมูลสำเร็จ
+        </div>
     </div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         fetchVersionDetails();
+        document.getElementById('editVersionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const url = form.action;
+            const formData = new FormData(form);
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: formData,
+                credentials: 'same-origin'
+            })
+            .then(res => {
+                if (res.ok) return res.json();
+                return res.json().then(data => { throw data; });
+            })
+            .then(data => {
+                showSuccessModal('อัปเดตข้อมูลสำเร็จ', function() {
+                    window.location.href = "{{ route('criteria_config.index') }}";
+                });
+            })
+            .catch(err => {
+                let msg = 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล';
+                if (err && err.errors && err.errors.version_name) {
+                    msg = err.errors.version_name[0];
+                }
+                showErrorModal(msg);
+            });
+    // Modal-based alert for success
+    function showSuccessModal(message, onClose) {
+        let modal = document.getElementById('custom-alert-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'custom-alert-modal';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+            modal.style.background = 'rgba(0,0,0,0.6)';
+            modal.innerHTML = `
+                <div id="custom-alert-box" class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
+                    <div class="flex justify-center mb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
+                            <svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold mb-2 text-green-600">สำเร็จ</div>
+                    <div class="mb-4 text-gray-700">${message}</div>
+                    <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        } else {
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+            modal.style.background = 'rgba(0,0,0,0.6)';
+            modal.querySelector('#custom-alert-box').className = `bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in`;
+            modal.querySelector('#custom-alert-box').innerHTML = `
+                <div class="flex justify-center mb-4">
+                    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-100">
+                        <svg class=\"w-7 h-7 text-green-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M5 13l4 4L19 7\"/></svg>
+                    </span>
+                </div>
+                <div class="text-lg font-semibold mb-2 text-green-600">สำเร็จ</div>
+                <div class="mb-4 text-gray-700">${message}</div>
+                <button id=\"custom-alert-ok\" class=\"mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none\">ตกลง</button>
+            `;
+            modal.style.display = '';
+        }
+        modal.querySelector('#custom-alert-ok').onclick = function() {
+            modal.style.display = 'none';
+            if (typeof onClose === 'function') onClose();
+        };
+    }
+
+    // Modal-based alert for error
+    function showErrorModal(message) {
+        let modal = document.getElementById('custom-alert-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'custom-alert-modal';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+            modal.style.background = 'rgba(0,0,0,0.6)';
+            modal.innerHTML = `
+                <div id="custom-alert-box" class="bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in">
+                    <div class="flex justify-center mb-4">
+                        <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                            <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </span>
+                    </div>
+                    <div class="text-lg font-semibold mb-2 text-red-600">เกิดข้อผิดพลาด</div>
+                    <div class="mb-4 text-gray-700">${message}</div>
+                    <button id="custom-alert-ok" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ตกลง</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        } else {
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center';
+            modal.style.background = 'rgba(0,0,0,0.6)';
+            modal.querySelector('#custom-alert-box').className = `bg-white rounded-lg shadow-2xl max-w-sm w-full p-6 text-center animate-fade-in`;
+            modal.querySelector('#custom-alert-box').innerHTML = `
+                <div class="flex justify-center mb-4">
+                    <span class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100">
+                        <svg class=\"w-7 h-7 text-red-500\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M6 18L18 6M6 6l12 12\"/></svg>
+                    </span>
+                </div>
+                <div class="text-lg font-semibold mb-2 text-red-600">เกิดข้อผิดพลาด</div>
+                <div class="mb-4 text-gray-700">${message}</div>
+                <button id=\"custom-alert-ok\" class=\"mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none\">ตกลง</button>
+            `;
+            modal.style.display = '';
+        }
+        modal.querySelector('#custom-alert-ok').onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
+        });
     });
     function fetchVersionDetails() {
         const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}";
@@ -52,6 +171,7 @@
             document.getElementById('criteria-details').innerHTML = '<div class="text-center text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</div>';
         });
     }
+    // showSuccessAlert() ไม่จำเป็นอีกต่อไป เพราะ redirect ไปหน้า index พร้อม query success=1
     function renderVersionDetails(data) {
         let html = '';
         html += `<div class="bg-white rounded-lg shadow-lg p-8 mb-8">

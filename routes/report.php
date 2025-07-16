@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ReportStructureController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportStructureController;
+use Illuminate\Support\Facades\Route;
 
 // Report Structure API (for criteria version CRUD)
 Route::prefix('report-version')->name('report-structure.')->group(function () {
@@ -14,18 +14,20 @@ Route::prefix('report-version')->name('report-structure.')->group(function () {
 });
 
 // Criteria Config UI routes (for Blade views)
-Route::get('/criteria-config', function () {
-    return view('criteria_config.index');
-})->name('criteria_config.index');
-Route::get('/criteria-configs', function () {
-    return view('criteria_config.create');
-})->name('criteria_config.create');
-Route::get('/criteria-config/{id}/edit', function($id) {
-    return view('criteria_config.edit', ['id' => $id]);
-})->name('criteria_config.edit');
-Route::get('/criteria-evaluators', function () {
-    return view('criteria_config.evaluators');
-})->name('criteria_config.evaluators');
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::get('/criteria-config', function () {
+        return view('criteria_config.index');
+    })->name('criteria_config.index');
+    Route::get('/criteria-configs', function () {
+        return view('criteria_config.create');
+    })->name('criteria_config.create');
+    Route::get('/criteria-config/{id}/edit', function ($id) {
+        return view('criteria_config.edit', ['id' => $id]);
+    })->name('criteria_config.edit');
+    Route::get('/criteria-evaluators', function () {
+        return view('criteria_config.evaluators');
+    })->name('criteria_config.evaluators');
+});
 
 Route::prefix('reports')->name('reports.')->group(function () {
     // Reports CRUD

@@ -58,7 +58,7 @@
             axios.post('/login', { employee_id, password })
                 .then(response => {
                     localStorage.setItem('token', response.data.token);
-                    window.location.href = response.data.redirect || '/users';
+                    window.location.href = response.data.redirect;
                 })
                 .catch(error => {
                     const message = error.response?.data?.message || 'เข้าสู่ระบบไม่สำเร็จ';

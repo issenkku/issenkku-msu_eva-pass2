@@ -11,7 +11,7 @@ class Evaluator extends Model
 
     protected $fillable = [
         'assignment_id',
-        'user_id'
+        'user_id',
     ];
 
     public function assignment(): BelongsTo

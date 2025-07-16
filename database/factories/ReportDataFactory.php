@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\CriteriaVersion;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
@@ -19,7 +19,7 @@ class ReportDataFactory extends Factory
     {
         $assessment_type_arr = [
             'สายวิชาการ',
-            'สายสนับสนุน'
+            'สายสนับสนุน',
         ];
 
         return [

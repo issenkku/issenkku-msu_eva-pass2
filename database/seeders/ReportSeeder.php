@@ -2,15 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-;
-use App\Models\EvidenceAnswer;
 use App\Models\EvaluationList;
-use App\Models\QuantitySubCriteria;
-use App\Models\QuantityScore;
-use App\Models\QualitySubCriteria;
+use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
+use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use Illuminate\Database\Seeder;
 
 class ReportSeeder extends Seeder
 {
@@ -34,7 +33,7 @@ class ReportSeeder extends Seeder
         foreach ($evaluationLists as $evaluationList) {
             EvidenceAnswer::factory()->create([
                 'evaluation_list_id' => $evaluationList->id,
-                'report_id'          => $report->id,
+                'report_id' => $report->id,
             ]);
         }
 
@@ -43,7 +42,7 @@ class ReportSeeder extends Seeder
         foreach ($quantitySubs as $qsub) {
             QuantityScore::factory()->create([
                 'quantity_sub_criteria_id' => $qsub->id,
-                'report_id'                => $report->id,
+                'report_id' => $report->id,
             ]);
         }
 
@@ -52,7 +51,7 @@ class ReportSeeder extends Seeder
         foreach ($qualitySubs as $qsub) {
             QualityScore::factory()->create([
                 'quality_sub_criteria_id' => $qsub->id,
-                'report_id'               => $report->id,
+                'report_id' => $report->id,
             ]);
         }
     }

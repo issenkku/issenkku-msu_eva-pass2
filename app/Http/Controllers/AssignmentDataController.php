@@ -23,34 +23,28 @@ class AssignmentDataController extends Controller
             'assignments.report',
         ])->get();
 
-        $users = User::all();
-        $reportData = ReportData::all();
-        $departments = Departments::all();
+    $users = User::all();
+    $report_data = ReportData::all();
+    $departments = Departments::all();
 
-        return view('assignment-data.create', [
-            'assignmentData' => $assignmentData,
-            'users' => $users,
-            'report_data' => $reportData,
-            'departments' => $departments,
-            'evaluatees' => $users,
-            'evaluators' => $users,
-        ]);
-    }
+    $evaluatees = $users;
+    $evaluators = $users;
 
-    public function create()
-    {
-        $users = User::all();
-        $reportData = ReportData::all();
-        $departments = Departments::all();
+    return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
+}
 
-        return view('assignment-data.create', [
-            'report_data' => $reportData,
-            'departments' => $departments,
-            'users' => $users,
-            'evaluatees' => $users,
-            'evaluators' => $users,
-        ]);
-    }
+public function create()
+{
+    $departments = Departments::all();
+    $report_data = ReportData::all();
+    $users = User::all();
+
+    $evaluatees = $users;
+    $evaluators = $users;
+
+    return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
+}
+
 
     public function store(Request $request)
     {
@@ -88,7 +82,7 @@ class AssignmentDataController extends Controller
 
             foreach ($request->assignments as $item) {
                 $report = Reports::create([
-                    'report_data_id' => $item['report_data_id'],
+                    'report_data_id' => $assignmentItem['report_data_id'],
                     'status' => 'assigned',
                 ]);
 
@@ -98,6 +92,9 @@ class AssignmentDataController extends Controller
                     'evaluatee' => $item['evaluatee'],
                     'evaluator' => $item['evaluator'],
                 ]);
+
+                // Send email notification for each report created
+                $this->sendEvaluationCompletedMail($report->id);
             }
 
             DB::commit();
@@ -123,12 +120,7 @@ class AssignmentDataController extends Controller
 
     public function show(AssignmentData $assignmentData)
     {
-        $assignmentData->load([
-            'assignments.evaluateeUser',
-            'assignments.evaluatorUser',
-            'assignments.report',
-        ]);
-
+        $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
         return response()->json($assignmentData);
     }
 
@@ -188,7 +180,7 @@ class AssignmentDataController extends Controller
 
             foreach ($request->assignments as $item) {
                 $report = Reports::create([
-                    'report_data_id' => $item['report_data_id'],
+                    'report_data_id' => $assignmentItem['report_data_id'],
                     'status' => 'assigned',
                 ]);
 
@@ -236,5 +228,40 @@ class AssignmentDataController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (! $report) {
+            return;
+        }
+
+        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (! $assignment) {
+            return;
+        }
+        $user = \App\Models\User::find($assignment->evaluatee);
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $evaluator_name = \App\Models\User::find($assignment->evaluator);
+        if (! $evaluator_name || ! $evaluator_name->email) {
+            return;
+        }
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+            'evaluator_name' => $evaluator_name->name,
+        ];
+
+        \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+        });
     }
 }

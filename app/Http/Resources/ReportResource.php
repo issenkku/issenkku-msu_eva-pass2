@@ -23,10 +23,10 @@ class ReportResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at?->format('Y-m-d'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'assignments' => new AssignmentResource($this->whenLoaded('assignments')),
             'quantity_scores' => QuantityScoreResource::collection($this->whenLoaded('quantityScores')),
             'quality_scores' => QualityScoreResource::collection($this->whenLoaded('qualityScores')),
             'evidence_answers' => EvidenceAnswerResource::collection($this->whenLoaded('evidenceAnswers')),
-            // ค่อยเพิ่ม resource อื่นๆ ที่ต้องการแสดงผลใน ReportResource นี้ เช่น จากตาราง ASSIGNMENTS หรือ ASSIGNMENTS
         ];
     }
 }

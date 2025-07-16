@@ -18,7 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/password/reset/send', [ProfileController::class, 'sendPasswordResetLink'])->name('password.reset.send');
 
-    Route::get('settings/appearance', function () {
-        return Inertia::render('settings/Appearance');
-    })->name('appearance');
+    // Route::get('settings/appearance', function () {
+    //     return Inertia::render('settings/Appearance');
+    // })->name('appearance');
 });

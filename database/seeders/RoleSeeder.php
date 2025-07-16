@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -15,12 +14,11 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        //create roles
+        // create roles
         $adminRole = Role::create(['name' => 'admin']);
         $managerRole = Role::create(['name' => 'ผู้บริหาร']);
         $evaluatorRole = Role::create(['name' => 'ผู้ประเมิน']);
-        $supportEvaluateeRole = Role::create(['name' => 'ผู้รับการประเมินฝ่ายสนับสนุน']);
-        $academicEvaluateeRole = Role::create(['name' => 'ผู้รับการประเมินฝ่ายวิชาการ']);
+        $evaluateeRole = Role::create(['name' => 'ผู้รับการประเมิน']);
 
         // Create permissions
         $dashboardPermission = Permission::create(['name' => 'Employee Dashboard']);
@@ -28,20 +26,16 @@ class RoleSeeder extends Seeder
         $employeeManageMentPermission = Permission::create(['name' => 'Employee Management']);
 
         // Assign permissions to roles
-        $adminRole->givePermissionTo(
-            $admindashboardPermission,
-            $employeeManageMentPermission
-        );
-        $supportEvaluateeRole->givePermissionTo($dashboardPermission);
-        $academicEvaluateeRole->givePermissionTo($dashboardPermission);
+        $adminRole->givePermissionTo($admindashboardPermission,
+            $employeeManageMentPermission);
+        $evaluateeRole->givePermissionTo($dashboardPermission);
 
-        $admin = User::find(1);
-        if ($admin) {
-            $admin->assignRole($adminRole);
-        }
-        $user = User::find(2);
-        if ($user) {
-            $user->assignRole($academicEvaluateeRole);
-        }
+        // Assign role to user
+        User::find(1)->assignRole($adminRole);
+        User::find(2)->assignRole($evaluatorRole);
+        User::find(3)->assignRole($evaluatorRole);
+        User::find(4)->assignRole($evaluateeRole);
+        User::find(5)->assignRole($evaluateeRole);
+        User::find(6)->assignRole($managerRole);
     }
 }

@@ -2,32 +2,39 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Report, QuantityScore, QualityScore, EvidenceAnswer, Reports};
+use App\Models\Report;
+use App\Models\QuantityScore;
+use App\Models\QualityScore;
+use App\Models\EvidenceAnswer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Resources\{
-    ReportResource,
-    ReportSummaryResource,
-    QuantityScoreResource,
-    QualityScoreResource,
-    EvidenceAnswerResource
-};
+
+use App\Http\Resources\ReportResource;
+use App\Http\Resources\ReportSummaryResource;
+use App\Http\Resources\QuantityScoreResource;
+use App\Http\Resources\QualityScoreResource;
+use App\Http\Resources\EvidenceAnswerResource;
 
 class ReportController extends Controller
 {
+    // สถานะที่อนุญาตให้แก้ไขข้อมูล
     protected $allowedEditStatuses = ['Assigned', 'Draft'];
 
     public function index()
     {
-        return ReportSummaryResource::collection(Reports::all());
+        $reports = Report::all();
+        return ReportSummaryResource::collection($reports);
     }
 
     public function show($id)
     {
         try {
-            $report = Reports::with(['quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
+            $report = Report::with(['quantityScores', 'qualityScores', 'evidenceAnswers'])->findOrFail($id);
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -37,37 +44,58 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         try {
-            $this->validateStatus($request);
+            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
+                return response()->json([
+                    'message' => 'Invalid status value',
+                    'errors' => [
+                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                    ]
+                ], 422);
+            }
 
             $validated = $request->validate([
                 'report_data_id' => 'required|integer|exists:report_datas,id',
-                'status'         => 'required|string|in:Assigned,Draft,Pending,Completed',
+                'status' => 'required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
-            $report = Reports::create($validated);
+            $report = Report::create($validated);
             return new ReportResource($report);
         } catch (ValidationException $e) {
-            return $this->validationErrorResponse($e);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         }
     }
 
     public function update(Request $request, $id)
     {
         try {
-            $report = Reports::findOrFail($id);
-            $this->validateStatus($request);
+            $report = Report::findOrFail($id);
+            if ($request->has('status') && !in_array($request->status, ['Assigned', 'Draft', 'Pending', 'Completed'])) {
+                return response()->json([
+                    'message' => 'Invalid status value',
+                    'errors' => [
+                        'status' => ['Status must be one of: Assigned, Draft, Pending, Completed']
+                    ]
+                ], 422);
+            }
 
             $validated = $request->validate([
                 'report_data_id' => 'sometimes|required|integer|exists:report_datas,id',
-                'status'         => 'sometimes|required|string|in:Assigned,Draft,Pending,Completed',
+                'status' => 'sometimes|required|string|in:ASSIGNED,DRAFT,PENDING,COMPLETED',
             ]);
 
             $report->update($validated);
+
             return new ReportResource($report);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
         } catch (ValidationException $e) {
-            return $this->validationErrorResponse($e);
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         }
     }
 
@@ -76,6 +104,7 @@ class ReportController extends Controller
         try {
             $report = Reports::findOrFail($id);
             $report->delete();
+
             return response()->json(['message' => 'Report deleted successfully']);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -96,9 +125,9 @@ class ReportController extends Controller
 
     protected function checkReportEditableStatus(Reports $report, $action)
     {
-        if (!in_array($report->status, $this->allowedEditStatuses)) {
+        if (! in_array($report->status, $this->allowedEditStatuses)) {
             return response()->json([
-                'message' => "Cannot {$action}. Report must be in Assigned or Draft status."
+                'message' => "Cannot {$action}. Report must be in ASSIGNED or DRAFT status.",
             ], 403);
         }
 
@@ -116,26 +145,29 @@ class ReportController extends Controller
     public function addQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'add Quantity score')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'add Quantity score');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
-                'quantity_list.*.score_D' => 'nullable|numeric',
             ]);
 
-            $created = collect($validated['quantity_list'])->map(function ($item) use ($reportId) {
-                return QuantityScore::create([
+            $created = [];
+            foreach ($validated['quantity_list'] as $item) {
+                $quantity_score = QuantityScore::create([
                     'quantity_sub_criteria_id' => $item['quantity_sub_criteria_id'],
                     'report_id' => $reportId,
-                    'score_C' => $item['score_C'] ?? null,
-                    'score_D' => $item['score_D'] ?? null,
+                    'score_C' => $scoreC,
+                    'score_D' => $scoreD,
                 ]);
-            });
-
-            return QuantityScoreResource::collection($created);
+                $created[] = $quantity_score;
+            }
+            return QuantityScoreResource::collection(collect($created));
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
         }
@@ -144,8 +176,11 @@ class ReportController extends Controller
     public function updateQuantityScores(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'update quantity scores')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'update quantity scores');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
@@ -163,7 +198,7 @@ class ReportController extends Controller
                     ->update([
                         'score_C' => $item['score_C'],
                         'score_D' => $item['score_D'],
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
 
                 if ($result) {
@@ -176,8 +211,8 @@ class ReportController extends Controller
 
             return response()->json([
                 'message' => 'Quantity scores updated successfully',
-                'updated' => $updated->count(),
-                'data' => QuantityScoreResource::collection($updated)
+                'updated' => count($updated),
+                'data' => QuantityScoreResource::collection(collect($updated))
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -186,11 +221,16 @@ class ReportController extends Controller
         }
     }
 
+
+    // POST /reports/{reportId}/quality-scores
     public function addQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'add Quality score')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'add Quality score');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'quality_list' => 'required|array',
@@ -204,9 +244,9 @@ class ReportController extends Controller
                     'report_id' => $reportId,
                     'score' => $item['score'] ?? null,
                 ]);
-            });
-
-            return QualityScoreResource::collection($created);
+                $created[] = $quality_score;
+            }
+            return QualityScoreResource::collection(collect($created));
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
         }
@@ -215,8 +255,11 @@ class ReportController extends Controller
     public function updateQualityScores(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'update quality scores')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'update quality scores');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'quality_list' => 'required|array',
@@ -232,7 +275,7 @@ class ReportController extends Controller
                     ->where('report_id', $reportId)
                     ->update([
                         'score' => $item['score'],
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
 
                 if ($result) {
@@ -245,8 +288,8 @@ class ReportController extends Controller
 
             return response()->json([
                 'message' => 'Quality scores updated successfully',
-                'updated' => $updated->count(),
-                'data' => QualityScoreResource::collection($updated)
+                'updated' => count($updated),
+                'data' => QualityScoreResource::collection(collect($updated))
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);
@@ -258,8 +301,11 @@ class ReportController extends Controller
     public function addEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'add Evidence answers')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'add Evidence answers');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'evidence_list' => 'required|array',
@@ -284,8 +330,11 @@ class ReportController extends Controller
     public function updateEvidenceAnswers(Request $request, $reportId)
     {
         try {
-            $report = Reports::findOrFail($reportId);
-            if ($resp = $this->checkReportEditableStatus($report, 'update evidence answers')) return $resp;
+            $report = Report::findOrFail($reportId);
+
+            // ตรวจสอบสถานะ report
+            $statusCheck = $this->checkReportEditableStatus($report, 'update evidence answers');
+            if ($statusCheck) return $statusCheck;
 
             $validated = $request->validate([
                 'evidence_list' => 'required|array',
@@ -303,7 +352,7 @@ class ReportController extends Controller
                     ->where('link', $item['link_old'])
                     ->update([
                         'link' => $item['link_new'],
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
 
                 if ($result) {
@@ -315,9 +364,9 @@ class ReportController extends Controller
             }
 
             return response()->json([
-                'message' => 'Evidence answers updated successfully',
-                'updated' => $updated->count(),
-                'data' => EvidenceAnswerResource::collection($updated)
+                'message' => 'Quality scores updated successfully',
+                'updated' => count($updated),
+                'data' => EvidenceAnswerResource::collection(collect($updated))
             ]);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Report not found'], 404);

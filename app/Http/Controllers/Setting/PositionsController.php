@@ -14,6 +14,7 @@ class PositionsController extends Controller
     public function index()
     {
         $positions = Positions::paginate(5);
+
         return view('positions.index', compact('positions'));
         // --- IGNORE ---
         // return view('index', ['positions' => $positions]);
@@ -28,7 +29,7 @@ class PositionsController extends Controller
 
         // ตรวจสอบชื่อตำแหน่งซ้ำ
         $existingPosition = Positions::where('name', $request->name)->first();
-        
+
         if ($existingPosition) {
             return redirect()->back()
                 ->withInput()
@@ -39,7 +40,7 @@ class PositionsController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        
+
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
 
@@ -57,7 +58,7 @@ class PositionsController extends Controller
         $existingPosition = Positions::where('name', $request->name)
             ->where('id', '!=', $id)
             ->first();
-        
+
         if ($existingPosition) {
             return redirect()->back()
                 ->withInput()
@@ -69,7 +70,7 @@ class PositionsController extends Controller
             'name' => $request->name,
             'description' => $request->description,
         ]);
-        
+
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
 
@@ -80,6 +81,7 @@ class PositionsController extends Controller
     {
         $positions = Positions::findOrFail($id);
         $positions->delete();
+
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
         // --- IGNORE ---
         // return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');

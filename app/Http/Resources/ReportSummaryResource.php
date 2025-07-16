@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ReportSummaryResource extends JsonResource
@@ -16,8 +15,7 @@ class ReportSummaryResource extends JsonResource
                 ? new CriteriaVersionResource($this->reportData->criteriaVersion)
                 : null,
             'status' => $this->status,
-            // ค่อยเพิ่ม resource อื่นๆ ที่ต้องการแสดงผลใน ReportResource นี้ เช่น จากตาราง ASSIGNMENTS หรือ ASSIGNMENTS
-
+            'assignments' => new AssignmentResource($this->whenLoaded('assignments')),
         ];
     }
 }
