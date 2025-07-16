@@ -72,7 +72,8 @@
                             </thead>
                             <tbody>
                                 @forelse ($assignments as $assignment)
-                                    <tr>
+                                    <tr class="clickable-row"
+                                        data-href="{{ route('evaluator.evaluatee.show', $assignment->report_id) }}">
                                         <td>{{ $assignment->sequence }}</td>
                                         <td class="item-name">{{ $assignment->report_title }}</td>
                                         <td>{{ $assignment->evaluatee_name }}</td>
@@ -86,15 +87,11 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <a href="{{ route('evaluator.evaluatee.show', $assignment->report_id) }}"
-                                                    class="btn-view" title="ดูรายละเอียด">
-                                                    <i class="fa-solid fa-eye"></i>
-                                                </a>
-
                                                 @if ($assignment->status_class !== 'Completed')
                                                     <a href="{{ route('evaluator.evaluatee.edit', $assignment->report_id) }}"
-                                                        class="btn-edit" title="แก้ไข">
-                                                        <i class="fa-solid fa-pen-to-square"></i>
+                                                        class="btn-edit" title="ประเมินผลข้อมูล"
+                                                        onclick="event.stopPropagation();">
+                                                        <i class="fa-solid fa-clipboard-list"></i>
                                                     </a>
                                                 @endif
                                             </div>
@@ -106,6 +103,7 @@
                                     </tr>
                                 @endforelse
                             </tbody>
+
                         </table>
                     </div>
 
@@ -574,6 +572,16 @@
             setInterval(function() {
                 console.log('Auto refreshing data...');
             }, 300000);
+        });
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".clickable-row").forEach(function(row) {
+                row.addEventListener("click", function() {
+                    const href = this.getAttribute("data-href");
+                    if (href) {
+                        window.location.href = href;
+                    }
+                });
+            });
         });
     </script>
 @endpush
