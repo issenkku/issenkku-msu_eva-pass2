@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Assignments;
 use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\EvaluationList;
+use App\Models\EvidenceAnswer;
+use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
+use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\User;
-use App\Models\EvidenceAnswer;
-use App\Models\EvaluationList;
-use App\Models\QuantitySubCriteria;
-use App\Models\QuantityScore;
-use App\Models\QualitySubCriteria;
-use App\Models\QualityScore;
+use Illuminate\Database\Seeder;
 
 class AssignmentPerReportSeeder extends Seeder
 {
@@ -51,7 +51,7 @@ class AssignmentPerReportSeeder extends Seeder
             foreach (EvaluationList::all() as $evalList) {
                 EvidenceAnswer::factory()->create([
                     'evaluation_list_id' => $evalList->id,
-                    'report_id'          => $report->id,
+                    'report_id' => $report->id,
                 ]);
             }
 
@@ -76,8 +76,8 @@ class AssignmentPerReportSeeder extends Seeder
 
                 QuantityScore::factory()->create([
                     'quantity_sub_criteria_id' => $qsub->id,
-                    'report_id'                => $report->id,
-                    'score_D'                  => $scoreD,
+                    'report_id' => $report->id,
+                    'score_D' => $scoreD,
                 ]);
             }
 
@@ -85,7 +85,7 @@ class AssignmentPerReportSeeder extends Seeder
             foreach (QualitySubCriteria::all() as $qsub) {
                 QualityScore::factory()->create([
                     'quality_sub_criteria_id' => $qsub->id,
-                    'report_id'               => $report->id,
+                    'report_id' => $report->id,
                 ]);
             }
         }

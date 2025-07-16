@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class EvaluationList extends Model
 {
     use HasFactory;
+
     protected $table = 'evaluation_lists';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -40,6 +42,7 @@ class EvaluationList extends Model
     {
         return $this->hasMany(QuantitySubCriteria::class, 'evaluation_list_id', 'id');
     }
+
     public function qualitySubCriterias()
     {
         return $this->hasMany(QualitySubCriteria::class, 'evaluation_list_id', 'id');

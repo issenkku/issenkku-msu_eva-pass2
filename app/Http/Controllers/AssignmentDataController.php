@@ -8,44 +8,42 @@ use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AssignmentDataController extends Controller
 {
-  
-public function index()
-{
-    $assignmentData = AssignmentData::with([
-        'assignments.evaluateeUser',
-        'assignments.evaluatorUser',
-        'assignments.report',
-    ])->get();
+    public function index()
+    {
+        $assignmentData = AssignmentData::with([
+            'assignments.evaluateeUser',
+            'assignments.evaluatorUser',
+            'assignments.report',
+        ])->get();
 
-    $users = User::all();
-    $report_data = ReportData::all();
-    $departments = Departments::all();
+        $users = User::all();
+        $report_data = ReportData::all();
+        $departments = Departments::all();
 
-    $evaluatees = $users;
-    $evaluators = $users;
+        $evaluatees = $users;
+        $evaluators = $users;
 
-    return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
-}
+        return view('assignment-data.create', compact('assignmentData', 'users', 'report_data', 'departments', 'evaluatees', 'evaluators'));
+    }
 
-public function create()
-{
-    $departments = Departments::all();
-    $report_data = ReportData::all();
-    $users = User::all();
+    public function create()
+    {
+        $departments = Departments::all();
+        $report_data = ReportData::all();
+        $users = User::all();
 
-    $evaluatees = $users;
-    $evaluators = $users;
+        $evaluatees = $users;
+        $evaluators = $users;
 
-    return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
-}
-
+        return view('assignment-data.create', compact('report_data', 'departments', 'users', 'evaluatees', 'evaluators'));
+    }
 
     public function store(Request $request)
     {
@@ -92,6 +90,9 @@ public function create()
                     'evaluatee' => $assignmentItem['evaluatee'],
                     'evaluator' => $assignmentItem['evaluator'],
                 ]);
+
+                // Send email notification for each report created
+                $this->sendEvaluationCompletedMail($report->id);
             }
 
             DB::commit();
@@ -114,6 +115,7 @@ public function create()
     public function show(AssignmentData $assignmentData)
     {
         $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
+
         return response()->json($assignmentData);
     }
 
@@ -205,6 +207,7 @@ public function create()
     {
         try {
             $assignmentData->delete();
+
             return response()->json([
                 'message' => 'Assignment data deleted successfully',
             ]);
@@ -214,5 +217,40 @@ public function create()
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (! $report) {
+            return;
+        }
+
+        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (! $assignment) {
+            return;
+        }
+        $user = \App\Models\User::find($assignment->evaluatee);
+        if (! $user || ! $user->email) {
+            return;
+        }
+        $evaluator_name = \App\Models\User::find($assignment->evaluator);
+        if (! $evaluator_name || ! $evaluator_name->email) {
+            return;
+        }
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+            'evaluator_name' => $evaluator_name->name,
+        ];
+
+        \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+        });
     }
 }

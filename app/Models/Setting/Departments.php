@@ -11,9 +11,11 @@ class Departments extends Model
         'department_name',
         'faculty',
     ];
+
     public $timestamps = false;
 
-    public function user(){
+    public function user()
+    {
         return $this->hasMany(User::class);
     }
 }

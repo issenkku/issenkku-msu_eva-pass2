@@ -83,7 +83,7 @@
                                 <input type="text" 
                                     name="quantity_list[{{ $index }}][score_C]" 
                                     value="{{ $item['tor_compliant'] ?? '' }}"
-                                    class="form-input text-base w-full h-10 ml-2 px-3 rounded border-gray-300 focus:ring-purple-500 focus:border-purple-500" 
+                                    class="form-input text-base w-full h-10 ml-2 px-3 rounded border border-gray-400 focus:ring-purple-500 focus:border-purple-500" 
                                     placeholder="ใส่ข้อมูล">
                                 
                                 <input type="hidden" 

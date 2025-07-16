@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
-use App\Models\QuantityMainCriteria;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\QuantityMainCriteria;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +21,7 @@ class QuantitySubCriteriaFactory extends Factory
     {
         return [
             'name' => fake()->sentence(2),
-            'sequence' => fake()->numberBetween(1,10),
+            'sequence' => fake()->numberBetween(1, 10),
             'score_a' => fake()->numberBetween(1, 20),
             'score_b' => fake()->numberBetween(20, 400),
             'quantity_main_criteria_id' => QuantityMainCriteria::inRandomOrder()->first()?->id,

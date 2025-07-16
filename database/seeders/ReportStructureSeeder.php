@@ -2,15 +2,15 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\CriteriaVersion;
-use App\Models\ReportData;
 use App\Models\Category;
+use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
-use App\Models\QuantityMainCriteria;
-use App\Models\QuantitySubCriteria;
 use App\Models\QualityMainCriteria;
 use App\Models\QualitySubCriteria;
+use App\Models\QuantityMainCriteria;
+use App\Models\QuantitySubCriteria;
+use App\Models\ReportData;
+use Illuminate\Database\Seeder;
 
 class ReportStructureSeeder extends Seeder
 {
@@ -77,7 +77,6 @@ class ReportStructureSeeder extends Seeder
             $remain -= $val;
         }
         $scores[] = $remain; // Last score takes the remainder
-
 
         for ($listIdx = 1; $listIdx <= $evaluationListCount; $listIdx++) {
             $el2 = EvaluationList::factory()->create([

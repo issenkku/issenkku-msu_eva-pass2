@@ -11,7 +11,8 @@ class Position extends Model
         'description',
     ];
 
-    public function user(){
+    public function user()
+    {
         return $this->hasMany(User::class);
     }
 }

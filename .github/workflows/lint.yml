@@ -1,45 +1,70 @@
-name: linter
+name: Code Quality Checker
 
 on:
   push:
     branches:
-      - develop
+      - dev
       - main
   pull_request:
     branches:
-      - develop
+      - dev
       - main
-
-permissions:
-  contents: write
 
 jobs:
   quality:
+    name: Run Linters and Formatters
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # 1. เช็คเอาท์โค้ดจาก Repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
+      # 2. ตั้งค่า PHP และ Cache Dependencies ของ Composer
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.3' # <--- ปรับเป็นเวอร์ชัน PHP ของโปรเจกต์คุณ
+          extensions: mbstring, xml, ctype, fileinfo, curl, dom, pdo, pdo_mysql # เพิ่ม extensions ที่จำเป็น
+          coverage: none # ไม่ต้องการ code coverage ใน job นี้
 
-      - name: Install Dependencies
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          npm install
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
 
-      - name: Run Pint
-        run: vendor/bin/pint
+      # 3. เตรียม Environment ของ Laravel
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+      
+      - name: Install Composer Dependencies
+        run: composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Format Frontend
-        run: npm run format
+      - name: Generate key
+        run: php artisan key:generate
 
-      - name: Lint Frontend
+      # 4. ตั้งค่า Node.js และ Cache Dependencies ของ NPM
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # หรือเวอร์ชันที่โปรเจกต์คุณใช้
+          cache: 'npm'
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      # 5. รัน Linter และ Formatter เพื่อ "ตรวจสอบ"
+      - name: Run Laravel Pint for code style check
+        # เพิ่ม --test เพื่อให้แน่ใจว่ามันจะ fail ถ้าโค้ดไม่ถูกต้อง (เป็น default behavior อยู่แล้ว แต่ใส่เพื่อความชัดเจน)
+        run: vendor/bin/pint --test
+
+      - name: Run ESLint or Prettier check for frontend
+        # สมมติว่า `npm run lint` คือการตรวจสอบ ไม่ใช่การแก้ไข
         run: npm run lint
-
-      # - name: Commit Changes
-      #   uses: stefanzweifel/git-auto-commit-action@v5
-      #   with:
-      #     commit_message: fix code style
-      #     commit_options: '--no-verify'
+        
+      # ถ้าคุณมี script สำหรับ format และต้องการแค่ "เช็ค" ว่า format ถูกต้องหรือไม่
+      # อาจจะต้องสร้าง script ใหม่ใน package.json เช่น "format:check": "prettier --check ."
+      # - name: Check Frontend Formatting
+      #   run: npm run format:check

@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class CustomResetPassword extends ResetPassword
@@ -32,7 +31,7 @@ class CustomResetPassword extends ResetPassword
         return (new MailMessage)
             ->subject('รีเซ็ตรหัสผ่านของคุณ')
             ->line('คุณได้รับอีเมลนี้เนื่องจากมีการร้องขอรีเซ็ตรหัสผ่านของบัญชีคุณ')
-            ->action('ตั้งรหัสผ่านใหม่', url(config('app.url') . route('password.reset', [
+            ->action('ตั้งรหัสผ่านใหม่', url(config('app.url').route('password.reset', [
                 'token' => $this->token,
                 'email' => $notifiable->getEmailForPasswordReset(),
             ], false)))

@@ -60,7 +60,7 @@ return new class extends Migration
             $table->decimal('score_b', 5, 2);
             $table->foreignId('quantity_main_criteria_id')->constrained('quantity_main_criterias')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
-            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade'); 
+            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');
         });
 
         // Report Structure - Quality table
@@ -79,7 +79,7 @@ return new class extends Migration
             $table->decimal('num_score', 5, 2);
             $table->foreignId('quality_main_criteria_id')->constrained('quality_main_criterias')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
-            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade'); 
+            $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');
 
         });
     }

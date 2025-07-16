@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Facades\DB;
 
 class RoleAndPermissionController extends Controller
 {
@@ -52,6 +50,7 @@ class RoleAndPermissionController extends Controller
     {
         $roles = Role::with('permissions')->get();
         $permissions = Permission::all();
+
         return view('user.role-management.index', compact('roles', 'permissions'));
     }
 
@@ -93,6 +92,7 @@ class RoleAndPermissionController extends Controller
 
         $rolePermissions = $role->permissions->pluck('name')->toArray();
         $assignedUsers = $role->users->pluck('id')->toArray(); // users with this role
+
         return view('user.role-management.edit-role', compact('role', 'permissions', 'rolePermissions', 'users', 'assignedUsers'));
     }
 
@@ -113,7 +113,7 @@ class RoleAndPermissionController extends Controller
         // Assign this role to newly selected users (if they don't already have it)
         foreach ($selectedUserIds as $userId) {
             $user = User::find($userId);
-            if (!$user->hasRole($role->name)) {
+            if (! $user->hasRole($role->name)) {
                 $user->assignRole($role->name);
             }
         }
@@ -133,6 +133,7 @@ class RoleAndPermissionController extends Controller
     public function destroy(Role $role)
     {
         $role->delete();
+
         return redirect()->route('roles.index')->with(['message' => 'Role deleted successfully.']);
     }
 }
