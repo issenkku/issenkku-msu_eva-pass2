@@ -59,7 +59,8 @@ class DashboardController extends Controller
                 'reports.status as report_status',
                 'reports.created_at as report_created_at',
                 'reports.updated_at as report_updated_at',
-                'reports.report_data_id as report_data_id'
+                'reports.report_data_id as report_data_id',
+                'reports.comment as comment'
             )->orderBy('reports.updated_at', 'desc');
 
         // Apply date filters if provided
@@ -355,7 +356,8 @@ class DashboardController extends Controller
                     'quality_main_criterias.id as quality_main_criteria_id',
                     'quality_main_criterias.ratio',
                     'evaluation_lists.sum_score',
-                    'reports.id as report_id'
+                    'reports.id as report_id',
+                    'reports.comment as comment',
                 )
                 ->where('quality_scores.report_id', $report->report_id)
                 ->groupBy(
@@ -430,6 +432,7 @@ class DashboardController extends Controller
                 'quantity_score' => round($quantityScore, 2),
                 'quality_score' => round($qualityScore, 2),
                 'score' => round($quantityScore + $qualityScore, 2),
+                'comment' => $report->comment ?? null,
             ];
         }
         return $reports_score;
