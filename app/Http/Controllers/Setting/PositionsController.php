@@ -13,7 +13,7 @@ class PositionsController extends Controller
      */
     public function index()
     {
-        $positions = Positions::paginate(5);
+        $positions = Positions::paginate(10);
         return view('positions.index', compact('positions'));
         // --- IGNORE ---
         // return view('index', ['positions' => $positions]);

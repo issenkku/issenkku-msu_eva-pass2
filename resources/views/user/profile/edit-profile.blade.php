@@ -153,14 +153,16 @@
 
         <!-- Action Buttons -->
         <div class="mt-6 flex items-center justify-between">
-            <a href="{{ route('profile.show') }}"
-               class="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                ยกเลิก
-            </a>
-            <button type="submit"
-                    class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                บันทึกการเปลี่ยนแปลง
-            </button>
+            <x-button 
+                type= defualt 
+                text="ย้อนกลับ" 
+                icon="fas fa-arrow-left"
+                href="{{ route('profile.show') }}" />
+            <x-button 
+                type="warning"
+                buttonType="submit" 
+                text="บันทึกการเปลี่ยนแปลง" 
+                icon="fas fa-save" />
         </div>
     </form>
 </div>

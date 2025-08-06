@@ -63,7 +63,7 @@ class EvaluatorController extends Controller
             'evaluatee.employee_id as evaluatee_employee_id'
         )
             ->orderBy('assignment_datas.start_time', 'desc')
-            ->paginate(5);
+            ->paginate(10);
 
         // แปลงข้อมูลเพื่อเพิ่มฟิลด์ sequence, format วันที่ และสถานะ
         $formattedAssignments = $assignments->getCollection()->map(function ($assignment, $index) use ($assignments) {
@@ -90,16 +90,13 @@ class EvaluatorController extends Controller
         $assignments->setCollection($formattedAssignments);
 
         // ตัวอย่างข้อมูล evaluatorInfo แบบง่าย
-        $evaluatorInfo = [
-            'name' => $currentUser->prefix . $currentUser->name,
-            'employee_id' => $currentUser->employee_id,
-            'department' => optional($currentUser->department)->department_name ?? '-',
-            'position' => optional($currentUser->position)->name ?? '-',
-            'email' => $currentUser->email ?? '-',
-            'personnel_type' => $currentUser->personnel_type ?? '-',
-            'experience' => $this->calculateExperience($currentUser->created_at),
-            'average_score' => $this->getAverageEvaluationScore($currentUser->id)
-        ];
+        $evaluatorInfo = $request->user()->load([
+            'position',
+            'department',
+            'assignment.assignmentData', // Load nested relationships
+            'assignment.report.reportData',
+            'assignment.evaluatorUser', // Load evaluator user relationship
+        ]);
 
         return view('evaluator_dashboard.index', [
             'assignments' => $assignments,

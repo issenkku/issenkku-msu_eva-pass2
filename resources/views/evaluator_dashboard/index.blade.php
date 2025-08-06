@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="dashboard-container">
-        <div class="dashboard-header">
+        <!-- <div class="dashboard-header">
             <div class="header-content">
                 <h1 class="dashboard-title">Dashboard ผู้ประเมิน</h1>
                 <div class="header-date">
@@ -10,33 +10,13 @@
                     <span>{{ date('d/m/Y') }}</span>
                 </div>
             </div>
-        </div>
+        </div> -->
 
-        <div class="main-content">
-            <div class="content-left">
-                {{-- <div class="table-card">
-                    <div class="table-container">
-                        <table class="evaluation-table">
-                            <thead>
-                                <tr>
-                                    <th>ชื่อ-สกุล</th>
-                                    <th>รายละเอียดผู้ประเมิน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="item-name">{{ $evaluatorInfo['name'] }}</td>
-                                    <td>
-                                        รหัสผู้ประเมิน: {{ $evaluatorInfo['employee_id'] }} <br>
-                                        ตำแหน่ง: {{ $evaluatorInfo['position'] }} <br>
-                                        แผนก: {{ $evaluatorInfo['department'] }} <br>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div> --}}
-                <x-user-info-card :user="$evaluatorInfo" />
+        <div class="main-content max-w-8xl mx-auto space-y-6">
+            <div>
+                <x-profile-card 
+                    :user="$evaluatorInfo"
+                    title="ข้อมูลผู้ประเมิน"/>
 
                 <div class="table-card" style="margin-top: 2rem;">
                     <div class="table-header">
@@ -138,7 +118,7 @@
         }
 
         .dashboard-container {
-            background-color: #ffffff;
+            /* background-color: #ffffff; */
             min-height: 100vh;
         }
 

@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>แบบประเมินผลงาน</h1>
+        <p class="version">เวอร์ชัน: {{ $versionName }}</p>
+    </div>
+
     <x-evaluate-profile-card 
         :evaluatorName="$evaluatorName"
         :startTimeFormatted="$startTimeFormatted"
@@ -87,15 +93,25 @@
         @endif
 
         <div class="flex justify-center gap-4 mt-8">
-            <a href="/evaluatee-dashboard" class="px-6 py-2 bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
+            <x-button 
+                    type= defualt 
+                    text="ย้อนกลับ" 
+                    icon="fas fa-arrow-left"
+                    href="/evaluatee-dashboard" />
 
             @unless($readonly)
-                <button type="submit" onclick="setFormStatus('Draft')" class="bg-pink-400 text-white px-6 py-2 rounded-md hover:bg-pink-500 w-40">
-                    บันทึกร่าง
-                </button>
-                <button type="button" id="openModalBtn" class="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 w-40">
-                    ส่งแบบประเมิน
-                </button>
+                <x-button 
+                    type="secondary"
+                    buttonType="submit" 
+                    text="บันทึกร่าง" 
+                    onclick="setFormStatus('Draft')" 
+                    icon="fas fa-save" />
+                <x-button 
+                    type="primary"
+                    buttonType="button" 
+                    text="ส่งแบบประเมิน"
+                    id="openModalBtn"
+                    icon="fas fa-paper-plane" />
             @endunless
         </div>
     </form>
@@ -174,6 +190,20 @@
         padding: 0 1rem;
     }
 }
+    /* Header Styles */
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+        padding-bottom: 24px;
+        border-bottom: 3px solid #f3f4f6;
+    }
+
+    .page-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
 </style>
 
 <script>

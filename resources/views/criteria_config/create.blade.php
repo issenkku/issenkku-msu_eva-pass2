@@ -21,7 +21,7 @@
                     </h2>
                     <div class="space-y-6">
                         <div>
-                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-2">ชื่อรุ่น <span
+                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-2">ปีผู้ประเมิน <span
                                     class="text-red-500">*</span></label>
                             <input id="version_name" required name="version_name"
                                 class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
@@ -544,7 +544,7 @@
                     </svg>
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-3">ยืนยันการบันทึกข้อมูล</h3>
-                <p class="text-gray-600 mb-3">ชื่อรุ่น: <span id="version_name_display" class="font-medium"></span></p>
+                <p class="text-gray-600 mb-3">ปีผู้ประเมิน: <span id="version_name_display" class="font-medium"></span></p>
                 <p class="text-gray-600 mb-6">คุณต้องการบันทึกข้อมูลเกณฑ์การประเมินนี้หรือไม่?</p>
                 <div class="flex justify-center space-x-4">
                     <button id="cancel_modal_btn"
@@ -713,7 +713,7 @@
             const reportDescription = document.getElementById('report_description').value.trim();
             const assessmentType = document.getElementById('assessment_type').value.trim();
             let errorMsg = '';
-            if (!versionName) errorMsg += 'กรุณากรอกชื่อรุ่น\n';
+            if (!versionName) errorMsg += 'กรุณากรอกปีผู้ประเมิน\n';
             if (!reportTitle) errorMsg += 'กรุณากรอกชื่อเกณฑ์\n';
             if (!reportDescription) errorMsg += 'กรุณากรอกรายละเอียดเกณฑ์\n';
             if (!assessmentType) errorMsg += 'กรุณาเลือกประเภทการประเมิน\n';
@@ -1016,7 +1016,7 @@
 
             const versionName = document.querySelector('.version_name').value.trim();
             if (!versionName) {
-                //alert('กรุณากรอกชื่อรุ่น');
+                //alert('กรุณากรอกปีผู้ประเมิน');
                 return;
             }
 

@@ -5,7 +5,9 @@
 @section('content')
 <div class="max-w-8xl mx-auto space-y-6">
     <!-- Profile Card at Top -->
-    <x-profile-card :user="$user"/>
+    <x-profile-card 
+        :user="$user"
+        title="ข้อมูลผู้รับการประเมิน"/>
     
     <!-- Evaluation Header -->
     <!-- <x-evaluation-header 

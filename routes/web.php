@@ -40,7 +40,9 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/import/template', [UserController::class, 'downloadTemplate'])->name('import.template');
         Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::post('/import', [UserController::class, 'import'])->name('import');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
     });

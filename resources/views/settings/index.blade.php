@@ -16,7 +16,7 @@
         }
 
         .card-header-custom {
-            background: #f8f9fa;
+            background: #f3e8ff;
             color: #495057;
             padding: 30px;
             text-align: center;
@@ -301,18 +301,21 @@
 
                                 <!-- ปุ่มส่งและกลับ -->
                                 <div class="text-center mt-4">
-                                    <button type="submit" class="btn btn-custom btn-primary-custom">
-                                        <i class="fas fa-save me-2"></i>
-                                        @if(isset($settings) && $setting)
-                                            อัปเดตข้อมูล
-                                        @else
-                                            บันทึกข้อมูล
-                                        @endif
-                                    </button>
-                                    <a href="{{ route('settings.index') }}" class="btn btn-custom btn-secondary-custom">
-                                        <i class="fas fa-arrow-left me-2"></i>
-                                        กลับ
-                                    </a>
+                                    @if(isset($settings) && $setting)
+                                        <x-button 
+                                            type="primary" 
+                                            text="อัปเดตข้อมูล" 
+                                            icon="fas fa-save" 
+                                            buttonType="submit" 
+                                        />
+                                    @else
+                                        <x-button 
+                                            type="primary" 
+                                            text="บันทึกข้อมูล" 
+                                            icon="fas fa-save" 
+                                            buttonType="submit" 
+                                        />
+                                    @endif
                                 </div>
                             </form>
                         </div>

@@ -72,6 +72,9 @@ class DashboardEvaluateeController extends Controller
         $startTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->start_time : null;
         $endTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->end_time : null;
         $reportName = $assignment && $assignment->report->reportData ? $assignment->report->reportData->report_title : 'ไม่พบชื่อรายงาน';
+        $versionName = $assignment && $assignment->report->reportData->criteriaVersion ? $assignment->report->reportData->criteriaVersion->version_name : 'ไม่พบชื่อรายงาน';
+        $reportComment = $assignment && $assignment->report->reportData ? $assignment->report->reportData->comment : null;
+        $reportDescription = $assignment && $assignment->report->reportData ? $assignment->report->reportData->report_description : null;
         $assessmentType = $assignment && $assignment->report->reportData ? $assignment->report->reportData->assessment_type : 'ไม่พบชื่อรายงาน';
         $startTimeFormatted = $startTime ? $formatThai($startTime) : '-';
         $endTimeFormatted = $endTime ? $formatThai($endTime) : '-';
@@ -218,7 +221,7 @@ class DashboardEvaluateeController extends Controller
             'evaluatorName', 'startTime', 'endTime', 'reportName',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
             'quantityMainCriterias', 'evaluationItems', 'qualityItems', 'evidenceMap',
-            'readonly'
+            'readonly', 'versionName', 'reportComment', 'reportDescription'
         ));
     }
 }
