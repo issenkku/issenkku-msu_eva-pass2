@@ -8,28 +8,6 @@
             color: #333333;
         }
 
-        .page-header {
-            background-color: #ffffff;
-            border: 1px solid #e0e0e0;
-            padding: 24px 32px;
-            border-radius: 4px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .page-header h2 {
-            color: #2c2c2c;
-            margin-bottom: 6px;
-            font-weight: 500;
-            font-size: 1.75rem;
-        }
-
-        .page-header p {
-            color: #666666;
-            margin: 0;
-            font-size: 0.95rem;
-        }
-
         .table-container {
             background: #ffffff;
             border: 1px solid #e0e0e0;
@@ -39,7 +17,7 @@
         }
 
         .table-header {
-            background-color: #f8f8f8;
+            background-color: #f3e8ff;
             border-bottom: 1px solid #e0e0e0;
             padding: 16px 24px;
         }
@@ -296,9 +274,9 @@
             padding: 24px;
         }
 
-        .modal-backdrop {
+        /* .modal-backdrop {
             display: none !important;
-        }
+        } */
 
         body {
             overflow: auto !important;
@@ -320,11 +298,6 @@
 
         .btn-close:hover {
             color: #333333;
-        }
-
-        /* Icon styling */
-        i {
-            color: #666666;
         }
 
         .btn i {
@@ -381,39 +354,20 @@
 
     <div class="container-fluid">
         <!-- Page Header -->
-        <div class="page-header">
-            <h2><i class="fas fa-user-tie me-2"></i>จัดการข้อมูลตำแหน่ง</h2>
-            <p>ระบบจัดการข้อมูลตำแหน่งงาน</p>
-        </div>
+        <x-header 
+            title="จัดการข้อมูลตำแหน่ง" 
+            text="ระบบจัดการข้อมูลตำแหน่งงาน" 
+            icon="fas fa-user-tie" />
 
         <!-- Add Button -->
-        <div class="d-flex justify-content-end">
-            <button type="button" class="btn btn-add" onclick="openCreateModal()">
-                <i class="fas fa-plus me-2"></i>เพิ่มข้อมูล
-            </button>
+        <div class="d-flex justify-content-end mb-3">
+            <x-button 
+                type="primary" 
+                buttonType="button"
+                text="เพิ่มตำแหน่ง" 
+                onclick="openCreateModal()" 
+                icon="fas fa-plus" />
         </div>
-
-        <!-- Flash Messages -->
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
-        @if ($errors->any())
-            <div class="alert alert-danger" style="background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7;">
-                <i class="fas fa-exclamation-circle me-2 mt-1"></i>
-                <div>
-                    <ul class="mb-0 ps-3">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
-
 
         <!-- Table Container -->
         <div class="table-container">
@@ -439,14 +393,22 @@
                                     <td><strong>{{ $position->name }}</strong></td>
                                     {{-- <td>{{ $position->description ?? '-' }}</td> --}}
                                     <td>
-                                        <button class="btn btn-action btn-edit"
-                                            onclick="handleEdit({{ $position->id }}, '{{ $position->name }}', '{{ $position->description }}')">
-                                            <i class="fas fa-edit me-1"></i>แก้ไข
-                                        </button>
-                                        <button class="btn btn-action btn-delete"
-                                            onclick="confirmDelete({{ $position->id }})">
-                                            <i class="fas fa-trash me-1"></i>ลบ
-                                        </button>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <x-button 
+                                                type="warning" 
+                                                text="แก้ไข" 
+                                                class="text-sm"
+                                                icon="fas fa-edit"
+                                                onclick="handleEdit({{ $position->id }}, '{{ $position->name }}', '{{ $position->description }}')"
+                                            />
+                                            <x-button 
+                                                type="danger" 
+                                                text="ลบ" 
+                                                class="text-sm"
+                                                icon="fas fa-trash-alt"
+                                                onclick="confirmDelete({{ $position->id }})"
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -488,6 +450,7 @@
                             <label for="name" class="form-label">ชื่อตำแหน่ง <span class="text-danger">*</span></label>
                             <input type="text" id="name" name="name" class="form-control" required
                                 placeholder="กรุณาระบุชื่อตำแหน่ง">
+                            <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อตำแหน่ง</div>
                         </div>
 
                         {{-- <div class="mb-3">
@@ -498,49 +461,94 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>ยกเลิก
-                    </button>
-                    <button type="button" class="btn btn-modal-save" onclick="submitForm()">
-                        <i class="fas fa-save me-2"></i>บันทึก
-                    </button>
+                    <x-button 
+                        type= defualt 
+                        text="ยกเลิก" 
+                        icon="fas fa-times"
+                        data-bs-dismiss="modal" />
+                    <x-button 
+                        type="primary"
+                        buttonType="button" 
+                        text="บันทึก" 
+                        onclick="submitForm()"
+                        icon="fas fa-save"
+                        id="positionSubmitBtn"
+                        class="btn-disabled transition-colors disabled:opacity-50 disabled:cursor-not-allowed" />
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content modal-content-custom">
-                <div class="modal-header delete-modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">
-                        <i class="fas fa-exclamation-triangle me-2"></i>ยืนยันการลบ
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body delete-modal-body text-center">
-                    <i class="fas fa-trash-alt delete-icon"></i>
-                    <h5 style="color: #2c2c2c; margin-bottom: 8px;">คุณต้องการลบข้อมูลนี้หรือไม่?</h5>
-                    <p class="text-muted">การลบข้อมูลนี้ไม่สามารถย้อนกลับได้</p>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>ยกเลิก
-                    </button>
-                    <form id="deleteForm" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-delete">
-                            <i class="fas fa-trash me-2"></i>ลบข้อมูล
-                        </button>
-                    </form>
-                </div>
-            </div>
+    <x-delete-warning-modal 
+        text="ตำแหน่ง" 
+        formAction="{{ route('positions.destroy', ':id') }}"
+        entityUrl="/positions" />
+
+    @if(session('success'))
+    <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        <div class="flex items-center space-x-3">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>{{ session('success') }}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
     </div>
+    @endif
 
     <script>
+        // Form validation variables
+        let isFormValid = false;
+
+        // ฟังก์ชันตรวจสอบความถูกต้องของฟอร์ม
+        function validateForm() {
+            const nameInput = document.getElementById('name');
+            const nameError = document.getElementById('nameError');
+            const submitBtn = document.getElementById('positionSubmitBtn');
+            
+            if (!nameInput || !nameError || !submitBtn) return false;
+
+            const nameValue = nameInput.value.trim();
+            let isValid = true;
+
+            // ตรวจสอบชื่อตำแหน่ง (required field)
+            if (nameValue === '') {
+                nameInput.classList.add('is-invalid');
+                nameError.style.display = 'block';
+                nameError.textContent = 'กรุณากรอกชื่อตำแหน่ง';
+                isValid = false;
+            } else {
+                nameInput.classList.remove('is-invalid');
+                nameError.style.display = 'none';
+            }
+
+            // อัพเดทสถานะปุ่มส่ง
+            updateSubmitButton(isValid);
+            isFormValid = isValid;
+            
+            return isValid;
+        }
+
+        // ฟังก์ชันอัพเดทสถานะปุ่มส่ง
+        function updateSubmitButton(isValid) {
+            const submitBtn = document.getElementById('positionSubmitBtn');
+            if (!submitBtn) return;
+
+            if (isValid) {
+                submitBtn.classList.remove('btn-disabled');
+                submitBtn.disabled = false;
+                submitBtn.style.pointerEvents = 'auto';
+            } else {
+                submitBtn.classList.add('btn-disabled');
+                submitBtn.disabled = true;
+                submitBtn.style.pointerEvents = 'none';
+            }
+        }
+
         // ฟังก์ชันเปิด modal สำหรับเพิ่มข้อมูล
         function openCreateModal() {
             clearModalBackdrop();
@@ -559,6 +567,11 @@
             const modalEl = document.getElementById('positionModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
+
+            // Focus บน input แรกหลังจาก modal เปิด
+            modalEl.addEventListener('shown.bs.modal', function () {
+                document.getElementById('name').focus();
+            });
         }
 
         // ฟังก์ชันเปิด modal สำหรับแก้ไขข้อมูล
@@ -579,36 +592,51 @@
             //document.getElementById('description').value = description || '';
             modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลตำแหน่ง';
 
+            // ตรวจสอบความถูกต้องหลังจากกรอกข้อมูล
+            setTimeout(() => {
+                validateForm();
+            }, 100);
+
             const modalEl = document.getElementById('positionModal');
             const modal = new bootstrap.Modal(modalEl);
             modal.show();
+
+            // Focus บน input แรกหลังจาก modal เปิด
+            modalEl.addEventListener('shown.bs.modal', function () {
+                document.getElementById('name').focus();
+            });
         }
 
         // ฟังก์ชันส่งฟอร์ม
         function submitForm() {
+            // ตรวจสอบความถูกต้องอีกครั้งก่อนส่ง
+            if (!validateForm()) {
+                return false;
+            }
+
             const form = document.getElementById('positionForm');
             const modalEl = document.getElementById('positionModal');
 
-            if (form && modalEl) {
+            if (form && modalEl && isFormValid) {
+                // แสดง loading state
+                const submitBtn = document.getElementById('positionSubmitBtn');
+                if (submitBtn) {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>กำลังบันทึก...';
+                    submitBtn.disabled = true;
+                    
+                    // กู้คืนปุ่มหากเกิดข้อผิดพลาด
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 5000);
+                }
+
                 const modal = bootstrap.Modal.getInstance(modalEl);
                 if (modal) {
                     modal.hide();
                 }
                 form.submit();
-            }
-        }
-
-        // ฟังก์ชันยืนยันการลบ
-        function confirmDelete(id) {
-            clearModalBackdrop();
-
-            const deleteForm = document.getElementById('deleteForm');
-            if (deleteForm) {
-                deleteForm.action = "/positions/" + id;
-
-                const modalEl = document.getElementById('deleteModal');
-                const modal = new bootstrap.Modal(modalEl);
-                modal.show();
             }
         }
 
@@ -620,6 +648,7 @@
                 document.getElementById('positionId').value = '';
                 document.getElementById('form_method').value = 'POST';
 
+                // เคลียร์ validation states
                 const inputs = form.querySelectorAll('.form-control');
                 inputs.forEach(input => {
                     input.classList.remove('is-invalid');
@@ -627,8 +656,12 @@
 
                 const errors = form.querySelectorAll('.invalid-feedback');
                 errors.forEach(error => {
-                    error.remove();
+                    error.style.display = 'none';
                 });
+
+                // รีเซ็ตสถานะปุ่มส่ง
+                updateSubmitButton(false);
+                isFormValid = false;
             }
         }
 
@@ -655,6 +688,51 @@
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             clearModalBackdrop();
+
+            // เพิ่ม event listeners สำหรับ real-time validation
+            const nameInput = document.getElementById('name');
+            const descriptionInput = document.getElementById('description');
+
+            if (nameInput) {
+                // ตรวจสอบทันทีเมื่อพิมพ์
+                nameInput.addEventListener('input', function() {
+                    validateForm();
+                });
+
+                // ตรวจสอบเมื่อ focus out
+                nameInput.addEventListener('blur', function() {
+                    validateForm();
+                });
+
+                // ตรวจสอบเมื่อกด Enter
+                nameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (validateForm()) {
+                            submitForm();
+                        }
+                    }
+                });
+            }
+
+            if (descriptionInput) {
+                // ตรวจสอบเมื่อ focus out (สำหรับ validation ในอนาคต)
+                descriptionInput.addEventListener('blur', function() {
+                    validateForm();
+                });
+            }
+
+            // ป้องกันการ submit ฟอร์มโดยตรง
+            const form = document.getElementById('positionForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (validateForm()) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
         });
 
         window.addEventListener('pageshow', function(event) {
@@ -664,6 +742,22 @@
         window.addEventListener('load', function() {
             clearModalBackdrop();
         });
-    </script>
 
+        // Auto-hide success/error messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    if (message.parentElement) {
+                        message.style.transform = 'translateX(100%)';
+                        setTimeout(function() {
+                            if (message.parentElement) {
+                                message.remove();
+                            }
+                        }, 300);
+                    }
+                }, 5000);
+            });
+        });
+    </script>
 @endsection

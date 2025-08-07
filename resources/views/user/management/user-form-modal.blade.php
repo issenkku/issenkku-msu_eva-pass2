@@ -2,9 +2,9 @@
 <!-- <x-button text="เพิ่มเจ้าหน้าที่ใหม่" onclick="openModal()" /> -->
 
 <!-- Modal Background -->
-<div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-baseline justify-center z-50 overflow-y-auto">
+<div id="userModal" class="fixed z-[9999] inset-0 bg-black bg-opacity-50 hidden items-baseline justify-center z-50 overflow-y-auto">
     <!-- Modal Box -->
-    <div class="bg-white rounded-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
+    <div class="top-10 bg-white rounded-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
         <!-- Header -->
         <div class="flex justify-between items-center border-b pb-3">
             <h2 class="text-lg font-semibold text-purple-700">เพิ่มเจ้าหน้าที่ใหม่</h2>
@@ -35,7 +35,7 @@
                         <div>
                             <label class="block">คำนำหน้า</label>
                             <select name="prefix" id="prefix" class="w-full border rounded px-3 py-2" required>
-                                <option value="">คำนำหน้า</option>
+                                <option value="" disabled selected hidden>--เลือกคำนำหน้า--</option>
                                 <option value="นาย" {{ old('prefix', $user->prefix ?? '') == 'นาย' ? 'selected' : '' }}>นาย</option>
                                 <option value="นาง" {{ old('prefix', $user->prefix ?? '') == 'นาง' ? 'selected' : '' }}>นาง</option>
                                 <option value="นางสาว" {{ old('prefix', $user->prefix ?? '') == 'นางสาว' ? 'selected' : '' }}>นางสาว</option>
@@ -44,12 +44,16 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block">ชื่อ-นามสกุล</label>
-                            <input type="text" name="name" id="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="name" id="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" 
+                                placeholder="กรุณากรอกชื่อ-นามสกุล"
+                                required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อ</div>
                         </div>
                         <div class="md:col-span-3">
                             <label class="block">รหัสพนักงาน</label>
-                            <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" 
+                                placeholder="กรุณากรอกรหัสพนักงาน"
+                                required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="employee_idError">กรุณากรอกรหัสพนักงานให้ถูกต้อง</div>
                         </div>
                     </div>
@@ -62,7 +66,7 @@
                         <div>
                             <label>สาขาวิชา</label>
                             <select name="department_id" id="department_id" class="w-full border rounded px-3 py-2" required>
-                                <option value="">เลือกสาขาวิชา</option>
+                                <option value="" disabled selected hidden>--เลือกสาขาวิชา--</option>
                                 @foreach ($departments as $department)
                                     <option value="{{ $department->id }}"
                                         {{ old('department_id', $user->department_id ?? '') == $department->id ? 'selected' : '' }}>
@@ -75,7 +79,7 @@
                         <div>
                             <label>ตำแหน่ง</label>
                             <select name="position_id" id="position_id" class="w-full border rounded px-3 py-2" required>
-                                <option value="">เลือกตำแหน่ง</option>
+                                <option value="" disabled selected hidden>--เลือกตำแหน่ง--</option>
                                 @foreach ($positions as $position) 
                                     <option value="{{ $position->id }}"
                                         {{ old('position_id', $user->position_id ?? '') == $position->id ? 'selected' : '' }}>
@@ -88,7 +92,7 @@
                         <div>
                             <label>ประเภทบุคลากร</label>
                             <select name="personnel_type" id="personnel_type" class="w-full border rounded px-3 py-2" required>
-                                <option value="">เลือกประเภทบุคลากร</option>
+                                <option value="" disabled selected hidden>--เลือกประเภทบุคลากร--</option>
                                 <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type ?? '') == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                                 <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type ?? '') == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
                             </select>
@@ -103,12 +107,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label>อีเมล</label>
-                            <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" 
+                                placeholder="กรุณากรอกอีเมล"
+                                required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="emailError">กรุณากรอกอีเมลให้ถูกต้อง</div>
                         </div>
                         <div>
                             <label>เบอร์โทร</label>
-                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" required />
+                            <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" 
+                                placeholder="กรุณากรอกเบอร์โทร"
+                                required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="phoneError">กรุณากรอกเบอร์โทรให้ถูกต้อง</div>
                         </div>
                     </div>
@@ -125,7 +133,9 @@
                 <!-- รหัสผ่าน -->
                 <div id="passwordPanel">
                     <h3 class="text-purple-600 font-semibold mb-2">รหัสผ่าน</h3>
-                    <input type="password" name="password" id="password" class="w-full border rounded px-3 py-2" {{ isset($user) ? '' : 'required' }} />
+                    <input type="password" name="password" id="password" class="w-full border rounded px-3 py-2 placeholder-gray-400" 
+                        placeholder="กรุณากรอกรหัสผ่าน"
+                        {{ isset($user) ? '' : 'required' }} />
                     <div class="text-red-500 text-sm mt-1 hidden" id="passwordError">กรุณากรอกรหัสผ่านให้ถูกต้อง</div>
                 </div>
 
@@ -141,7 +151,7 @@
                     <div class="mb-3">
                         <label>บทบาท (Role)</label>
                         <select name="role" id="role" class="w-full border rounded px-3 py-2" required>
-                            <option value="">เลือกบทบาท</option>
+                            <option value="" disabled selected hidden>--เลือกบทบาท--</option>
                             @foreach ($roles as $role)
                                 <option value="{{ $role->name }}"
                                     {{ old('role', isset($user) && $user ? ($user->roles->first()->name ?? '') : '') == $role->name ? 'selected' : '' }}>
@@ -165,12 +175,17 @@
 
             <!-- Footer -->
             <div class="flex justify-center gap-4 mt-8">
-                <button type="button" onclick="closeModal()" class="bg-gray-300 text-gray-800 px-6 py-2 rounded hover:bg-gray-400">
-                    ยกเลิก
-                </button>
-                <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
-                    บันทึก
-                </button>
+                <x-button 
+                    type= defualt 
+                    text="ย้อนกลับ" 
+                    onclick="closeModal()" 
+                    icon="fas fa-arrow-left" />
+                <x-button 
+                    type="primary" 
+                    text="บันทึก" 
+                    icon="fas fa-save" 
+                    buttonType="submit" 
+                />
             </div>
         </form>
     </div>
@@ -319,6 +334,7 @@ if (roleSelect && currentRoleDisplay) {
         }
     });
 }
+
 function showError(id, message) {
     const errorDiv = document.getElementById(id + 'Error');
     if (errorDiv) {

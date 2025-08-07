@@ -13,8 +13,7 @@ class DepartmentsController extends Controller
      */
     public function index()
     {
-        $departments = Departments::paginate(5);
-
+        $departments = Departments::paginate(10);
         return view('departments.index', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);

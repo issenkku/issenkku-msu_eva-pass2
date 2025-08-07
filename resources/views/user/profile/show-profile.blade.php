@@ -57,10 +57,11 @@
     </div>
 
     <div class="mt-6">
-        <a href="{{ route('profile.edit') }}"
-           class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            แก้ไขข้อมูล
-        </a>
+        <x-button 
+            type="warning"
+            text="แก้ไขข้อมูล"
+            icon="fas fa-edit"
+            href="{{ route('profile.edit') }}" />
     </div>
 </div>
 @endsection

@@ -46,9 +46,7 @@
     if ($filteredStatus) {
         // Map display name back to DB status
         $reverseMap = [
-            'ยังไม่ประเมิน' => 'Assigned',
-            'กำลังดำเนินการ' => 'Draft',
-            'รอผลการประเมิน' => 'Pending',
+            'ยังไม่ประเมิน' => 'Pending',
             'ประเมินเสร็จสิ้น' => 'Completed',
         ];
 
@@ -67,8 +65,6 @@
     @php
         $statusStyles = [
             'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
-            'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-            'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
             'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
         ];
 
@@ -108,7 +104,7 @@
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
+                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
                     </tr>
@@ -124,11 +120,9 @@
                                 ?? optional($report)->reportData->report_title
                                 ?? '-';
 
-                            $statusFromDB = optional($report)->status ?? 'Assigned';
+                            $statusFromDB = optional($report)->status ?? 'Pending';
                             $statusMapping = [
-                                'Assigned' => 'ยังไม่ประเมิน',
-                                'Draft' => 'กำลังดำเนินการ',
-                                'Pending' => 'รอผลการประเมิน',
+                                'Pending' => 'ยังไม่ประเมิน',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
@@ -189,8 +183,6 @@
                                 @php
                                     $statusClasses = [
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
-                                        'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
-                                        'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
@@ -207,14 +199,6 @@
                                             'label' => 'เริ่มประเมิน',
                                             'classes' => 'bg-red-500 hover:bg-red-600 text-white'
                                         ],
-                                        'กำลังดำเนินการ' => [
-                                            'label' => 'ประเมินต่อ',
-                                            'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
-                                        ],
-                                        'รอผลการประเมิน' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                                        ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
                                             'classes' => 'bg-green-500 hover:bg-green-600 text-white'
@@ -224,7 +208,7 @@
 
                                     $url = route('evaluation.show', ['id' => $report->id ?? 0]);
 
-                                    if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
+                                    if ($status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';
                                     }
                                 @endphp

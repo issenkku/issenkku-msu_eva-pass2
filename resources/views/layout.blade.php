@@ -34,6 +34,14 @@
             border-bottom: 1px solid #dee2e6;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
             padding: 15px 0;
+            position: fixed;
+            top: 0;
+        }
+
+        .navbar-custom.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
         }
 
         .navbar-brand-custom {
@@ -189,6 +197,12 @@
 
             .dropdown-menu-custom {
                 margin-top: 5px;
+            }
+
+            .nav-link-custom i,
+            .dropdown-item-custom i {
+                width: 1.25rem;
+                text-align: center;
             }
         }
 

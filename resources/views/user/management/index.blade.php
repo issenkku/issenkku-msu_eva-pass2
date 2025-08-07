@@ -8,15 +8,60 @@
 @endphp
 
 @section('content')
-    <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ count($users) }} คน)</h2>
-        <div class="space-x-2">
-            <x-button type="primary" text="เพิ่มเจ้าหน้าที่" onclick="openCreateModal(this)" data-action="{{ route('users.store') }}" />
-        </div>
-        @include('user.management.user-form-modal')
+    <div class="container-fluid">
+        <x-header 
+            title="จัดการข้อมูลเจ้าหน้าที่" 
+            text="ระบบจัดการข้อมูลเจ้าหน้าที่และพนักงาน" 
+            icon="fas fa-users" />
     </div>
 
-    <div class="flex flex-wrap gap-4 mb-4">
+    <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
+        <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ count($users) }} คน)</h2>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <x-button 
+                type="secondary" 
+                text="เพิ่มไฟล์เจ้าหน้าที่" 
+                onclick="openImportModal(this)" 
+                data-action="{{ route('users.import') }}"
+                icon="fas fa-file-import" />
+
+            <x-button 
+                type="primary" 
+                text="เพิ่มเจ้าหน้าที่" 
+                onclick="openCreateModal(this)" 
+                data-action="{{ route('users.store') }}"
+                icon="fas fa-user-plus" />
+        </div>
+        @include('user.management.user-form-modal')
+        @include('user.management.import-user-modal')
+    </div>
+
+    <div class="flex flex-wrap gap-4 mb-4 justify-between">
+        <form method="GET" class="flex flex-wrap gap-4 mb-4 items-end">
+            <div class="flex items-center gap-2">
+                <x-button 
+                    type="primary" 
+                    text="ทั้งหมด"
+                    href="{{ route('users.index') }}" />
+            </div>
+            <x-filter
+                name="department_id"
+                label="หน่วยงาน"
+                :options="$departments->pluck('department_name', 'id')->toArray()"
+            />
+
+            <x-filter
+                name="personnel_type"
+                label="ประเภทเจ้าหน้าที่"
+                :options="$personnelTypes"
+            />
+            
+            <x-filter
+                name="position_id"
+                label="ตำแหน่งงาน"
+                :options="$positions->pluck('name', 'id')->toArray()"
+            />
+        </form>
         <x-search-bar /> <!-- <<<< เรียกใช้งาน Component -->
     </div>
 
@@ -34,7 +79,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($users as $index => $user)
+                @forelse ($users as $index => $user)
                     <x-user-table :index="$index + 1" :employee="[
                         'id' => $user->id,
                         'prefix' => $user->prefix,
@@ -50,7 +95,15 @@
                         'department_id' => $user->department_id,
                         'role' => $user->getRoleNames()->first(),
                     ]" />
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-gray-500">
+                            <i class="fas fa-user text-3xl mb-2 block"></i>
+                            <p>ไม่มีข้อมูลเจ้าหน้าที่</p>
+                        </td>
+                    </tr>
+                @endforelse
+                
             </tbody>
         </table>
     </div>

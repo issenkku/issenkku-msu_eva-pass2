@@ -281,12 +281,23 @@
 
             <!-- ปุ่มส่งข้อมูล -->
             <div class="action-section">
-                <button type="button" class="btn btn-secondary"
-                    onclick="window.location='{{ route('evaluator.index') }}'">ยกเลิก</button>
-
-                <button type="button" class="btn btn-primary" onclick="confirmSubmit()">บันทึกข้อมูล</button>
-
-                <button type="button" class="btn btn-warning" onclick="confirmReject()">ไม่อนุมัติ</button>
+                <x-button 
+                    type= defualt 
+                    text="ย้อนกลับ" 
+                    icon="fas fa-arrow-left"
+                    href="{{ route('evaluator.index') }}" />
+                <x-button 
+                    type="primary"
+                    buttonType="button" 
+                    text="รับรองผล"
+                    icon="fas fa-check-circle"
+                    onclick="confirmSubmit()" />
+                <x-button 
+                    type="danger"
+                    buttonType="button" 
+                    text="ไม่รับรองผล"
+                    icon="fas fa-times-circle"
+                    onclick="confirmReject()" />
             </div>
     </form>
 
@@ -297,6 +308,32 @@
     </form>
 
     <div id="submitConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">ยืนยันการบันทึกข้อมูล</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-600">
+                        คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3 space-x-4">
+                    <button id="cancelSubmitModalBtn" class="btn btn-secondary w-28">
+                        ยกเลิก
+                    </button>
+                    <button id="confirmSubmitModalBtn" class="btn btn-primary w-28">
+                        ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rejectConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
             <div class="mt-3 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
