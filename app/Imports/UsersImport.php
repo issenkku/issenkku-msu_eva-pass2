@@ -18,7 +18,7 @@ class UsersImport implements ToCollection
         foreach ($rows->skip(1) as $index => $row) {
             try {
                 $rowArray = $row->toArray();
-                
+
                 if ($this->isEmptyRow($rowArray)) {
                     continue;
                 }
@@ -38,18 +38,18 @@ class UsersImport implements ToCollection
                     'role' => $rowArray[11] ?? null,            // บทบาท
                 ];
 
-                Log::info("Processing row " . ($index + 2), ['mapped_data' => $mappedData]);
+                Log::info('Processing row '.($index + 2), ['mapped_data' => $mappedData]);
 
                 // Validate required fields
-                if (!$this->validateRequiredFields($mappedData, $index)) {
+                if (! $this->validateRequiredFields($mappedData, $index)) {
                     continue;
                 }
 
                 // Handle position
                 $positionName = trim($mappedData['position']);
                 $position = Positions::firstOrCreate(
-                    ['name' => $positionName], 
-                    ['name' => $positionName] 
+                    ['name' => $positionName],
+                    ['name' => $positionName]
                 );
 
                 // Handle department
@@ -75,12 +75,12 @@ class UsersImport implements ToCollection
                     'email' => trim($mappedData['email']),
                     'phone' => trim($mappedData['phone']),
                     'password' => Hash::make($password),
-                    'bio' => !empty(trim($mappedData['bio'] ?? '')) ? trim($mappedData['bio']) : null,
-                    'status' => !empty(trim($mappedData['status'] ?? '')) ? trim($mappedData['status']) : 'active',
+                    'bio' => ! empty(trim($mappedData['bio'] ?? '')) ? trim($mappedData['bio']) : null,
+                    'status' => ! empty(trim($mappedData['status'] ?? '')) ? trim($mappedData['status']) : 'active',
                 ];
 
                 // Only remove completely empty values, but keep null values for nullable fields
-                $userData = array_filter($userData, function($value, $key) {
+                $userData = array_filter($userData, function ($value, $key) {
                     $nullableFields = ['bio'];
                     if (in_array($key, $nullableFields) && is_null($value)) {
                         return true;
@@ -94,25 +94,26 @@ class UsersImport implements ToCollection
                 if ($existingUser) {
                     $existingUser->update($userData);
                     $user = $existingUser;
-                    Log::info("Updated user: " . $mappedData['employee_id']);
+                    Log::info('Updated user: '.$mappedData['employee_id']);
                 } else {
                     $user = User::create($userData);
-                    Log::info("Created user: " . $mappedData['employee_id']);
+                    Log::info('Created user: '.$mappedData['employee_id']);
                 }
 
                 // Handle role assignment
                 $roleName = trim($mappedData['role'] ?? '');
-                if (!empty($roleName)) {
+                if (! empty($roleName)) {
                     $role = Role::firstOrCreate(['name' => $roleName]);
                     $user->syncRoles([$role->name]);
-                    Log::info("Assigned role {$roleName} to user: " . $mappedData['employee_id']);
+                    Log::info("Assigned role {$roleName} to user: ".$mappedData['employee_id']);
                 }
 
             } catch (\Exception $e) {
-                Log::error("Error processing row " . ($index + 2) . ": " . $e->getMessage(), [
+                Log::error('Error processing row '.($index + 2).': '.$e->getMessage(), [
                     'row_data' => $row->toArray(),
-                    'error' => $e->getTraceAsString()
+                    'error' => $e->getTraceAsString(),
                 ]);
+
                 continue;
             }
         }
@@ -123,8 +124,8 @@ class UsersImport implements ToCollection
      */
     private function isEmptyRow(array $row): bool
     {
-        return empty(array_filter($row, function($value) {
-            return !empty(trim($value ?? ''));
+        return empty(array_filter($row, function ($value) {
+            return ! empty(trim($value ?? ''));
         }));
     }
 
@@ -134,17 +135,18 @@ class UsersImport implements ToCollection
     private function validateRequiredFields(array $data, int $index): bool
     {
         $requiredFields = ['prefix', 'email', 'phone', 'employee_id', 'name', 'position', 'department'];
-        
+
         foreach ($requiredFields as $field) {
             if (empty(trim($data[$field] ?? ''))) {
-                Log::warning("Missing required field '{$field}' in row " . ($index + 2), [
+                Log::warning("Missing required field '{$field}' in row ".($index + 2), [
                     'field_value' => $data[$field] ?? 'null',
-                    'all_data' => $data
+                    'all_data' => $data,
                 ]);
+
                 return false;
             }
         }
-        
+
         return true;
     }
 }
