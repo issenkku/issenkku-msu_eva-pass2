@@ -15,8 +15,8 @@ class AssignmentSeeder extends Seeder
     {
         DB::table('assignment_datas')->insert([
             [
-                'evaluator_position_id' =>  1,
-                'evaluatee_position_id' =>  2,
+                'evaluator_position_id' => 1,
+                'evaluatee_position_id' => 2,
                 'start_time' => Carbon::parse('2025-01-01'),
                 'end_time' => Carbon::parse('2025-03-31'),
                 'created_at' => now(),

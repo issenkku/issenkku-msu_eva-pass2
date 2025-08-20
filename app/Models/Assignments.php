@@ -36,16 +36,16 @@ class Assignments extends Model
     public function evaluatorUser()
     {
         // Get first user from evaluator position
-        return $this->assignmentData ? 
-            $this->assignmentData->evaluatorPosition()->first()?->user()->first() : 
+        return $this->assignmentData ?
+            $this->assignmentData->evaluatorPosition()->first()?->user()->first() :
             null;
     }
 
     public function evaluatorUsers()
     {
         // Get all users from evaluator position
-        return $this->assignmentData ? 
-            $this->assignmentData->evaluatorPosition()->first()?->user ?? collect() : 
+        return $this->assignmentData ?
+            $this->assignmentData->evaluatorPosition()->first()?->user ?? collect() :
             collect();
     }
 

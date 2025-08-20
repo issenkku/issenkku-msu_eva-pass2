@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Setting\Positions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Setting\Positions;
 
 class AssignmentData extends Model
 {

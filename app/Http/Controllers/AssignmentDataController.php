@@ -23,10 +23,10 @@ class AssignmentDataController extends Controller
             'assignments.evaluateeUser',
             'assignments.report.reportData',
             'evaluatorPosition',
-            'evaluateePosition'
+            'evaluateePosition',
         ])
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
         return view('assignment-data.index', compact('assignmentData'));
     }
@@ -83,7 +83,7 @@ class AssignmentDataController extends Controller
 
             // ดึงผู้ใช้จากตำแหน่งที่เลือก
             $evaluateePosition = Positions::find($request->evaluatees);
-            
+
             // ดึงผู้ใช้ทั้งหมดที่มีตำแหน่งนี้
             $evaluateeUsers = $evaluateePosition->user;
 
@@ -138,19 +138,19 @@ class AssignmentDataController extends Controller
         $evaluators = $positions;
 
         $assignmentData->load([
-            'assignments.evaluateeUser', 
+            'assignments.evaluateeUser',
             'assignments.report.reportData',
             'evaluatorPosition',
-            'evaluateePosition'
+            'evaluateePosition',
         ]);
 
         return view('assignment-data.edit', compact(
-            'assignmentData', 
-            'report_data', 
-            'departments', 
-            'users', 
-            'positions', 
-            'evaluatees', 
+            'assignmentData',
+            'report_data',
+            'departments',
+            'users',
+            'positions',
+            'evaluatees',
             'evaluators'
         ));
     }
@@ -198,7 +198,7 @@ class AssignmentDataController extends Controller
             // ดึงผู้ใช้จากตำแหน่งที่เลือก
             $evaluateePosition = Positions::find($request->evaluatees);
             $evaluatorPosition = Positions::find($request->evaluators);
-            
+
             // ดึงผู้ใช้ทั้งหมดที่มีตำแหน่งนี้
             $evaluateeUsers = $evaluateePosition->user;
             $evaluatorUsers = $evaluatorPosition->user;
@@ -210,7 +210,7 @@ class AssignmentDataController extends Controller
             // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งผู้รับการประเมิน
             // โดยใช้ผู้ประเมินคนแรกในตำแหน่งผู้ประเมิน
             $evaluatorUser = $evaluatorUsers->first();
-            
+
             foreach ($evaluateeUsers as $evaluateeUser) {
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
@@ -232,7 +232,7 @@ class AssignmentDataController extends Controller
             ]);
 
             return redirect()->back()
-                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: ' . $e->getMessage()])
+                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -241,13 +241,13 @@ class AssignmentDataController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             // ลบ assignments ที่เกี่ยวข้องก่อน
             $assignmentData->assignments()->delete();
-            
+
             // ลบ assignment data
             $assignmentData->delete();
-            
+
             DB::commit();
 
             return response()->json([
@@ -263,7 +263,7 @@ class AssignmentDataController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'เกิดข้อผิดพลาดในการลบ: ' . $e->getMessage(),
+                'message' => 'เกิดข้อผิดพลาดในการลบ: '.$e->getMessage(),
             ], 500);
         }
     }
