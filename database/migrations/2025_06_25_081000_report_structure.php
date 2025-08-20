@@ -58,6 +58,7 @@ return new class extends Migration
             $table->integer('sequence');
             $table->decimal('score_a', 5, 2);
             $table->decimal('score_b', 5, 2);
+            $table->text('description')->nullable();
             $table->foreignId('quantity_main_criteria_id')->constrained('quantity_main_criterias')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
             $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');
@@ -81,6 +82,13 @@ return new class extends Migration
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
             $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');
 
+        });
+
+        Schema::create('formulas', function (Blueprint $table) {
+            $table->id();
+            $table->text('condition');
+            $table->foreignId('quality_main_criteria_id')->constrained('quality_main_criterias')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

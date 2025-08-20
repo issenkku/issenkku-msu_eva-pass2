@@ -64,6 +64,7 @@ Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->grou
         Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
         Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
         Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+        Route::get('/evaluator/{id}', [EvaluatorController::class, 'evaluator'])->name('evaluator.show');
         Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
 });

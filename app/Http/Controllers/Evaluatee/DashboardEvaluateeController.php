@@ -29,7 +29,9 @@ class DashboardEvaluateeController extends Controller
             'ทั้งหมด' => $evaluations->count(),
             'ยังไม่ประเมิน' => $evaluations->where('status', 'Assigned')->count(),
             'กำลังดำเนินการ' => $evaluations->where('status', 'Draft')->count(),
-            'รอผลการประเมิน' => $evaluations->where('status', 'Pending')->count(),
+            'รอผลการประเมิน' => $evaluations->whereIn('status', 
+                ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
+                'Manager_assign', 'Manager_draft'])->count(),
             'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
 
