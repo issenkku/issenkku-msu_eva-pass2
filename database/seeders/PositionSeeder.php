@@ -43,6 +43,18 @@ class PositionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'คณบดี',
+                'description' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'รองคณบดี',
+                'description' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

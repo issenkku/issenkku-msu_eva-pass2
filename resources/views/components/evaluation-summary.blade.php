@@ -118,7 +118,6 @@
                         @php
                             $report = $assignment->report;
                             $assignmentData = $assignment->assignmentData;
-                            $evaluator = $assignment->evaluatorUser;
 
                             $reportTitle = optional(optional($assignmentData)->report)->reportData->report_title
                                 ?? optional($report)->reportData->report_title
@@ -135,8 +134,6 @@
 
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
-
-                            $evaluatorName = optional($evaluator)->name ?? '-';
 
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
@@ -183,7 +180,7 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluatorName }}</td>
+                            <td class="p-4 border-b text-gray-500">{{ $assignment->evaluatorUser->name }}</td>
 
                             <td class="p-4 border-b text-center min-w-[180px]">
                                 @php

@@ -28,7 +28,6 @@ class EvaluatorController extends Controller
             'department',
             'evaluatorAssignments.assignmentData',
             'evaluatorAssignments.report.reportData',
-            'evaluatorAssignments.evaluateeUser',
         ]);
 
         $allAssignments = $user->evaluatorAssignments;

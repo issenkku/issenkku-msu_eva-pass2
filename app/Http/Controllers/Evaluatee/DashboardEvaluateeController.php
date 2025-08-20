@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-use App\Http\Controllers\Controller;
+use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
 use App\Models\QualityMainCriteria;
 use App\Models\QualityScore;
@@ -10,6 +10,8 @@ use App\Models\QuantityMainCriteria;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use App\Http\Controllers\Controller;
 
 class DashboardEvaluateeController extends Controller
 {
@@ -20,10 +22,14 @@ class DashboardEvaluateeController extends Controller
             'department',
             'assignment.assignmentData', // Load nested relationships
             'assignment.report.reportData',
-            'assignment.evaluatorUser', // Load evaluator user relationship
         ]);
 
-        $evaluations = $user->assignment->pluck('report')->filter();
+        // $evaluations = $user->assignment->pluck('report')->filter();
+
+        $evaluations = $user->assignment->map(function ($assignment) {
+            $assignment->evaluatorUser = $assignment->evaluatorUser(); 
+            return $assignment;
+        });
 
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
@@ -51,24 +57,21 @@ class DashboardEvaluateeController extends Controller
             'assignments.evaluatorUser',
             'assignments.assignmentData',
         ])->findOrFail($id);
-
+        
         // Find the assignment for the current user
         $assignment = $report->assignments->where('evaluatee', $user->id)->first();
 
-        if (! $assignment) {
+        if (!$assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 
-        $formatThai = function ($datetime) {
-            if (! $datetime) {
-                return '-';
-            }
+        $formatThai = function($datetime) {
+            if (!$datetime) return '-';
             \Carbon\Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
             $date = \Carbon\Carbon::parse($datetime);
             $year = $date->year + 543;
-
-            return $date->translatedFormat('j F')." {$year}";
+            return $date->translatedFormat('j F') . " {$year}";
         };
 
         $evaluatorName = $assignment && $assignment->evaluatorUser ? $assignment->evaluatorUser->name : 'ไม่พบข้อมูล';
@@ -87,12 +90,12 @@ class DashboardEvaluateeController extends Controller
         $quantityMainCriterias = $criteriaVersion ? $criteriaVersion->quantityMainCriterias : collect();
 
         $quantityScores = QuantityScore::where('report_id', $id)
-            ->get()
-            ->keyBy('quantity_sub_criteria_id');
+        ->get()
+        ->keyBy('quantity_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
-            ->get()
-            ->keyBy('evaluation_list_id');
+        ->get()
+        ->keyBy('evaluation_list_id');
 
         $evidenceMap = $evidenceAnswers->mapWithKeys(function ($item) {
             return [$item->evaluation_list_id => $item->link];
@@ -109,17 +112,17 @@ class DashboardEvaluateeController extends Controller
             if ($firstList) {
                 $evaluationItems[] = [
                     'title' => $firstList->name,
-                    'subtitle' => $firstList->annotation,
+                    'subtitle' => $firstList->annotation, 
                     'is_main' => true,
                     'is_evaluation_list' => true,
                     'evaluation_list_id' => $firstList->id,
                 ];
 
                 $mainCriteriaIds = $firstList->quantitySubCriterias->pluck('quantity_main_criteria_id')->unique();
-
+                
                 foreach ($mainCriteriaIds as $mainCriteriaId) {
                     $mainCriteria = QuantityMainCriteria::find($mainCriteriaId);
-
+                    
                     if ($mainCriteria) {
                         $evaluationItems[] = [
                             'title' => $mainCriteria->name,
@@ -131,7 +134,7 @@ class DashboardEvaluateeController extends Controller
                         ];
 
                         $subCriterias = $firstList->quantitySubCriterias->where('quantity_main_criteria_id', $mainCriteriaId);
-
+                        
                         foreach ($subCriterias as $subCriteria) {
                             $quantityScore = $quantityScores[$subCriteria->id] ?? null;
                             $evidenceLink = $evidenceAnswers[$firstList->id]->link ?? '';
@@ -147,9 +150,9 @@ class DashboardEvaluateeController extends Controller
                                 'evaluation_list_id' => $firstList->id,
                                 'score_a' => $subCriteria->score_a,
                                 'score_b' => $subCriteria->score_b,
-                                'tor_compliant' => $quantityScore?->score_C ?? '',
+                                'tor_compliant' => $quantityScore?->score_C ?? '', 
                                 'user_score' => '',
-                                'evidence' => $evidenceLink,
+                                'evidence' => $evidenceLink, 
                             ];
                         }
                     }
@@ -165,21 +168,21 @@ class DashboardEvaluateeController extends Controller
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $evaluationLists = $report->reportData->criteriaVersion->evaluationLists;
-
+            
             foreach ($evaluationLists->skip(1) as $lists) {
                 $qualityItems[] = [
                     'title' => $lists->name,
-                    'subtitle' => $lists->annotation,
+                    'subtitle' => $lists->annotation, 
                     'is_main' => true,
                     'is_evaluation_list' => true,
                     'evaluation_list_id' => $lists->id,
                 ];
 
                 $mainCriteriaIds = $lists->qualitySubCriterias->pluck('quality_main_criteria_id')->unique();
-
+                
                 foreach ($mainCriteriaIds as $mainCriteriaId) {
                     $mainCriteria = QualityMainCriteria::find($mainCriteriaId);
-
+                    
                     if ($mainCriteria) {
                         $qualityItems[] = [
                             'title' => $mainCriteria->name,
@@ -191,11 +194,11 @@ class DashboardEvaluateeController extends Controller
                         ];
 
                         $subCriterias = $lists->qualitySubCriterias->where('quality_main_criteria_id', $mainCriteriaId);
-
+                        
                         foreach ($subCriterias as $subCriteria) {
                             $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                             $evidenceLink = $evidenceAnswers[$lists->id]->link ?? '';
-
+                            
                             $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                             $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -211,14 +214,14 @@ class DashboardEvaluateeController extends Controller
                                 'num_score' => $subCriteria->num_score,
                                 'user_selected' => $userSelected,
                                 'score' => $qualityScore?->score ?? '',
-                                'evidence' => $evidenceLink,
+                                'evidence' => $evidenceLink, 
                             ];
                         }
                     }
                 }
             }
         }
-
+        
         return view('evaluatee.evaluation', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
             'evaluatorName', 'startTime', 'endTime', 'reportName',

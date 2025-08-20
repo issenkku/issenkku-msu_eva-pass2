@@ -387,17 +387,17 @@ class CompleteDataSeeder extends Seeder
             [
                 'assignment_data_id' => 1,
                 'report_id' => 1,
-                'evaluatee_id' => 1,
+                'evaluatee' => 1,
             ],
             [
                 'assignment_data_id' => 1,
                 'report_id' => 2,
-                'evaluatee_id' => 2,
+                'evaluatee' => 2,
             ],
             [
                 'assignment_data_id' => 2,
                 'report_id' => 3,
-                'evaluatee_id' => 1,
+                'evaluatee' => 1,
             ],
         ]);
 

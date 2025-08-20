@@ -97,7 +97,7 @@
                                 </div>
                                 <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้รับการประเมิน</h3>
                             </div>
-                            <div class="flex items-center justify-between mb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
                                 <label class="block text-sm font-medium text-gray-700">
                                     รายชื่อตำแหน่งผู้รับการประเมิน:
                                 </label>
@@ -138,7 +138,7 @@
                                 </div>
                                 <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้ประเมิน</h3>
                             </div>
-                            <div class="flex items-center justify-between mb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
                                 <label for="evaluators" class="block text-sm font-medium text-gray-700">
                                     รายชื่อตำแหน่งผู้ประเมิน:
                                 </label>
@@ -201,13 +201,13 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="flex justify-between items-center">
+                    <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
                         <div class="text-sm text-gray-500">
                             <i class="fas fa-info-circle mr-2"></i>
                             <span class="font-medium">หมายเหตุ:</span>
                             กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex justify-center items-center gap-2 flex-wrap">
                             <button type="button" id="reset-btn"
                                 class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400 transition-colors">
                                 <i class="fas fa-undo mr-2"></i>ล้างค่า

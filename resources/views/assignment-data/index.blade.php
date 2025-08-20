@@ -66,9 +66,9 @@
                 </div>
 
                 @if($assignmentData->count() > 0)
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                    <div class="relative overflow-x-auto">
+                        <table class="divide-y divide-gray-200 min-w-[900px] w-full">
+                            <thead class="bg-gray-50 ">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         ระยะเวลาประเมิน
@@ -115,7 +115,7 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4">
-                                        <div class="space-y-2">
+                                        <div class="space-y-3">
                                             @php
                                                 $evaluateePosition = $assignment->evaluateePosition;
                                                 $evaluatorPosition = $assignment->evaluatorPosition;

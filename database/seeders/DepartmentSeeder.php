@@ -14,19 +14,19 @@ class DepartmentSeeder extends Seeder
     {
         DB::table('departments')->insert([
             [
-                'department_name' => 'สาธารณสุขศาสตร์',
+                'department_name' => 'หน่วยทรัพยากรบุคคล',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'โภชนศาสตร์ การกำหนดอาหาร และอาหารปลอดภัย',
+                'department_name' => 'หน่วยจัดการงานทั่วไป',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'อนามัยสิ่งแวดล้อม',
+                'department_name' => 'หน่วยจัดการศึกษา',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'อาชีวอนามัยและความปลอดภัย',
+                'department_name' => 'หน่วยการต่างประเทศ',
                 'faculty' => 'คณะสาธารณสุข'
             ],
         ]);
