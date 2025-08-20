@@ -10,6 +10,13 @@
         <p class="version">เวอร์ชัน: {{ $versionName }}</p>
     </div>
 
+    <x-evaluate-report-card 
+        :reportName="$reportName"
+        :reportDescription="$reportDescription"
+        :assessmentType="$assessmentType"
+        :reportComment="$reportComment"
+    />
+
     <x-evaluate-profile-card 
         :evaluatorName="$evaluatorName"
         :startTimeFormatted="$startTimeFormatted"
@@ -190,20 +197,20 @@
         padding: 0 1rem;
     }
 }
-    /* Header Styles */
-    .page-header {
-        text-align: center;
-        margin-bottom: 40px;
-        padding-bottom: 24px;
-        border-bottom: 3px solid #f3f4f6;
-    }
+/* Header Styles */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 3px solid #f3f4f6;
+}
 
-    .page-header h1 {
-        font-size: 28px;
-        font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 8px;
-    }
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+}
 </style>
 
 <script>

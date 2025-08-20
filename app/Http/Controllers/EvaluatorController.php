@@ -90,10 +90,26 @@ class EvaluatorController extends Controller
         $evaluatorInfo = $request->user()->load([
             'position',
             'department',
-            'assignment.assignmentData', // Load nested relationships
-            'assignment.report.reportData',
-            'assignment.evaluatorUser', // Load evaluator user relationship
+            'evaluatorAssignments.assignmentData',
+            'evaluatorAssignments.report.reportData',
+            'evaluatorAssignments.evaluateeUser',
         ]);
+
+        // Filter evaluatorAssignments to only include those with Pending or Completed status
+        $filteredAssignments = $user->evaluatorAssignments->filter(function ($evaluatorAssignments) {
+            $reportStatus = optional($evaluatorAssignments->report)->status;
+            return in_array($reportStatus, ['Pending', 'Completed']);
+        });
+
+        // Get only the reports from filtered assignments
+        $evaluations = $filteredAssignments->pluck('report')->filter();
+
+        // Count status for filtered assignments only
+        $statusCounts = [
+            'ทั้งหมด' => $evaluations->count(),
+            'ยังไม่ประเมิน' => $evaluations->where('status', 'Pending')->count(),
+            'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
+        ];
 
         return view('evaluator_dashboard.index', [
             'assignments' => $assignments,

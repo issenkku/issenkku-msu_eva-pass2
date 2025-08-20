@@ -37,7 +37,7 @@
     </td>
     <td class="p-4 text-center">{{ $employee['contact'] }}</td>
     <td class="p-4 text-center space-x-2">
-        <div class="d-flex gap-2 align-items-center">
+        <div class="d-flex justify-content-center gap-2 align-items-center">
             <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit"
                 onclick='openEditModal({
                     id: {{ $employee["id"] }},

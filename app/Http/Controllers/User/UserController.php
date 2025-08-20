@@ -239,19 +239,16 @@ class UserController extends Controller
 
         // --- Filter ที่มีอยู่เดิม ---
         if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
+            $query->whereIn('department_id', (array) $request->department_id);
         }
         if ($request->filled('position_id')) {
-            $query->where('position_id', $request->position_id);
+            $query->whereIn('position_id', (array) $request->position_id);
         }
         if ($request->filled('personnel_type')) {
-            // หมายเหตุ: ถ้า filter นี้มาจาก <x-filter> ที่คุณให้มาก่อนหน้า
-            // ชื่อ name อาจจะเป็น 'personnel_type_id' ไม่ใช่ 'personnel_type'
-            // กรุณาตรวจสอบให้ตรงกัน
-            $query->where('personnel_type', $request->personnel_type);
+            $query->whereIn('personnel_type', (array) $request->personnel_type);
         }
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->whereIn('status', (array) $request->status);
         }
         // -------------------------
 

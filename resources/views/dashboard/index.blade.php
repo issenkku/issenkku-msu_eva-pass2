@@ -219,8 +219,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ลำดับ</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้รับการประเมิน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้ประเมิน</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนน</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">สถานะ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">คะแนน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
                             </tr>
                         </thead>
@@ -241,15 +241,22 @@
                                         ? $report['status'] ?? 'UNKNOWN'
                                         : $report->report_status ?? ($report->status ?? 'UNKNOWN');
 
-                                    // Pretty label for status
-                                    $prettyStatus = ucfirst(strtolower($status));
+                                    $statusMapping = [
+                                        'Assigned' => 'ยังไม่ประเมิน',
+                                        'Draft' => 'กำลังดำเนินการ',
+                                        'Pending' => 'รอผลการประเมิน',
+                                        'Completed' => 'ประเมินเสร็จสิ้น',
+                                    ];
+
+                                    // Use mapping or fallback to raw status
+                                    $prettyStatus = $statusMapping[$status] ?? $status;
 
                                     // Color logic
                                     $statusClass = match ($status) {
                                         'Completed' => 'bg-green-100 text-green-800',
                                         'Pending' => 'bg-yellow-100 text-yellow-800',
                                         'Draft' => 'bg-gray-100 text-gray-800',
-                                        default => 'bg-blue-100 text-blue-800',
+                                        default => 'bg-red-100 text-red-800',
                                     };
                                 @endphp
                                 <tr class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
@@ -270,7 +277,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
                                         <span
                                             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $statusClass }}">
                                             {{ $prettyStatus }}

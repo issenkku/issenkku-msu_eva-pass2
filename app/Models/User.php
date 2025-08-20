@@ -13,11 +13,17 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
+
 
 class User extends Authenticatable implements CanResetPassword
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use CanResetPasswordTrait, HasApiTokens, HasFactory, HasRoles, Notifiable;
+
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, CanResetPasswordTrait, LogsActivity;
+
 
     /**
      * The attributes that are mass assignable.
@@ -57,6 +63,20 @@ class User extends Authenticatable implements CanResetPassword
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnlyDirty()
+            ->useLogName('user_info') // custom log_name in DB
+            ->setDescriptionForEvent(function (string $eventName) {
+                return match ($eventName) {
+                    'updated' => "แก้ไขข้อมูลผู้ใช้",
+                    'created' => "สร้างผู้ใช้ใหม่",
+                    default   => $eventName,
+                };
+            });
     }
 
     public function getAuthIdentifierName()

@@ -200,7 +200,7 @@
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center">
+                            <td class="p-4 border-b text-center \">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
@@ -231,7 +231,7 @@
 
                                 @if($action)
                                     <a href="{{ $url }}"
-                                    class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
+                                    class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
                                         {{ $action['label'] }}
                                     </a>
                                 @else

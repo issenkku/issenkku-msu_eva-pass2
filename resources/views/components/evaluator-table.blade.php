@@ -21,24 +21,24 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($assignment) {
+    $sortedEvaluations = collect($evaluations)->sortByDesc(function($evaluatorAssignment) {
         // Primary sort: by end_time (most recent first)
-        $endTime = optional($assignment->assignmentData)->end_time;
+        $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
         if ($endTime) {
             return Carbon::parse($endTime)->timestamp;
         }
         
         // Secondary sort: by start_time if no end_time
-        $startTime = optional($assignment->assignmentData)->start_time;
+        $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
         if ($startTime) {
             return Carbon::parse($startTime)->timestamp;
         }
         
         // Tertiary sort: by created_at or updated_at
-        return optional($assignment->report)->updated_at 
-            ? Carbon::parse($assignment->report->updated_at)->timestamp
-            : (optional($assignment)->created_at 
-                ? Carbon::parse($assignment->created_at)->timestamp 
+        return optional($evaluatorAssignment->report)->updated_at 
+            ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
+            : (optional($evaluatorAssignment)->created_at 
+                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp 
                 : 0);
     })->values(); // Reset array keys to ensure proper numbering
 
@@ -52,8 +52,8 @@
 
         $statusCode = $reverseMap[$filteredStatus] ?? $filteredStatus;
 
-        $sortedEvaluations = $sortedEvaluations->filter(function($assignment) use ($statusCode) {
-            return optional($assignment->report)->status === $statusCode;
+        $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCode) {
+            return optional($evaluatorAssignment->report)->status === $statusCode;
         })->values(); // Reset keys
     }
 @endphp
@@ -110,11 +110,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($sortedEvaluations as $index => $assignment)
+                    @forelse($sortedEvaluations as $index => $evaluatorAssignment)
                         @php
-                            $report = $assignment->report;
-                            $assignmentData = $assignment->assignmentData;
-                            $evaluator = $assignment->evaluatorUser;
+                            $report = $evaluatorAssignment->report;
+                            $assignmentData = $evaluatorAssignment->assignmentData;
+                            $evaluatee = $evaluatorAssignment->evaluateeUser;
 
                             $reportTitle = optional(optional($assignmentData)->report)->reportData->report_title
                                 ?? optional($report)->reportData->report_title
@@ -130,7 +130,7 @@
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
 
-                            $evaluatorName = optional($evaluator)->name ?? '-';
+                            $evaluateeName = optional($evaluatee)->name ?? '-';
 
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
@@ -177,7 +177,7 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluatorName }}</td>
+                            <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
 
                             <td class="p-4 border-b text-center min-w-[180px]">
                                 @php
@@ -197,25 +197,31 @@
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
                                             'label' => 'เริ่มประเมิน',
-                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white'
+                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white',
+                                            'route' => 'evaluator.evaluatee.edit'
                                         ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
-                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white'
+                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white',
+                                            'route' => 'evaluator.evaluatee.show'
                                         ],
                                     ];
                                     $action = $actions[$status] ?? null;
 
-                                    $url = route('evaluation.show', ['id' => $report->id ?? 0]);
-
-                                    if ($status === 'ประเมินเสร็จสิ้น') {
-                                        $url .= '?readonly=1';
+                                    // Use the evaluatee ID for routing
+                                    $evaluateeId = optional($evaluatee)->id ?? $evaluatorAssignment->evaluatee_id;
+                                    
+                                    if ($action && $evaluateeId) {
+                                        $url = route($action['route'], ['id' => $report->id ?? 0]);
+                                    } else {
+                                        $url = '#';
                                     }
+                                    
                                 @endphp
 
-                                @if($action)
+                                @if($action && $evaluateeId)
                                     <a href="{{ $url }}"
-                                    class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
+                                    class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
                                         {{ $action['label'] }}
                                     </a>
                                 @else
@@ -232,6 +238,7 @@
                         </tr>
                     @endforelse
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 </div>
