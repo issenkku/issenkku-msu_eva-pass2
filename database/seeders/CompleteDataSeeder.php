@@ -364,6 +364,8 @@ class CompleteDataSeeder extends Seeder
         DB::table('assignment_datas')->insert([
             [
                 'id' => 1,
+                'evaluator_position_id' => 1,
+                'evaluatee_position_id' => 2,
                 'start_time' => '2024-01-01',
                 'end_time' => '2024-12-31',
                 'created_at' => now(),
@@ -371,6 +373,8 @@ class CompleteDataSeeder extends Seeder
             ],
             [
                 'id' => 2,
+                'evaluator_position_id' => 2,
+                'evaluatee_position_id' => 3,
                 'start_time' => '2024-06-01',
                 'end_time' => '2024-11-30',
                 'created_at' => now(),
@@ -383,20 +387,17 @@ class CompleteDataSeeder extends Seeder
             [
                 'assignment_data_id' => 1,
                 'report_id' => 1,
-                'evaluatee' => 1,
-                'evaluator' => 2,
+                'evaluatee_id' => 1,
             ],
             [
                 'assignment_data_id' => 1,
                 'report_id' => 2,
-                'evaluatee' => 2,
-                'evaluator' => 1,
+                'evaluatee_id' => 2,
             ],
             [
                 'assignment_data_id' => 2,
                 'report_id' => 3,
-                'evaluatee' => 1,
-                'evaluator' => 2,
+                'evaluatee_id' => 1,
             ],
         ]);
 

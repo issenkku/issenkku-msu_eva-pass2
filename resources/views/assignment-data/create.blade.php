@@ -28,196 +28,235 @@
 
     <body class="bg-gray-50 min-h-screen py-8">
         <div class="py-12 max-w-6xl mx-auto px-4">
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-4">
-                <div class="bg-white shadow-sm rounded-lg mb-6">
-                    <form id="evaluation-form" action="{{ route('assignment-data.store') }}" method="POST">
-                        @csrf
-                        <h2 class="text-xl font-semibold text-gray-800 p-6 mb-4">กำหนดกรอบการประเมิน</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 border-b border-gray-200">
-                            <div>
-                                <label for="start_time"
-                                    class="block text-sm font-medium text-gray-700">วันเริ่มต้นประเมิน:</label>
-                                <input type="text" name="start_time" id="start_time"
-                                    class="mt-1 form-input-custom flatpickr-date" required>
-                            </div>
-                            <div>
-                                <label for="end_time"
-                                    class="block text-sm font-medium text-gray-700">วันสิ้นสุดประเมิน:</label>
-                                <input type="text" name="end_time" id="end_time"
-                                    class="mt-1 form-input-custom flatpickr-date" required>
-                            </div>
+            <form id="evaluation-form" action="{{ route('assignment-data.store') }}" method="POST">
+                @csrf
+                
+                <!-- กำหนดกรอบการประเมิน Section -->
+                <div class="bg-white shadow-sm rounded-lg p-6 mb-6 form-section step-card step-1">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full mr-3 text-sm font-semibold">
+                            1
                         </div>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800 p-6 ">เกณฑ์การประเมิน</h2>
-                <div class="mb-4 p-6 border-b border-gray-200 p-6 border-b border-gray-200">
-                    <label for="report_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        เกณฑ์การประเมิน :
-                    </label>
-
-                    <select id="report_data_id" name="report_data_id" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- กรุณาเลือกเกณฑ์การประเมิน --</option>
-                        @foreach ($report_data as $item)
-                            <option value="{{ $item->id }}">{{ $item->report_title }}</option>
-                        @endforeach
-                    </select>
-
-                    <h2 class="text-xl font-semibold text-gray-800 p-6 ">กำหนดผู้ประเมิน / ผู้รับการประเมิน</h2>
-                    <!-- ฟิลเตอร์หน่วยงาน -->
-                    <div class="mb-6 pb-6 border-b border-gray-200">
-                        <label for="department_filter" class="block text-sm font-medium text-gray-700 mb-2">
-                            ฟิลเตอร์ตามหน่วยงาน :
-                        </label>
-                        <select id="department_filter" name="department_filter"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                            <option value="all">แสดงทั้งหมด</option>
-                            @foreach ($departments as $department)
-                                <option value="{{ $department->id }}">{{ $department->department_name }} -
-                                    {{ $department->faculty }}</option>
-                            @endforeach
-                        </select>
-
-                        <p class="mt-2 text-xs text-gray-500">
-                            เลือกหน่วยงานเพื่อกรองรายชื่อผู้ประเมินและผู้รับการประเมินด้านล่าง
-                        </p>
-                        <div id="filter-summary" class="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-700 hidden">
-                            <!-- แสดงสรุปการฟิลเตอร์ -->
+                        <h2 class="text-xl font-semibold text-gray-800">กำหนดกรอบการประเมิน</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันเริ่มต้นประเมิน:
+                            </label>
+                            <input type="text" name="start_time" id="start_time"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
+                        </div>
+                        <div>
+                            <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันสิ้นสุดประเมิน:
+                            </label>
+                            <input type="text" name="end_time" id="end_time"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
                         </div>
                     </div>
+                </div>
 
-                    <div class="space-y-8">
+                <!-- เกณฑ์การประเมิน Section -->
+                <div class="bg-white shadow-sm rounded-lg p-6 mb-6 form-section step-card step-2">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-green-600 text-white rounded-full mr-3 text-sm font-semibold">
+                            2
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">เลือกเกณฑ์การประเมิน</h2>
+                    </div>
+                    <div>
+                        <label for="report_data_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clipboard-list mr-2 text-green-500"></i>เกณฑ์การประเมิน:
+                        </label>
+                        <select id="report_data_id" name="report_data_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">-- กรุณาเลือกเกณฑ์การประเมิน --</option>
+                            @foreach ($report_data as $item)
+                                <option value="{{ $item->id }}">{{ $item->report_title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <!-- กำหนดผู้ประเมิน / ผู้รับการประเมิน Section -->
+                <div class="bg-white shadow-sm rounded-lg p-6 mb-6 form-section step-card step-3">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-purple-600 text-white rounded-full mr-3 text-sm font-semibold">
+                            3
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">กำหนดผู้ประเมิน / ผู้รับการประเมิน</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <!-- ผู้รับการประเมิน Section -->
-                        <div>
+                        <div class="bg-blue-50 rounded-lg p-6 position-card">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-2 text-xs font-semibold">
+                                    A
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้รับการประเมิน</h3>
+                            </div>
                             <div class="flex items-center justify-between mb-4">
                                 <label class="block text-sm font-medium text-gray-700">
-                                    รายชื่อผู้รับการประเมิน :
+                                    รายชื่อตำแหน่งผู้รับการประเมิน:
                                 </label>
                                 <div class="text-sm text-gray-500">
-                                    <span id="evaluatees-available-count">0</span> คนที่แสดง จาก
-                                    <span id="evaluatees-total-count">0</span> คนทั้งหมด
+                                    <span id="evaluatees-available-count">0</span> ตำแหน่งที่แสดง จาก
+                                    <span id="evaluatees-total-count">0</span> ตำแหน่งทั้งหมด
                                 </div>
                             </div>
-                            <select id="evaluatees" name="evaluatees[]" multiple required
-                                class="form-multi-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @foreach ($evaluatees as $user)
-                                    <option value="{{ $user->id }}"
-                                        data-department="{{ $user->department_id ?? 'none' }}">
-                                        {{ $user->name }}
+                            <select id="evaluatees" name="evaluatees" required
+                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- เลือกตำแหน่งผู้รับการประเมิน --</option>
+                                @foreach ($evaluatees as $position)
+                                    <option value="{{ $position->id }}"
+                                        data-position-name="{{ $position->name }}"
+                                        data-user-count="{{ $position->user->count() }}">
+                                        {{ $position->name }} ({{ $position->user->count() }} คน)
                                     </option>
                                 @endforeach
                             </select>
 
                             <!-- Selected Display for Evaluatees -->
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg min-h-[60px]">
+                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-blue-200">
                                 <p class="text-sm font-medium text-gray-700 mb-2">
-                                    รายชื่อผู้รับการประเมินที่เลือก:
-                                    <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">0</span> คน
+                                    <i class="fas fa-check-circle mr-2 text-blue-500"></i>ตำแหน่งผู้รับการประเมินที่เลือก:
+                                    <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">0</span> ตำแหน่ง
                                 </p>
                                 <div id="selected-evaluatees" class="flex flex-col gap-2">
-                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกรายชื่อ</span>
+                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- ส่วนที่เกี่ยวกับ Evaluators -->
-                        <div>
+                        <!-- ผู้ประเมิน Section -->
+                        <div class="bg-green-50 rounded-lg p-6 position-card">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center justify-center w-6 h-6 bg-green-600 text-white rounded-full mr-2 text-xs font-semibold">
+                                    B
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้ประเมิน</h3>
+                            </div>
                             <div class="flex items-center justify-between mb-4">
                                 <label for="evaluators" class="block text-sm font-medium text-gray-700">
-                                    รายชื่อผู้ประเมิน :
+                                    รายชื่อตำแหน่งผู้ประเมิน:
                                 </label>
                                 <div class="text-sm text-gray-500">
-                                    <span id="evaluators-available-count">0</span> คนที่แสดง จาก
-                                    <span id="evaluators-total-count">0</span> คนทั้งหมด
+                                    <span id="evaluators-available-count">0</span> ตำแหน่งที่แสดง จาก
+                                    <span id="evaluators-total-count">0</span> ตำแหน่งทั้งหมด
                                 </div>
                             </div>
-                            <select id="evaluators" name="evaluators[]" multiple required
-                                class="form-multi-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                @foreach ($evaluators as $user)
-                                    <option value="{{ $user->id }}" data-department="{{ $user->department_id }}">
-                                        {{ $user->name }} - {{ $user->department->department_name ?? '' }}
+                            <select id="evaluators" name="evaluators" required
+                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">-- เลือกตำแหน่งผู้ประเมิน --</option>
+                                @foreach ($evaluators as $position)
+                                    <option value="{{ $position->id }}" 
+                                        data-position-name="{{ $position->name }}"
+                                        data-user-count="{{ $position->user->count() }}">
+                                        {{ $position->name }} ({{ $position->user->count() }} คน)
                                     </option>
                                 @endforeach
                             </select>
 
                             <!-- Selected Display for Evaluators -->
-                            <div class="mt-4 p-4 bg-gray-50 rounded-lg min-h-[60px]">
+                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-green-200">
                                 <p class="text-sm font-medium text-gray-700 mb-2">
-                                    รายชื่อผู้ประเมินที่เลือก:
-                                    <span id="evaluators-selected-count" class="text-blue-600 font-semibold">0</span> คน
+                                    <i class="fas fa-check-circle mr-2 text-green-500"></i>ตำแหน่งผู้ประเมินที่เลือก:
+                                    <span id="evaluators-selected-count" class="text-green-600 font-semibold">0</span> ตำแหน่ง
                                 </p>
                                 <div id="selected-evaluators" class="flex flex-col gap-2">
-                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกรายชื่อ</span>
+                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- สรุปและปุ่มควบคุม Section -->
+                <div class="bg-white shadow-sm rounded-lg p-6 form-section step-card step-4">
+                    <div class="flex items-center mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 bg-orange-600 text-white rounded-full mr-3 text-sm font-semibold">
+                            4
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">สรุปและยืนยันการตั้งค่า</h2>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-lg p-4 shadow-sm summary-card text-center">
+                                <div class="text-2xl font-bold text-blue-600" id="summary-period">-</div>
+                                <div class="text-sm text-gray-500">ระยะเวลาประเมิน (วัน)</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-6 shadow-sm summary-card">
+                                <div class="text-center mb-3">
+                                    <div class="text-lg font-bold text-green-600">เกณฑ์การประเมินที่เลือก</div>
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-4">
+                                    <div class="text-sm text-gray-600 font-medium mb-2">ชื่อเกณฑ์:</div>
+                                    <div class="text-base font-semibold text-green-700" id="summary-criteria-full">-</div>
+                                    <div class="text-xs text-gray-500 mt-2" id="summary-criteria-description">กรุณาเลือกเกณฑ์การประเมิน</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="flex justify-between items-center mt-8">
+                    <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-500">
-                            <span class="font-medium">สรุป:</span>
-                            ผู้รับการประเมิน <span id="total-evaluatees" class="text-blue-600 font-semibold">0</span>
-                            คน,
-                            ผู้ประเมิน <span id="total-evaluators" class="text-blue-600 font-semibold">0</span> คน
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <span class="font-medium">หมายเหตุ:</span>
+                            กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก
                         </div>
                         <div class="flex space-x-3">
                             <button type="button" id="reset-btn"
                                 class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400 transition-colors">
-                                ล้างค่า
+                                <i class="fas fa-undo mr-2"></i>ล้างค่า
                             </button>
                             <button type="submit"
-                                class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                บันทึก
+                                class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:from-blue-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                <i class="fas fa-save mr-2"></i>บันทึกการตั้งค่า
                             </button>
                         </div>
                     </div>
-                    </form>
                 </div>
-            </div>
+            </form>
+        </div>
 
             <script>
                 $(document).ready(function() {
-                    // ดึงชื่อหน่วยงานจาก blade json
-                    const departmentNames = @json($departments->pluck('department_name', 'id'));
-
                     function formatOption(option) {
                         if (!option.id) return option.text;
 
                         const $option = $(option.element);
-                        if (!$option.length) return option.text; // เพิ่มเช็คนี้
+                        if (!$option.length) return option.text;
 
-                        const isSelected = $option.is(':selected');
-                        const department = $option.data('department') || ''; // กำหนด default
-                        const isDisabled = $option.is(':disabled');
+                        const positionName = $option.data('position-name') || option.text || '';
+                        const userCount = $option.data('user-count') || 0;
 
-                        if (isDisabled) return null;
-
-                        return $(`<div class="flex items-center justify-between" style="padding: 4px 0;" data-id="${option.id}">
-                         <div class="flex items-center"> <input type="checkbox" class="mr-2" ${isSelected ? 'checked' : ''} disabled>
-                                  <span>${option.text}</span>
-                               </div>
-                            <span class="${department}">${departmentNames[department] || department}</span>
-                            </div>
-                       `);
+                        return $(`<div class="flex items-center justify-between" style="padding: 4px 0;">
+                         <div class="flex items-center"> 
+                            <span>${positionName} (${userCount} คน)</span>
+                        </div>
+                        </div>`);
                     }
 
 
-                    function setupSelect2WithSelectAll(selectId, displayId, selectedCountId, availableCountId) {
+                    function setupSelect2Single(selectId, displayId, selectedCountId, availableCountId) {
                         const $select = $(`#${selectId}`);
+                        
+                        if (!$select.length) {
+                            console.warn(`Element with ID ${selectId} not found`);
+                            return;
+                        }
 
                         $select.select2({
-                            placeholder: "เลือกรายชื่อ...",
+                            placeholder: "เลือกตำแหน่ง...",
                             width: '100%',
-                            closeOnSelect: false,
+                            allowClear: true,
                             templateResult: formatOption,
-                            templateSelection: function(data) {
-                                const selected = $select.select2('data');
-                                if (selected.length === 0) return 'เลือกรายชื่อ...';
-                                return `เลือกแล้ว ${selected.length} คน`;
-                            },
                             language: {
                                 noResults: function() {
-                                    return "ไม่พบรายชื่อที่ตรงกับการค้นหา";
+                                    return "ไม่พบตำแหน่งที่ตรงกับการค้นหา";
                                 },
                                 searching: function() {
                                     return "กำลังค้นหา...";
@@ -225,171 +264,126 @@
                             }
                         });
 
-                        $select.on('select2:open', function() {
-                            const selectAllClass = `select2-select-all-${selectId}`;
-                            $('.select2-results__option--select-all').remove();
-
-                            setTimeout(() => {
-                                if (!$(`.${selectAllClass}`).length) {
-                                    const $availableOptions = $select.find('option:not(:disabled)');
-                                    if ($availableOptions.length > 1) {
-                                        const selectAll = $(
-                                            `<li class="select2-results__option select2-results__option--select-all ${selectAllClass}" role="option" style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #e5e7eb;">` +
-                                            '<span style="font-weight: bold;"><span style="color: #3b82f6;">✓</span> เลือกทั้งหมด (' +
-                                            $availableOptions.length + ' คน)</span>' +
-                                            '</li>'
-                                        );
-
-                                        selectAll.on('click', function(e) {
-                                            e.stopPropagation();
-                                            const allValues = $select.find('option:not(:disabled)')
-                                                .map(function() {
-                                                    return $(this).val();
-                                                }).get();
-                                            $select.val(allValues).trigger('change');
-                                            $select.select2('close');
-                                        });
-
-                                        $(".select2-results__options").prepend(selectAll);
-                                    }
-                                }
-                            }, 50);
-                        });
-
-                        $select.on('select2:close', function() {
-                            $('.select2-results__option--select-all').remove();
-                        });
-
-                        $select.on('change select2:select select2:unselect', function() {
+                        $select.on('change', function() {
                             updateDisplayAndCounts();
-
-                            if ($select.data('select2').isOpen()) {
-                                $select.select2('close');
-                                setTimeout(() => {
-                                    $select.select2('open');
-                                }, 0);
-                            }
                         });
 
                         updateAvailableCount($select, availableCountId);
                     }
 
                     function updateAvailableCount($select, countId) {
+                        if (!$select || !$select.length) return;
                         const availableCount = $select.find('option:not(:disabled)').length;
-                        $(`#${countId}`).text(availableCount);
+                        const $countElement = $(`#${countId}`);
+                        if ($countElement.length) {
+                            $countElement.text(availableCount);
+                        }
                     }
 
                     function updateDisplayAndCounts() {
                         ['evaluatees', 'evaluators'].forEach(type => {
                             const $select = $(`#${type}`);
-                            const selected = $select.find(':selected');
+                            const selectedValue = $select.val();
+                            const selectedOption = $select.find(':selected');
                             const displayId = `selected-${type}`;
                             const selectedCountId = `${type}-selected-count`;
 
-                            $(`#${selectedCountId}`).text(selected.length);
+                            const selectedCount = selectedValue ? 1 : 0;
+                            $(`#${selectedCountId}`).text(selectedCount);
 
-                            if (selected.length === 0) {
+                            if (!selectedValue || selectedValue === '') {
                                 $(`#${displayId}`).html(
-                                    '<span class="text-sm text-gray-500">ยังไม่ได้เลือกรายชื่อ</span>');
+                                    '<span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>');
                             } else {
-                                const tags = selected.map(function() {
-                                    const department = $(this).data('department');
-                                    return `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-1 mb-1">
-                                ${$(this).text()}
-                                <span class=" ${department} ml-2">${departmentNames[department]}</span>
-                            </span>`;
-                                }).get().join('');
-                                $(`#${displayId}`).html(tags);
+                                const positionName = selectedOption.data('position-name') || selectedOption.text() || 'ไม่ระบุ';
+                                const userCount = selectedOption.data('user-count') || 0;
+                                const tag = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    ${positionName} (${userCount} คน)
+                                </span>`;
+                                $(`#${displayId}`).html(tag);
                             }
                         });
 
-                        $('#total-evaluatees').text($('#evaluatees').find(':selected').length);
-                        $('#total-evaluators').text($('#evaluators').find(':selected').length);
+                        // อัปเดตสรุปข้อมูล
+                        updateSummary();
                     }
 
-                    function filterByDepartment(department) {
-                        const filterSummary = $('#filter-summary');
-
-                        if (department === 'all' || !department) {
-                            department = '';
-                        }
-
-                        ['evaluatees', 'evaluators'].forEach(selectId => {
-                            const $select = $(`#${selectId}`);
-
-                            $select.find('option').each(function() {
-                                const optionDept = $(this).data('department');
-                                const shouldShow = !department || optionDept == department;
-                                $(this).prop('disabled', !shouldShow);
-                            });
-
-                            updateAvailableCount($select, `${selectId}-available-count`);
-
-                            $select.select2('destroy');
-                            setupSelect2WithSelectAll(
-                                selectId,
-                                `selected-${selectId}`,
-                                `${selectId}-selected-count`,
-                                `${selectId}-available-count`
-                            );
-
-                            $select.val(null).trigger('change');
-                        });
-
-                        if (department) {
-                            const deptName = departmentNames[department];
-                            const evaluateesCount = $('#evaluatees').find('option:not(:disabled)').length;
-                            const evaluatorsCount = $('#evaluators').find('option:not(:disabled)').length;
-
-                            filterSummary.html(
-                                `<i class="fas fa-filter mr-2"></i>กำลังแสดงเฉพาะ <strong>${deptName}</strong> - ` +
-                                `ผู้รับการประเมิน ${evaluateesCount} คน, ผู้ประเมิน ${evaluatorsCount} คน`
-                            ).removeClass('hidden');
-                        } else {
-                            filterSummary.addClass('hidden');
-                        }
-
-                        updateDisplayAndCounts();
-                    }
-
-                    setupSelect2WithSelectAll('evaluatees', 'selected-evaluatees', 'evaluatees-selected-count',
-                        'evaluatees-available-count');
-                    setupSelect2WithSelectAll('evaluators', 'selected-evaluators', 'evaluators-selected-count',
-                        'evaluators-available-count');
-
-                    $('#department_filter').on('change', function() {
-                        const selectedDepartment = $(this).val();
-
-                        const hasEvaluatees = ($('#evaluatees').val() || []).length > 0;
-                        const hasEvaluators = ($('#evaluators').val() || []).length > 0;
-
-                        if ((hasEvaluatees || hasEvaluators) && selectedDepartment !== "") {
-                            const confirmed = confirm(
-                                "คุณต้องล้างข้อมูลในฟอร์มก่อนจึงจะสามารถเปลี่ยนแผนกได้\n\nต้องการล้างฟอร์มหรือไม่?"
-                            );
-                            if (!confirmed) {
-                                $(this).val('all').trigger('change');
-                                return;
+                    function updateSummary() {
+                        try {
+                            // อัปเดตระยะเวลาประเมิน
+                            const startTime = $('#start_time').val();
+                            const endTime = $('#end_time').val();
+                            const $summaryPeriod = $('#summary-period');
+                            
+                            if (startTime && endTime && $summaryPeriod.length) {
+                                const start = new Date(startTime);
+                                const end = new Date(endTime);
+                                const diffTime = Math.abs(end - start);
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                                $summaryPeriod.text(diffDays);
+                            } else if ($summaryPeriod.length) {
+                                $summaryPeriod.text('-');
                             }
 
-                            $('#evaluation-form')[0].reset();
-                            $('#evaluatees').val(null).trigger('change');
-                            $('#evaluators').val(null).trigger('change');
+                            // อัปเดตเกณฑ์การประเมิน (แสดงแบบเต็ม)
+                            const selectedCriteria = $('#report_data_id option:selected').text();
+                            const $summaryCriteriaFull = $('#summary-criteria-full');
+                            const $summaryCriteriaDescription = $('#summary-criteria-description');
+                            
+                            if ($summaryCriteriaFull.length) {
+                                if (selectedCriteria && selectedCriteria !== '-- กรุณาเลือกเกณฑ์การประเมิน --') {
+                                    $summaryCriteriaFull.text(selectedCriteria);
+                                    $summaryCriteriaDescription.text('เกณฑ์ที่เลือกสำหรับการประเมินในครั้งนี้');
+                                } else {
+                                    $summaryCriteriaFull.text('-');
+                                    $summaryCriteriaDescription.text('กรุณาเลือกเกณฑ์การประเมิน');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error updating summary:', error);
                         }
+                    }
 
-                        filterByDepartment(selectedDepartment);
-                    });
+                    // Initialize Select2 with error handling
+                    try {
+                        setupSelect2Single('evaluatees', 'selected-evaluatees', 'evaluatees-selected-count',
+                            'evaluatees-available-count');
+                        setupSelect2Single('evaluators', 'selected-evaluators', 'evaluators-selected-count',
+                            'evaluators-available-count');
+                    } catch (error) {
+                        console.error('Error initializing Select2:', error);
+                    }
 
-                    $('#evaluatees-total-count').text($('#evaluatees option').length);
-                    $('#evaluators-total-count').text($('#evaluators option').length);
+                    // Initialize counts safely
+                    const $evaluatees = $('#evaluatees');
+                    const $evaluators = $('#evaluators');
+                    
+                    if ($evaluatees.length) {
+                        $('#evaluatees-total-count').text($evaluatees.find('option').length);
+                        $('#evaluatees-available-count').text($evaluatees.find('option').length);
+                    }
+                    
+                    if ($evaluators.length) {
+                        $('#evaluators-total-count').text($evaluators.find('option').length);
+                        $('#evaluators-available-count').text($evaluators.find('option').length);
+                    }
+                    
                     updateDisplayAndCounts();
-                    filterByDepartment('all');
+
+                    // เพิ่ม event listeners สำหรับอัปเดตสรุปข้อมูล
+                    $('#start_time, #end_time').on('change', updateSummary);
+                    $('#report_data_id').on('change', updateSummary);
+
+                    // อัปเดตสรุปข้อมูลครั้งแรก
+                    updateSummary();
 
                     $('#reset-btn').on('click', function() {
                         if (confirm('คุณต้องการล้างข้อมูลในฟอร์มทั้งหมดใช่หรือไม่?')) {
                             $('#evaluation-form')[0].reset();
-                            $('#department_filter').val('all').trigger('change');
-                            filterByDepartment('all');
+                            $('#evaluatees').val(null).trigger('change');
+                            $('#evaluators').val(null).trigger('change');
+                            updateDisplayAndCounts();
+                            updateSummary();
                             alert('ล้างข้อมูลในฟอร์มเรียบร้อยแล้ว');
                         }
                     });
@@ -400,8 +394,8 @@
                         const submitButton = $(this).find('button[type="submit"]');
                         const loadingOverlay = $('#loading-overlay');
 
-                        const evaluateesSelected = $('#evaluatees').val() || [];
-                        const evaluatorsSelected = $('#evaluators').val() || [];
+                        const evaluateesSelected = $('#evaluatees').val();
+                        const evaluatorsSelected = $('#evaluators').val();
                         const reportDataId = $('#report_data_id').val();
                         const startTime = $('#start_time').val();
                         const endTime = $('#end_time').val();
@@ -422,13 +416,13 @@
                             return;
                         }
 
-                        if (evaluateesSelected.length === 0) {
-                            alert('กรุณาเลือกผู้รับการประเมินอย่างน้อย 1 คน');
+                        if (!evaluateesSelected) {
+                            alert('กรุณาเลือกตำแหน่งผู้รับการประเมิน');
                             return;
                         }
 
-                        if (evaluatorsSelected.length === 0) {
-                            alert('กรุณาเลือกผู้ประเมินอย่างน้อย 1 คน');
+                        if (!evaluatorsSelected) {
+                            alert('กรุณาเลือกตำแหน่งผู้ประเมิน');
                             return;
                         }
 
@@ -437,14 +431,10 @@
 
                         // สร้าง assignments array ตามที่ Controller ต้องการ
                         const assignments = [];
-                        evaluateesSelected.forEach(evaluatee => {
-                            evaluatorsSelected.forEach(evaluator => {
-                                assignments.push({
-                                    report_data_id: reportDataId,
-                                    evaluatee: evaluatee,
-                                    evaluator: evaluator
-                                });
-                            });
+                        assignments.push({
+                            report_data_id: reportDataId,
+                            evaluatee: evaluateesSelected,
+                            evaluator: evaluatorsSelected
                         });
 
                         // สร้าง hidden inputs สำหรับส่งข้อมูล
@@ -495,6 +485,47 @@
     <style>
         body {
             font-family: 'Sarabun', sans-serif;
+        }
+
+        /* Step indicators */
+        .step-card {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .step-card.step-1::before { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+        .step-card.step-2::before { background: linear-gradient(90deg, #059669, #10b981); }
+        .step-card.step-3::before { background: linear-gradient(90deg, #7c3aed, #8b5cf6); }
+        .step-card.step-4::before { background: linear-gradient(90deg, #ea580c, #f97316); }
+
+        /* Form sections hover effects */
+        .form-section {
+            transition: all 0.3s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Position selection cards */
+        .position-card {
+            transition: all 0.3s ease;
+        }
+
+        .position-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .card-checkbox {
@@ -554,17 +585,46 @@
         .select2-results__option input[type="checkbox"] {
             pointer-events: none;
         }
+
+        /* Gradient backgrounds */
+        .bg-gradient-blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+        .bg-gradient-green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+        .bg-gradient-purple { background: linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 100%); }
+        .bg-gradient-orange { background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); }
+
+        /* Animation for step completion */
+        .step-completed {
+            animation: stepComplete 0.5s ease-in-out;
+        }
+
+        @keyframes stepComplete {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Summary cards animation */
+        .summary-card {
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
     </style>
 
-<div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
-    <div class="text-center text-white">
-        <!-- Spinner -->
-        <svg class="animate-spin h-10 w-10 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="text-lg font-semibold">กำลังบันทึกข้อมูล...</p>
-        <p class="text-sm">กรุณารอสักครู่</p>
+<div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden z-50">
+    <div class="flex items-center justify-center h-full">
+        <div class="text-center text-white">
+            <!-- Spinner -->
+            <svg class="animate-spin h-10 w-10 text-white mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-lg font-semibold">กำลังบันทึกข้อมูล...</p>
+            <p class="text-sm">กรุณารอสักครู่</p>
+        </div>
     </div>
 </div>
 @endsection

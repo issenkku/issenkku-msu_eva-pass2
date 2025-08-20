@@ -14,6 +14,8 @@ return new class extends Migration
         // ASSESSMENT_DATA
         Schema::create('assignment_datas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('evaluator_position_id')->constrained('positions')->onDelete('cascade');
+            $table->foreignId('evaluatee_position_id')->constrained('positions')->onDelete('cascade');
             $table->date('start_time');
             $table->date('end_time');
             $table->timestamps();
@@ -23,7 +25,6 @@ return new class extends Migration
             $table->foreignId('assignment_data_id')->constrained('assignment_datas')->onDelete('cascade');
             $table->foreignId('report_id')->constrained('reports')->onDelete('cascade')->unique();
             $table->foreignId('evaluatee')->constrained('users')->onDelete('cascade');
-            $table->foreignId('evaluator')->constrained('users')->onDelete('cascade');
         });
     }
 

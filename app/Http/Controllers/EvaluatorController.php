@@ -98,6 +98,7 @@ class EvaluatorController extends Controller
         // Filter evaluatorAssignments to only include those with Pending or Completed status
         $filteredAssignments = $user->evaluatorAssignments->filter(function ($evaluatorAssignments) {
             $reportStatus = optional($evaluatorAssignments->report)->status;
+
             return in_array($reportStatus, ['Pending', 'Completed']);
         });
 
