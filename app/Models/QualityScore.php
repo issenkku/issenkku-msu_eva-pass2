@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class QualityScore extends Model
 {
@@ -13,7 +13,8 @@ class QualityScore extends Model
     public $incrementing = false;
 
     protected $table = 'quality_scores';
-    protected $primaryKey = 'quality_sub_criteria_id';  
+
+    protected $primaryKey = 'quality_sub_criteria_id';
 
     public $timestamps = true;
 

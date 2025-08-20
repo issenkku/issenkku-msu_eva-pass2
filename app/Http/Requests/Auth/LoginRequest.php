@@ -32,11 +32,11 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function messages():array
+    public function messages(): array
     {
         return [
             'employee_id.required' => 'กรุณากรอกหมายเลขประจำตัว',
-            'password.required' => 'กรุณากรอกรหัสผ่าน'
+            'password.required' => 'กรุณากรอกรหัสผ่าน',
         ];
     }
 
@@ -94,5 +94,5 @@ class LoginRequest extends FormRequest
     public function username()
     {
         return 'employee_id';
-    }  
+    }
 }

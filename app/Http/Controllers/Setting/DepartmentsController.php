@@ -14,6 +14,7 @@ class DepartmentsController extends Controller
     public function index()
     {
         $departments = Departments::paginate(10);
+
         return view('departments.index', compact('departments'));
         // --- IGNORE ---
         // return view('index', ['departments' => $departments]);
@@ -26,12 +27,12 @@ class DepartmentsController extends Controller
     {
         $request->validate([
             'department_name' => 'required|string|max:255',
-            'faculty' => 'required|string|max:255',
+            // 'faculty' => 'required|string|max:255',
         ]);
 
         // ตรวจสอบชื่อภาควิชาซ้ำ
         $existingDepartment = Departments::where('department_name', $request->department_name)->first();
-        
+
         if ($existingDepartment) {
             return redirect()->back()
                 ->withInput()
@@ -40,7 +41,7 @@ class DepartmentsController extends Controller
 
         Departments::create([
             'department_name' => $request->department_name,
-            'faculty' => $request->faculty,
+            // 'faculty' => $request->faculty,
         ]);
 
         return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
@@ -53,14 +54,14 @@ class DepartmentsController extends Controller
     {
         $request->validate([
             'department_name' => 'required|string|max:255',
-            'faculty' => 'required|string|max:255',
+            // 'faculty' => 'required|string|max:255',
         ]);
 
         // ตรวจสอบชื่อภาควิชาซ้ำ (ยกเว้นตัวเอง)
         $existingDepartment = Departments::where('department_name', $request->department_name)
             ->where('id', '!=', $id)
             ->first();
-        
+
         if ($existingDepartment) {
             return redirect()->back()
                 ->withInput()
@@ -70,7 +71,7 @@ class DepartmentsController extends Controller
         $department = Departments::findOrFail($id);
         $department->update([
             'department_name' => $request->department_name,
-            'faculty' => $request->faculty,
+            // 'faculty' => $request->faculty,
         ]);
 
         return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');

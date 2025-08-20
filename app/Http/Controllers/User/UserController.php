@@ -6,39 +6,37 @@ use App\Http\Controllers\Controller;
 use App\Imports\UsersImport;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\Rules;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Response;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    //create page to add use
-
-    public function store(Request $request):RedirectResponse{
+    // create page to add use
+    public function store(Request $request): RedirectResponse
+    {
         $request->validate([
-            'prefix'=> 'required|string|max:10',
+            'prefix' => 'required|string|max:10',
             'name' => 'required|string|max:100|unique:users,name',
-            'employee_id'=> 'required|max:20|unique:users,employee_id',
-            'password'=> ['required','max:50'],
-            'email'=> 'required|string|lowercase|email:rfc|max:50|unique:users,email',
-            'phone'=> 'required|max:20|unique:users,phone',
-            'personnel_type'=> 'required|string|max:100',
-            'bio'=>'nullable|string|max:1000',
-            'status'=>'required|max:20',
-            'position_id'=> 'required|exists:positions,id',
-            'department_id'=> 'required|exists:departments,id',
+            'employee_id' => 'required|max:20|unique:users,employee_id',
+            'password' => ['required', 'max:50'],
+            'email' => 'required|string|lowercase|email:rfc|max:50|unique:users,email',
+            'phone' => 'required|max:20|unique:users,phone',
+            'personnel_type' => 'required|string|max:100',
+            'bio' => 'nullable|string|max:1000',
+            'status' => 'required|max:20',
+            'position_id' => 'required|exists:positions,id',
+            'department_id' => 'required|exists:departments,id',
             'role' => 'nullable|string',
         ], [
             'name.unique' => 'ชื่อ-นามสกุลนี้ถูกใช้ไปแล้ว',
@@ -49,16 +47,16 @@ class UserController extends Controller
 
         $user = User::create([
             'prefix' => $request->prefix,
-            'name'=> $request->name,
-            'employee_id'=> $request->employee_id,
+            'name' => $request->name,
+            'employee_id' => $request->employee_id,
             'password' => Hash::make($request->password),
-            'email'=> $request->email,
-            'phone'=> $request->phone,
-            'personnel_type'=> $request->personnel_type,
-            'bio'=> $request->bio,
-            'status'=> $request->status,
-            'position_id'=> $request->position_id,
-            'department_id'=> $request->department_id,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'personnel_type' => $request->personnel_type,
+            'bio' => $request->bio,
+            'status' => $request->status,
+            'position_id' => $request->position_id,
+            'department_id' => $request->department_id,
         ]);
 
         // ป้องกัน assignRole ถ้าไม่มีค่า role
@@ -79,35 +77,33 @@ class UserController extends Controller
 
             // Start database transaction
             DB::beginTransaction();
-            $import = new UsersImport();
+            $import = new UsersImport;
             Excel::import($import, $request->file('import_file'));
             DB::commit();
-            return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
 
+            return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             DB::rollBack();
             Log::error('Excel validation error', ['errors' => $e->errors()]);
-            
+
             return redirect()->back()
                 ->with('error', 'ข้อมูลในไฟล์ไม่ถูกต้อง')
                 ->with('validation_errors', $e->errors());
-                
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            
+
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
-                
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Import error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ]);
-            
+
             return redirect()->back()
-                ->with('error', 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: ' . $e->getMessage());
+                ->with('error', 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: '.$e->getMessage());
         }
     }
 
@@ -125,7 +121,7 @@ class UserController extends Controller
             'bio' => 'ประวัติการศึกษา',
             'password' => 'รหัสผ่าน',
             'status' => 'สถานะ',
-            'role' => 'บทบาท'
+            'role' => 'บทบาท',
         ];
 
         // Create sample data
@@ -142,7 +138,7 @@ class UserController extends Controller
                 'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
                 'รหัสผ่าน' => '123456',
                 'สถานะ' => 'active',
-                'บทบาท' => 'admin'
+                'บทบาท' => 'admin',
             ],
             [
                 'คำนำหน้า' => 'นาง',
@@ -156,7 +152,7 @@ class UserController extends Controller
                 'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
                 'รหัสผ่าน' => '123456',
                 'สถานะ' => 'active',
-                'บทบาท' => 'ผู้บริหาร'
+                'บทบาท' => 'ผู้บริหาร',
             ],
             [
                 'คำนำหน้า' => 'นางสาว',
@@ -170,7 +166,7 @@ class UserController extends Controller
                 'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
                 'รหัสผ่าน' => '123456',
                 'สถานะ' => 'active',
-                'บทบาท' => 'ผู้ประเมิน'
+                'บทบาท' => 'ผู้ประเมิน',
             ],
             [
                 'คำนำหน้า' => 'นาย',
@@ -184,13 +180,15 @@ class UserController extends Controller
                 'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
                 'รหัสผ่าน' => '123456',
                 'สถานะ' => 'active',
-                'บทบาท' => 'กรรมการ'
+                'บทบาท' => 'ผู้รับการประเมิน'
             ]
         ];
 
         return Excel::download(
-            new class($sampleData, $headers) implements FromArray, WithHeadings, WithStyles {
+            new class($sampleData, $headers) implements FromArray, WithHeadings, WithStyles
+            {
                 private $data;
+
                 private $headers;
 
                 public function __construct($data, $headers)
@@ -233,8 +231,8 @@ class UserController extends Controller
             // กรองข้อมูลจากคอลัมน์ 'name' และสามารถเพิ่มคอลัมน์อื่นได้
             // เช่น ค้นหาจากรหัสพนักงานด้วย
             $query->where(function ($q) use ($searchTerm) {
-                $q->where('name', 'like', '%' . $searchTerm . '%')
-                  ->orWhere('employee_id', 'like', '%' . $searchTerm . '%');
+                $q->where('name', 'like', '%'.$searchTerm.'%')
+                    ->orWhere('employee_id', 'like', '%'.$searchTerm.'%');
             });
         }
         // -------------------------
@@ -266,25 +264,35 @@ class UserController extends Controller
         return view('user.management.index', compact('users', 'departments', 'positions', 'roles', 'user'));
     }
 
-    public function update(Request $request, User $user):RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $rules = ([
-            'prefix'=> 'required|string|max:10',
+        $rules = [
+            'prefix' => 'required|string|max:10',
             'name' => 'required|string|max:100',
-            'phone'=> ['required', 'max:20', 
-                        Rule::unique('users', 'phone')->ignore($user->id)],
-            'personnel_type'=> 'required|string|max:100',
-            'bio'=>'nullable|string|max:1000',
-            'status'=>'required|max:20',
-            'position_id'=> 'required|integer',
-            'department_id'=> 'required|integer',
-            'role' => 'nullable|string',
-            'employee_id' => ['required', 'max:20',
-                        Rule::unique('users', 'employee_id')->ignore($user->id),
+            'phone' => [
+                'required',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($user->id),
             ],
-            'email' => ['required', 'string', 'email:rfc', 'max:50',
-                        Rule::unique('users')->ignore($user->id),],
-        ]);
+            'personnel_type' => 'required|string|max:100',
+            'bio' => 'nullable|string|max:1000',
+            'status' => 'required|max:20',
+            'position_id' => 'required|integer',
+            'department_id' => 'required|integer',
+            'role' => 'nullable|string',
+            'employee_id' => [
+                'required',
+                'max:20',
+                Rule::unique('users', 'employee_id')->ignore($user->id),
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email:rfc',
+                'max:50',
+                Rule::unique('users')->ignore($user->id),
+            ],
+        ];
 
         if ($request->filled('password')) {
             $rules['password'] = ['required', 'confirmed', 'max:50'];
@@ -310,7 +318,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
+
         return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
     }
 }
-

@@ -53,6 +53,6 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 });
 
-Route::middleware('auth')->controller(AuthController::class)->group(function(){
+Route::middleware('auth')->controller(AuthController::class)->group(function () {
     Route::post('/logout', 'logout')->name('logout');
 });

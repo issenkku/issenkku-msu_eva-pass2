@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class EvidenceAnswer extends Model
 {
     use HasFactory;
+
     // public $incrementing = false;
     protected $table = 'evidence_answers';
+
     protected $fillable = [
         'evaluation_list_id',
         'report_id',

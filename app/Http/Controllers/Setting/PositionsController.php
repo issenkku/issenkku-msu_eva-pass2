@@ -14,6 +14,7 @@ class PositionsController extends Controller
     public function index()
     {
         $positions = Positions::paginate(10);
+
         return view('positions.index', compact('positions'));
         // --- IGNORE ---
         // return view('index', ['positions' => $positions]);
@@ -23,12 +24,12 @@ class PositionsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
+            // 'description' => 'nullable|string|max:500',
         ]);
 
         // ตรวจสอบชื่อตำแหน่งซ้ำ
         $existingPosition = Positions::where('name', $request->name)->first();
-        
+
         if ($existingPosition) {
             return redirect()->back()
                 ->withInput()
@@ -37,9 +38,9 @@ class PositionsController extends Controller
 
         Positions::create([
             'name' => $request->name,
-            'description' => $request->description,
+            // 'description' => $request->description,
         ]);
-        
+
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
 
@@ -50,14 +51,14 @@ class PositionsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
+            // 'description' => 'nullable|string|max:500',
         ]);
 
         // ตรวจสอบชื่อตำแหน่งซ้ำ (ยกเว้นตัวเอง)
         $existingPosition = Positions::where('name', $request->name)
             ->where('id', '!=', $id)
             ->first();
-        
+
         if ($existingPosition) {
             return redirect()->back()
                 ->withInput()
@@ -67,9 +68,9 @@ class PositionsController extends Controller
         $positions = Positions::findOrFail($id);
         $positions->update([
             'name' => $request->name,
-            'description' => $request->description,
+            // 'description' => $request->description,
         ]);
-        
+
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
 
@@ -80,6 +81,7 @@ class PositionsController extends Controller
     {
         $positions = Positions::findOrFail($id);
         $positions->delete();
+
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
         // --- IGNORE ---
         // return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');

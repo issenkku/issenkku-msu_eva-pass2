@@ -9,10 +9,11 @@ class Department extends Model
 {
     protected $fillable = [
         'department_name',
-        'faculty',
+        // 'faculty',
     ];
 
-    public function user(){
+    public function user()
+    {
         return $this->hasMany(User::class);
     }
 }

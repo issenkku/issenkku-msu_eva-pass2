@@ -1,24 +1,20 @@
 <?php
 
+use App\Http\Controllers\AssignmentDataController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
+use App\Http\Controllers\EvaluatorController;
+use App\Http\Controllers\Setting\DepartmentsController;
+use App\Http\Controllers\Setting\PositionsController;
+use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
-use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EvaluatorController;
-use App\Http\Controllers\AssignmentsController;
-use App\Http\Controllers\User\UserController;
-use Inertia\Inertia;
-use App\Http\Controllers\Setting\DepartmentsController;
-use App\Http\Controllers\Setting\SettingsController;
-use App\Http\Controllers\Setting\PositionsController;
-use App\Http\Controllers\AssignmentDataController;
-use function Pest\Laravel\json;
-use App\Http\Controllers\DashboardController;
 
-Route::middleware(['auth:sanctum','role:admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::prefix('departments')->name('departments.')->group(function () {
         Route::get('/', [DepartmentsController::class, 'index'])->name('index');
         Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
@@ -51,13 +47,17 @@ Route::middleware(['auth:sanctum','role:admin'])->group(function () {
         Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
         Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
         Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
+        Route::get('/{assignmentData}', [AssignmentDataController::class, 'show'])->name('show');
+        Route::get('/{assignmentData}/edit', [AssignmentDataController::class, 'edit'])->name('edit');
+        Route::put('/{assignmentData}', [AssignmentDataController::class, 'update'])->name('update');
+        Route::delete('/{assignmentData}', [AssignmentDataController::class, 'destroy'])->name('destroy');
     });
 
     Route::resource('/roles', RoleAndPermissionController::class);
 
 });
 
-Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->group(function () {
     Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
         Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
         Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
@@ -69,14 +69,16 @@ Route::middleware(['auth:sanctum','role:ผู้ประเมิน'])->group
     });
 });
 
-Route::middleware(['auth:sanctum','role:ผู้รับการประเมิน'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:ผู้รับการประเมิน'])->group(function () {
     Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
     Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
 });
 
-Route::middleware(['auth:sanctum','role:admin|ผู้บริหาร'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
+    Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
 });
 
 Route::middleware('guest')->group(function () {
@@ -111,22 +113,17 @@ Route::middleware('auth:sanctum')->group(function () {
             // ถ้าเป็นผู้รับการประเมิน ให้ไปที่ dashboard ของผู้รับการประเมิน
             return redirect()->route('evaluatee.dashboard'); // ชื่อ route ของ evaluatee dashboard
         }
-        
+
         // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
         // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
         auth()->logout();
+
         return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 
     })->name('home'); // ตั้งชื่อ route นี้ว่า 'home'
 
-    // Route สำหรับ /user
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-
 });
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
 require __DIR__.'/report.php';
-

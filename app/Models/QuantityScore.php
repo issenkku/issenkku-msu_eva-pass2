@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class QuantityScore extends Model
 {
     use HasFactory;
+
     public $incrementing = false;
 
     protected $table = 'quantity_scores';
+
     protected $primaryKey = ['quantity_sub_criteria_id', 'report_id'];
+
     protected $fillable = [
         'quantity_sub_criteria_id',
         'report_id',

@@ -19,11 +19,11 @@ class AssignmentResource extends JsonResource
             'evaluatee_name' => $this->evaluateeUser ? $this->evaluateeUser->name : null,
             'evaluator_id' => $this->evaluator,
             'evaluator_name' => $this->evaluatorUser ? $this->evaluatorUser->name : null,
-            'report_id'   => $this->report_id,
+            'report_id' => $this->report_id,
             'assignment_data_id' => $this->assignment_data_id,
             'evaluator_start' => $this->assignmentData->start_time?->format('Y-m-d H:i:s'),
             'evaluator_end' => $this->assignmentData->end_time?->format('Y-m-d H:i:s'),
-            
+
         ];
     }
 }

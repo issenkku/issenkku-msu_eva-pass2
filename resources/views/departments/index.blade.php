@@ -350,7 +350,7 @@
                             <tr>
                                 <th style="width: 10%">ลำดับ</th>
                                 <th style="width: 35%">ชื่อแผนก</th>
-                                <th style="width: 35%">ชื่อคณะ</th>
+                                {{-- <th style="width: 35%">ชื่อคณะ</th> --}}
                                 <th style="width: 20%">การจัดการ</th>
                             </tr>
                         </thead>
@@ -359,7 +359,7 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td><strong>{{ $department->department_name }}</strong></td>
-                                    <td>{{ $department->faculty }}</td>
+                                    {{-- <td>{{ $department->faculty }}</td> --}}
                                     <td>
                                         <div class="d-flex gap-2 align-items-center">
                                             <x-button 
@@ -422,7 +422,7 @@
                             <div class="text-red-500 text-sm mt-1 hidden" id="department_nameError">กรุณากรอกชื่อแผนก</div>
                         </div>
 
-                        <div class="mb-3">
+                        {{-- <div class="mb-3">
                             <label for="faculty" class="form-label">ชื่อคณะ <span class="text-danger">*</span></label>
                             <input type="text" id="faculty" name="faculty" class="form-control" required
                                 placeholder="กรุณาระบุชื่อคณะ">
@@ -581,7 +581,7 @@
             document.getElementById('form_method').value = 'PUT';
             document.getElementById('departmentId').value = id;
             document.getElementById('department_name').value = name;
-            document.getElementById('faculty').value = faculty;
+            //document.getElementById('faculty').value = faculty;
             modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลแผนก';
 
             setTimeout(() => {

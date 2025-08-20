@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -15,19 +14,19 @@ class DepartmentSeeder extends Seeder
     {
         DB::table('departments')->insert([
             [
-                'department_name' => 'หน่วยจัดการศึกษา',
+                'department_name' => 'สาธารณสุขศาสตร์',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'หน่วยจัดการงานทั่วไป',
+                'department_name' => 'โภชนศาสตร์ การกำหนดอาหาร และอาหารปลอดภัย',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'หน่วยห้องสมุด',
+                'department_name' => 'อนามัยสิ่งแวดล้อม',
                 'faculty' => 'คณะสาธารณสุข'
             ],
             [
-                'department_name' => 'หน่วยการต่างประเทศ',
+                'department_name' => 'อาชีวอนามัยและความปลอดภัย',
                 'faculty' => 'คณะสาธารณสุข'
             ],
         ]);

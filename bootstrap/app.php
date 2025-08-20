@@ -25,10 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             VerifyCsrfToken::class,
             SubstituteBindings::class,
-            AuthenticateSession::class
+            AuthenticateSession::class,
         ]);
 
-        $middleware->api(prepend:[
+        $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             SubstituteBindings::class,
         ]);

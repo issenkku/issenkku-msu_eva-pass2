@@ -13,7 +13,8 @@ class Positions extends Model
 
     ];
 
-    public function user(){
-        return $this->hasMany(User::class);
+    public function user()
+    {
+        return $this->hasMany(User::class, 'position_id');
     }
 }

@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AssignmentSeeder extends Seeder
 {
@@ -16,25 +15,25 @@ class AssignmentSeeder extends Seeder
     {
         DB::table('assignment_datas')->insert([
             [
+                'evaluator_position_id' =>  1,
+                'evaluatee_position_id' =>  2,
                 'start_time' => Carbon::parse('2025-01-01'),
                 'end_time' => Carbon::parse('2025-03-31'),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         DB::table('assignments')->insert([
             [
                 'assignment_data_id' => 1,
                 'report_id' => 1,
-                'evaluatee' => 3,
-                'evaluator' => 2,
+                'evaluatee_id' => 3,
             ],
             [
                 'assignment_data_id' => 1,
                 'report_id' => 2,
-                'evaluatee' => 4,
-                'evaluator' => 2,
+                'evaluatee_id' => 4,
             ],
         ]);
     }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -13,7 +12,7 @@ class CompleteDataSeeder extends Seeder
      */
     public function run(): void
     {
-        
+
         // 2. Criteria Versions
         DB::table('criteria_versions')->insert([
             [
@@ -29,7 +28,7 @@ class CompleteDataSeeder extends Seeder
                 'created_by' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 3. Report Datas
@@ -49,7 +48,7 @@ class CompleteDataSeeder extends Seeder
                 'assessment_type' => 'สนับสนุน',
                 'comment' => 'ประเมินตามเกณฑ์มาตรฐานของมหาวิทยาลัย',
                 'criteria_version_id' => 1,
-            ]
+            ],
         ]);
 
         // 4. Categories
@@ -95,7 +94,7 @@ class CompleteDataSeeder extends Seeder
                 'sub_categories' => 'การพัฒนาความรู้และทักษะ',
                 'sequence' => 2,
                 'criteria_version_id' => 1,
-            ]
+            ],
         ]);
 
         // 5. Evaluation Lists
@@ -153,7 +152,7 @@ class CompleteDataSeeder extends Seeder
                 'annotation' => 'ประเมินการพัฒนาตนเองในด้านความรู้และทักษะ',
                 'categorie_id' => 6,
                 'criteria_version_id' => 1,
-            ]
+            ],
         ]);
 
         // 6. Quantity Main Criterias
@@ -175,7 +174,7 @@ class CompleteDataSeeder extends Seeder
                 'name' => 'จำนวนโครงการบริการวิชาการ',
                 'tooltips' => 'นับจากโครงการบริการวิชาการที่ได้รับการอนุมัติและดำเนินการแล้วเสร็จ',
                 'criteria_version_id' => 1,
-            ]
+            ],
         ]);
 
         // 7. Quantity Sub Criterias
@@ -239,7 +238,7 @@ class CompleteDataSeeder extends Seeder
                 'quantity_main_criteria_id' => 3,
                 'criteria_version_id' => 1,
                 'evaluation_list_id' => 4,
-            ]
+            ],
         ]);
 
         // 8. Quality Main Criterias
@@ -275,7 +274,7 @@ class CompleteDataSeeder extends Seeder
                 'tooltips' => 'ประเมินจากประสิทธิภาพในการบริหารจัดการงานที่ได้รับมอบหมาย',
                 'sequence' => 4,
                 'criteria_version_id' => 1,
-            ]
+            ],
         ]);
 
         // 9. Quality Sub Criterias
@@ -333,7 +332,7 @@ class CompleteDataSeeder extends Seeder
                 'quality_main_criteria_id' => 4,
                 'criteria_version_id' => 1,
                 'evaluation_list_id' => 5,
-            ]
+            ],
         ]);
 
         // 10. Reports
@@ -358,13 +357,15 @@ class CompleteDataSeeder extends Seeder
                 'status' => 'Pending',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 11. Assignment Datas
         DB::table('assignment_datas')->insert([
             [
                 'id' => 1,
+                'evaluator_position_id' => 1,
+                'evaluatee_position_id' => 2,
                 'start_time' => '2024-01-01',
                 'end_time' => '2024-12-31',
                 'created_at' => now(),
@@ -372,11 +373,13 @@ class CompleteDataSeeder extends Seeder
             ],
             [
                 'id' => 2,
+                'evaluator_position_id' => 2,
+                'evaluatee_position_id' => 3,
                 'start_time' => '2024-06-01',
                 'end_time' => '2024-11-30',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 12. Assignments
@@ -384,21 +387,18 @@ class CompleteDataSeeder extends Seeder
             [
                 'assignment_data_id' => 1,
                 'report_id' => 1,
-                'evaluatee' => 1,
-                'evaluator' => 2,
+                'evaluatee_id' => 1,
             ],
             [
                 'assignment_data_id' => 1,
                 'report_id' => 2,
-                'evaluatee' => 2,
-                'evaluator' => 1,
+                'evaluatee_id' => 2,
             ],
             [
                 'assignment_data_id' => 2,
                 'report_id' => 3,
-                'evaluatee' => 1,
-                'evaluator' => 2,
-            ]
+                'evaluatee_id' => 1,
+            ],
         ]);
 
         // 13. Quantity Scores
@@ -450,7 +450,7 @@ class CompleteDataSeeder extends Seeder
                 'score_D' => 5.00,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 14. Quality Scores
@@ -496,7 +496,7 @@ class CompleteDataSeeder extends Seeder
                 'score' => 3.90,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 15. Evidence Answers
@@ -542,7 +542,7 @@ class CompleteDataSeeder extends Seeder
                 'link' => 'https://drive.google.com/file/d/1PQR678/view',
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ],
         ]);
 
         // 16. User Histories
@@ -571,7 +571,7 @@ class CompleteDataSeeder extends Seeder
                 'user_id' => 1,
                 'action' => 'อนุมัติรายงานการประเมิน',
                 'action_timestamp' => now()->subMinutes(15),
-            ]
+            ],
         ]);
     }
 }

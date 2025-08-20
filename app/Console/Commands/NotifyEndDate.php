@@ -2,16 +2,16 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\AssignmentData;
-use App\Models\User;
 use App\Models\Setting\Settings;
-use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class NotifyEndDate extends Command
 {
     protected $signature = 'notify:enddate';
+
     protected $description = 'Send email to users when end_time is within configured days';
 
     public function handle()
@@ -19,7 +19,7 @@ class NotifyEndDate extends Command
         // ดึงค่าจำนวนวันแจ้งเตือนจาก Settings
         $settings = Settings::first();
         $notificationDays = $settings ? $settings->notification_days : 7; // ค่าเริ่มต้น 7 วัน
-        
+
         // แจ้งเตือน assignment ที่ end_time ใกล้ครบตามจำนวนวันที่กำหนด
         $today = Carbon::today();
         $items = AssignmentData::where('end_time', '>=', $today)
@@ -30,7 +30,7 @@ class NotifyEndDate extends Command
         $successCount = 0;
         $failCount = 0;
         $failures = [];
-        
+
         foreach ($items as $item) {
             foreach ($item->assignments as $assignment) {
                 // เช็คว่ามี report และสถานะเป็น Completed หรือไม่
@@ -49,7 +49,7 @@ class NotifyEndDate extends Command
                     try {
                         $carbonDate = Carbon::parse($item->end_time);
                         $thaiYear = $carbonDate->year + 543;
-                        $endDateTh = $carbonDate->format('d/m/') . substr($thaiYear, -2);
+                        $endDateTh = $carbonDate->format('d/m/').substr($thaiYear, -2);
 
                         // คำนวณจำนวนวันที่เหลือ
                         $daysLeft = $today->diffInDays($carbonDate, false);
@@ -57,7 +57,7 @@ class NotifyEndDate extends Command
 
                         Mail::raw(
                             "แจ้งเตือนวันสิ้นสุดการประเมิน: กำหนดสิ้นสุดการประเมินคือ ({$endDateTh}) {$daysLeftText} กรุณาตรวจสอบและดำเนินการประเมินให้เรียบร้อยก่อนถึงกำหนด",
-                            function ($message) use ($user, $item, $endDateTh, $daysLeftText) {
+                            function ($message) use ($user) {
                                 $message->to($user->email)
                                     ->subject('แจ้งเตือนวันสิ้นสุดการประเมินใกล้ถึงกำหนด');
                             }
@@ -79,7 +79,7 @@ class NotifyEndDate extends Command
                 }
             }
         }
-        
+
         $this->info("Notification emails sent: {$successCount} (using {$notificationDays} days setting)");
         if ($failCount > 0) {
             $this->error("Failed to send: {$failCount}");

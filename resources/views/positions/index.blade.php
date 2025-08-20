@@ -382,7 +382,7 @@
                             <tr>
                                 <th style="width: 10%">ลำดับ</th>
                                 <th style="width: 30%">ชื่อตำแหน่ง</th>
-                                <th style="width: 40%">คำอธิบาย</th>
+                                {{-- <th style="width: 40%">คำอธิบาย</th> --}}
                                 <th style="width: 20%">การจัดการ</th>
                             </tr>
                         </thead>
@@ -391,7 +391,7 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td><strong>{{ $position->name }}</strong></td>
-                                    <td>{{ $position->description ?? '-' }}</td>
+                                    {{-- <td>{{ $position->description ?? '-' }}</td> --}}
                                     <td>
                                         <div class="d-flex gap-2 align-items-center">
                                             <x-button 
@@ -453,11 +453,11 @@
                             <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อตำแหน่ง</div>
                         </div>
 
-                        <div class="mb-3">
+                        {{-- <div class="mb-3">
                             <label for="description" class="form-label">คำอธิบาย</label>
                             <textarea id="description" name="description" class="form-control" rows="4"
                                 placeholder="คำอธิบายเกี่ยวกับตำแหน่งงาน (ไม่บังคับ)"></textarea>
-                        </div>
+                        </div> --}}
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -589,7 +589,7 @@
             document.getElementById('form_method').value = 'PUT';
             document.getElementById('positionId').value = id;
             document.getElementById('name').value = name;
-            document.getElementById('description').value = description || '';
+            //document.getElementById('description').value = description || '';
             modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลตำแหน่ง';
 
             // ตรวจสอบความถูกต้องหลังจากกรอกข้อมูล

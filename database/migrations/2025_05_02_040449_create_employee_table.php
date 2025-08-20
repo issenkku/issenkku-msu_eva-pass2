@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('faculty');
         });
 
-        Schema::create('settings',function (Blueprint $table){
+        Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->string('faculty');
             $table->string('university');
@@ -55,9 +55,9 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
-        Schema::create('user_histories', function(Blueprint $table){
+        Schema::create('user_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->text('action');
             $table->timestamp('action_timestamp');
         });
