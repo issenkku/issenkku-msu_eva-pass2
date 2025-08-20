@@ -22,86 +22,35 @@ class EvaluatorController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
-
-        if (!$userId) {
-            abort(403, 'Unauthorized');
-        }
-
-        $currentUser = User::with('department', 'position')->find($userId);
-
-        if (!$currentUser) {
-            abort(404, 'ไม่พบผู้ใช้งาน');
-        }
-        $statusFilter = $request->input('status');
-
-        // ดึงข้อมูล assignments แบบ paginate
-        $assignments = DB::table('assignments')
-            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('reports', 'assignments.report_id', '=', 'reports.id')
-            ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
-            ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
-            ->where('assignments.evaluator', $currentUser->id)
-            ->whereNotIn('reports.status', ['Assigned', 'Draft']);
-
-        if ($statusFilter && $statusFilter !== '') {
-
-            $assignments->where('reports.status', $statusFilter);
-        }
-
-        $assignments = $assignments->select(
-            'assignments.assignment_data_id as assignment_data_id',
-            'assignment_datas.start_time',
-            'assignment_datas.end_time',
-            'reports.status',
-            'reports.id as report_id',
-            'report_datas.report_title',
-            'report_datas.assessment_type',
-            'evaluatee.id as evaluatee_id',
-            'evaluatee.prefix as evaluatee_prefix',
-            'evaluatee.name as evaluatee_name',
-            'evaluatee.employee_id as evaluatee_employee_id'
-        )
-            ->orderBy('assignment_datas.start_time', 'desc')
-            ->paginate(10);
-
-        // แปลงข้อมูลเพื่อเพิ่มฟิลด์ sequence, format วันที่ และสถานะ
-        $formattedAssignments = $assignments->getCollection()->map(function ($assignment, $index) use ($assignments) {
-            $statusInfo = $this->getStatusInfo($assignment->status ?? null, $assignment->end_time);
-
-            return (object) [
-                'sequence' => ($assignments->currentPage() - 1) * $assignments->perPage() + $index + 1,
-                'assignment_data_id' => $assignment->assignment_data_id,
-                'report_id' => $assignment->report_id,
-                'report_title' => $assignment->report_title,
-                'assessment_type' => $assignment->assessment_type,
-                'evaluatee_id' => $assignment->evaluatee_id,
-                'evaluatee_name' => $assignment->evaluatee_prefix . $assignment->evaluatee_name,
-                'evaluatee_employee_id' => $assignment->evaluatee_employee_id,
-                'start_date' => $this->formatThaiDate($assignment->start_time),
-                'end_date' => $this->formatThaiDate($assignment->end_time),
-                'status_text' => $statusInfo['text'],
-                'status_class' => $statusInfo['class'],
-                'status_color' => $statusInfo['color'],
-            ];
-        });
-
-        // เซ็ต collection ใหม่ใน paginator
-        $assignments->setCollection($formattedAssignments);
-
-        // ตัวอย่างข้อมูล evaluatorInfo แบบง่าย
-        $evaluatorInfo = $request->user()->load([
+        // Load user with all necessary relationships
+        $user = $request->user()->load([
             'position',
             'department',
-            'assignment.assignmentData', // Load nested relationships
-            'assignment.report.reportData',
-            'assignment.evaluatorUser', // Load evaluator user relationship
+            'evaluatorAssignments.assignmentData',
+            'evaluatorAssignments.report.reportData',
+            'evaluatorAssignments.evaluateeUser',
         ]);
 
+        // Filter evaluatorAssignments to only include those with Pending or Completed status
+        $filteredAssignments = $user->evaluatorAssignments->filter(function ($evaluatorAssignments) {
+            $reportStatus = optional($evaluatorAssignments->report)->status;
+            return in_array($reportStatus, ['Pending', 'Completed']);
+        });
+
+        // Get only the reports from filtered assignments
+        $evaluations = $filteredAssignments->pluck('report')->filter();
+
+        // Count status for filtered assignments only
+        $statusCounts = [
+            'ทั้งหมด' => $evaluations->count(),
+            'ยังไม่ประเมิน' => $evaluations->where('status', 'Pending')->count(),
+            'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
+        ];
+
         return view('evaluator_dashboard.index', [
-            'assignments' => $assignments,
-            'evaluatorInfo' => $evaluatorInfo,
-            'statusFilter' => $statusFilter
+            'user' => $user,
+            'statusCounts' => $statusCounts,
+            'evaluations' => $filteredAssignments, // Pass filtered assignments instead of all
         ]);
     }
 
