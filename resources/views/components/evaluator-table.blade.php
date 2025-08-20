@@ -44,16 +44,17 @@
 
     $filteredStatus = request('status');
     if ($filteredStatus) {
-        // Map display name back to DB status
+        // Map display names back to DB status (including multiple statuses)
         $reverseMap = [
-            'ยังไม่ประเมิน' => 'Pending',
-            'ประเมินเสร็จสิ้น' => 'Completed',
+            'รอการกรอกข้อมูล' => ['Assigned', 'Draft'],
+            'ยังไม่ประเมิน' => ['Pending'],
+            'ประเมินเสร็จสิ้น' => ['Completed'],
         ];
 
-        $statusCode = $reverseMap[$filteredStatus] ?? $filteredStatus;
+        $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
 
-        $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCode) {
-            return optional($evaluatorAssignment->report)->status === $statusCode;
+        $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
+            return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
         })->values(); // Reset keys
     }
 @endphp
@@ -64,6 +65,7 @@
     <!-- Status Badges -->
     @php
         $statusStyles = [
+            'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800 hover:bg-orange-200',
             'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
             'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
         ];
@@ -122,6 +124,8 @@
 
                             $statusFromDB = optional($report)->status ?? 'Pending';
                             $statusMapping = [
+                                'Assigned' => 'รอการกรอกข้อมูล',
+                                'Draft' => 'รอการกรอกข้อมูล',
                                 'Pending' => 'ยังไม่ประเมิน',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
@@ -182,6 +186,7 @@
                             <td class="p-4 border-b text-center min-w-[180px]">
                                 @php
                                     $statusClasses = [
+                                        'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
@@ -205,6 +210,7 @@
                                             'classes' => 'bg-green-500 hover:bg-green-600 text-white',
                                             'route' => 'evaluator.evaluatee.show'
                                         ],
+                                        'รอการกรอกข้อมูล' => null,
                                     ];
                                     $action = $actions[$status] ?? null;
 

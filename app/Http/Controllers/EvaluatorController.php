@@ -31,26 +31,26 @@ class EvaluatorController extends Controller
             'evaluatorAssignments.evaluateeUser',
         ]);
 
-        // Filter evaluatorAssignments to only include those with Pending or Completed status
-        $filteredAssignments = $user->evaluatorAssignments->filter(function ($evaluatorAssignments) {
-            $reportStatus = optional($evaluatorAssignments->report)->status;
-            return in_array($reportStatus, ['Pending', 'Completed']);
-        });
+        $allAssignments = $user->evaluatorAssignments;
 
         // Get only the reports from filtered assignments
-        $evaluations = $filteredAssignments->pluck('report')->filter();
+        $evaluations = $allAssignments->pluck('report')->filter();
 
         // Count status for filtered assignments only
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
+            'รอการกรอกข้อมูล' => $evaluations->whereIn('status', ['Assigned', 'Draft'])->count(),
             'ยังไม่ประเมิน' => $evaluations->where('status', 'Pending')->count(),
+            'กำลังดำเนินการ' => $evaluations->where('status', 'Evaluator_draft')->count(),
+            'รอผลการประเมิน' => $evaluations->whereIn('status', 
+                ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'])->count(),
             'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
 
         return view('evaluator_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $filteredAssignments, // Pass filtered assignments instead of all
+            'evaluations' => $allAssignments, // Pass filtered assignments instead of all
         ]);
     }
 
@@ -244,6 +244,11 @@ class EvaluatorController extends Controller
             'mergedCriteria' => $mergedCriteria,
             'categories' => $categories,
         ]);
+    }
+    
+    public function evaluator(Request $request, $id)
+    {
+       $user = $request->user()->load('position', 'department');
     }
 
     public function edit($id)
