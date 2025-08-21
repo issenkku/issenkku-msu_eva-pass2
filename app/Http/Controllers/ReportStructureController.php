@@ -470,40 +470,40 @@ class ReportStructureController extends Controller
         try {
             DB::transaction(function () use ($version, $validated) {
                 // 1. Delete all related data in correct order (children first)
-                
+
                 // Delete formulas first (if they reference quantity main criterias)
                 DB::table('formulas')
-                    ->whereIn('quantity_main_criteria_id', function($query) use ($version) {
+                    ->whereIn('quantity_main_criteria_id', function ($query) use ($version) {
                         $query->select('id')
                             ->from('quantity_main_criterias')
                             ->where('criteria_version_id', $version->id);
                     })
                     ->delete();
-                
+
                 // Delete sub criterias
                 DB::table('quantity_sub_criterias')
-                    ->whereIn('evaluation_list_id', function($query) use ($version) {
+                    ->whereIn('evaluation_list_id', function ($query) use ($version) {
                         $query->select('id')
                             ->from('evaluation_lists')
                             ->where('criteria_version_id', $version->id);
                     })
                     ->delete();
-                
+
                 DB::table('quality_sub_criterias')
-                    ->whereIn('evaluation_list_id', function($query) use ($version) {
+                    ->whereIn('evaluation_list_id', function ($query) use ($version) {
                         $query->select('id')
                             ->from('evaluation_lists')
                             ->where('criteria_version_id', $version->id);
                     })
                     ->delete();
-                
+
                 // Delete main criterias
                 $version->quantityMainCriterias()->delete();
                 $version->qualityMainCriterias()->delete();
-                
+
                 // Delete evaluation lists
                 $version->evaluationLists()->delete();
-                
+
                 // Delete categories and report datas
                 $version->categories()->delete();
                 $version->reportDatas()->delete();
