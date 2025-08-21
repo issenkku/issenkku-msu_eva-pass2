@@ -33,12 +33,13 @@ class DashboardEvaluateeController extends Controller
 
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
-            'ยังไม่ประเมิน' => $evaluations->where('status', 'Assigned')->count(),
-            'กำลังดำเนินการ' => $evaluations->where('status', 'Draft')->count(),
-            'รอผลการประเมิน' => $evaluations->whereIn('status', 
-                ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
-                'Manager_assign', 'Manager_draft'])->count(),
-            'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
+            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Assigned']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Draft']),
+            'รอผลการประเมิน' => $this->countByStatus($evaluations, [
+                'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
+                'Manager_assign', 'Manager_draft'
+            ]),
+            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
         return view('evaluatee.dashboard', [
@@ -48,18 +49,29 @@ class DashboardEvaluateeController extends Controller
         ]);
     }
 
+    private function countByStatus($evaluations, $statuses)
+    {
+        return $evaluations->filter(function($assignment) use ($statuses) {
+            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+            return in_array($reportStatus, $statuses);
+        })->count();
+    }
+
     public function evaluation(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
 
         $report = Reports::with([
             'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
-            'assignments.evaluatorUser',
+            'reportData.criteriaVersion.qualityMainCriterias.qualitySubCriterias',
+            'reportData.criteriaVersion.evaluationLists.quantitySubCriterias',
+            'reportData.criteriaVersion.evaluationLists.qualitySubCriterias',
             'assignments.assignmentData',
         ])->findOrFail($id);
         
         // Find the assignment for the current user
         $assignment = $report->assignments->where('evaluatee', $user->id)->first();
+        $evaluator = $assignment->getEvaluatorUser();
 
         if (!$assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
@@ -74,7 +86,6 @@ class DashboardEvaluateeController extends Controller
             return $date->translatedFormat('j F') . " {$year}";
         };
 
-        $evaluatorName = $assignment && $assignment->evaluatorUser ? $assignment->evaluatorUser->name : 'ไม่พบข้อมูล';
         $startTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->start_time : null;
         $endTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->end_time : null;
         $reportName = $assignment && $assignment->report->reportData ? $assignment->report->reportData->report_title : 'ไม่พบชื่อรายงาน';
@@ -90,12 +101,16 @@ class DashboardEvaluateeController extends Controller
         $quantityMainCriterias = $criteriaVersion ? $criteriaVersion->quantityMainCriterias : collect();
 
         $quantityScores = QuantityScore::where('report_id', $id)
-        ->get()
-        ->keyBy('quantity_sub_criteria_id');
+            ->get()
+            ->keyBy('quantity_sub_criteria_id');
+
+        $qualityScores = QualityScore::where('report_id', $id)
+            ->get()
+            ->keyBy('quality_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
-        ->get()
-        ->keyBy('evaluation_list_id');
+            ->get()
+            ->keyBy('evaluation_list_id');
 
         $evidenceMap = $evidenceAnswers->mapWithKeys(function ($item) {
             return [$item->evaluation_list_id => $item->link];
@@ -103,119 +118,135 @@ class DashboardEvaluateeController extends Controller
 
         $readonly = $request->boolean('readonly');
 
-        $evaluationItems = [];
-
+        // DEBUG: Let's see the structure
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $evaluationLists = $report->reportData->criteriaVersion->evaluationLists;
-            $firstList = $evaluationLists->first();
-
-            if ($firstList) {
-                $evaluationItems[] = [
-                    'title' => $firstList->name,
-                    'subtitle' => $firstList->annotation, 
-                    'is_main' => true,
-                    'is_evaluation_list' => true,
-                    'evaluation_list_id' => $firstList->id,
-                ];
-
-                $mainCriteriaIds = $firstList->quantitySubCriterias->pluck('quantity_main_criteria_id')->unique();
-                
-                foreach ($mainCriteriaIds as $mainCriteriaId) {
-                    $mainCriteria = QuantityMainCriteria::find($mainCriteriaId);
-                    
-                    if ($mainCriteria) {
-                        $evaluationItems[] = [
-                            'title' => $mainCriteria->name,
-                            'subtitle' => $mainCriteria->tooltips,
-                            'is_main' => true,
-                            'is_evaluation_list' => false,
-                            'main_criteria_id' => $mainCriteria->id,
-                            'evaluation_list_id' => $firstList->id,
-                        ];
-
-                        $subCriterias = $firstList->quantitySubCriterias->where('quantity_main_criteria_id', $mainCriteriaId);
-                        
-                        foreach ($subCriterias as $subCriteria) {
-                            $quantityScore = $quantityScores[$subCriteria->id] ?? null;
-                            $evidenceLink = $evidenceAnswers[$firstList->id]->link ?? '';
-
-                            $evaluationItems[] = [
-                                'title' => $subCriteria->name,
-                                'subtitle' => null,
-                                'is_main' => false,
-                                'is_evaluation_list' => false,
-                                'sequence' => $subCriteria->sequence,
-                                'sub_criteria_id' => $subCriteria->id,
-                                'main_criteria_id' => $mainCriteria->id,
-                                'evaluation_list_id' => $firstList->id,
-                                'score_a' => $subCriteria->score_a,
-                                'score_b' => $subCriteria->score_b,
-                                'tor_compliant' => $quantityScore?->score_C ?? '', 
-                                'user_score' => '',
-                                'evidence' => $evidenceLink, 
-                            ];
-                        }
-                    }
-                }
-            }
+            
+            // Debug output - you can remove this after checking
+            // dd([
+            //     'evaluation_lists_count' => $evaluationLists->count(),
+            //     'evaluation_lists_structure' => $evaluationLists->map(function($list) {
+            //         return [
+            //             'id' => $list->id,
+            //             'name' => $list->name,
+            //             'annotation' => $list->annotation,
+            //             'quantity_sub_criterias_count' => $list->quantitySubCriterias ? $list->quantitySubCriterias->count() : 0,
+            //             'quality_sub_criterias_count' => $list->qualitySubCriterias ? $list->qualitySubCriterias->count() : 0,
+            //             'quantity_sub_criterias' => $list->quantitySubCriterias ? $list->quantitySubCriterias->pluck('name', 'id') : [],
+            //             'quality_sub_criterias' => $list->qualitySubCriterias ? $list->qualitySubCriterias->pluck('name', 'id') : [],
+            //         ];
+            //     }),
+            // ]);
         }
 
-        $qualityScores = QualityScore::where('report_id', $id)
-            ->get()
-            ->keyBy('quality_sub_criteria_id');
-
+        // FIXED: Process all evaluation lists properly
+        $evaluationItems = [];
         $qualityItems = [];
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $evaluationLists = $report->reportData->criteriaVersion->evaluationLists;
             
-            foreach ($evaluationLists->skip(1) as $lists) {
-                $qualityItems[] = [
-                    'title' => $lists->name,
-                    'subtitle' => $lists->annotation, 
-                    'is_main' => true,
-                    'is_evaluation_list' => true,
-                    'evaluation_list_id' => $lists->id,
-                ];
+            foreach ($evaluationLists as $list) {
+                // Check if this evaluation list has quantity criteria
+                if ($list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
+                    $evaluationItems[] = [
+                        'title' => $list->name,
+                        'subtitle' => $list->annotation, 
+                        'is_main' => true,
+                        'is_evaluation_list' => true,
+                        'evaluation_list_id' => $list->id,
+                    ];
 
-                $mainCriteriaIds = $lists->qualitySubCriterias->pluck('quality_main_criteria_id')->unique();
-                
-                foreach ($mainCriteriaIds as $mainCriteriaId) {
-                    $mainCriteria = QualityMainCriteria::find($mainCriteriaId);
+                    $mainCriteriaIds = $list->quantitySubCriterias->pluck('quantity_main_criteria_id')->unique();
                     
-                    if ($mainCriteria) {
-                        $qualityItems[] = [
-                            'title' => $mainCriteria->name,
-                            'subtitle' => $mainCriteria->tooltips,
-                            'is_main' => true,
-                            'is_evaluation_list' => false,
-                            'main_criteria_id' => $mainCriteria->id,
-                            'evaluation_list_id' => $lists->id,
-                        ];
-
-                        $subCriterias = $lists->qualitySubCriterias->where('quality_main_criteria_id', $mainCriteriaId);
+                    foreach ($mainCriteriaIds as $mainCriteriaId) {
+                        $mainCriteria = QuantityMainCriteria::find($mainCriteriaId);
                         
-                        foreach ($subCriterias as $subCriteria) {
-                            $qualityScore = $qualityScores[$subCriteria->id] ?? null;
-                            $evidenceLink = $evidenceAnswers[$lists->id]->link ?? '';
-                            
-                            $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
-                            $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
-
-                            $qualityItems[] = [
-                                'title' => $subCriteria->name,
-                                'subtitle' => null,
-                                'is_main' => false,
+                        if ($mainCriteria) {
+                            $evaluationItems[] = [
+                                'title' => $mainCriteria->name,
+                                'subtitle' => $mainCriteria->tooltips,
+                                'is_main' => true,
                                 'is_evaluation_list' => false,
-                                'sequence' => $subCriteria->sequence,
-                                'sub_criteria_id' => $subCriteria->id,
                                 'main_criteria_id' => $mainCriteria->id,
-                                'evaluation_list_id' => $lists->id,
-                                'num_score' => $subCriteria->num_score,
-                                'user_selected' => $userSelected,
-                                'score' => $qualityScore?->score ?? '',
-                                'evidence' => $evidenceLink, 
+                                'evaluation_list_id' => $list->id,
                             ];
+
+                            $subCriterias = $list->quantitySubCriterias->where('quantity_main_criteria_id', $mainCriteriaId);
+                            
+                            foreach ($subCriterias as $subCriteria) {
+                                $quantityScore = $quantityScores[$subCriteria->id] ?? null;
+                                $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
+
+                                $evaluationItems[] = [
+                                    'title' => $subCriteria->name,
+                                    'subtitle' => null,
+                                    'is_main' => false,
+                                    'is_evaluation_list' => false,
+                                    'sequence' => $subCriteria->sequence,
+                                    'sub_criteria_id' => $subCriteria->id,
+                                    'main_criteria_id' => $mainCriteria->id,
+                                    'evaluation_list_id' => $list->id,
+                                    'score_a' => $subCriteria->score_a,
+                                    'score_b' => $subCriteria->score_b,
+                                    'tor_compliant' => $quantityScore?->score_C ?? '', 
+                                    'user_score' => '',
+                                    'evidence' => $evidenceLink, 
+                                ];
+                            }
+                        }
+                    }
+                }
+                
+                // Check if this evaluation list has quality criteria
+                if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
+                    $qualityItems[] = [
+                        'title' => $list->name,
+                        'subtitle' => $list->annotation, 
+                        'is_main' => true,
+                        'is_evaluation_list' => true,
+                        'evaluation_list_id' => $list->id,
+                    ];
+
+                    $mainCriteriaIds = $list->qualitySubCriterias->pluck('quality_main_criteria_id')->unique();
+                    
+                    foreach ($mainCriteriaIds as $mainCriteriaId) {
+                        $mainCriteria = QualityMainCriteria::find($mainCriteriaId);
+                        
+                        if ($mainCriteria) {
+                            $qualityItems[] = [
+                                'title' => $mainCriteria->name,
+                                'subtitle' => $mainCriteria->tooltips,
+                                'is_main' => true,
+                                'is_evaluation_list' => false,
+                                'main_criteria_id' => $mainCriteria->id,
+                                'evaluation_list_id' => $list->id,
+                            ];
+
+                            $subCriterias = $list->qualitySubCriterias->where('quality_main_criteria_id', $mainCriteriaId);
+                            
+                            foreach ($subCriterias as $subCriteria) {
+                                $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                                $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
+                                
+                                $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
+                                $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
+
+                                $qualityItems[] = [
+                                    'title' => $subCriteria->name,
+                                    'subtitle' => null,
+                                    'is_main' => false,
+                                    'is_evaluation_list' => false,
+                                    'sequence' => $subCriteria->sequence,
+                                    'sub_criteria_id' => $subCriteria->id,
+                                    'main_criteria_id' => $mainCriteria->id,
+                                    'evaluation_list_id' => $list->id,
+                                    'num_score' => $subCriteria->num_score,
+                                    'user_selected' => $userSelected,
+                                    'score' => $qualityScore?->score ?? '',
+                                    'evidence' => $evidenceLink, 
+                                ];
+                            }
                         }
                     }
                 }
@@ -224,7 +255,7 @@ class DashboardEvaluateeController extends Controller
         
         return view('evaluatee.evaluation', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
-            'evaluatorName', 'startTime', 'endTime', 'reportName',
+            'startTime', 'endTime', 'reportName', 'evaluator',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
             'quantityMainCriterias', 'evaluationItems', 'qualityItems', 'evidenceMap',
             'readonly', 'versionName', 'reportComment', 'reportDescription'

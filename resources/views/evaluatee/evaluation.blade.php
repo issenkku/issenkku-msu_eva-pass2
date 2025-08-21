@@ -18,7 +18,6 @@
     />
 
     <x-evaluate-profile-card 
-        :evaluatorName="$evaluatorName"
         :startTimeFormatted="$startTimeFormatted"
         :endTimeFormatted="$endTimeFormatted"
         :reportName="$reportName"
@@ -52,7 +51,7 @@
             <fieldset disabled>
         @endif
 
-        <div class="space-y-8">
+        <!-- <div class="space-y-8">
             <x-quantity-table
                 :evaluationItems="$evaluationItems"
                 title="ด้านปริมาณ"
@@ -66,7 +65,14 @@
                 :readonly="$readonly"
                 :evidenceMap="$evidenceMap"
             />
-        </div>
+        </div> -->
+
+        <x-unified-evaluation
+            :evaluationItems="$evaluationItems"
+            :qualityItems="$qualityItems"
+            :readonly="$readonly"
+            :evidenceMap="$evidenceMap"
+        />
 
         {{-- Comments Section - Only show when status is Completed --}}
         @if(isset($report->status) && $report->status === 'Completed')

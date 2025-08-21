@@ -54,4 +54,11 @@ class Assignments extends Model
     {
         return $this->assignmentData?->evaluatorPosition();
     }
+
+    public function getEvaluatorUser()
+    {
+        return $this->assignmentData
+            ? $this->assignmentData->evaluatorPosition()->first()?->user()->first()
+            : null;
+    }
 }
