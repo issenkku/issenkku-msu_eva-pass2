@@ -166,7 +166,7 @@ class EvaluationScoreController extends Controller
             return;
         }
         $user = \App\Models\User::find($assignment->evaluator);
-        $evaluatee = \App\Models\User::find($assignment->evaluatee);
+        $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }

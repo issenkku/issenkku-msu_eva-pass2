@@ -37,8 +37,11 @@ class DashboardController extends Controller
         $reportsQuery = Reports::query()
             ->join('assignments', 'reports.id', '=', 'assignments.report_id')
             ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('users as evaluatees', 'assignments.evaluatee', '=', 'evaluatees.id')
-            ->join('users as evaluators', 'assignments.evaluator', '=', 'evaluators.id')
+            ->join('users as evaluatees', 'assignments.evaluatee_id', '=', 'evaluatees.id')
+            ->join('positions as evaluator_position', 'assignment_datas.evaluator_position_id', '=', 'evaluator_position.id')
+            ->leftJoin('users as evaluators', function ($join) {
+                $join->on('evaluator_position.id', '=', 'evaluators.position_id');
+            })
             ->join('departments as evaluatees_dept', 'evaluatees.department_id', '=', 'evaluatees_dept.id')
             ->join('positions as evaluatees_position', 'evaluatees.position_id', '=', 'evaluatees_position.id')
             ->select(
@@ -52,8 +55,10 @@ class DashboardController extends Controller
                 'evaluatees.position_id as evaluatee_position_id',
                 'evaluatees_position.name as evaluatee_position_name',
                 'evaluatees_dept.department_name as evaluatee_department_name',
-                'evaluators.id as evaluator_id',
-                'evaluators.name as evaluator_name',
+                'evaluator_position.id as evaluator_position_id',
+                'evaluator_position.name as evaluator_position_name',
+                'evaluators.id as evaluator_user_id',
+                'evaluators.name as evaluator_user_name',
                 'reports.id as report_id',
                 'reports.status as report_status',
                 'reports.created_at as report_created_at',
@@ -423,8 +428,12 @@ class DashboardController extends Controller
                 'evaluatee_position_id' => $report->evaluatee_position_id,
                 'evaluatee_position_name' => $report->evaluatee_position_name,
                 'evaluatee_department_name' => $report->evaluatee_department_name,
-                'evaluator_id' => $report->evaluator_id,
-                'evaluator_name' => $report->evaluator_name,
+                'evaluator_position_id' => $report->evaluator_position_id,
+                'evaluator_position_name' => $report->evaluator_position_name,
+                'evaluator_user_id' => $report->evaluator_user_id ?? null,
+                'evaluator_name' => $report->evaluator_user_name ?
+                    trim(($report->evaluator_user_prefix ?? '').' '.$report->evaluator_user_name) :
+                    ('ตำแหน่ง: '.$report->evaluator_position_name),
                 'report_id' => $report->report_id,
                 'status' => $report->report_status,
                 'created_at' => date('Y-m-d', strtotime($report->report_created_at)),
@@ -464,10 +473,16 @@ class DashboardController extends Controller
             'report.reportData.criteriaVersion',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser',
         ])
             ->where('report_id', $id)
             ->firstOrFail();
+
+        // Try to get evaluator user separately to avoid relationship issues
+        $evaluatorUser = null;
+        if ($assignment->assignmentData && $assignment->assignmentData->evaluator_position_id) {
+            $evaluatorUser = User::where('position_id', $assignment->assignmentData->evaluator_position_id)
+                ->first();
+        }
 
         $report = $assignment->report;
         $reportData = $report->reportData;
@@ -496,8 +511,8 @@ class DashboardController extends Controller
                 'position' => optional(optional($assignment->evaluateeUser)->position)->name ?? '-',
             ],
             'evaluator' => [
-                'name' => optional($assignment->evaluatorUser)->prefix.' '.optional($assignment->evaluatorUser)->name,
-                'employee_id' => optional($assignment->evaluatorUser)->employee_id,
+                'name' => $evaluatorUser ? ($evaluatorUser->prefix.' '.$evaluatorUser->name) : '-',
+                'employee_id' => $evaluatorUser ? $evaluatorUser->employee_id : '-',
             ],
             'dates' => [
                 'created_at' => $this->formatThaiDate($report->created_at),

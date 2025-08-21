@@ -12,6 +12,7 @@ use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
@@ -113,10 +114,11 @@ Route::middleware('auth:sanctum')->group(function () {
             // ถ้าเป็นผู้รับการประเมิน ให้ไปที่ dashboard ของผู้รับการประเมิน
             return redirect()->route('evaluatee.dashboard'); // ชื่อ route ของ evaluatee dashboard
         }
-
         // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
         // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
-        auth()->logout();
+        Auth::logout();
+
+        return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 
         return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 

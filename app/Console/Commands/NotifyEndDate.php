@@ -24,7 +24,10 @@ class NotifyEndDate extends Command
         $today = Carbon::today();
         $items = AssignmentData::where('end_time', '>=', $today)
             ->where('end_time', '<=', $today->copy()->addDays($notificationDays))
-            ->with(['assignments.evaluatorUser'])
+            ->with([
+                'assignments.evaluateeUser',
+                'evaluatorPosition.user',
+            ])
             ->get();
 
         $successCount = 0;

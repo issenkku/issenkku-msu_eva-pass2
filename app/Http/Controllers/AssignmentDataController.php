@@ -96,7 +96,7 @@ class AssignmentDataController extends Controller
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $evaluateeUser->id,
+                    'evaluatee_id' => $evaluateeUser->id,
                 ]);
 
                 // Send email notification for each user
@@ -122,7 +122,12 @@ class AssignmentDataController extends Controller
 
     public function show(AssignmentData $assignmentData)
     {
-        $assignmentData->load(['assignments.evaluateeUser', 'assignments.evaluatorUser', 'assignments.report']);
+        $assignmentData->load([
+            'assignments.evaluateeUser',
+            'assignments.report',
+            'evaluatorPosition',
+            'evaluateePosition',
+        ]);
 
         return response()->json($assignmentData);
     }
@@ -215,8 +220,7 @@ class AssignmentDataController extends Controller
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee' => $evaluateeUser->id,
-                    'evaluator' => $evaluatorUser->id,
+                    'evaluatee_id' => $evaluateeUser->id,
                 ]);
             }
 
@@ -280,7 +284,7 @@ class AssignmentDataController extends Controller
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluatee);
+        $user = \App\Models\User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }

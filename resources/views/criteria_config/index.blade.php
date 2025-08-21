@@ -121,7 +121,7 @@
                     creatorName = item.created_by;
                 }
                 card.innerHTML = `
-                    <h3 class="text-xl font-semibold text-gray-900">${item.version_name || 'ไม่ระบุชื่อเวอร์ชัน'}</h3>
+                    <h3 class="text-xl font-semibold text-gray-900">${item.report_title || 'ไม่ระบุชื่อรายงาน'}</h3>
                     <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${creatorName}</span></p>
                     <div class="flex space-x-2 items-center justify-center">
                         <x-button 

@@ -5,15 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\QualityScore;
-use App\Models\QualitySubCriteria;
-use App\Models\User;
 use App\Models\Reports;
+use App\Models\User;
 use Carbon\Carbon;
+use Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Debugbar; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
 
 class EvaluatorController extends Controller
 {
@@ -42,7 +40,7 @@ class EvaluatorController extends Controller
             'รอการกรอกข้อมูล' => $evaluations->whereIn('status', ['Assigned', 'Draft'])->count(),
             'ยังไม่ประเมิน' => $evaluations->where('status', 'Pending')->count(),
             'กำลังดำเนินการ' => $evaluations->where('status', 'Evaluator_draft')->count(),
-            'รอผลการประเมิน' => $evaluations->whereIn('status', 
+            'รอผลการประเมิน' => $evaluations->whereIn('status',
                 ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'])->count(),
             'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
@@ -58,7 +56,7 @@ class EvaluatorController extends Controller
     {
         $userId = Auth::id();
 
-        if (!$userId) {
+        if (! $userId) {
             abort(403, 'Unauthorized');
         }
 
@@ -70,7 +68,7 @@ class EvaluatorController extends Controller
             'report.reportData.criteriaVersion',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser'
+            'evaluatorUser',
         ])
             ->where('report_id', $assignmentId)
             ->where('evaluator', $userId)
@@ -97,19 +95,19 @@ class EvaluatorController extends Controller
             'status_color' => $statusInfo['color'],
             'evaluatee' => [
                 'id' => optional($assignment->evaluateeUser)->id,
-                'name' => optional($assignment->evaluateeUser)->prefix . ' ' . optional($assignment->evaluateeUser)->name ?? '-',
+                'name' => optional($assignment->evaluateeUser)->prefix.' '.optional($assignment->evaluateeUser)->name ?? '-',
                 'employee_id' => optional($assignment->evaluateeUser)->employee_id,
                 'department' => optional(optional($assignment->evaluateeUser)->department)->department_name ?? '-',
                 'position' => optional(optional($assignment->evaluateeUser)->position)->name ?? '-',
             ],
             'evaluator' => [
-                'name' => optional($assignment->evaluatorUser)->prefix . ' ' . optional($assignment->evaluatorUser)->name,
+                'name' => optional($assignment->evaluatorUser)->prefix.' '.optional($assignment->evaluatorUser)->name,
                 'employee_id' => optional($assignment->evaluatorUser)->employee_id,
             ],
             'dates' => [
                 'created_at' => $this->formatThaiDate($report->created_at),
                 'updated_at' => $this->formatThaiDate($report->updated_at),
-            ]
+            ],
         ];
 
         $canEdit = in_array($report->status, ['Assigned', 'Draft']) &&
@@ -184,7 +182,7 @@ class EvaluatorController extends Controller
                     'main_id' => $mainId,
                     'quantity' => $quantityCriteria->get($mainId, collect()),
                     'quality' => $qualityCriteria->get($mainId, collect()),
-                ]
+                ],
             ];
         });
 
@@ -195,18 +193,19 @@ class EvaluatorController extends Controller
                     'quantitySubCriterias.mainCriteria:id,name,tooltips',
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
                 ]);
-            }
+            },
         ])
             ->where('criteria_version_id', $criteriaVersionId)
             ->orderBy('sequence')
             ->get()
             ->map(function ($category) {
                 $category->sum_score = $category->evaluationLists->sum('sum_score');
+
                 return $category;
             });
 
         $quantityMap = collect($quantityCriteria)
-            ->flatMap(fn($items) => $items)
+            ->flatMap(fn ($items) => $items)
             ->keyBy('sub_id');
 
         $categories->each(function ($category) use ($quantityMap) {
@@ -222,7 +221,7 @@ class EvaluatorController extends Controller
             }
         });
         $qualityMap = collect($qualityCriteria)
-            ->flatMap(fn($items) => $items)
+            ->flatMap(fn ($items) => $items)
             ->keyBy('sub_id');
 
         $categories->each(function ($category) use ($qualityMap) {
@@ -245,10 +244,10 @@ class EvaluatorController extends Controller
             'categories' => $categories,
         ]);
     }
-    
+
     public function evaluator(Request $request, $id)
     {
-       $user = $request->user()->load('position', 'department');
+        $user = $request->user()->load('position', 'department');
     }
 
     public function edit($id)
@@ -261,7 +260,7 @@ class EvaluatorController extends Controller
             'report.reportData.criteriaVersion',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser'
+            'evaluatorUser',
         ])
             ->where('report_id', $id)
             ->where('evaluator', $userId)
@@ -295,14 +294,12 @@ class EvaluatorController extends Controller
                         'quantitySubCriterias.mainCriteria:id,name,tooltips',
                         'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
                     ]);
-                }
+                },
             ])
                 ->where('criteria_version_id', $criteriaVersionId)
                 ->orderBy('sequence')
                 ->get();
         }
-
-        
 
         // ผูกคะแนนและ evidence เข้า quantitySubCriterias และ qualitySubCriterias
         foreach ($categories as $category) {
@@ -337,15 +334,17 @@ class EvaluatorController extends Controller
 
     public function update(Request $request, $id)
     {
-        \Log::info('Update evaluation scores for report ID: ' . $id);
+        \Log::info('Update evaluation scores for report ID: '.$id);
         $validated = $request->validate([
             'scores' => 'required|array',
-            'scores.*' => 'required|numeric|min:0', 
+            'scores.*' => 'required|numeric|min:0',
             'comment' => 'nullable|string|max:2000',
         ]);
 
         foreach ($validated['scores'] as $criteriaId => $score) {
-            if (empty($criteriaId) || $criteriaId == 0) continue;
+            if (empty($criteriaId) || $criteriaId == 0) {
+                continue;
+            }
 
             QualityScore::updateOrCreate(
                 [
@@ -382,7 +381,9 @@ class EvaluatorController extends Controller
 
     private function formatThaiDate($datetime)
     {
-        if (!$datetime) return '-';
+        if (! $datetime) {
+            return '-';
+        }
 
         $thaiMonths = [
             1 => 'ม.ค.',
@@ -396,7 +397,7 @@ class EvaluatorController extends Controller
             9 => 'ก.ย.',
             10 => 'ต.ค.',
             11 => 'พ.ย.',
-            12 => 'ธ.ค.'
+            12 => 'ธ.ค.',
         ];
 
         $dateObj = Carbon::parse($datetime);
@@ -410,11 +411,11 @@ class EvaluatorController extends Controller
     private function getStatusInfo($status, $endTime)
     {
         $now = now();
-        if (!$endTime) {
+        if (! $endTime) {
             return [
                 'text' => 'สถานะไม่ระบุ',
                 'class' => 'unknown',
-                'color' => '#6c757d'
+                'color' => '#6c757d',
             ];
         }
 
@@ -424,35 +425,35 @@ class EvaluatorController extends Controller
                 return [
                     'text' => 'ยังไม่ประเมิน (มอบหมายแล้ว)',
                     'class' => 'Assigned',
-                    'color' => '#FF0000'
+                    'color' => '#FF0000',
                 ];
 
             case 'draft':
                 return [
                     'text' => 'บันทึกแล้ว (รออนุมัติ)',
                     'class' => 'draft',
-                    'color' => '#ffc107'
+                    'color' => '#ffc107',
                 ];
 
             case 'Pending':
                 return [
                     'text' => 'รอผลประเมิน (รอกดอนุมัติ)',
                     'class' => 'Pending',
-                    'color' => '#17a2b8'
+                    'color' => '#17a2b8',
                 ];
 
             case 'Completed':
                 return [
                     'text' => 'ประเมินเสร็จสิ้น (อนุมัติแล้ว)',
                     'class' => 'Completed',
-                    'color' => '#28a745'
+                    'color' => '#28a745',
                 ];
 
             default:
                 return [
                     'text' => 'ไม่ทราบสถานะ',
                     'class' => 'unknown',
-                    'color' => '#6c757d'
+                    'color' => '#6c757d',
                 ];
         }
     }
@@ -460,6 +461,7 @@ class EvaluatorController extends Controller
     private function calculateExperience($createdAt)
     {
         $years = now()->diffInYears($createdAt);
+
         return $years > 0 ? $years : 1;
     }
 
@@ -473,13 +475,19 @@ class EvaluatorController extends Controller
     private function sendEvaluationCompletedMail($reportId)
     {
         $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
-        if (!$report) return;
+        if (! $report) {
+            return;
+        }
 
         // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
         $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
-        if (!$assignment) return;
-        $user = \App\Models\User::find($assignment->evaluatee);
-        if (!$user || !$user->email) return;
+        if (! $assignment) {
+            return;
+        }
+        $user = \App\Models\User::find($assignment->evaluatee_id);
+        if (! $user || ! $user->email) {
+            return;
+        }
 
         $mailData = [
             'name' => $user->name,
@@ -488,7 +496,7 @@ class EvaluatorController extends Controller
             'status' => $report->status,
         ];
 
-        \Mail::send('emails.evaluation_completed', $mailData, function($message) use ($user) {
+        \Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
             $message->to($user->email, $user->name)
                 ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
         });

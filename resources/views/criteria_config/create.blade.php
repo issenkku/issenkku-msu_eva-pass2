@@ -20,12 +20,9 @@
                         ข้อมูลเกณฑ์การประเมิน
                     </h2>
                     <div class="space-y-6">
-                        <div>
-                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-2">ปีผู้ประเมิน <span
-                                    class="text-red-500">*</span></label>
-                            <input id="version_name" required name="version_name"
-                                class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
-                                placeholder="เช่น Demo Version 2024">
+                        <!-- ซ่อนช่องกรอกปีผู้ประเมิน -->
+                        <div style="display: none;">
+                            <input id="version_name" name="version_name" class="version_name" type="text">
                             <input type="hidden" id="auth-user-id" value="{{ Auth::user()->id }}">
                         </div>
                         <div>
@@ -265,7 +262,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
                                                 <span name="quant_main_sequence"
@@ -281,9 +278,20 @@
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
                                                         class="text-red-500">*</span></label>
-                                                <input name="quant_tooltips"
+                                                <textarea name="quant_tooltips" rows="3"
                                                     class="quant_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
-                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                                    placeholder="คำอธิบายเพิ่มเติม"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
+                                                    <span class="text-red-500">*</span>
+                                                </label>
+                                                <span class="text-xs text-gray-500">(A=ค่าน้ำหนัก, B=ภาระงานมาตรฐาน, C=ภาระงานที่ทำได้, D=คะแนนที่คำนวณได้)</span>
+                                                <textarea name="quant_formula" rows="3"
+                                                    class="quant_formula border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="กำหนดสูตรการคำนวณ เช่น D = A × C / B">D = A × C / B</textarea>
                                             </div>
                                         </div>
                                         <div
@@ -418,9 +426,9 @@
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
                                                         class="text-red-500">*</span></label>
-                                                <input name="qual_tooltips"
+                                                <textarea name="qual_tooltips" rows="3"
                                                     class="qual_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
-                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                                    placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                             </div>
                                         </div>
                                         <div
@@ -544,7 +552,7 @@
                     </svg>
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-3">ยืนยันการบันทึกข้อมูล</h3>
-                <p class="text-gray-600 mb-3">ปีผู้ประเมิน: <span id="version_name_display" class="font-medium"></span></p>
+                <p class="text-gray-600 mb-3">ชื่อเกณฑ์: <span id="version_name_display" class="font-medium"></span></p>
                 <p class="text-gray-600 mb-6">คุณต้องการบันทึกข้อมูลเกณฑ์การประเมินนี้หรือไม่?</p>
                 <div class="flex justify-center space-x-4">
                     <button id="cancel_modal_btn"
@@ -584,6 +592,8 @@
             let node = document.querySelector(blockSelector).cloneNode(true);
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
             node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+            node.querySelectorAll('textarea:not(.quant_formula)').forEach(textarea => textarea.value = '');
+            node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
                 '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
             ).forEach(e => e.remove());
@@ -657,8 +667,8 @@
             document.getElementById('loading_overlay').classList.add('hidden');
         }
 
-        function showConfirmModal(versionName) {
-            document.getElementById('version_name_display').textContent = versionName || 'ไม่ระบุ';
+        function showConfirmModal(reportTitle) {
+            document.getElementById('version_name_display').textContent = reportTitle || 'ไม่ระบุ';
             document.getElementById('confirm_modal').classList.remove('hidden');
         }
 
@@ -707,13 +717,11 @@
         document.getElementById('jsonForm').addEventListener('submit', function(e) {
             // Prevent default submit for custom validation
             e.preventDefault();
-            // Basic required fields
-            const versionName = document.getElementById('version_name').value.trim();
+            // Basic required fields (ไม่ต้องตรวจสอบ version_name อีกต่อไป)
             const reportTitle = document.getElementById('report_title').value.trim();
             const reportDescription = document.getElementById('report_description').value.trim();
             const assessmentType = document.getElementById('assessment_type').value.trim();
             let errorMsg = '';
-            if (!versionName) errorMsg += 'กรุณากรอกปีผู้ประเมิน\n';
             if (!reportTitle) errorMsg += 'กรุณากรอกชื่อเกณฑ์\n';
             if (!reportDescription) errorMsg += 'กรุณากรอกรายละเอียดเกณฑ์\n';
             if (!assessmentType) errorMsg += 'กรุณาเลือกประเภทการประเมิน\n';
@@ -721,8 +729,13 @@
                 showValidationErrorModal(errorMsg.replace(/\n/g, '<br>'));
                 return false;
             }
+            // Generate version_name automatically
+            const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
+            const versionName = `${currentYear}_AUTO`;
+            document.getElementById('version_name').value = "เกณฑ์เวอร์ชั่น" + versionName;
+
             // If valid, show confirm modal
-            showConfirmModal(versionName);
+            showConfirmModal(reportTitle); // Show report title instead of version name
         }, true);
 
         function hideConfirmModal() {
@@ -1014,12 +1027,7 @@
         document.getElementById('jsonForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const versionName = document.querySelector('.version_name').value.trim();
-            if (!versionName) {
-                //alert('กรุณากรอกปีผู้ประเมิน');
-                return;
-            }
-
+            // ไม่ต้องตรวจสอบ version_name เพราะจะ generate อัตโนมัติ
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
             if (!reportTitle || !reportDescription) {
@@ -1027,8 +1035,12 @@
                 return;
             }
 
+            // Generate version_name อัตโนมัติ
+            const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
+            const versionName = `เกณฑ์ประเมินปี ${currentYear} ครั้งที่ AUTO`;
+            
             finalData = {
-                version_name: versionName,
+                version_name: versionName, // สร้างชื่ออัตโนมัติ
                 created_by: document.getElementById('auth-user-id')?.value || 1,
                 report_datas: [],
                 categories: []
@@ -1092,6 +1104,7 @@
                                     .trim();
                                 const quantTooltips = qMain.querySelector('.quant_tooltips')
                                     .value.trim();
+                                const quantFormula = qMain.querySelector('.quant_formula')?.value.trim() || '';
                                 if (!quantName || !quantTooltips) {
                                     // alert(
                                     //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
@@ -1103,8 +1116,10 @@
                                 let quantMain = {
                                     name: quantName,
                                     tooltips: quantTooltips,
+                                    description: qMain.querySelector('.quant_description')?.value.trim() || '',
                                     sequence: Number(qMain.querySelector(
                                         '.quant_main_sequence').textContent),
+                                    formula: quantFormula,
                                     quantity_sub_criterias: []
                                 };
 
@@ -1211,7 +1226,7 @@
                 return;
             }
 
-            showConfirmModal(finalData.version_name);
+            showConfirmModal(reportTitle); // แสดง report_title แทน finalData.version_name
         });
 
         document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {

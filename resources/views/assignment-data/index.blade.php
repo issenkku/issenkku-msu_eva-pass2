@@ -49,9 +49,9 @@
                         <p class="text-gray-600 mt-1">ดูข้อมูลและจัดการรอบการประเมินทั้งหมด</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button onclick="location.reload()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
+                        {{-- <button onclick="location.reload()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
                             <i class="fas fa-sync-alt mr-2"></i>รีเฟรช
-                        </button>
+                        </button> --}}
                         <a href="{{ route('assignment-data.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
                             <i class="fas fa-plus mr-2"></i>สร้างรอบการประเมินใหม่
                         </a>

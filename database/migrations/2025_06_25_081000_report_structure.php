@@ -87,7 +87,7 @@ return new class extends Migration
         Schema::create('formulas', function (Blueprint $table) {
             $table->id();
             $table->text('condition');
-            $table->foreignId('quality_main_criteria_id')->constrained('quality_main_criterias')->onDelete('cascade');
+            $table->foreignId('quantity_main_criteria_id')->constrained('quantity_main_criterias')->onDelete('cascade');
             $table->timestamps();
         });
     }

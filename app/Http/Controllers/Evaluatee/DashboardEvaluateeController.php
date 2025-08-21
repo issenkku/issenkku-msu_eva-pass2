@@ -29,9 +29,9 @@ class DashboardEvaluateeController extends Controller
             'ทั้งหมด' => $evaluations->count(),
             'ยังไม่ประเมิน' => $evaluations->where('status', 'Assigned')->count(),
             'กำลังดำเนินการ' => $evaluations->where('status', 'Draft')->count(),
-            'รอผลการประเมิน' => $evaluations->whereIn('status', 
-                ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
-                'Manager_assign', 'Manager_draft'])->count(),
+            'รอผลการประเมิน' => $evaluations->whereIn('status',
+                ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft',
+                    'Manager_assign', 'Manager_draft'])->count(),
             'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
         ];
 
@@ -48,12 +48,12 @@ class DashboardEvaluateeController extends Controller
 
         $report = Reports::with([
             'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
-            'assignments.evaluatorUser',
+            'assignments.assignmentData.evaluatorPosition',
             'assignments.assignmentData',
         ])->findOrFail($id);
 
         // Find the assignment for the current user
-        $assignment = $report->assignments->where('evaluatee', $user->id)->first();
+        $assignment = $report->assignments->where('evaluatee_id', $user->id)->first();
 
         if (! $assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
