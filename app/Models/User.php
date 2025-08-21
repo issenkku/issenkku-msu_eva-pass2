@@ -35,6 +35,8 @@ class User extends Authenticatable implements CanResetPassword
         'phone',
         'personnel_type',
         'bio',
+        'portfolio',
+        'profile_photo_path',
         'status',
         'position_id',
         'department_id',
@@ -78,6 +80,21 @@ class User extends Authenticatable implements CanResetPassword
     public function getAuthIdentifierName()
     {
         return 'employee_id';
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'employee_id';
+    }
+
+    /**
+     * Get the user's profile photo URL.
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo_path
+            ? asset('storage/'.$this->profile_photo_path)
+            : asset('images/default-avatar.svg');
     }
 
     public function position()

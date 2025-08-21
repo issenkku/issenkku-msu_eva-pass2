@@ -8,6 +8,28 @@
         @csrf
         @method('PATCH')
 
+        <!-- Profile Photo Section -->
+        <div class="mb-8 flex items-center gap-6">
+            <div class="flex-shrink-0">
+                <img id="preview-photo" 
+                     src="{{ $user->profile_photo_url }}" 
+                     alt="Profile Photo"
+                     class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg">
+            </div>
+            <div class="flex-grow">
+                <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">รูปโปรไฟล์</label>
+                <input type="file" 
+                       id="profile_photo" 
+                       name="profile_photo" 
+                       accept="image/*"
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('profile_photo') border-red-500 @enderror">
+                @error('profile_photo')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                <p class="mt-1 text-sm text-gray-500">รองรับไฟล์ JPG, JPEG, PNG, GIF ขนาดไม่เกิน 2MB</p>
+            </div>
+        </div>
+
         <div class="flex items-center mb-6 gap-4">
             <div class="w-40">
                 <label for="prefix" class="block text-sm font-medium text-gray-700 mb-1">คำนำหน้า</label>
@@ -120,6 +142,16 @@
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
+
+            <div class="col-span-2">
+                <label for="portfolio" class="block text-sm font-medium text-gray-700 mb-1">ผลงาน</label>
+                <textarea id="portfolio" name="portfolio" rows="6"
+                          class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('portfolio') border-red-500 @enderror"
+                          placeholder="กรอกข้อมูลผลงาน เช่น งานวิจัย, บทความ, หนังสือ, รางวัลที่ได้รับ และผลงานอื่นๆ ที่สำคัญ">{{ old('portfolio', $user->portfolio ?? '') }}</textarea>
+                @error('portfolio')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         <!-- Password Change Section -->
@@ -169,16 +201,16 @@
 
 <script>
 // Preview photo when selected
-// document.getElementById('photo').addEventListener('change', function(e) {
-//     const file = e.target.files[0];
-//     if (file) {
-//         const reader = new FileReader();
-//         reader.onload = function(e) {
-//             document.getElementById('preview-photo').src = e.target.result;
-//         };
-//         reader.readAsDataURL(file);
-//     }
-// });
+document.getElementById('profile_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-photo').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 // Format phone number as user types
 document.getElementById('phone').addEventListener('input', function(e) {

@@ -1,0 +1,22 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#grad1)"/>
+  
+  <!-- Person Icon -->
+  <g fill="white" transform="translate(100,100)">
+    <!-- Head -->
+    <circle cx="0" cy="-25" r="20"/>
+    <!-- Body -->
+    <path d="M -30 15 A 30 30 0 0 1 30 15 L 30 45 A 30 30 0 0 1 -30 45 Z"/>
+  </g>
+  
+  <!-- Optional: Add initials text area -->
+  <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" opacity="0.3">?</text>
+</svg>
