@@ -424,21 +424,208 @@ class ReportStructureController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'version_name' => 'sometimes|required|string|max:255',
-            // 'created_by' => 'nullable|exists:users,user_id',
+            'version_name' => 'required|string|max:255',
+            'created_by' => 'required|integer|exists:users,id',
+
+            'report_datas' => 'required|array',
+            'report_datas.*.report_title' => 'required|string',
+            'report_datas.*.report_description' => 'nullable|string',
+            'report_datas.*.assessment_type' => 'required|string',
+            'report_datas.*.comment' => 'nullable|string',
+
+            'categories' => 'required|array|min:1',
+            'categories.*.main_categories' => 'required|string',
+            'categories.*.sub_categories' => 'required|string',
+            'categories.*.sequence' => 'required|integer|min:1',
+
+            'categories.*.evaluation_lists' => 'sometimes|array|min:1',
+            'categories.*.evaluation_lists.*.name' => 'required|string',
+            'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
+
+            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
+
+            'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
         ]);
 
-        // $authUser = Auth::guard('api')->user();
-        $version = CriteriaVersion::where('id', $id)->first();
+        $version = CriteriaVersion::findOrFail($id);
 
-        // $validated['created_by'] = $authUser->user_id;
+        try {
+            DB::transaction(function () use ($version, $validated) {
+                // 1. Delete all related data in correct order (children first)
+                
+                // Delete formulas first (if they reference quantity main criterias)
+                DB::table('formulas')
+                    ->whereIn('quantity_main_criteria_id', function($query) use ($version) {
+                        $query->select('id')
+                            ->from('quantity_main_criterias')
+                            ->where('criteria_version_id', $version->id);
+                    })
+                    ->delete();
+                
+                // Delete sub criterias
+                DB::table('quantity_sub_criterias')
+                    ->whereIn('evaluation_list_id', function($query) use ($version) {
+                        $query->select('id')
+                            ->from('evaluation_lists')
+                            ->where('criteria_version_id', $version->id);
+                    })
+                    ->delete();
+                
+                DB::table('quality_sub_criterias')
+                    ->whereIn('evaluation_list_id', function($query) use ($version) {
+                        $query->select('id')
+                            ->from('evaluation_lists')
+                            ->where('criteria_version_id', $version->id);
+                    })
+                    ->delete();
+                
+                // Delete main criterias
+                $version->quantityMainCriterias()->delete();
+                $version->qualityMainCriterias()->delete();
+                
+                // Delete evaluation lists
+                $version->evaluationLists()->delete();
+                
+                // Delete categories and report datas
+                $version->categories()->delete();
+                $version->reportDatas()->delete();
 
-        $version->update($validated);
+                // 2. Update Criteria Version
+                $version->update([
+                    'version_name' => $validated['version_name'],
+                    'created_by' => $validated['created_by'],
+                ]);
 
-        return response()->json([
-            'message' => 'Criteria version updated successfully',
-            'data' => new CriteriaVersionResource($version),
-        ]);
+                // 3. Re-create Report Datas
+                foreach ($validated['report_datas'] as $reportDatum) {
+                    ReportData::create([
+                        'criteria_version_id' => $version->id,
+                        'report_title' => $reportDatum['report_title'],
+                        'report_description' => $reportDatum['report_description'],
+                        'assessment_type' => $reportDatum['assessment_type'],
+                        'comment' => $reportDatum['comment'] ?? null,
+                    ]);
+                }
+
+                // 4. Re-create Categories and children
+                foreach ($validated['categories'] as $categoryData) {
+                    $category = Category::create([
+                        'criteria_version_id' => $version->id,
+                        'main_categories' => $categoryData['main_categories'],
+                        'sub_categories' => $categoryData['sub_categories'],
+                        'sequence' => $categoryData['sequence'],
+                    ]);
+
+                    if (! empty($categoryData['evaluation_lists'])) {
+                        foreach ($categoryData['evaluation_lists'] as $evalListData) {
+                            $evaluationList = EvaluationList::create([
+                                'categorie_id' => $category->id,
+                                'criteria_version_id' => $version->id,
+                                'name' => $evalListData['name'],
+                                'sum_score' => $evalListData['sum_score'],
+                                'sequence' => $evalListData['sequence'],
+                                'annotation' => $evalListData['annotation'] ?? null,
+                            ]);
+
+                            if (! empty($evalListData['quantity_main_criterias'])) {
+                                foreach ($evalListData['quantity_main_criterias'] as $qMain) {
+                                    $quantityMainCriteria = QuantityMainCriteria::create([
+                                        'criteria_version_id' => $version->id,
+                                        'name' => $qMain['name'],
+                                        'tooltips' => $qMain['tooltips'],
+                                    ]);
+
+                                    if (! empty($qMain['formula'])) {
+                                        \App\Models\Formula::create([
+                                            'condition' => $qMain['formula'],
+                                            'quantity_main_criteria_id' => $quantityMainCriteria->id,
+                                        ]);
+                                    }
+
+                                    if (! empty($qMain['quantity_sub_criterias'])) {
+                                        foreach ($qMain['quantity_sub_criterias'] as $qSub) {
+                                            QuantitySubCriteria::create([
+                                                'criteria_version_id' => $version->id,
+                                                'quantity_main_criteria_id' => $quantityMainCriteria->id,
+                                                'evaluation_list_id' => $evaluationList->id,
+                                                'name' => $qSub['name'],
+                                                'sequence' => $qSub['sequence'],
+                                                'score_a' => $qSub['score_a'],
+                                                'score_b' => $qSub['score_b'],
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (! empty($evalListData['quality_main_criterias'])) {
+                                foreach ($evalListData['quality_main_criterias'] as $qlMain) {
+                                    $qualityMainCriteria = QualityMainCriteria::create([
+                                        'criteria_version_id' => $version->id,
+                                        'name' => $qlMain['name'],
+                                        'ratio' => $qlMain['ratio'],
+                                        'tooltips' => $qlMain['tooltips'],
+                                        'sequence' => $qlMain['sequence'],
+                                    ]);
+                                    if (! empty($qlMain['quality_sub_criterias'])) {
+                                        foreach ($qlMain['quality_sub_criterias'] as $qlSub) {
+                                            QualitySubCriteria::create([
+                                                'quality_main_criteria_id' => $qualityMainCriteria->id,
+                                                'criteria_version_id' => $version->id,
+                                                'evaluation_list_id' => $evaluationList->id,
+                                                'name' => $qlSub['name'],
+                                                'sequence' => $qlSub['sequence'],
+                                                'num_score' => $qlSub['num_score'],
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Criteria version updated successfully',
+                'data' => new CriteriaVersionResource($version->fresh()),
+            ]);
+        } catch (ValidationException $e) {
+            Log::error('Validation error in update: '.json_encode($e->errors()));
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'error' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Server error in update: '.$e->getMessage(), ['exception' => $e]);
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: '.$e->getMessage(),
+            ], 500);
+        }
     }
 
     // Delete (DELETE)
