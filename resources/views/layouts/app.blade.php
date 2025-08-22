@@ -11,6 +11,28 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Summernote Rich Text Editor -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-th-TH.min.js"></script>
+    <style>
+        /* Custom styling for Summernote */
+        .note-editor {
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+        .note-editor.note-frame {
+            border: 1px solid #d1d5db;
+        }
+        .note-editor.note-frame.note-focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgb(59 130 246 / 0.1);
+        }
+        .note-toolbar {
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -441,14 +463,16 @@
                 </h1>
                 <nav class="d-none d-xl-block">
                     <ul class="nav nav-pills align-items-center gap-2">
-                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
+                        
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') || auth()->user() && auth()->user()->hasRole('admin'))
                             <li class="nav-item">
-                                <a class="nav-link text-white " href="/dashboard">หน้าแรก</a>
+                                <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
                             </li>
                         @endif
+
                         @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/evaluator-dashboard">หน้าการประเมิน</a>
+                                <a class="nav-link text-white" href="/evaluator-dashboard">หน้าตรวจประเมิน</a>
                             </li>
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
@@ -456,22 +480,20 @@
                                 <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าการประเมิน</a>
                             </li>
                         @endif
-                        
+
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="/dashboard">หน้าแรก</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ route('users.index') }}">จัดการสมาชิก</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                จัดการเกณฑ์
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="settingDropdown">
+                                <li><a class="dropdown-item" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a></li>
+                                <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a></li>
+                                <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -484,6 +506,7 @@
                             </ul>
                         </li>
                         @endif
+
                         @if(auth()->user())
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -526,7 +549,7 @@
                 @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
                     <a href="/dashboard" class="mobile-nav-item">
                         <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าแรก
+                        แดชบอร์ด
                     </a>
                 @endif
                 

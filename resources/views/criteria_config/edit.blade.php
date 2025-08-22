@@ -185,7 +185,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
                                                 <span name="quant_main_sequence" class="quant_main_sequence text-gray-700 font-medium text-lg">1</span>
@@ -194,10 +194,10 @@
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span class="text-red-500">*</span></label>
                                                 <input name="quant_name" class="quant_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="ชื่อเกณฑ์ปริมาณ">
                                             </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
-                                                <textarea name="quant_tooltips" rows="3" class="quant_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
-                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
+                                            <textarea name="quant_tooltips" class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
                                             <div>
@@ -283,7 +283,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
                                                 <span name="qual_main_sequence" class="qual_main_sequence text-gray-700 font-medium text-lg">1</span>
@@ -296,10 +296,10 @@
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">สัดส่วน <span class="text-red-500">*</span></label>
                                                 <input type="number" name="qual_ratio" class="qual_ratio border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="สัดส่วน %">
                                             </div>
-                                            <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
-                                                <textarea name="qual_tooltips" rows="3" class="qual_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
-                                            </div>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
+                                            <textarea name="qual_tooltips" class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
                                         <!-- Quality Sub Criteria Container -->
                                         <div class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
@@ -399,6 +399,54 @@
 @push('scripts')
     <script>
         let originalData = null;
+
+        // Clean up all existing Summernote instances
+        function cleanupSummernote() {
+            $('.richtext-editor').each(function() {
+                if ($(this).hasClass('note-editor')) {
+                    $(this).summernote('destroy');
+                }
+                // Reset any Summernote classes and attributes
+                $(this).removeClass('note-editor note-frame note-editable');
+                $(this).removeAttr('style');
+            });
+        }
+
+        // Initialize Summernote for rich text editors
+        function initializeSummernote() {
+            // First clean up any existing instances
+            cleanupSummernote();
+            
+            $('.richtext-editor').each(function() {
+                // Check if Summernote is already initialized
+                if (!$(this).hasClass('note-editor')) {
+                    $(this).summernote({
+                        height: 250,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'hr']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
+                        lang: 'th-TH',
+                        callbacks: {
+                            onInit: function() {
+                                // Ensure content is loaded properly
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        // Initialize Summernote when document is ready
+        $(document).ready(function() {
+            // Don't initialize here - let it be handled by populateForm after data is loaded
+        });
         
         document.addEventListener('DOMContentLoaded', function () {
             fetchVersionDetails();
@@ -469,9 +517,29 @@
 
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
+            
+            // Destroy Summernote instances from cloned node and reinitialize
+            $(node).find('.richtext-editor').each(function() {
+                const $editor = $(this);
+                
+                // If Summernote is initialized, destroy it
+                if ($editor.hasClass('note-editor')) {
+                    $editor.summernote('destroy');
+                }
+                
+                // Generate new unique ID for cloned editor
+                const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                this.id = newId;
+                this.value = ''; // Clear content
+                
+                // Remove any Summernote-related classes
+                $editor.removeClass('note-editor note-frame note-editable');
+                $editor.removeAttr('style');
+            });
+            
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
             node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
-            node.querySelectorAll('textarea:not(.quant_formula)').forEach(textarea => textarea.value = '');
+            node.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
             node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
                 '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
@@ -489,6 +557,7 @@
                 const index = container.querySelectorAll('.category_block').length + 1;
                 node.querySelector('.category_sequence').textContent = index;
             }
+            
             return node;
         }
 
@@ -618,6 +687,12 @@
         function handleDeleteQuantityCriteria(quantBlock) {
             const container = quantBlock.closest('.quantity_main_criterias_container');
             if (container.querySelectorAll('.quant_criteria_block').length > 1) {
+                // Clean up Summernote instances before removing block
+                $(quantBlock).find('.richtext-editor').each(function() {
+                    if ($(this).hasClass('note-editor')) {
+                        $(this).summernote('destroy');
+                    }
+                });
                 quantBlock.remove();
                 updateSequences();
             } else {
@@ -630,6 +705,29 @@
             const newBlock = cloneAndClear('.quant_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
+            
+            // Initialize Summernote for new rich text editors with specific targeting
+            setTimeout(function() {
+                $(newBlock).find('.richtext-editor').each(function() {
+                    if (!$(this).hasClass('note-editor')) {
+                        $(this).summernote({
+                            height: 250,
+                            toolbar: [
+                                ['style', ['style']],
+                                ['font', ['bold', 'italic', 'underline', 'clear']],
+                                ['color', ['color']],
+                                ['para', ['ul', 'ol', 'paragraph']],
+                                ['table', ['table']],
+                                ['insert', ['link', 'hr']],
+                                ['view', ['fullscreen', 'codeview', 'help']]
+                            ],
+                            placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
+                            lang: 'th-TH'
+                        });
+                    }
+                });
+            }, 100);
+            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -655,6 +753,12 @@
         function handleDeleteQualityCriteria(qualBlock) {
             const container = qualBlock.closest('.quality_main_criterias_container');
             if (container.querySelectorAll('.qual_criteria_block').length > 1) {
+                // Clean up Summernote instances before removing block
+                $(qualBlock).find('.richtext-editor').each(function() {
+                    if ($(this).hasClass('note-editor')) {
+                        $(this).summernote('destroy');
+                    }
+                });
                 qualBlock.remove();
                 updateSequences();
             } else {
@@ -667,6 +771,29 @@
             const newBlock = cloneAndClear('.qual_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
+            
+            // Initialize Summernote for new rich text editors with specific targeting
+            setTimeout(function() {
+                $(newBlock).find('.richtext-editor').each(function() {
+                    if (!$(this).hasClass('note-editor')) {
+                        $(this).summernote({
+                            height: 250,
+                            toolbar: [
+                                ['style', ['style']],
+                                ['font', ['bold', 'italic', 'underline', 'clear']],
+                                ['color', ['color']],
+                                ['para', ['ul', 'ol', 'paragraph']],
+                                ['table', ['table']],
+                                ['insert', ['link', 'hr']],
+                                ['view', ['fullscreen', 'codeview', 'help']]
+                            ],
+                            placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
+                            lang: 'th-TH'
+                        });
+                    }
+                });
+            }, 100);
+            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -751,6 +878,11 @@
 
             updateSequences();
             updateButtonStates('.category_block:not([style*="display: none"])', '.move_category_up_btn', '.move_category_down_btn');
+            
+            // Initialize Summernote after all data is populated
+            setTimeout(function() {
+                initializeSummernote();
+            }, 1000);
         }
 
         function createCategoryFromData(categoryData) {
@@ -818,7 +950,10 @@
                 const newBlock = template.cloneNode(true);
 
                 newBlock.querySelector('.quant_name').value = quantMain.name || '';
-                newBlock.querySelector('.quant_tooltips').value = quantMain.tooltips || '';
+                
+                // Set content for Summernote editor
+                const tooltipsTextarea = newBlock.querySelector('.quant_tooltips');
+                tooltipsTextarea.value = quantMain.tooltips || '';
                 
                 if (quantMain.formulas && quantMain.formulas.length > 0) {
                     newBlock.querySelector('.quant_formula').value = quantMain.formulas[0].condition || 'D = A × C / B';
@@ -844,6 +979,8 @@
                 }
                 container.appendChild(newBlock);
             });
+
+            // Don't initialize Summernote here - will be done after all data is populated
         }
 
         function populateQualityCriteria(container, qualityData) {
@@ -856,7 +993,10 @@
 
                 newBlock.querySelector('.qual_name').value = qualMain.name || '';
                 newBlock.querySelector('.qual_ratio').value = qualMain.ratio || '';
-                newBlock.querySelector('.qual_tooltips').value = qualMain.tooltips || '';
+                
+                // Set content for Summernote editor
+                const tooltipsTextarea = newBlock.querySelector('.qual_tooltips');
+                tooltipsTextarea.value = qualMain.tooltips || '';
 
                 const subContainer = newBlock.querySelector('.qual_sub_criterias_container');
                 const subTemplate = subContainer.querySelector('.qual_sub_criteria_block');
@@ -877,6 +1017,8 @@
                 }
                 container.appendChild(newBlock);
             });
+
+            // Don't initialize Summernote here - will be done after all data is populated
         }
 
         function showLoading() {
@@ -898,6 +1040,14 @@
         // Form submission with full data structure
         document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Save all Summernote content back to textareas before collecting data
+            $('.richtext-editor').each(function() {
+                if ($(this).hasClass('note-editor')) {
+                    const content = $(this).summernote('code');
+                    this.value = content;
+                }
+            });
             
             // Validate basic information
             const versionName = document.getElementById('version_name').value.trim();
@@ -1004,64 +1154,81 @@
                         quality_main_criterias: []
                     };
 
-                    // Collect quantity criteria if enabled
-                    if (evalBlock.querySelector('.quantity_criteria_type').checked) {
-                        evalBlock.querySelectorAll('.quant_criteria_block').forEach((quantBlock, quantIndex) => {
-                            const quantName = quantBlock.querySelector('.quant_name').value.trim();
-                            const quantTooltips = quantBlock.querySelector('.quant_tooltips').value.trim();
-                            const quantFormula = quantBlock.querySelector('.quant_formula').value.trim();
+                            // Collect quantity criteria if enabled
+                            if (evalBlock.querySelector('.quantity_criteria_type').checked) {
+                                evalBlock.querySelectorAll('.quant_criteria_block').forEach((quantBlock, quantIndex) => {
+                                    const quantName = quantBlock.querySelector('.quant_name').value.trim();
+                                    
+                                    // Get content from Summernote or textarea
+                                    const tooltipsElement = quantBlock.querySelector('.quant_tooltips');
+                                    let quantTooltips = '';
+                                    if ($(tooltipsElement).hasClass('note-editor')) {
+                                        quantTooltips = $(tooltipsElement).summernote('code').trim();
+                                    } else {
+                                        quantTooltips = tooltipsElement.value.trim();
+                                    }
+                                    
+                                    const quantFormula = quantBlock.querySelector('.quant_formula').value.trim();
 
-                            if (!quantName || !quantTooltips) {
-                                throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณหลักที่ ${quantIndex + 1}`);
-                            }
+                                    if (!quantName || !quantTooltips) {
+                                        throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณหลักที่ ${quantIndex + 1}`);
+                                    }
 
-                            const quantMain = {
-                                name: quantName,
-                                tooltips: quantTooltips,
-                                formula: quantFormula || 'D = A × C / B',
-                                quantity_sub_criterias: []
-                            };
+                                    const quantMain = {
+                                        name: quantName,
+                                        tooltips: quantTooltips,
+                                        formula: quantFormula || 'D = A × C / B',
+                                        quantity_sub_criterias: []
+                                    };
 
-                            // Collect quantity sub criteria
-                            quantBlock.querySelectorAll('.quant_sub_criteria_block').forEach((subBlock, subIndex) => {
-                                const subName = subBlock.querySelector('.quant_sub_name').value.trim();
-                                const scoreA = subBlock.querySelector('.score_a').value;
-                                const scoreB = subBlock.querySelector('.score_b').value;
+                                    // Collect quantity sub criteria
+                                    quantBlock.querySelectorAll('.quant_sub_criteria_block').forEach((subBlock, subIndex) => {
+                                        const subName = subBlock.querySelector('.quant_sub_name').value.trim();
+                                        const scoreA = subBlock.querySelector('.score_a').value;
+                                        const scoreB = subBlock.querySelector('.score_b').value;
 
-                                if (!subName || !scoreA || !scoreB) {
-                                    throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณย่อยที่ ${subIndex + 1}`);
-                                }
+                                        if (!subName || !scoreA || !scoreB) {
+                                            throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณย่อยที่ ${subIndex + 1}`);
+                                        }
 
-                                quantMain.quantity_sub_criterias.push({
-                                    name: subName,
-                                    sequence: subIndex + 1,
-                                    score_a: parseFloat(scoreA),
-                                    score_b: parseFloat(scoreB)
+                                        quantMain.quantity_sub_criterias.push({
+                                            name: subName,
+                                            sequence: subIndex + 1,
+                                            score_a: parseFloat(scoreA),
+                                            score_b: parseFloat(scoreB)
+                                        });
+                                    });
+
+                                    evalData.quantity_main_criterias.push(quantMain);
                                 });
-                            });
-
-                            evalData.quantity_main_criterias.push(quantMain);
-                        });
-                    }
-
-                    // Collect quality criteria if enabled
-                    if (evalBlock.querySelector('.quality_criteria_type').checked) {
-                        evalBlock.querySelectorAll('.qual_criteria_block').forEach((qualBlock, qualIndex) => {
-                            const qualName = qualBlock.querySelector('.qual_name').value.trim();
-                            const qualRatio = qualBlock.querySelector('.qual_ratio').value;
-                            const qualTooltips = qualBlock.querySelector('.qual_tooltips').value.trim();
-
-                            if (!qualName || !qualRatio || !qualTooltips) {
-                                throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
                             }
 
-                            const qualMain = {
-                                name: qualName,
-                                ratio: parseInt(qualRatio),
-                                tooltips: qualTooltips,
-                                sequence: qualIndex + 1,
-                                quality_sub_criterias: []
-                            };
+                            // Collect quality criteria if enabled
+                            if (evalBlock.querySelector('.quality_criteria_type').checked) {
+                                evalBlock.querySelectorAll('.qual_criteria_block').forEach((qualBlock, qualIndex) => {
+                                    const qualName = qualBlock.querySelector('.qual_name').value.trim();
+                                    const qualRatio = qualBlock.querySelector('.qual_ratio').value;
+                                    
+                                    // Get content from Summernote or textarea
+                                    const tooltipsElement = qualBlock.querySelector('.qual_tooltips');
+                                    let qualTooltips = '';
+                                    if ($(tooltipsElement).hasClass('note-editor')) {
+                                        qualTooltips = $(tooltipsElement).summernote('code').trim();
+                                    } else {
+                                        qualTooltips = tooltipsElement.value.trim();
+                                    }
+
+                                    if (!qualName || !qualRatio || !qualTooltips) {
+                                        throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
+                                    }
+
+                                    const qualMain = {
+                                        name: qualName,
+                                        ratio: parseInt(qualRatio),
+                                        tooltips: qualTooltips,
+                                        sequence: qualIndex + 1,
+                                        quality_sub_criterias: []
+                                    };
 
                             // Collect quality sub criteria
                             qualBlock.querySelectorAll('.qual_sub_criteria_block').forEach((subBlock, subIndex) => {

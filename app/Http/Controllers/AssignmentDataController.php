@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Models\Role;
 
 class AssignmentDataController extends Controller
 {
@@ -83,13 +84,21 @@ class AssignmentDataController extends Controller
 
             // ดึงผู้ใช้จากตำแหน่งที่เลือก
             $evaluateePosition = Positions::find($request->evaluatees);
+            $evaluatorPosition = Positions::find($request->evaluators);
 
             // ดึงผู้ใช้ทั้งหมดที่มีตำแหน่งนี้
             $evaluateeUsers = $evaluateePosition->user;
+            $evaluatorUsers = $evaluatorPosition->user;
 
             if ($evaluateeUsers->isEmpty()) {
                 throw new \Exception('ไม่พบผู้ใช้ในตำแหน่งที่เลือก');
             }
+
+            // กำหนดบทบาทให้ผู้ประเมิน
+            $this->assignUserRoles($evaluatorUsers, 'ผู้ประเมิน', null);
+
+            // กำหนดบทบาทให้ผู้รับการประเมิน
+            $this->assignUserRoles($evaluateeUsers, 'ผู้รับการประเมิน', null);
 
             // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งนี้
             foreach ($evaluateeUsers as $evaluateeUser) {
@@ -212,6 +221,12 @@ class AssignmentDataController extends Controller
                 throw new \Exception('ไม่พบผู้ใช้ในตำแหน่งที่เลือก');
             }
 
+            // กำหนดบทบาทให้ผู้ประเมิน
+            $this->assignUserRoles($evaluatorUsers, 'ผู้ประเมิน', 'ผู้รับการประเมิน');
+
+            // กำหนดบทบาทให้ผู้รับการประเมิน
+            $this->assignUserRoles($evaluateeUsers, 'ผู้รับการประเมิน', 'ผู้ประเมิน');
+
             // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งผู้รับการประเมิน
             // โดยใช้ผู้ประเมินคนแรกในตำแหน่งผู้ประเมิน
             $evaluatorUser = $evaluatorUsers->first();
@@ -246,11 +261,21 @@ class AssignmentDataController extends Controller
         try {
             DB::beginTransaction();
 
+            // ดึงข้อมูลผู้ใช้ที่เกี่ยวข้องก่อนลบ
+            $assignmentData->load(['evaluatorPosition.user', 'evaluateePosition.user']);
+
+            $evaluatorUsers = $assignmentData->evaluatorPosition->user ?? collect();
+            $evaluateeUsers = $assignmentData->evaluateePosition->user ?? collect();
+
             // ลบ assignments ที่เกี่ยวข้องก่อน
             $assignmentData->assignments()->delete();
 
             // ลบ assignment data
             $assignmentData->delete();
+
+            // หมายเหตุ: การคืนค่า roles จะต้องพิจารณาว่าผู้ใช้ยังมี assignments อื่นอยู่หรือไม่
+            // สำหรับความปลอดภัย ควรตรวจสอบก่อนลบ role
+            // ในที่นี้จะไม่ลบ role เนื่องจากผู้ใช้อาจมี assignments อื่นอยู่
 
             DB::commit();
 
@@ -305,5 +330,74 @@ class AssignmentDataController extends Controller
             $message->to($user->email, $user->name)
                 ->subject('แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน');
         });
+    }
+
+    /**
+     * จัดการ roles สำหรับผู้ใช้อย่างปลอดภัย
+     *
+     * @param  mixed  $users
+     * @param  string  $newRole
+     * @param  string  $removeRole
+     */
+    private function assignUserRoles($users, $newRole, $removeRole = null)
+    {
+        $role = Role::where('name', $newRole)->first();
+
+        if (! $role) {
+            throw new \Exception("ไม่พบ role: {$newRole}");
+        }
+
+        // ตรวจสอบและแปลงเป็น collection ที่เหมาะสม
+        if ($users instanceof \Illuminate\Database\Eloquent\Relations\HasMany) {
+            // ถ้าเป็น HasMany relation ให้ get ข้อมูล
+            $users = $users->get();
+        } elseif ($users instanceof \Illuminate\Database\Eloquent\Builder) {
+            // ถ้าเป็น Query Builder ให้ get ข้อมูล
+            $users = $users->get();
+        }
+        // ถ้าเป็น Collection อยู่แล้ว ไม่ต้องทำอะไร
+
+        foreach ($users as $user) {
+            // ตรวจสอบว่า $user เป็น User model จริงหรือไม่
+            if (! ($user instanceof \App\Models\User)) {
+                continue;
+            }
+
+            try {
+                // ลบ role เก่าถ้าระบุ
+                if ($removeRole && $user->hasRole($removeRole)) {
+                    $user->removeRole($removeRole);
+                }
+
+                // เพิ่ม role ใหม่ถ้ายังไม่มี
+                if (! $user->hasRole($newRole)) {
+                    $user->assignRole($role);
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to assign role {$newRole} to user {$user->id}: ".$e->getMessage());
+
+                continue;
+            }
+        }
+    }
+
+    /**
+     * ตรวจสอบว่าผู้ใช้ยังมี assignments อื่นอยู่หรือไม่
+     *
+     * @param  User  $user
+     * @param  int  $currentAssignmentDataId
+     * @return bool
+     */
+    private function hasOtherAssignments($user, $currentAssignmentDataId = null)
+    {
+        $query = Assignments::where('evaluatee_id', $user->id);
+
+        if ($currentAssignmentDataId) {
+            $query->whereHas('assignmentData', function ($q) use ($currentAssignmentDataId) {
+                $q->where('id', '!=', $currentAssignmentDataId);
+            });
+        }
+
+        return $query->exists();
     }
 }

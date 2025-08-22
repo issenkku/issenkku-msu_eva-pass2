@@ -28,6 +28,12 @@ class QualitySubCriteria extends Model
         return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
     }
 
+    // Alias for consistency with QuantitySubCriteria
+    public function mainCriteria(): BelongsTo
+    {
+        return $this->qualityMainCriteria();
+    }
+
     public function criteriaVersion(): BelongsTo
     {
         return $this->belongsTo(CriteriaVersion::class, 'criteria_version_id');

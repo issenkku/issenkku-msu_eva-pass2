@@ -400,7 +400,7 @@
                                                         <td rowspan="{{ $subCriteriasCount }}" class="align-middle" style="background-color: #f8f9fa; border-right: 2px solid #dee2e6;">
                                                             <strong>{{ $mainCriteria->name }}</strong>
                                                             @if($mainCriteria->tooltips)
-                                                                <br><small class="text-muted">{{ $mainCriteria->tooltips }}</small>
+                                                                <br><div>{!! $mainCriteria->tooltips !!}</div>
                                                             @endif
                                                         </td>
                                                     @endif
