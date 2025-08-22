@@ -470,6 +470,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 ตั้งค่า
@@ -557,6 +560,10 @@
                     <a href="{{ route('assignment-data.index') }}" class="mobile-nav-item">
                         <i class="fas fa-tasks" style="width: 20px; margin-right: 10px;"></i>
                         จัดการรอบการประเมิน
+                    </a>
+                    <a href="{{ route('quality-scores.index') }}" class="mobile-nav-item">
+                        <i class="fas fa-star" style="width: 20px; margin-right: 10px;"></i>
+                        คะแนนคุณภาพ
                     </a>
                     
                     <!-- Settings Dropdown for Mobile -->

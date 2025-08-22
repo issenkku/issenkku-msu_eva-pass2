@@ -56,6 +56,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     Route::resource('/roles', RoleAndPermissionController::class);
 
+    Route::prefix('quality-scores')->name('quality-scores.')->group(function () {
+        Route::get('/', [App\Http\Controllers\QualityScoresController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\QualityScoresController::class, 'create'])->name('create');
+        Route::get('/get-criteria-by-report', [App\Http\Controllers\QualityScoresController::class, 'getCriteriaByReport'])->name('get-criteria-by-report');
+        Route::post('/', [App\Http\Controllers\QualityScoresController::class, 'store'])->name('store');
+        Route::get('/{qualityScore}', [App\Http\Controllers\QualityScoresController::class, 'show'])->name('show');
+        Route::get('/{qualityScore}/edit', [App\Http\Controllers\QualityScoresController::class, 'edit'])->name('edit');
+        Route::put('/{qualityScore}', [App\Http\Controllers\QualityScoresController::class, 'update'])->name('update');
+        Route::delete('/{qualityScore}', [App\Http\Controllers\QualityScoresController::class, 'destroy'])->name('destroy');
+        Route::post('/bulk-destroy', [App\Http\Controllers\QualityScoresController::class, 'bulkDestroy'])->name('bulk-destroy');
+    });
+
 });
 
 Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->group(function () {

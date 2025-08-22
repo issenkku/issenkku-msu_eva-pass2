@@ -23,7 +23,7 @@ class QualitySubCriteria extends Model
         'evaluation_list_id',
     ];
 
-    public function mainCriteria(): BelongsTo
+    public function qualityMainCriteria(): BelongsTo
     {
         return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
     }

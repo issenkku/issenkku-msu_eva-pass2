@@ -350,7 +350,9 @@
 
                     <!-- จัดการระบบ Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="navbarSystemDropdown"
+                        <a class="nav-link nav-link-custom dropdown-toggle 
+                           {{ request()->routeIs(['quality-scores.*']) ? 'active' : '' }}"
+                            href="#" id="navbarSystemDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-2 text-gray"></i>
                             จัดการระบบ
@@ -360,6 +362,13 @@
                                 <a class="dropdown-item dropdown-item-custom" href="#">
                                     <i class="fas fa-users me-2 text-gray"></i>
                                     จัดการผู้ใช้
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('quality-scores.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('quality-scores.index') }}">
+                                    <i class="fas fa-star me-2 text-gray"></i>
+                                    คะแนนคุณภาพ
                                 </a>
                             </li>
                             <li>
