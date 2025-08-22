@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\EvaluatorController;
+use App\Http\Controllers\EvaluatorScoreController;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\Setting\SettingsController;
@@ -64,7 +65,8 @@ Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->grou
         Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
         Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
         Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
-        Route::get('/evaluator/{id}', [EvaluatorController::class, 'evaluator'])->name('evaluator.show');
+        Route::get('/evaluator/{id}', [EvaluatorScoreController::class, 'evaluator'])->name('evaluator.show');
+        Route::post('/evaluator/{id}/scores', [EvaluatorScoreController::class, 'storeEvaluatorScores'])->name('evaluator_score.store');
         Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
 });

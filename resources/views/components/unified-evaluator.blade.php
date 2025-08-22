@@ -24,11 +24,21 @@
                     <div class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
                         {{-- Evaluation List Header --}}
                         <div class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
-                            <h2 class="text-xl font-bold text-gray-800">
-                                {{ $evaluationList['name'] }}
-                            </h2>
+                            <div class="flex items-center space-x-3">
+                                <h2 class="text-xl font-bold text-gray-800">
+                                    {{ $evaluationList['name'] }}
+                                </h2>
+                                @if(isset($evaluationList['sum_score']))
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                        คะแนน {{ $evaluationList['sum_score'] }}
+                                    </span>
+                                @endif
+                            </div>
+                            
                             @if(!empty($evaluationList['annotation']))
-                                <p class="text-sm text-gray-600 mt-1">{{ $evaluationList['annotation'] }}</p>
+                                <div class="flex items-center space-x-2 mt-1">
+                                    <p class="text-sm text-gray-600">{{ $evaluationList['annotation'] }}</p>
+                                </div>
                             @endif
                         </div>
 
@@ -72,41 +82,68 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="w-full lg:w-1/3">
-                                                            @if($readonly)
-                                                                <div class="text-base text-gray-800 p-2 rounded border">
-                                                                    {{ $subCriteria['tor_compliant'] ?: '-' }}
+                                                        <div class="w-full lg:w-2/3">
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+                                                                {{-- Score A --}}
+                                                                <div class="flex flex-col h-full">
+                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center ">
+                                                                        ค่าน้ำหนักคะแนน (A)
+                                                                    </label>
+                                                                    <input type="text" 
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_A]" 
+                                                                        value="{{ $subCriteria['score_a'] ?? '' }}"
+                                                                        readonly
+                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
                                                                 </div>
-                                                            @else
-                                                                <input type="text" 
-                                                                    name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
-                                                                    value="{{ $subCriteria['tor_compliant'] }}"
-                                                                    class="bg-white form-input text-base w-full h-10 px-3 rounded border border-gray-400 focus:ring-green-500 focus:border-green-500" 
-                                                                    placeholder="ใส่ข้อมูล">
-                                                                <input type="hidden" 
-                                                                    name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]" 
-                                                                    value="{{ $subCriteria['id'] }}">
-                                                                <input type="hidden" 
-                                                                    name="quantity_list[{{ $subCriteria['id'] }}][evaluation_list_id]" 
-                                                                    value="{{ $evaluationList['id'] }}">
-                                                            @endif
+
+                                                                {{-- Score B --}}
+                                                                <div class="flex flex-col h-full">
+                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
+                                                                        หน่วยภาระงานมาตรฐาน (B)
+                                                                    </label>
+                                                                    <input type="text" 
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_B]" 
+                                                                        value="{{ $subCriteria['score_b'] ?? '' }}"
+                                                                        readonly
+                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
+                                                                </div>
+
+                                                                {{-- Score C --}}
+                                                                <div class="flex flex-col h-full">
+                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
+                                                                        หน่วยภาระงานที่ทำได้ (ตาม TOR) (C)
+                                                                    </label>
+                                                                    <input type="number" step="0.01"
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
+                                                                        value="{{ $subCriteria['tor_compliant'] ?? '' }}"
+                                                                        data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                                        oninput="calculateScoreD(this)"
+                                                                        class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
+                                                                        placeholder="ใส่ค่า C">
+                                                                </div>
+
+                                                                {{-- Score D --}}
+                                                                <div class="flex flex-col h-full">
+                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
+                                                                        คำนวณหาค่าน้ำหนักคะแนน<br>D = (A*C)/B
+                                                                    </label>
+                                                                    <input type="text" 
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_D]" 
+                                                                        id="score-D-{{ $subCriteria['id'] }}"
+                                                                        value="{{ $subCriteria['score_d'] ?? '' }}"
+                                                                        readonly
+                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    @if(!$readonly)
+                                                    @if(!empty($subCriteria['score_description']))
                                                         <h4 class="text-base font-semibold text-gray-800 flex items-center border-t border-gray-200 pt-3">
                                                             คำอธิบายหลักฐาน
                                                         </h4>
-                                                        <textarea
-                                                            name="quantity_list[{{ $subCriteria['id'] }}][description]"
-                                                            class="bg-white form-input text-base w-full mt-2 px-3 rounded border border-gray-400 focus:ring-green-500 focus:border-green-500"
-                                                            placeholder="กรอกคำอธิบายหลักฐาน">{{ $subCriteria['score_description'] }}</textarea>
+                                                        <div class="text-sm text-gray-500 mt-1">{{ $subCriteria['score_description'] }}</div>
                                                     @else
-                                                        @if(!empty($subCriteria['score_description']))
-                                                            <h4 class="text-base font-semibold text-gray-800 flex items-center border-t border-gray-200 pt-3">
-                                                                คำอธิบายหลักฐาน
-                                                            </h4>
-                                                            <div class="text-sm text-gray-500 mt-1">{{ $subCriteria['score_description'] }}</div>
-                                                        @endif
+                                                        <div class="text-sm text-gray-500 mt-1">ไม่มีคำอธิบายหลักฐาน</div>
                                                     @endif
                                                 </div>
                                             @endforeach
@@ -195,36 +232,22 @@
 
                             {{-- Evidence Section for Evaluation List --}}
                             <div class="pt-6 border-t border-gray-200">
-                                @if(!$readonly)
-                                    <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                        </svg>
-                                        แนบลิงก์หลักฐาน
-                                    </h3>
-                                    <input type="url" 
-                                        name="evidence_list[{{ $evaluationList['id'] }}][link]" 
-                                        value="{{ $evidenceMap[$evaluationList['id']] ?? '' }}"
-                                        class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors" 
-                                        placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
-
-                                    <input type="hidden" 
-                                        name="evidence_list[{{ $evaluationList['id'] }}][evaluation_list_id]" 
-                                        value="{{ $evaluationList['id'] }}">
+                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    หลักฐาน
+                                </h3>
+                                @if(!empty($evidenceMap[$evaluationList['id']]))
+                                    <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <a href="{{ $evidenceMap[$evaluationList['id']] }}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                            {{ $evidenceMap[$evaluationList['id']] }}
+                                        </a>
+                                    </div>
                                 @else
-                                    @if(!empty($evidenceMap[$evaluationList['id']]))
-                                        <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                            </svg>
-                                            หลักฐาน
-                                        </h3>
-                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <a href="{{ $evidenceMap[$evaluationList['id']] }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                                                {{ $evidenceMap[$evaluationList['id']] }}
-                                            </a>
-                                        </div>
-                                    @endif
+                                    <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                        ไม่มีหลักฐานแนบ
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -272,6 +295,19 @@
 
 {{-- JavaScript for Quality Checkbox Handling --}}
 <script>
+function calculateScoreD(input) {
+    const subCriteriaId = input.dataset.subCriteriaId;
+    const parent = input.closest('.grid'); 
+
+    const scoreA = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_A]"]`).value) || 0;
+    const scoreB = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_B]"]`).value) || 1;
+    const scoreC = parseFloat(input.value) || 0;
+
+    const scoreD = (scoreA * scoreC) / scoreB;
+
+    document.getElementById(`score-D-${subCriteriaId}`).value = scoreD ? scoreD.toFixed(2) : '';
+}
+
 function handleQualityCheckboxChange(checkbox) {
     const subCriteriaId = checkbox.dataset.subCriteriaId;
     const score = parseFloat(checkbox.dataset.score) || 0;

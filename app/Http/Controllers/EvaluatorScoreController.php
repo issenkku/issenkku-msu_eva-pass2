@@ -1,81 +1,54 @@
 <?php
 
-namespace App\Http\Controllers\Evaluatee;
+namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
+use App\Models\Reports;
 use App\Models\QualityMainCriteria;
 use App\Models\QualityScore;
 use App\Models\QuantityMainCriteria;
 use App\Models\QuantityScore;
-use App\Models\Reports;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
-class DashboardEvaluateeController extends Controller
+class EvaluatorScoreController extends Controller
 {
-    public function index(Request $request)
-    {
-        $user = $request->user()->load([
-            'position',
-            'department',
-            'assignment.assignmentData', // Load nested relationships
-            'assignment.report.reportData',
-        ]);
-
-        // $evaluations = $user->assignment->pluck('report')->filter();
-
-        $evaluations = $user->assignment->map(function ($assignment) {
-            $assignment->evaluatorUser = $assignment->evaluatorUser; 
-            return $assignment;
-        });
-
-        $statusCounts = [
-            'ทั้งหมด' => $evaluations->count(),
-            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Assigned']),
-            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Draft']),
-            'รอผลการประเมิน' => $this->countByStatus($evaluations, [
-                'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
-                'Manager_assign', 'Manager_draft'
-            ]),
-            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
-        ];
-
-        return view('evaluatee.dashboard', [
-            'user' => $user,
-            'statusCounts' => $statusCounts,
-            'evaluations' => $user->assignment,
-        ]);
-    }
-
-    private function countByStatus($evaluations, $statuses)
-    {
-        return $evaluations->filter(function($assignment) use ($statuses) {
-            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
-            return in_array($reportStatus, $statuses);
-        })->count();
-    }
-
-    public function evaluation(Request $request, $id)
+    public function evaluator(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
 
         $report = Reports::with([
-            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias.evaluationList',
-            'reportData.criteriaVersion.qualityMainCriterias.qualitySubCriterias.evaluationList',
-            'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
-            'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
             'assignments.assignmentData',
+            'assignments.evaluateeUser.department',
+            'assignments.evaluateeUser.position',
+            'assignments.evaluatorUser',
         ])->findOrFail($id);
-        
-        // Find the assignment for the current user
-        $assignment = $report->assignments->where('evaluatee', $user->id)->first();
-        $evaluator = $assignment->getEvaluatorUser();
+
+        // Find the assignment for the current evaluator
+        $assignment = Assignments::with([
+                'assignmentData',
+                'evaluateeUser.department',
+                'evaluateeUser.position',
+            ])
+            ->where('report_id', $id)
+            ->whereHas('assignmentData', function ($q) use ($user) {
+                $q->where('evaluator_position_id', $user->position_id);
+            })
+            ->whereHas('evaluateeUser', function ($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            })
+            ->first();
 
         if (!$assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
+
+        // Add evaluatee info like in dashboard
+        $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+        $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
+        $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
+        $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
 
         $formatThai = function($datetime) {
             if (!$datetime) return '-';
@@ -116,7 +89,7 @@ class DashboardEvaluateeController extends Controller
             return [$item->evaluation_list_id => $item->link];
         });
 
-        $canEdit = in_array($report->status, ['Draft', 'Assigned']);
+        $canEdit = in_array($report->status, ['Pending', 'Evaluator_draft']);
         $readonly = !$canEdit; // true if status is something else
 
         // Process categories and their evaluation lists
@@ -236,31 +209,33 @@ class DashboardEvaluateeController extends Controller
         }
 
         if ($readonly && $request->query('readonly') != 1) {
-            return redirect()->route('evaluation.show', ['id' => $id, 'readonly' => 1]);
+            return redirect()->route('evaluator.evaluator.show', ['id' => $id, 'readonly' => 1]);
         }
         
-        return view('evaluatee.evaluation', compact(
+        return view('evaluator_dashboard.evaluator', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
-            'startTime', 'endTime', 'reportName', 'evaluator',
+            'startTime', 'endTime', 'reportName',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
             'quantityMainCriterias', 'categoryItems', 'evidenceMap',
             'readonly', 'versionName', 'reportComment', 'reportDescription'
         ));
     }
-}
 
-// Debug output - you can remove this after checking
-// dd([
-//     'evaluation_lists_count' => $evaluationLists->count(),
-//     'evaluation_lists_structure' => $evaluationLists->map(function($list) {
-//         return [
-//             'id' => $list->id,
-//             'name' => $list->name,
-//             'annotation' => $list->annotation,
-//             'quantity_sub_criterias_count' => $list->quantitySubCriterias ? $list->quantitySubCriterias->count() : 0,
-//             'quality_sub_criterias_count' => $list->qualitySubCriterias ? $list->qualitySubCriterias->count() : 0,
-//             'quantity_sub_criterias' => $list->quantitySubCriterias ? $list->quantitySubCriterias->pluck('name', 'id') : [],
-//             'quality_sub_criterias' => $list->qualitySubCriterias ? $list->qualitySubCriterias->pluck('name', 'id') : [],
-//         ];
-//     }),
-// ]);
+    protected $allowedEditStatuses = ['Pending', 'Director_assigned'];
+
+    protected function checkReportEditableStatus(Reports $report, $action)
+    {
+        if (! in_array($report->status, $this->allowedEditStatuses)) {
+            return response()->json([
+                'message' => "Cannot {$action}. Report must be in Assigned or Draft status.",
+            ], 403);
+        }
+
+        return null; // ถ้าผ่านการตรวจสอบ
+    }
+
+    public function storeEvaluatorScores (Request $request, $reportId)
+    {
+        
+    }
+}

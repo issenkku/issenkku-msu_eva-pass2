@@ -21,6 +21,7 @@ class QuantityScore extends Model
         'report_id',
         'score_C',
         'score_D',
+        'description',
     ];
 
     protected $casts = [

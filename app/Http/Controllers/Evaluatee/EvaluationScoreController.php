@@ -48,6 +48,7 @@ class EvaluationScoreController extends Controller
                 'quantity_list' => 'nullable|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
+                'quantity_list.*.description' => 'nullable|string|max:1000',
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
@@ -75,6 +76,7 @@ class EvaluationScoreController extends Controller
 
                     $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
+                    $description = $item['description'] ?? null;
 
                     if ($scoreC === null) {
                         continue;
@@ -90,6 +92,7 @@ class EvaluationScoreController extends Controller
                         'report_id' => $reportId,
                         'score_C' => $scoreC,
                         'score_D' => $scoreD,
+                        'description' => $description,
                     ]);
                 }
             }

@@ -276,32 +276,40 @@ class EvaluatorController extends Controller
     {
         $userId = Auth::id() ?? 2;
 
-        // $assignment = Assignments::with([
-        //     'assignmentData',
-        //     'report',
-        //     'report.reportData.criteriaVersion',
-        //     'evaluateeUser.department',
-        //     'evaluateeUser.position',
-        //     'evaluatorUser'
-        // ])
-        //     ->where('report_id', $id)
-        //     ->where('evaluator', $userId)
-        //     ->firstOrFail();
-        
         $user = $request->user()->load('position', 'department');
 
         $report = Reports::with([
             'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
             'assignments.assignmentData',
+            'assignments.evaluateeUser.department',
+            'assignments.evaluateeUser.position',
+            'assignments.evaluatorUser',
         ])->findOrFail($id);
 
-        // Find the assignment for the current user
-        $assignment = $report->assignments->where('evaluatee', $user->id)->first();
-        $evaluator = $assignment->getEvaluatorUser();
+        // Find the assignment for the current evaluator
+        $assignment = Assignments::with([
+                'assignmentData',
+                'evaluateeUser.department',
+                'evaluateeUser.position',
+            ])
+            ->where('report_id', $id)
+            ->whereHas('assignmentData', function ($q) use ($user) {
+                $q->where('evaluator_position_id', $user->position_id);
+            })
+            ->whereHas('evaluateeUser', function ($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            })
+            ->first();
 
         if (!$assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
+
+        // Add evaluatee info like in dashboard
+        $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+        $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+        $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
+        $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
 
         $criteriaVersionId = $assignment->report->reportData->criteria_version_id ?? null;
 
