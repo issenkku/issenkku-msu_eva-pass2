@@ -83,10 +83,10 @@
                                                         </div>
 
                                                         <div class="w-full lg:w-2/3">
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
+                                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                                                                 {{-- Score A --}}
                                                                 <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center ">
+                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
                                                                         ค่าน้ำหนักคะแนน (A)
                                                                     </label>
                                                                     <input type="text" 
@@ -98,7 +98,7 @@
 
                                                                 {{-- Score B --}}
                                                                 <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
+                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
                                                                         หน่วยภาระงานมาตรฐาน (B)
                                                                     </label>
                                                                     <input type="text" 
@@ -110,29 +110,40 @@
 
                                                                 {{-- Score C --}}
                                                                 <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
-                                                                        หน่วยภาระงานที่ทำได้ (ตาม TOR) (C)
+                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                        หน่วยภาระงานที่ทำได้ (C)
                                                                     </label>
-                                                                    <input type="number" step="0.01"
-                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
-                                                                        value="{{ $subCriteria['tor_compliant'] ?? '' }}"
-                                                                        data-sub-criteria-id="{{ $subCriteria['id'] }}"
-                                                                        oninput="calculateScoreD(this)"
-                                                                        class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
-                                                                        placeholder="ใส่ค่า C">
+                                                                    @if(!$readonly)
+                                                                        <input type="number" step="1"
+                                                                            name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
+                                                                            value="{{ $subCriteria['tor_compliant'] ?? '' }}"
+                                                                            data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                                            oninput="calculateScoreD(this)"
+                                                                            class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
+                                                                            placeholder="ใส่ค่า C">
+                                                                    @else
+                                                                        <input type="text" 
+                                                                            name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]" 
+                                                                            value="{{ $subCriteria['tor_compliant'] ?? '' }}"
+                                                                            readonly
+                                                                            class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
+                                                                            placeholder="0">
+                                                                    @endif
+                                                                    
                                                                 </div>
 
                                                                 {{-- Score D --}}
                                                                 <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 mb-1 text-center">
-                                                                        คำนวณหาค่าน้ำหนักคะแนน<br>D = (A*C)/B
+                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                        คำนวณหาค่าน้ำหนักคะแนน
                                                                     </label>
                                                                     <input type="text" 
                                                                         name="quantity_list[{{ $subCriteria['id'] }}][score_D]" 
                                                                         id="score-D-{{ $subCriteria['id'] }}"
                                                                         value="{{ $subCriteria['score_d'] ?? '' }}"
                                                                         readonly
-                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
+                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
+                                                                        placeholder="0">
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -146,6 +157,12 @@
                                                         <div class="text-sm text-gray-500 mt-1">ไม่มีคำอธิบายหลักฐาน</div>
                                                     @endif
                                                 </div>
+
+                                                @if(!$readonly)
+                                                    <input type="hidden" 
+                                                        name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]" 
+                                                        value="{{ $subCriteria['id'] }}">
+                                                @endif
                                             @endforeach
                                         </div>
                                     @endforeach
@@ -184,45 +201,49 @@
                                                 @endphp
 
                                                 <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                                    <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-                                                        <div class="flex items-start flex-1">
-                                                            @if(!$readonly)
-                                                                <input type="checkbox" 
-                                                                    name="quality_criteria[{{ $subCriteria['id'] }}]" 
-                                                                    value="1"
-                                                                    data-score="{{ $subCriteria['num_score'] ?? 0 }}"
-                                                                    data-sub-criteria-id="{{ $subCriteria['id'] }}"
-                                                                    onchange="handleQualityCheckboxChange(this)"
-                                                                    {{ $shouldBeChecked ? 'checked' : '' }}
-                                                                    class="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                                                                <label class="text-base text-gray-800">
-                                                                    {{ $subCriteria['name'] }}
-                                                                </label>
-                                                            @else
-                                                                <input type="checkbox" 
-                                                                    {{ $shouldBeChecked ? 'checked' : '' }}
-                                                                    disabled
-                                                                    class="mt-1 mr-3 h-4 w-4 text-purple-600 border-gray-300 rounded">
-                                                                <span class="text-base text-gray-800">
-                                                                    {{ $subCriteria['name'] }}
-                                                                </span>
-                                                            @endif
+                                                    <div class="flex flex-col gap-2 p-3 border-b border-gray-100 lg:flex-row lg:items-center lg:justify-between">
+                                                        <!-- Name + Badge -->
+                                                        <div class="flex flex-col gap-1 flex-1 lg:flex-row lg:items-center lg:gap-3">
+                                                            <span class="text-base text-gray-800 font-medium">
+                                                                {{ $subCriteria['name'] }}
+                                                            </span>
+                                                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full w-max">
+                                                                คะแนน {{ $subCriteria['num_score'] }}
+                                                            </span>
                                                         </div>
 
-                                                        {{-- Hidden Score Input --}}
+                                                        <!-- Input -->
                                                         @if(!$readonly)
-                                                            <input type="hidden" 
-                                                                name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
-                                                                value="{{ $subCriteria['id'] }}">
-                                                            <input type="hidden" 
-                                                                name="quality_list[{{ $subCriteria['id'] }}][evaluation_list_id]" 
-                                                                value="{{ $evaluationList['id'] }}">
-                                                            <input type="hidden" 
-                                                                id="quality-score-{{ $subCriteria['id'] }}"
-                                                                name="quality_list[{{ $subCriteria['id'] }}][score]" 
-                                                                value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}">
+                                                            <div class="w-full lg:w-1/4">
+                                                                <input 
+                                                                    type="number" step="0.01" min="0" 
+                                                                    max="{{ $subCriteria['num_score'] }}"
+                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
+                                                                    value="{{ $subCriteria['score'] ?? '' }}"
+                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                                                                    placeholder="ใส่คะแนน">
+                                                            </div>
+                                                        @else
+                                                            <div class="w-full lg:w-1/4">
+                                                                <input 
+                                                                    type="number" step="0.01" min="0" 
+                                                                    max="{{ $subCriteria['num_score'] }}"
+                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
+                                                                    value="{{ $subCriteria['score'] ?? '' }}"
+                                                                    readonly
+                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                                                                    placeholder="ไม่มีคะแนน">
+                                                            </div>
                                                         @endif
                                                     </div>
+
+                                                    {{-- Hidden Score Input --}}
+                                                    @if(!$readonly)
+                                                        <input type="hidden" 
+                                                            name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
+                                                            value="{{ $subCriteria['id'] }}">
+                                                    @endif
+
                                                 </div>
                                             @endforeach
                                         </div>

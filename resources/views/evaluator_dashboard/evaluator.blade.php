@@ -104,7 +104,7 @@
                     type="secondary"
                     buttonType="submit" 
                     text="บันทึกร่าง" 
-                    onclick="setFormStatus('Draft')" 
+                    onclick="setFormStatus('Evaluator_draft')" 
                     icon="fas fa-save" />
                 <x-button 
                     type="primary"

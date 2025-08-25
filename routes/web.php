@@ -3,6 +3,8 @@
 use App\Http\Controllers\AssignmentDataController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Director\DirectorController;
+use App\Http\Controllers\Director\DirectorScoreController;
 use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\EvaluatorController;
@@ -61,13 +63,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->group(function () {
     Route::prefix('evaluator-dashboard')->name('evaluator.')->group(function () {
         Route::get('/', [EvaluatorController::class, 'dashboard'])->name('index');
-        Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
-        Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
-        Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
-        Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
+        // Route::get('/assignment/{id}', [EvaluatorController::class, 'show'])->name('evaluatee.show');
+        // Route::get('/assignment/{id}/evaluate', [EvaluatorController::class, 'startEvaluation'])->name('assignment.evaluate');
+        // Route::get('/assignment/{id}/edit', [EvaluatorController::class, 'edit'])->name('evaluatee.edit');
+        // Route::put('/assignment/{id}', [EvaluatorController::class, 'update'])->name('evaluatee.update');
         Route::get('/evaluator/{id}', [EvaluatorScoreController::class, 'evaluator'])->name('evaluator.show');
         Route::post('/evaluator/{id}/scores', [EvaluatorScoreController::class, 'storeEvaluatorScores'])->name('evaluator_score.store');
-        Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
+        // Route::put('/evaluator/{report}/reject', [EvaluatorController::class, 'reject'])->name('reject');
     });
 });
 
@@ -75,6 +77,12 @@ Route::middleware(['auth:sanctum', 'role:ผู้รับการประเ
     Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
     Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+});
+
+Route::middleware(['auth:sanctum', 'role:กรรมการ'])->group(function () {
+    Route::get('/director-dashboard', [DirectorController::class, 'dashboard'])->name('director.dashboard');
+    Route::get('/director/{id}', [DirectorScoreController::class, 'director'])->name('director.show');
+    Route::post('/director/{id}/scores', [DirectorScoreController::class, 'storeDirectorScores'])->name('director_score.store');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {

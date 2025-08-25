@@ -17,7 +17,6 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
     <style>
         * {
@@ -451,6 +450,11 @@
                                 <a class="nav-link text-white" href="/evaluator-dashboard">หน้าการประเมิน</a>
                             </li>
                         @endif
+                        @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/director-dashboard">หน้าการประเมิน</a>
+                            </li>
+                        @endif
                         @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าการประเมิน</a>
@@ -530,6 +534,13 @@
                 @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                     <a href="/evaluator-dashboard" class="mobile-nav-item">
                         <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
+                        หน้าการประเมิน
+                    </a>
+                @endif
+
+                @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
+                    <a href="/director-dashboard" class="mobile-nav-item">
+                        <i class="fas fa-user-tie" style="width: 20px; margin-right: 10px;"></i>
                         หน้าการประเมิน
                     </a>
                 @endif

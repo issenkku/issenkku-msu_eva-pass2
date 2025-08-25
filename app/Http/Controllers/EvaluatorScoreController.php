@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
 use App\Models\Reports;
-use App\Models\QualityMainCriteria;
+use Exception;
+use Illuminate\Support\Facades\DB;
 use App\Models\QualityScore;
-use App\Models\QuantityMainCriteria;
 use App\Models\QuantityScore;
+use Illuminate\Support\Facades\Mail;
 
 class EvaluatorScoreController extends Controller
 {
@@ -24,6 +25,10 @@ class EvaluatorScoreController extends Controller
             'assignments.evaluateeUser.position',
             'assignments.evaluatorUser',
         ])->findOrFail($id);
+
+        if (in_array($report->status, ['Assigned', 'Draft'])) {
+            abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
+        }
 
         // Find the assignment for the current evaluator
         $assignment = Assignments::with([
@@ -153,6 +158,7 @@ class EvaluatorScoreController extends Controller
                                         'score_a' => $subCriteria->score_a,
                                         'score_b' => $subCriteria->score_b,
                                         'tor_compliant' => $quantityScore?->score_C ?? '', 
+                                        'score_d' => $quantityScore?->score_D ?? '', 
                                         'score_description' => $quantityScore->description ?? '',
                                         'evidence' => $evidenceLink,
                                     ];
@@ -221,13 +227,13 @@ class EvaluatorScoreController extends Controller
         ));
     }
 
-    protected $allowedEditStatuses = ['Pending', 'Director_assigned'];
+    protected $allowedEditStatuses = ['Pending', 'Evaluator_draft'];
 
     protected function checkReportEditableStatus(Reports $report, $action)
     {
         if (! in_array($report->status, $this->allowedEditStatuses)) {
             return response()->json([
-                'message' => "Cannot {$action}. Report must be in Assigned or Draft status.",
+                'message' => "Cannot {$action}. Report must be in Pending or Evaluator_draft status.",
             ], 403);
         }
 
@@ -236,6 +242,103 @@ class EvaluatorScoreController extends Controller
 
     public function storeEvaluatorScores (Request $request, $reportId)
     {
-        
+        try {
+            $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
+            $report = Reports::findOrFail($reportId);
+
+            $statusCheck = $this->checkReportEditableStatus($report, 'process evaluation scores');
+            if ($statusCheck) {
+                return $statusCheck;
+            }
+
+            $validated = $request->validate([
+                'quantity_list' => 'nullable|array',
+                'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
+                'quantity_list.*.score_C' => 'nullable|numeric',
+
+                'quality_list' => 'nullable|array',
+                'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
+                'quality_list.*.score' => 'nullable|numeric',
+
+                'status' => 'required|string|in:Director_assigned,Pending,Evaluator_draft,Submitted',
+                'comment' => 'nullable|string',
+            ]);
+
+            DB::beginTransaction();
+
+            // Delete existing records for this report
+            QuantityScore::where('report_id', $reportId)->delete();
+            QualityScore::where('report_id', $reportId)->delete();
+
+            if (isset($validated['quantity_list'])) {
+                foreach ($validated['quantity_list'] as $item) {
+                    $subCriteriaId = is_array($item['quantity_sub_criteria_id'])
+                        ? $item['quantity_sub_criteria_id'][0]
+                        : (int) $item['quantity_sub_criteria_id'];
+
+                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $scoreC = $item['score_C'] ?? null;
+
+                    if ($scoreC === null) {
+                        continue;
+                    }
+
+                    $scoreD = null;
+                    if ($subCriteria && $subCriteria->score_b != 0) {
+                        $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
+                    }
+
+                    QuantityScore::create([
+                        'quantity_sub_criteria_id' => $subCriteriaId,
+                        'report_id' => $reportId,
+                        'score_C' => $scoreC,
+                        'score_D' => $scoreD,
+                    ]);
+                }
+            }
+
+            // ✅ Quality loop with check
+            if (isset($validated['quality_list'])) {
+                foreach ($validated['quality_list'] as $item) {
+                    $score = $item['score'] ?? null;
+                    if ($score === null) {
+                        continue;
+                    }
+
+                    $subCriteriaId = is_array($item['quality_sub_criteria_id'])
+                        ? $item['quality_sub_criteria_id'][0]
+                        : (int) $item['quality_sub_criteria_id'];
+
+                    QualityScore::create([
+                        'quality_sub_criteria_id' => $subCriteriaId,
+                        'report_id' => $reportId,
+                        'score' => $score,
+                    ]);
+                }
+            }
+
+            $status = $validated['status'];
+            $report->status = $status;
+
+            if (isset($validated['comment'])) {
+                $report->comment = $validated['comment'];
+            }
+
+            $report->save();
+            // if ($report->save() && $status === 'Pending') {
+            //     $this->sendEvaluationCompletedMail($reportId);
+            // }
+
+            DB::commit();
+
+            $message = $status === 'Evaluator_draft' ? 'บันทึกข้อมูลเรียบร้อยแล้ว' : 'ส่งรายงานเรียบร้อยแล้ว';
+
+            return redirect('/evaluator-dashboard')->with('success', $message);
+
+        } catch (Exception $e) {
+            DB::rollback();
+
+            return response()->json(['message' => 'Error processing evaluation scores', 'error' => $e->getMessage()], 500);
+        }
     }
 }
