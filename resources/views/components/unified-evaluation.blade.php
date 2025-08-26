@@ -1,7 +1,8 @@
 @props([
     'categoryItems' => [],
     'readonly' => false,
-    'evidenceMap' => [] 
+    'evidenceMap' => [],
+    'report' => null
 ])
 
 <div class="space-y-8">
@@ -73,15 +74,24 @@
                                                         </div>
 
                                                         <div class="w-full lg:w-1/3">
-                                                            @if($readonly)
-                                                                <div class="text-base text-gray-800 p-2 rounded border">
+                                                            @if($readonly && $report->status !== 'Completed')
+                                                                <div class="text-base text-gray-800 p-2 rounded border text-center">
                                                                     {{ $subCriteria['tor_compliant'] ?: '-' }}
                                                                 </div>
+                                                            @elseif(isset($report->status) && $report->status === 'Completed')
+                                                                <div class="flex flex-col h-full">
+                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                        ค่าน้ำหนักคะแนนที่ได้
+                                                                    </label>
+                                                                    <div class="text-base text-gray-800 p-2 rounded border text-center">
+                                                                        {{ $subCriteria['score_d'] ?: '0' }}
+                                                                    </div>
+                                                                </div>
                                                             @else
-                                                                <input type="text" 
+                                                                <input type="number" step="1" min="0"
                                                                     name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
                                                                     value="{{ $subCriteria['tor_compliant'] }}"
-                                                                    class="bg-white form-input text-base w-full h-10 px-3 rounded border border-gray-400 focus:ring-green-500 focus:border-green-500" 
+                                                                    class="bg-white text-center form-input text-base w-full h-10 px-3 rounded border border-gray-400 focus:ring-green-500 focus:border-green-500" 
                                                                     placeholder="ใส่ข้อมูล">
                                                                 <input type="hidden" 
                                                                     name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]" 
@@ -147,8 +157,9 @@
                                                 @endphp
 
                                                 <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                                    <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-                                                        <div class="flex items-start flex-1">
+                                                    <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+                                                        {{-- Checkbox and Label --}}
+                                                        <div class="flex items-center flex-1 min-w-0">
                                                             @if(!$readonly)
                                                                 <input type="checkbox" 
                                                                     name="quality_criteria[{{ $subCriteria['id'] }}]" 
@@ -157,22 +168,34 @@
                                                                     data-sub-criteria-id="{{ $subCriteria['id'] }}"
                                                                     onchange="handleQualityCheckboxChange(this)"
                                                                     {{ $shouldBeChecked ? 'checked' : '' }}
-                                                                    class="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                                                                <label class="text-base text-gray-800">
+                                                                    class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
+                                                                <label class="text-base text-gray-800 break-words">
                                                                     {{ $subCriteria['name'] }}
                                                                 </label>
                                                             @else
                                                                 <input type="checkbox" 
                                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                                     disabled
-                                                                    class="mt-1 mr-3 h-4 w-4 text-purple-600 border-gray-300 rounded">
-                                                                <span class="text-base text-gray-800">
+                                                                    class="h-5 w-5 text-purple-600 border-gray-300 rounded mr-3">
+                                                                <span class="text-base text-gray-800 break-words">
                                                                     {{ $subCriteria['name'] }}
                                                                 </span>
                                                             @endif
                                                         </div>
-
-                                                        {{-- Hidden Score Input --}}
+                                                        {{-- Score (readonly, only when completed) --}}
+                                                        @if($readonly && isset($report->status) && $report->status === 'Completed')
+                                                            <div class="w-full md:w-40">
+                                                                <input 
+                                                                    type="number" step="0.01" min="0" 
+                                                                    max="{{ $subCriteria['num_score'] }}"
+                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
+                                                                    value="{{ $subCriteria['score'] ?? '' }}"
+                                                                    readonly
+                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
+                                                                    placeholder="ไม่มีคะแนน">
+                                                            </div>
+                                                        @endif
+                                                        {{-- Hidden Score Input for edit mode --}}
                                                         @if(!$readonly)
                                                             <input type="hidden" 
                                                                 name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
@@ -202,27 +225,58 @@
                                         </svg>
                                         แนบลิงก์หลักฐาน
                                     </h3>
-                                    <input type="url" 
-                                        name="evidence_list[{{ $evaluationList['id'] }}][link]" 
-                                        value="{{ $evidenceMap[$evaluationList['id']] ?? '' }}"
-                                        class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors" 
-                                        placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
-
-                                    <input type="hidden" 
-                                        name="evidence_list[{{ $evaluationList['id'] }}][evaluation_list_id]" 
+                                    <div id="evidence-links-{{ $evaluationList['id'] }}">
+                                        @php
+                                            $links = isset($evidenceMap[$evaluationList['id']]) && is_array($evidenceMap[$evaluationList['id']])
+                                                ? $evidenceMap[$evaluationList['id']]
+                                                : (isset($evidenceMap[$evaluationList['id']]) ? [$evidenceMap[$evaluationList['id']]] : ['']);
+                                            
+                                            // Ensure we have at least one empty input if no links exist
+                                            if (empty($links) || (count($links) === 1 && empty($links[0]))) {
+                                                $links = [''];
+                                            }
+                                        @endphp
+                                        @foreach($links as $idx => $link)
+                                            <div class="flex items-center mb-2 evidence-link-row">
+                                                <input type="url"
+                                                    name="evidence_list[{{ $evaluationList['id'] }}][links][]"
+                                                    value="{{ $link }}"
+                                                    class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
+                                                    placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
+                                                @if($idx > 0 || count($links) > 1)
+                                                    <button type="button" class="ml-2 px-2 py-1 bg-red-100 text-red-700 rounded remove-evidence-link" title="ลบลิงก์">
+                                                        &times;
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <button type="button"
+                                        class="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded add-evidence-link"
+                                        data-eval-list="{{ $evaluationList['id'] }}">
+                                        + เพิ่มลิงก์หลักฐาน
+                                    </button>
+                                    <input type="hidden"
+                                        name="evidence_list[{{ $evaluationList['id'] }}][evaluation_list_id]"
                                         value="{{ $evaluationList['id'] }}">
                                 @else
+                                    <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                        </svg>
+                                        หลักฐาน
+                                    </h3>
                                     @if(!empty($evidenceMap[$evaluationList['id']]))
-                                        <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                            </svg>
-                                            หลักฐาน
-                                        </h3>
-                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <a href="{{ $evidenceMap[$evaluationList['id']] }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                                                {{ $evidenceMap[$evaluationList['id']] }}
-                                            </a>
+                                        @foreach((array)$evidenceMap[$evaluationList['id']] as $link)
+                                            <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
+                                                <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                                    {{ $link }}
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                            ไม่มีหลักฐานแนบ
                                         </div>
                                     @endif
                                 @endif
@@ -270,6 +324,20 @@
     @endif
 </div>
 
+<style>
+@media (max-width: 768px) {
+    .md\:flex-row {
+        flex-direction: column !important;
+    }
+    .md\:items-center {
+        align-items: flex-start !important;
+    }
+    .md\:w-40 {
+        width: 100% !important;
+    }
+}
+</style>
+
 {{-- JavaScript for Quality Checkbox Handling --}}
 <script>
 function handleQualityCheckboxChange(checkbox) {
@@ -294,5 +362,88 @@ document.addEventListener('DOMContentLoaded', function() {
             handleQualityCheckboxChange(checkbox);
         }
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to update remove button visibility
+    function updateRemoveButtonVisibility(container) {
+        const rows = container.querySelectorAll('.evidence-link-row');
+        const hasContent = Array.from(rows).some(row => {
+            const input = row.querySelector('input[type="url"]');
+            return input && input.value.trim() !== '';
+        });
+        
+        rows.forEach((row, index) => {
+            const removeBtn = row.querySelector('.remove-evidence-link');
+            const input = row.querySelector('input[type="url"]');
+            if (rows.length > 1 || hasContent) {
+                removeBtn.style.display = 'block';
+            } else {
+                removeBtn.style.display = 'none';
+            }
+        });
+    }
+
+    // Add new evidence link input
+    document.querySelectorAll('.add-evidence-link').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const evalListId = btn.getAttribute('data-eval-list');
+            const container = document.getElementById('evidence-links-' + evalListId);
+            const div = document.createElement('div');
+            div.className = 'flex items-center mb-2 evidence-link-row';
+            div.innerHTML = `
+                <input type="url"
+                    name="evidence_list[${evalListId}][links][]"
+                    class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
+                    placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
+                <button type="button" 
+                    class="ml-2 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors remove-evidence-link" 
+                    title="ลบลิงก์">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(div);
+            updateRemoveButtonVisibility(container);
+            
+            // Focus on the new input
+            const newInput = div.querySelector('input[type="url"]');
+            newInput.focus();
+        });
+    });
+
+    // Remove evidence link input
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-evidence-link')) {
+            const container = e.target.closest('[id^="evidence-links-"]');
+            const row = e.target.closest('.evidence-link-row');
+            const rows = container.querySelectorAll('.evidence-link-row');
+            
+            // If it's the last row and it's empty, just clear it
+            if (rows.length === 1) {
+                const input = row.querySelector('input[type="url"]');
+                input.value = '';
+            } else {
+                // Remove the row
+                row.remove();
+            }
+            
+            updateRemoveButtonVisibility(container);
+        }
+    });
+
+    // Update remove button visibility when input values change
+    document.addEventListener('input', function(e) {
+        if (e.target.type === 'url' && e.target.name && e.target.name.includes('evidence_list')) {
+            const container = e.target.closest('[id^="evidence-links-"]');
+            if (container) {
+                updateRemoveButtonVisibility(container);
+            }
+        }
+    });
+
+    // Initialize remove button visibility on page load
+    document.querySelectorAll('[id^="evidence-links-"]').forEach(updateRemoveButtonVisibility);
 });
 </script>

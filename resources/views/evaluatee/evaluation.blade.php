@@ -55,6 +55,7 @@
             :categoryItems="$categoryItems"
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
+            :report="$report"
         />
 
         <!-- summary score -->

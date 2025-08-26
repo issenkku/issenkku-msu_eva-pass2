@@ -260,11 +260,13 @@
                                     หลักฐาน
                                 </h3>
                                 @if(!empty($evidenceMap[$evaluationList['id']]))
-                                    <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                        <a href="{{ $evidenceMap[$evaluationList['id']] }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                                            {{ $evidenceMap[$evaluationList['id']] }}
-                                        </a>
-                                    </div>
+                                    @foreach((array)$evidenceMap[$evaluationList['id']] as $link)
+                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
+                                            <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                                {{ $link }}
+                                            </a>
+                                        </div>
+                                    @endforeach
                                 @else
                                     <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                                         ไม่มีหลักฐานแนบ
