@@ -46,10 +46,9 @@
     if ($filteredStatus) {
         // Map display names back to DB status (including multiple statuses)
         $reverseMap = [
-            'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft'],
-            'ยังไม่ประเมิน' => ['Director_assigned'],
-            'กำลังดำเนินการ' => ['Director_draft'],
-            'รอผลการประเมิน' => ['Manager_assign', 'Manager_draft'],
+            'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'],
+            'ยังไม่ประเมิน' => ['Manager_assign'],
+            'กำลังดำเนินการ' => ['Manager_draft'],
             'ประเมินเสร็จสิ้น' => ['Completed'],
         ];
 
@@ -67,10 +66,9 @@
     <!-- Status Badges -->
     @php
         $statusStyles = [
-            'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+            'รอการกรอกข้อมูล' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
             'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
             'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-            'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
             'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
         ];
 
@@ -132,10 +130,10 @@
                                 'Draft' => 'รอการกรอกข้อมูล',
                                 'Pending' => 'รอผู้ประเมินประเมิน',
                                 'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
-                                'Director_assigned' => 'ยังไม่ประเมิน',
-                                'Director_draft' => 'กำลังดำเนินการ',
-                                'Manager_assign' => 'รอคณบดีรับรองผล',
-                                'Manager_draft' => 'คณบดีเริ่มรับรองผล',
+                                'Director_assigned' => 'รอกรรมการรับรองผล',
+                                'Director_draft' => 'กรรมการเริ่มรับรองผล',
+                                'Manager_assign' => 'ยังไม่ประเมิน',
+                                'Manager_draft' => 'กำลังดำเนินการ',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
@@ -195,13 +193,13 @@
                             <td class="p-4 border-b text-center min-w-[200px]">
                                 @php
                                     $statusClasses = [
-                                        'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',
+                                        'รอการกรอกข้อมูล' => 'bg-yellow-100 text-yellow-800',
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
-                                        'รอผู้ประเมินประเมิน' => 'bg-orange-100 text-orange-800',
-                                        'ผู้ประเมินเริ่มประเมิน' => 'bg-orange-100 text-orange-800',
-                                        'รอคณบดีรับรองผล' => 'bg-yellow-100 text-yellow-800',
-                                        'คณบดีเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'รอผู้ประเมินประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'ผู้ประเมินเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอกรรมการรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'กรรมการเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
@@ -222,14 +220,6 @@
                                             'label' => 'ดำเนินการต่อ',
                                             'classes' => 'bg-blue-500 hover:bg-blue-600 text-white',
                                         ],
-                                        'รอคณบดีรับรองผล' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'คณบดีเริ่มรับรองผล' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
                                             'classes' => 'bg-green-500 hover:bg-green-600 text-white',
@@ -237,15 +227,17 @@
                                         'รอการกรอกข้อมูล' => null,
                                         'รอผู้ประเมินประเมิน' => null,
                                         'ผู้ประเมินเริ่มประเมิน' => null,
+                                        'รอกรรมการรับรองผล' => null,
+                                        'กรรมการเริ่มรับรองผล' => null,
                                     ];
                                     $action = $actions[$status] ?? null;
 
                                     // Use the evaluatee ID for routing
                                     $evaluateeId = optional($evaluatee)->id ?? $evaluatorAssignment->evaluatee_id;
 
-                                    $url = route('director.show', ['id' => $report->id ?? 0]);
+                                    $url = route('manager.show', ['id' => $report->id ?? 0]);
 
-                                    if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
+                                    if ($status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';
                                     }
                                     

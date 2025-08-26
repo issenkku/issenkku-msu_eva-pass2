@@ -111,10 +111,9 @@ class ManagerController extends Controller
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
             'รอการกรอกข้อมูล' => $this->countByStatus($evaluations, 
-                ['Assigned', 'Draft', 'Pending', 'Evaluator_draft']),
-            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Director_assigned']),
-            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Director_draft']),
-            'รอผลการประเมิน' => $this->countByStatus($evaluations, ['Manager_draft', 'Manager_assign']),
+                ['Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft' ]),
+            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Manager_assign']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Manager_draft']),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
@@ -127,7 +126,7 @@ class ManagerController extends Controller
             ];
         });
 
-        return view('director_dashboard.index', [
+        return view('manager_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
             'departmentCounts' => $departmentCounts, // Department breakdown
