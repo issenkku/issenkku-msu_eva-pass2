@@ -60,7 +60,7 @@ class EvaluatorController extends Controller
             'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Evaluator_draft']),
             'รอผลการประเมิน' => $this->countByStatus($evaluations, [
                 'Director_assigned', 'Director_draft', 
-                'Manager_draft', 'Manager_draft'
+                'Manager_draft', 'Manager_assign'
             ]),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];

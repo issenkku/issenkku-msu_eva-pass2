@@ -48,7 +48,7 @@
         $reverseMap = [
             'ยังไม่ประเมิน' => ['Assigned'],
             'กำลังดำเนินการ' => ['Draft'],
-            'รอผลการประเมิน' => ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assigned', 'Manager_draft'],
+            'รอผลการประเมิน' => ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
             'ประเมินเสร็จสิ้น' => ['Completed'],
         ];
 
@@ -129,10 +129,10 @@
                                 'Draft' => 'กำลังดำเนินการ',
                                 'Pending' => 'รอผู้ประเมินประเมิน',
                                 'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
-                                'Director_assigned' => 'รอกรรมการประเมิน',
-                                'Director_draft' => 'กรรมการเริ่มประเมิน',
-                                'Manager_assigned' => 'รอคณบดีประเมิน',
-                                'Manager_draft' => 'คณบดีเริ่มประเมิน',
+                                'Director_assigned' => 'รอกรรมการรับรองผล',
+                                'Director_draft' => 'กรรมการเริ่มรับรองผล',
+                                'Manager_assign' => 'รอคณบดีรับรองผล',
+                                'Manager_draft' => 'คณบดีเริ่มรับรองผล',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
@@ -187,17 +187,17 @@
 
                             <td class="p-4 border-b text-gray-500">{{ $assignment->evaluatorUser->name }}</td>
 
-                            <td class="p-4 border-b text-center min-w-[180px]">
+                            <td class="p-4 border-b text-center min-w-[200px]">
                                 @php
                                     $statusClasses = [
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
                                         'รอผู้ประเมินประเมิน' => 'bg-yellow-100 text-yellow-800',
                                         'ผู้ประเมินเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'รอกรรมการประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'กรรมการเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'รอคณบดีประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'คณบดีเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอกรรมการรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'กรรมการเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'รอคณบดีรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'คณบดีเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
@@ -223,23 +223,23 @@
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
                                         ],
                                         'ผู้ประเมินเริ่มประเมิน' => [
-                                            'label' => 'ดูผล',
+                                            'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
-                                        'รอกรรมการประเมิน' => [
-                                            'label' => 'ดูผล',
+                                        'รอกรรมการรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
-                                        'กรรมการเริ่มประเมิน' => [
-                                            'label' => 'ดูผล',
+                                        'กรรมการเริ่มรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
-                                        'รอคณบดีประเมิน' => [
-                                            'label' => 'ดูผล',
+                                        'รอคณบดีรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
-                                        'คณบดีเริ่มประเมิน' => [
-                                            'label' => 'ดูผล',
+                                        'คณบดีเริ่มรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
                                         'ประเมินเสร็จสิ้น' => [

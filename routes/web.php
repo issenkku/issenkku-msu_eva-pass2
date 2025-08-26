@@ -9,6 +9,8 @@ use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\EvaluatorScoreController;
+use App\Http\Controllers\Manager\ManagerController;
+use App\Http\Controllers\Manager\ManagerScoreController;
 use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\Setting\SettingsController;
@@ -83,6 +85,11 @@ Route::middleware(['auth:sanctum', 'role:กรรมการ'])->group(functio
     Route::get('/director-dashboard', [DirectorController::class, 'dashboard'])->name('director.dashboard');
     Route::get('/director/{id}', [DirectorScoreController::class, 'director'])->name('director.show');
     Route::post('/director/{id}/scores', [DirectorScoreController::class, 'storeDirectorScores'])->name('director_score.store');
+});
+Route::middleware(['auth:sanctum', 'role:ผู้บริหาร'])->group(function () {
+    Route::get('/manager-dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
+    Route::get('/manager/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
+    Route::post('/manager/{id}/scores', [ManagerScoreController::class, 'storeManagerScores'])->name('manager_score.store');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {
