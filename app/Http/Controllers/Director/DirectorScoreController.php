@@ -21,13 +21,7 @@ class DirectorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    public function director(Request $request, $id)
-    {
+    public function director(Request $request, $id) {}
 
-    }
-
-    public function storeDirectorScores(Request $request, $reportId)
-    {
-
-    }
+    public function storeDirectorScores(Request $request, $reportId) {}
 }

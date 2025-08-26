@@ -49,8 +49,8 @@ class AssignmentData extends Model
 
     public function evaluatorUser()
     {
-        return User::where('position_id', $this->assignmentData->evaluator_position_id)
-            ->where('department_id', $this->evaluatee->department_id)
+        // ต้องเข้าใจบริบทของฟังก์ชันนี้ก่อน - อาจต้องแก้ไขตรรกะทั้งหมด
+        return User::where('position_id', $this->evaluator_position_id)
             ->first();
     }
 
@@ -63,7 +63,7 @@ class AssignmentData extends Model
             'assignment_data_id', // Foreign key on assignments table
             'id', // Foreign key on users table
             'id', // Local key on assignment_datas table
-            'evaluator' // Local key on assignments table
+            'evaluatee_id' // Local key on assignments table
         );
     }
 
@@ -75,7 +75,7 @@ class AssignmentData extends Model
             'assignment_data_id',
             'id',
             'id',
-            'evaluatee'
+            'evaluatee_id'
         );
     }
 }

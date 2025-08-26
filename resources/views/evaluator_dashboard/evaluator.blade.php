@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="page-header">
         <h1>แบบประเมินผลงาน</h1>
-        <p class="version">เวอร์ชัน: {{ $versionName }}</p>
+        {{-- <p class="version">เวอร์ชัน: {{ $versionName }}</p> --}}
     </div>
 
     <x-evaluate-report-card 

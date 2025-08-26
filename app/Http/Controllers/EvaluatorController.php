@@ -12,7 +12,6 @@ use Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
-use Illuminate\Support\Facades\Log;
 
 class EvaluatorController extends Controller
 {
@@ -43,11 +42,11 @@ class EvaluatorController extends Controller
             $assignment->evaluatorName = $user->name; // current user
             $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
             $assignment->sameDepartment = true; // Always true since we filtered at database level
-            
+
             // Optional: Add department names for display
             $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
             $assignment->evaluatorDepartment = $user->department?->name ?? '-';
-            
+
             return $assignment;
         });
 
@@ -58,8 +57,8 @@ class EvaluatorController extends Controller
             'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Pending']),
             'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Evaluator_draft']),
             'รอผลการประเมิน' => $this->countByStatus($evaluations, [
-                'Director_assigned', 'Director_draft', 
-                'Manager_draft', 'Manager_draft'
+                'Director_assigned', 'Director_draft',
+                'Manager_draft', 'Manager_draft',
             ]),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
@@ -73,8 +72,9 @@ class EvaluatorController extends Controller
 
     private function countByStatus($evaluations, $statuses)
     {
-        return $evaluations->filter(function($assignment) use ($statuses) {
+        return $evaluations->filter(function ($assignment) use ($statuses) {
             $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+
             return in_array($reportStatus, $statuses);
         })->count();
     }
@@ -288,10 +288,10 @@ class EvaluatorController extends Controller
 
         // Find the assignment for the current evaluator
         $assignment = Assignments::with([
-                'assignmentData',
-                'evaluateeUser.department',
-                'evaluateeUser.position',
-            ])
+            'assignmentData',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+        ])
             ->where('report_id', $id)
             ->whereHas('assignmentData', function ($q) use ($user) {
                 $q->where('evaluator_position_id', $user->position_id);
@@ -301,7 +301,7 @@ class EvaluatorController extends Controller
             })
             ->first();
 
-        if (!$assignment) {
+        if (! $assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 

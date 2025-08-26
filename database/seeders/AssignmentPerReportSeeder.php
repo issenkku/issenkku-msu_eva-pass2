@@ -43,8 +43,7 @@ class AssignmentPerReportSeeder extends Seeder
             $assignment = Assignments::create([
                 'assignment_data_id' => $assignmentData->id,
                 'report_id' => $report->id,
-                'evaluatee' => $evaluatee->id,
-                'evaluator' => $evaluator->id,
+                'evaluatee_id' => $evaluatee->id,
             ]);
 
             // EvidenceAnswer for each EvaluationList (for this report)

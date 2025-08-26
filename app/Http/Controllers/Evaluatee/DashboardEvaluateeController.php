@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-use App\Models\Assignments;
+use App\Http\Controllers\Controller;
 use App\Models\EvidenceAnswer;
-use App\Models\QualityMainCriteria;
 use App\Models\QualityScore;
-use App\Models\QuantityMainCriteria;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use App\Http\Controllers\Controller;
 
 class DashboardEvaluateeController extends Controller
 {
@@ -28,6 +24,7 @@ class DashboardEvaluateeController extends Controller
 
         $evaluations = $user->assignment->map(function ($assignment) {
             $assignment->load('evaluatorUser');
+
             return $assignment;
         });
 
@@ -36,8 +33,8 @@ class DashboardEvaluateeController extends Controller
             'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Assigned']),
             'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Draft']),
             'รอผลการประเมิน' => $this->countByStatus($evaluations, [
-                'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 
-                'Manager_assign', 'Manager_draft'
+                'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft',
+                'Manager_assign', 'Manager_draft',
             ]),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
@@ -51,8 +48,9 @@ class DashboardEvaluateeController extends Controller
 
     private function countByStatus($evaluations, $statuses)
     {
-        return $evaluations->filter(function($assignment) use ($statuses) {
+        return $evaluations->filter(function ($assignment) use ($statuses) {
             $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+
             return in_array($reportStatus, $statuses);
         })->count();
     }
@@ -68,22 +66,25 @@ class DashboardEvaluateeController extends Controller
             'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
             'assignments.assignmentData',
         ])->findOrFail($id);
-        
+
         // Find the assignment for the current user
-        $assignment = $report->assignments->where('evaluatee', $user->id)->first();
+        $assignment = $report->assignments->where('evaluatee_id', $user->id)->first();
         $evaluator = $assignment->getEvaluatorUser();
 
-        if (!$assignment) {
+        if (! $assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 
-        $formatThai = function($datetime) {
-            if (!$datetime) return '-';
+        $formatThai = function ($datetime) {
+            if (! $datetime) {
+                return '-';
+            }
             \Carbon\Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
             $date = \Carbon\Carbon::parse($datetime);
             $year = $date->year + 543;
-            return $date->translatedFormat('j F') . " {$year}";
+
+            return $date->translatedFormat('j F')." {$year}";
         };
 
         $startTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->start_time : null;
@@ -117,29 +118,29 @@ class DashboardEvaluateeController extends Controller
         });
 
         $canEdit = in_array($report->status, ['Draft', 'Assigned']);
-        $readonly = !$canEdit; // true if status is something else
+        $readonly = ! $canEdit; // true if status is something else
 
         // Process categories and their evaluation lists
         $categoryItems = [];
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $categories = $report->reportData->criteriaVersion->categories()
-                ->with(['evaluationLists' => function($query) {
+                ->with(['evaluationLists' => function ($query) {
                     $query->with([
-                        'quantitySubCriterias.mainCriteria', 
-                        'qualitySubCriterias.mainCriteria'
+                        'quantitySubCriterias.mainCriteria',
+                        'qualitySubCriterias.mainCriteria',
                     ])->orderBy('sequence');
                 }])
                 ->orderBy('sequence')
                 ->get();
-            
+
             foreach ($categories as $category) {
                 $categoryData = [
                     'id' => $category->id,
                     'main_categories' => $category->main_categories,
                     'sub_categories' => $category->sub_categories,
                     'sequence' => $category->sequence,
-                    'evaluation_lists' => []
+                    'evaluation_lists' => [],
                 ];
 
                 foreach ($category->evaluationLists as $list) {
@@ -150,22 +151,22 @@ class DashboardEvaluateeController extends Controller
                         'sum_score' => $list->sum_score,
                         'sequence' => $list->sequence,
                         'quantity_items' => [],
-                        'quality_items' => []
+                        'quality_items' => [],
                     ];
 
                     // Process quantity items for this evaluation list
                     if ($list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
                         $quantityMainGroups = $list->quantitySubCriterias->groupBy('quantity_main_criteria_id');
-                        
+
                         foreach ($quantityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
@@ -179,7 +180,7 @@ class DashboardEvaluateeController extends Controller
                                         'description' => $subCriteria->description ?? null,
                                         'score_a' => $subCriteria->score_a,
                                         'score_b' => $subCriteria->score_b,
-                                        'tor_compliant' => $quantityScore?->score_C ?? '', 
+                                        'tor_compliant' => $quantityScore?->score_C ?? '',
                                         'score_description' => $quantityScore->description ?? '',
                                         'evidence' => $evidenceLink,
                                     ];
@@ -189,26 +190,26 @@ class DashboardEvaluateeController extends Controller
                             }
                         }
                     }
-                    
+
                     // Process quality items for this evaluation list
                     if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
                         $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
-                        
+
                         foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -238,7 +239,7 @@ class DashboardEvaluateeController extends Controller
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('evaluation.show', ['id' => $id, 'readonly' => 1]);
         }
-        
+
         return view('evaluatee.evaluation', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
             'startTime', 'endTime', 'reportName', 'evaluator',

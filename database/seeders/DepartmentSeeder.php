@@ -14,20 +14,43 @@ class DepartmentSeeder extends Seeder
     {
         DB::table('departments')->insert([
             [
-                'department_name' => 'หน่วยทรัพยากรบุคคล',
-                'faculty' => 'คณะสาธารณสุข'
+                'department_name' => 'สำนักงานเลขานุการ',
             ],
             [
-                'department_name' => 'หน่วยจัดการงานทั่วไป',
-                'faculty' => 'คณะสาธารณสุข'
+                'department_name' => 'กลุ่มงานบริหาร',
             ],
             [
-                'department_name' => 'หน่วยจัดการศึกษา',
-                'faculty' => 'คณะสาธารณสุข'
+                'department_name' => 'กลุ่มงานนโยบายแผนและคลัง',
             ],
             [
-                'department_name' => 'หน่วยการต่างประเทศ',
-                'faculty' => 'คณะสาธารณสุข'
+                'department_name' => 'กลุ่มงานวิชาการและพัฒนานิสิต',
+            ],
+            [
+                'department_name' => 'ศูนย์บริการวิชาการ',
+            ],
+            [
+                'department_name' => 'สาธารณสุขศาสตรบัณฑิต',
+            ],
+            [
+                'department_name' => 'สาขาอนามัยสิ่งแวดล้อม',
+            ],
+            [
+                'department_name' => 'สาขาโภชนาการและการกำหนดอาหาร',
+            ],
+            [
+                'department_name' => 'สาขาอาชีวอนามัยและความปลอดภัย',
+            ],
+            [
+                'department_name' => 'สาธารณสุขศาสตรมหาบัณฑิต',
+            ],
+            [
+                'department_name' => 'วิทยาศาสตรมหาบัณฑิต สาขาเทคโนโลยีทางสุขภาพและความปลอดภัย',
+            ],
+            [
+                'department_name' => 'สาธารณสุขศาสตรดุษฎีบัณฑิต',
+            ],
+            [
+                'department_name' => 'ปรัชญาดุษฎีบัณฑิต สาขาเทคโนโลยีทางสุขภาพและความปลอดภัย',
             ],
         ]);
     }

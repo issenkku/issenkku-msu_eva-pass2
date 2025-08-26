@@ -22,8 +22,7 @@ class AssignmentFactory extends Factory
         return [
             'assignment_data_id' => AssignmentData::factory(),
             'report_id' => Reports::factory(),
-            'evaluatee' => User::factory(),
-            'evaluator' => User::factory(),
+            'evaluatee_id' => User::factory(),
         ];
     }
 }

@@ -10,8 +10,9 @@ class DirectorController extends Controller
 {
     private function countByStatus($evaluations, $statuses)
     {
-        return $evaluations->filter(function($assignment) use ($statuses) {
+        return $evaluations->filter(function ($assignment) use ($statuses) {
             $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+
             return in_array($reportStatus, $statuses);
         })->count();
     }
@@ -28,58 +29,61 @@ class DirectorController extends Controller
         $allReportsData = Reports::with([
             'reportData', // report_datas table
             'assignments.assignmentData.evaluatorPosition', // assignment_datas -> positions
-            'assignments.assignmentData.evaluateePosition', // assignment_datas -> positions  
+            'assignments.assignmentData.evaluateePosition', // assignment_datas -> positions
             'assignments.evaluateeUser.department', // users -> departments (evaluatee)
             'assignments.evaluateeUser.position', // users -> positions (evaluatee)
         ])->get();
 
         // Get ALL evaluations (Director can see everything, no department filtering)
-        $evaluations = $allReportsData->map(function($report) {
+        $evaluations = $allReportsData->map(function ($report) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
-                
+                $assignment->setAttribute('report', $report);
+
                 // Get evaluatee information
-                $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
-                $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
-                $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
-                
+                $assignment->setAttribute('evaluateeName', $assignment->evaluateeUser?->name ?? '-');
+                $assignment->setAttribute('evaluateeDepartment', $assignment->evaluateeUser?->department?->name ?? '-');
+                $assignment->setAttribute('evaluateePosition', $assignment->evaluateeUser?->position?->name ?? '-');
+
                 // Get evaluator information from assignment_data
-                $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
-                $assignment->evaluateeAssignedPosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-                
+                $assignment->setAttribute('evaluatorPosition', $assignment->assignmentData?->evaluatorPosition?->name ?? '-');
+                $assignment->setAttribute('evaluateeAssignedPosition', $assignment->assignmentData?->evaluateePosition?->name ?? '-');
+
                 // Add time information
-                $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
-                $assignment->endTime = $assignment->assignmentData?->end_time ?? null;
-                
+                $assignment->setAttribute('startTime', $assignment->assignmentData?->start_time ?? null);
+                $assignment->setAttribute('endTime', $assignment->assignmentData?->end_time ?? null);
+
                 return $assignment;
             }
+
             return null;
         })->filter(); // Remove null values
 
         // Get user's assignments as evaluatee (where user is being evaluated)
-        $userAsEvaluatee = Reports::whereHas('assignments', function($query) use ($user) {
-            $query->where('evaluatee', $user->id);
+        $userAsEvaluatee = Reports::whereHas('assignments', function ($query) use ($user) {
+            $query->where('evaluatee_id', $user->id);
         })->with([
             'reportData',
             'assignments.assignmentData.evaluatorPosition',
             'assignments.assignmentData.evaluateePosition',
-        ])->get()->map(function($report) {
+        ])->get()->map(function ($report) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
-                $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
-                $assignment->evaluateePosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-                $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
-                $assignment->endTime = $assignment->assignmentData?->end_time ?? null;
+                $assignment->setAttribute('report', $report);
+                $assignment->setAttribute('evaluatorPosition', $assignment->assignmentData?->evaluatorPosition?->name ?? '-');
+                $assignment->setAttribute('evaluateePosition', $assignment->assignmentData?->evaluateePosition?->name ?? '-');
+                $assignment->setAttribute('startTime', $assignment->assignmentData?->start_time ?? null);
+                $assignment->setAttribute('endTime', $assignment->assignmentData?->end_time ?? null);
+
                 return $assignment;
             }
+
             return null;
         })->filter();
 
-        // For evaluator assignments, we need to find reports where the user's position 
+        // For evaluator assignments, we need to find reports where the user's position
         // matches the evaluator_position_id in assignment_data
-        $userAsEvaluator = Reports::whereHas('assignments.assignmentData', function($query) use ($user) {
+        $userAsEvaluator = Reports::whereHas('assignments.assignmentData', function ($query) use ($user) {
             $query->where('evaluator_position_id', $user->position_id);
         })->with([
             'reportData',
@@ -87,23 +91,25 @@ class DirectorController extends Controller
             'assignments.assignmentData.evaluateePosition',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
-        ])->get()->map(function($report) use ($user) {
+        ])->get()->map(function ($report) use ($user) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
-                $assignment->evaluatorName = $user->name;
-                $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
-                $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
-                $assignment->evaluatorDepartment = $user->department?->name ?? '-';
-                $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
-                $assignment->evaluateePosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-                $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
-                $assignment->endTime = $assignment->assignmentData?->end_time ?? null;
-                
-                $assignment->sameDepartment = $assignment->evaluateeUser && 
-                    $assignment->evaluateeUser->department_id === $user->department_id;
+                $assignment->setAttribute('report', $report);
+                $assignment->setAttribute('evaluatorName', $user->name);
+                $assignment->setAttribute('evaluateeName', $assignment->evaluateeUser?->name ?? '-');
+                $assignment->setAttribute('evaluateeDepartment', $assignment->evaluateeUser?->department?->name ?? '-');
+                $assignment->setAttribute('evaluatorDepartment', $user->department?->name ?? '-');
+                $assignment->setAttribute('evaluatorPosition', $assignment->assignmentData?->evaluatorPosition?->name ?? '-');
+                $assignment->setAttribute('evaluateePosition', $assignment->assignmentData?->evaluateePosition?->name ?? '-');
+                $assignment->setAttribute('startTime', $assignment->assignmentData?->start_time ?? null);
+                $assignment->setAttribute('endTime', $assignment->assignmentData?->end_time ?? null);
+
+                $assignment->setAttribute('sameDepartment', $assignment->evaluateeUser &&
+                    $assignment->evaluateeUser->department_id === $user->department_id);
+
                 return $assignment;
             }
+
             return null;
         })->filter();
 
@@ -118,7 +124,7 @@ class DirectorController extends Controller
         ];
 
         // Additional counts by department (useful for director overview)
-        $departmentCounts = $evaluations->groupBy('evaluateeDepartment')->map(function($deptEvaluations) {
+        $departmentCounts = $evaluations->groupBy('evaluateeDepartment')->map(function ($deptEvaluations) {
             return [
                 'total' => $deptEvaluations->count(),
                 'completed' => $deptEvaluations->where('report.status', 'Completed')->count(),

@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
-use App\Models\Reports;
-use Exception;
-use Illuminate\Support\Facades\DB;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Reports;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EvaluatorScoreController extends Controller
 {
@@ -32,10 +31,10 @@ class EvaluatorScoreController extends Controller
 
         // Find the assignment for the current evaluator
         $assignment = Assignments::with([
-                'assignmentData',
-                'evaluateeUser.department',
-                'evaluateeUser.position',
-            ])
+            'assignmentData',
+            'evaluateeUser.department',
+            'evaluateeUser.position',
+        ])
             ->where('report_id', $id)
             ->whereHas('assignmentData', function ($q) use ($user) {
                 $q->where('evaluator_position_id', $user->position_id);
@@ -45,7 +44,7 @@ class EvaluatorScoreController extends Controller
             })
             ->first();
 
-        if (!$assignment) {
+        if (! $assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 
@@ -55,13 +54,16 @@ class EvaluatorScoreController extends Controller
         $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
         $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
 
-        $formatThai = function($datetime) {
-            if (!$datetime) return '-';
+        $formatThai = function ($datetime) {
+            if (! $datetime) {
+                return '-';
+            }
             \Carbon\Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
             $date = \Carbon\Carbon::parse($datetime);
             $year = $date->year + 543;
-            return $date->translatedFormat('j F') . " {$year}";
+
+            return $date->translatedFormat('j F')." {$year}";
         };
 
         $startTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->start_time : null;
@@ -95,29 +97,29 @@ class EvaluatorScoreController extends Controller
         });
 
         $canEdit = in_array($report->status, ['Pending', 'Evaluator_draft']);
-        $readonly = !$canEdit; // true if status is something else
+        $readonly = ! $canEdit; // true if status is something else
 
         // Process categories and their evaluation lists
         $categoryItems = [];
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $categories = $report->reportData->criteriaVersion->categories()
-                ->with(['evaluationLists' => function($query) {
+                ->with(['evaluationLists' => function ($query) {
                     $query->with([
-                        'quantitySubCriterias.mainCriteria', 
-                        'qualitySubCriterias.mainCriteria'
+                        'quantitySubCriterias.mainCriteria',
+                        'qualitySubCriterias.mainCriteria',
                     ])->orderBy('sequence');
                 }])
                 ->orderBy('sequence')
                 ->get();
-            
+
             foreach ($categories as $category) {
                 $categoryData = [
                     'id' => $category->id,
                     'main_categories' => $category->main_categories,
                     'sub_categories' => $category->sub_categories,
                     'sequence' => $category->sequence,
-                    'evaluation_lists' => []
+                    'evaluation_lists' => [],
                 ];
 
                 foreach ($category->evaluationLists as $list) {
@@ -128,22 +130,22 @@ class EvaluatorScoreController extends Controller
                         'sum_score' => $list->sum_score,
                         'sequence' => $list->sequence,
                         'quantity_items' => [],
-                        'quality_items' => []
+                        'quality_items' => [],
                     ];
 
                     // Process quantity items for this evaluation list
                     if ($list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
                         $quantityMainGroups = $list->quantitySubCriterias->groupBy('quantity_main_criteria_id');
-                        
+
                         foreach ($quantityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
@@ -157,8 +159,8 @@ class EvaluatorScoreController extends Controller
                                         'description' => $subCriteria->description ?? null,
                                         'score_a' => $subCriteria->score_a,
                                         'score_b' => $subCriteria->score_b,
-                                        'tor_compliant' => $quantityScore?->score_C ?? '', 
-                                        'score_d' => $quantityScore?->score_D ?? '', 
+                                        'tor_compliant' => $quantityScore?->score_C ?? '',
+                                        'score_d' => $quantityScore?->score_D ?? '',
                                         'score_description' => $quantityScore->description ?? '',
                                         'evidence' => $evidenceLink,
                                     ];
@@ -168,26 +170,26 @@ class EvaluatorScoreController extends Controller
                             }
                         }
                     }
-                    
+
                     // Process quality items for this evaluation list
                     if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
                         $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
-                        
+
                         foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -217,7 +219,7 @@ class EvaluatorScoreController extends Controller
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('evaluator.evaluator.show', ['id' => $id, 'readonly' => 1]);
         }
-        
+
         return view('evaluator_dashboard.evaluator', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
             'startTime', 'endTime', 'reportName',
@@ -240,7 +242,7 @@ class EvaluatorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    public function storeEvaluatorScores (Request $request, $reportId)
+    public function storeEvaluatorScores(Request $request, $reportId)
     {
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;

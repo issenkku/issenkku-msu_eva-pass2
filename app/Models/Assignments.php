@@ -30,7 +30,7 @@ class Assignments extends Model
 
     public function evaluateeUser()
     {
-        return $this->belongsTo(User::class, 'evaluatee', 'id');
+        return $this->belongsTo(User::class, 'evaluatee_id', 'id');
     }
 
     public function evaluatorUser()
