@@ -49,7 +49,7 @@
             'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft'],
             'ยังไม่ประเมิน' => ['Director_assigned'],
             'กำลังดำเนินการ' => ['Director_draft'],
-            'รอผลการประเมิน' => ['Manager_draft', 'Manager_draft'],
+            'รอผลการประเมิน' => ['Manager_assign', 'Manager_draft'],
             'ประเมินเสร็จสิ้น' => ['Completed'],
         ];
 
@@ -134,8 +134,8 @@
                                 'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
                                 'Director_assigned' => 'ยังไม่ประเมิน',
                                 'Director_draft' => 'กำลังดำเนินการ',
-                                'Manager_assigned' => 'รอคณบดีประเมิน',
-                                'Manager_draft' => 'คณบดีเริ่มประเมิน',
+                                'Manager_assign' => 'รอคณบดีรับรองผล',
+                                'Manager_draft' => 'คณบดีเริ่มรับรองผล',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
@@ -200,8 +200,8 @@
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
                                         'รอผู้ประเมินประเมิน' => 'bg-orange-100 text-orange-800',
                                         'ผู้ประเมินเริ่มประเมิน' => 'bg-orange-100 text-orange-800',
-                                        'รอคณบดีประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'คณบดีเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอคณบดีรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'คณบดีเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
@@ -222,11 +222,11 @@
                                             'label' => 'ดำเนินการต่อ',
                                             'classes' => 'bg-blue-500 hover:bg-blue-600 text-white',
                                         ],
-                                        'รอคณบดีประเมิน' => [
+                                        'รอคณบดีรับรองผล' => [
                                             'label' => 'ดูผล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
-                                        'คณบดีเริ่มประเมิน' => [
+                                        'คณบดีเริ่มรับรองผล' => [
                                             'label' => 'ดูผล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
@@ -243,7 +243,7 @@
                                     // Use the evaluatee ID for routing
                                     $evaluateeId = optional($evaluatee)->id ?? $evaluatorAssignment->evaluatee_id;
 
-                                    $url = route('evaluator.evaluator.show', ['id' => $report->id ?? 0]);
+                                    $url = route('director.show', ['id' => $report->id ?? 0]);
 
                                     if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';

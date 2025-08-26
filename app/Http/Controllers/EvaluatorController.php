@@ -12,6 +12,7 @@ use Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Support\Facades\Log;
 
 class EvaluatorController extends Controller
 {
@@ -57,8 +58,8 @@ class EvaluatorController extends Controller
             'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Pending']),
             'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Evaluator_draft']),
             'รอผลการประเมิน' => $this->countByStatus($evaluations, [
-                'Director_assigned', 'Director_draft',
-                'Manager_draft', 'Manager_draft',
+                'Director_assigned', 'Director_draft', 
+                'Manager_draft', 'Manager_assign'
             ]),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
