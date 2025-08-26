@@ -292,12 +292,6 @@
                     text="รับรองผล"
                     icon="fas fa-check-circle"
                     onclick="confirmSubmit()" />
-                <x-button 
-                    type="danger"
-                    buttonType="button" 
-                    text="ไม่รับรองผล"
-                    icon="fas fa-times-circle"
-                    onclick="confirmReject()" />
             </div>
     </form>
 

@@ -21,41 +21,42 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($assignment) {
+    $sortedEvaluations = collect($evaluations)->sortByDesc(function($evaluatorAssignment) {
         // Primary sort: by end_time (most recent first)
-        $endTime = optional($assignment->assignmentData)->end_time;
+        $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
         if ($endTime) {
             return Carbon::parse($endTime)->timestamp;
         }
         
         // Secondary sort: by start_time if no end_time
-        $startTime = optional($assignment->assignmentData)->start_time;
+        $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
         if ($startTime) {
             return Carbon::parse($startTime)->timestamp;
         }
         
         // Tertiary sort: by created_at or updated_at
-        return optional($assignment->report)->updated_at 
-            ? Carbon::parse($assignment->report->updated_at)->timestamp
-            : (optional($assignment)->created_at 
-                ? Carbon::parse($assignment->created_at)->timestamp 
+        return optional($evaluatorAssignment->report)->updated_at 
+            ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
+            : (optional($evaluatorAssignment)->created_at 
+                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp 
                 : 0);
     })->values(); // Reset array keys to ensure proper numbering
 
     $filteredStatus = request('status');
     if ($filteredStatus) {
-        // Map display name back to DB status
+        // Map display names back to DB status (including multiple statuses)
         $reverseMap = [
-            'ยังไม่ประเมิน' => ['Assigned'],
-            'กำลังดำเนินการ' => ['Draft'],
-            'รอผลการประเมิน' => ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assigned', 'Manager_draft'],
+            'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft'],
+            'ยังไม่ประเมิน' => ['Director_assigned'],
+            'กำลังดำเนินการ' => ['Director_draft'],
+            'รอผลการประเมิน' => ['Manager_draft', 'Manager_draft'],
             'ประเมินเสร็จสิ้น' => ['Completed'],
         ];
 
-        $statusCode = $reverseMap[$filteredStatus] ?? $filteredStatus;
+        $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
 
-        $sortedEvaluations = $sortedEvaluations->filter(function($assignment) use ($statusCode) {
-            return in_array(optional($assignment->report)->status, $statusCode);
+        $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
+            return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
         })->values(); // Reset keys
     }
 @endphp
@@ -66,6 +67,7 @@
     <!-- Status Badges -->
     @php
         $statusStyles = [
+            'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800 hover:bg-orange-200',
             'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
             'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
             'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -108,29 +110,30 @@
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
+                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($sortedEvaluations as $index => $assignment)
+                    @forelse($sortedEvaluations as $index => $evaluatorAssignment)
                         @php
-                            $report = $assignment->report;
-                            $assignmentData = $assignment->assignmentData;
+                            $report = $evaluatorAssignment->report;
+                            $assignmentData = $evaluatorAssignment->assignmentData;
+                            $evaluatee = $evaluatorAssignment->evaluateeUser;
 
                             $reportTitle = optional(optional($assignmentData)->report)->reportData->report_title
                                 ?? optional($report)->reportData->report_title
                                 ?? '-';
 
-                            $statusFromDB = optional($report)->status ?? 'Assigned';
+                            $statusFromDB = optional($report)->status ?? 'Pending';
                             $statusMapping = [
-                                'Assigned' => 'ยังไม่ประเมิน',
-                                'Draft' => 'กำลังดำเนินการ',
+                                'Assigned' => 'รอการกรอกข้อมูล',
+                                'Draft' => 'รอการกรอกข้อมูล',
                                 'Pending' => 'รอผู้ประเมินประเมิน',
                                 'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
-                                'Director_assigned' => 'รอกรรมการประเมิน',
-                                'Director_draft' => 'กรรมการเริ่มประเมิน',
+                                'Director_assigned' => 'ยังไม่ประเมิน',
+                                'Director_draft' => 'กำลังดำเนินการ',
                                 'Manager_assigned' => 'รอคณบดีประเมิน',
                                 'Manager_draft' => 'คณบดีเริ่มประเมิน',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
@@ -140,12 +143,14 @@
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
 
+                            $evaluateeName = optional($evaluatee)->name ?? '-';
+
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
 
                             // Add visual indicator for recent items
                             $isRecent = false;
-                            if ($end && $end->gt(Carbon::now()->subDays(3))) {
+                            if ($end && $end->gt(Carbon::now()->subDays(10))) {
                                 $isRecent = true;
                             } elseif (!$end && $start && $start->gt(Carbon::now()->subDays(3))) {
                                 $isRecent = true;
@@ -185,17 +190,16 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $assignment->evaluatorUser->name }}</td>
+                            <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
 
                             <td class="p-4 border-b text-center min-w-[180px]">
                                 @php
                                     $statusClasses = [
+                                        'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
-                                        'รอผู้ประเมินประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'ผู้ประเมินเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'รอกรรมการประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                        'กรรมการเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอผู้ประเมินประเมิน' => 'bg-orange-100 text-orange-800',
+                                        'ผู้ประเมินเริ่มประเมิน' => 'bg-orange-100 text-orange-800',
                                         'รอคณบดีประเมิน' => 'bg-yellow-100 text-yellow-800',
                                         'คณบดีเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
@@ -207,32 +211,16 @@
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center \">
+                            <td class="p-4 border-b text-center">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
                                             'label' => 'เริ่มประเมิน',
-                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white'
+                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white',
                                         ],
                                         'กำลังดำเนินการ' => [
-                                            'label' => 'ประเมินต่อ',
-                                            'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
-                                        ],
-                                        'รอผู้ประเมินประเมิน' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                                        ],
-                                        'ผู้ประเมินเริ่มประเมิน' => [
-                                            'label' => 'ดูผล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'รอกรรมการประเมิน' => [
-                                            'label' => 'ดูผล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'กรรมการเริ่มประเมิน' => [
-                                            'label' => 'ดูผล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                                            'label' => 'ดำเนินการต่อ',
+                                            'classes' => 'bg-blue-500 hover:bg-blue-600 text-white',
                                         ],
                                         'รอคณบดีประเมิน' => [
                                             'label' => 'ดูผล',
@@ -244,19 +232,26 @@
                                         ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
-                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white'
+                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white',
                                         ],
+                                        'รอการกรอกข้อมูล' => null,
+                                        'รอผู้ประเมินประเมิน' => null,
+                                        'ผู้ประเมินเริ่มประเมิน' => null,
                                     ];
                                     $action = $actions[$status] ?? null;
 
-                                    $url = route('evaluation.show', ['id' => $report->id ?? 0]);
+                                    // Use the evaluatee ID for routing
+                                    $evaluateeId = optional($evaluatee)->id ?? $evaluatorAssignment->evaluatee_id;
+
+                                    $url = route('evaluator.evaluator.show', ['id' => $report->id ?? 0]);
 
                                     if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';
                                     }
+                                    
                                 @endphp
 
-                                @if($action)
+                                @if($action && $evaluateeId)
                                     <a href="{{ $url }}"
                                     class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
                                         {{ $action['label'] }}
@@ -275,6 +270,7 @@
                         </tr>
                     @endforelse
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 </div>

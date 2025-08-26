@@ -109,19 +109,18 @@ class User extends Authenticatable implements CanResetPassword
 
     public function assignment()
     {
-        return $this->hasMany(Assignments::class, 'evaluatee_id', 'id');
+        return $this->hasMany(Assignments::class, 'evaluatee', 'id');
     }
 
     public function evaluatorAssignments()
     {
-        // Get assignments through evaluator position
         return $this->hasManyThrough(
-            Assignments::class,
-            \App\Models\AssignmentData::class,
-            'evaluator_position_id', // Foreign key on assignment_datas table
-            'assignment_data_id', // Foreign key on assignments table
-            'position_id', // Local key on users table
-            'id' // Local key on assignment_datas table
+            Assignments::class,        // Final model
+            AssignmentData::class,     // Intermediate model
+            'evaluator_position_id',   // Foreign key on AssignmentData (points to Positions table)
+            'assignment_data_id',      // Foreign key on Assignments (points to AssignmentData)
+            'position_id',             // Local key on Users (points to Positions)
+            'id'                       // Local key on AssignmentData
         );
     }
 

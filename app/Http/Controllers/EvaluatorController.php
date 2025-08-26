@@ -12,6 +12,7 @@ use Debugbar;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Support\Facades\Log;
 
 class EvaluatorController extends Controller
 {
@@ -24,32 +25,58 @@ class EvaluatorController extends Controller
         $user = $request->user()->load([
             'position',
             'department',
-            'evaluatorAssignments.assignmentData',
-            'evaluatorAssignments.report.reportData',
-            'evaluatorAssignments.evaluateeUser',
         ]);
 
-        $allAssignments = $user->evaluatorAssignments;
+        // Only get assignments where evaluatee is from the same department
+        $sameDepartmentAssignments = $user->evaluatorAssignments()
+            ->whereHas('evaluateeUser', function ($query) use ($user) {
+                $query->where('department_id', $user->department_id);
+            })
+            ->with([
+                'evaluateeUser.department',
+                'assignmentData',
+                'report.reportData',
+            ])
+            ->get();
 
-        // Get only the reports from filtered assignments
-        $evaluations = $allAssignments->pluck('report')->filter();
+        $evaluations = $sameDepartmentAssignments->map(function ($assignment) use ($user) {
+            $assignment->evaluatorName = $user->name; // current user
+            $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+            $assignment->sameDepartment = true; // Always true since we filtered at database level
+            
+            // Optional: Add department names for display
+            $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+            $assignment->evaluatorDepartment = $user->department?->name ?? '-';
+            
+            return $assignment;
+        });
 
-        // Count status for filtered assignments only
+        // Count status for filtered assignments only (same department only)
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
-            'รอการกรอกข้อมูล' => $evaluations->whereIn('status', ['Assigned', 'Draft'])->count(),
-            'ยังไม่ประเมิน' => $evaluations->where('status', 'Pending')->count(),
-            'กำลังดำเนินการ' => $evaluations->where('status', 'Evaluator_draft')->count(),
-            'รอผลการประเมิน' => $evaluations->whereIn('status',
-                ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'])->count(),
-            'ประเมินเสร็จสิ้น' => $evaluations->where('status', 'Completed')->count(),
+            'รอการกรอกข้อมูล' => $this->countByStatus($evaluations, ['Assigned', 'Draft']),
+            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Pending']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Evaluator_draft']),
+            'รอผลการประเมิน' => $this->countByStatus($evaluations, [
+                'Director_assigned', 'Director_draft', 
+                'Manager_draft', 'Manager_draft'
+            ]),
+            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
         return view('evaluator_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $allAssignments, // Pass filtered assignments instead of all
+            'evaluations' => $evaluations, // Only same-department evaluations
         ]);
+    }
+
+    private function countByStatus($evaluations, $statuses)
+    {
+        return $evaluations->filter(function($assignment) use ($statuses) {
+            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+            return in_array($reportStatus, $statuses);
+        })->count();
     }
 
     public function show(Request $request, $assignmentId)
@@ -245,26 +272,44 @@ class EvaluatorController extends Controller
         ]);
     }
 
-    public function evaluator(Request $request, $id)
-    {
-        $user = $request->user()->load('position', 'department');
-    }
-
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $userId = Auth::id() ?? 2;
 
+        $user = $request->user()->load('position', 'department');
+
+        $report = Reports::with([
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
+            'assignments.assignmentData',
+            'assignments.evaluateeUser.department',
+            'assignments.evaluateeUser.position',
+            'assignments.evaluatorUser',
+        ])->findOrFail($id);
+
+        // Find the assignment for the current evaluator
         $assignment = Assignments::with([
-            'assignmentData',
-            'report',
-            'report.reportData.criteriaVersion',
-            'evaluateeUser.department',
-            'evaluateeUser.position',
-            'evaluatorUser',
-        ])
+                'assignmentData',
+                'evaluateeUser.department',
+                'evaluateeUser.position',
+            ])
             ->where('report_id', $id)
-            ->where('evaluator', $userId)
-            ->firstOrFail();
+            ->whereHas('assignmentData', function ($q) use ($user) {
+                $q->where('evaluator_position_id', $user->position_id);
+            })
+            ->whereHas('evaluateeUser', function ($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            })
+            ->first();
+
+        if (!$assignment) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
+        }
+
+        // Add evaluatee info like in dashboard
+        $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+        $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+        $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
+        $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
 
         $criteriaVersionId = $assignment->report->reportData->criteria_version_id ?? null;
 
@@ -359,7 +404,7 @@ class EvaluatorController extends Controller
 
         Reports::where('id', $id)->update([
             'comment' => $request->input('comment'),
-            'status' => $request->has('change_status') ? 'Completed' : DB::raw('status'),
+            'status' => $request->has('change_status') ? 'Director_assigned' : DB::raw('status'),
         ]);
 
         // ส่งอีเมลแจ้งเตือนเมื่อประเมินเสร็จ

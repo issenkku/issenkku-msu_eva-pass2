@@ -16,15 +16,11 @@
         <div class="space-y-3">
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
-                <span class="text-gray-700">{{ $user->name ?? '-' }}</span>
-            </div>
-            <div class="flex">
-                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
-            <span class="text-gray-700">{{ $assignment->evaluatorUser?->name ?? 'ไม่พบข้อมูล' }}</span>
+                <span class="text-gray-700">{{ $assignment->evaluateeName }}</span>
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
-                <span class="text-gray-700">{{ $user->position->name ?? '-' }}</span>
+                <span class="text-gray-700">{{ $assignment->evaluateePosition }}</span>
             </div>
         </div>
 
@@ -32,11 +28,7 @@
         <div class="space-y-3">
             <div class="flex">
                 <span class="font-bold text-gray-800 w-36 flex-shrink-0">หน่วยงาน/คณะ:</span>
-                <span class="text-gray-700">{{ $user->department->department_name ?? '-' }}</span>
-            </div>
-            <div class="flex">
-                <span class="font-bold text-gray-800 w-36 flex-shrink-0">กลุ่มงาน:</span>
-                <span class="text-gray-700">{{ $assessmentType }}</span>
+                <span class="text-gray-700">{{ $assignment->evaluateeDepartment }}</span>
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-36 flex-shrink-0">รอบการประเมิน:</span>

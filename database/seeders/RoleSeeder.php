@@ -36,7 +36,8 @@ class RoleSeeder extends Seeder
         User::find(2)->assignRole($evaluatorRole);
         User::find(3)->assignRole($evaluatorRole);
         User::find(4)->assignRole($evaluateeRole);
-        User::find(5)->assignRole($managerRole);
-        User::find(6)->assignRole($directorRole);
+        User::find(5)->assignRole($evaluateeRole);
+        User::find(6)->assignRole($managerRole);
+        User::find(7)->assignRole($directorRole);
     }
 }

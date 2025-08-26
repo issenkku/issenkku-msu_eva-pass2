@@ -138,7 +138,7 @@
                                 </div>
                                 <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้รับการประเมิน</h3>
                             </div>
-                            <div class="flex items-center justify-between mb-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
                                 <label class="block text-sm font-medium text-gray-700">
                                     รายชื่อตำแหน่งผู้รับการประเมิน:
                                 </label>
@@ -171,7 +171,50 @@
                             </div>
                         </div>
 
+<<<<<<< HEAD
                         
+=======
+                        <!-- ผู้ประเมิน Section -->
+                        <div class="bg-green-50 rounded-lg p-6 position-card">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center justify-center w-6 h-6 bg-green-600 text-white rounded-full mr-2 text-xs font-semibold">
+                                    B
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้ประเมิน</h3>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                                <label for="evaluators" class="block text-sm font-medium text-gray-700">
+                                    รายชื่อตำแหน่งผู้ประเมิน:
+                                </label>
+                                <div class="text-sm text-gray-500">
+                                    <span id="evaluators-available-count">0</span> ตำแหน่งที่แสดง จาก
+                                    <span id="evaluators-total-count">0</span> ตำแหน่งทั้งหมด
+                                </div>
+                            </div>
+                            <select id="evaluators" name="evaluators" required
+                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">-- เลือกตำแหน่งผู้ประเมิน --</option>
+                                @foreach ($evaluators as $position)
+                                    <option value="{{ $position->id }}" 
+                                        data-position-name="{{ $position->name }}"
+                                        data-user-count="{{ $position->user->count() }}">
+                                        {{ $position->name }} ({{ $position->user->count() }} คน)
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <!-- Selected Display for Evaluators -->
+                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-green-200">
+                                <p class="text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-check-circle mr-2 text-green-500"></i>ตำแหน่งผู้ประเมินที่เลือก:
+                                    <span id="evaluators-selected-count" class="text-green-600 font-semibold">0</span> ตำแหน่ง
+                                </p>
+                                <div id="selected-evaluators" class="flex flex-col gap-2">
+                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>
+                                </div>
+                            </div>
+                        </div>
+>>>>>>> origin/earl
                     </div>
                 </div>
 
@@ -203,13 +246,13 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="flex justify-between items-center">
+                    <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
                         <div class="text-sm text-gray-500">
                             <i class="fas fa-info-circle mr-2"></i>
                             <span class="font-medium">หมายเหตุ:</span>
                             กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex justify-center items-center gap-2 flex-wrap">
                             <button type="button" id="reset-btn"
                                 class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400 transition-colors">
                                 <i class="fas fa-undo mr-2"></i>ล้างค่า

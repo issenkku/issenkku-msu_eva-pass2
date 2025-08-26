@@ -28,12 +28,12 @@ class AssignmentSeeder extends Seeder
             [
                 'assignment_data_id' => 1,
                 'report_id' => 1,
-                'evaluatee_id' => 3,
+                'evaluatee' => 3,
             ],
             [
                 'assignment_data_id' => 1,
                 'report_id' => 2,
-                'evaluatee_id' => 4,
+                'evaluatee' => 4,
             ],
         ]);
     }

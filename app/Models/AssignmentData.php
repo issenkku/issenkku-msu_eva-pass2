@@ -47,6 +47,13 @@ class AssignmentData extends Model
         return $this->hasMany(Positions::class, 'id', 'evaluator_position_id');
     }
 
+    public function evaluatorUser()
+    {
+        return User::where('position_id', $this->assignmentData->evaluator_position_id)
+            ->where('department_id', $this->evaluatee->department_id)
+            ->first();
+    }
+
     // ดึง user ที่เกี่ยวข้องกับ assignment data (เช่น evaluator หรือ evaluatee)
     public function evaluators()
     {

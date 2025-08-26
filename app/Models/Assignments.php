@@ -30,35 +30,37 @@ class Assignments extends Model
 
     public function evaluateeUser()
     {
-        return $this->belongsTo(User::class, 'evaluatee_id', 'id');
+        return $this->belongsTo(User::class, 'evaluatee', 'id');
     }
 
     public function evaluatorUser()
     {
-        // This creates a proper HasOneThrough relationship
         return $this->hasOneThrough(
-            User::class,
-            AssignmentData::class,
-            'id',                    // Foreign key on assignment_datas table
-            'position_id',           // Foreign key on users table
-            'assignment_data_id',    // Local key on assignments table
-            'evaluator_position_id'  // Local key on assignment_datas table
+            User::class,              // Final model
+            AssignmentData::class,    // Intermediate
+            'id',                     // Local key on AssignmentData
+            'position_id',            // Foreign key on Users
+            'assignment_data_id',     // Local key on Assignments
+            'evaluator_position_id'   // Foreign key on AssignmentData
         );
     }
 
     public function evaluatorUsers()
     {
-        // Get all users from evaluator position safely
-        if (! $this->assignmentData || ! $this->assignmentData->evaluator_position_id) {
-            return collect();
-        }
-
-        return User::where('position_id', $this->assignmentData->evaluator_position_id)->get();
+        return $this->hasMany(User::class, 'position_id', 'evaluator_position_id')
+            ->where('department_id', $this->evaluateeUser?->department_id);
     }
 
     // Helper to get evaluator position
     public function evaluatorPosition()
     {
         return $this->assignmentData?->evaluatorPosition();
+    }
+
+    public function getEvaluatorUser()
+    {
+        return $this->assignmentData
+            ? $this->assignmentData->evaluatorPosition()->first()?->user()->first()
+            : null;
     }
 }
