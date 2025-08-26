@@ -463,7 +463,12 @@
                 <nav class="d-none d-xl-block">
                     <ul class="nav nav-pills align-items-center gap-2">
                         
-                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') || auth()->user() && auth()->user()->hasRole('admin'))
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
+                            <li class="nav-item">
+                                <a class="nav-link text-white " href="/manager-dashboard">แดชบอร์ด</a>
+                            </li>
+                        @endif
+                        @if(auth()->user() && auth()->user()->hasRole('admin'))
                             <li class="nav-item">
                                 <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
                             </li>
@@ -472,6 +477,11 @@
                         @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/evaluator-dashboard">หน้าตรวจประเมิน</a>
+                            </li>
+                        @endif
+                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าตรวจประเมิน</a>
                             </li>
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))

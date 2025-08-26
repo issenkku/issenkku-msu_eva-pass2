@@ -37,7 +37,7 @@ class ManagerController extends Controller
         $evaluations = $allReportsData->map(function($report) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
+                $assignment->setRelation('report', $report);
                 
                 // Get evaluatee information
                 $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
@@ -59,7 +59,7 @@ class ManagerController extends Controller
 
         // Get user's assignments as evaluatee (where user is being evaluated)
         $userAsEvaluatee = Reports::whereHas('assignments', function($query) use ($user) {
-            $query->where('evaluatee', $user->id);
+            $query->where('evaluatee_id', $user->id);
         })->with([
             'reportData',
             'assignments.assignmentData.evaluatorPosition',
@@ -67,7 +67,7 @@ class ManagerController extends Controller
         ])->get()->map(function($report) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
+                $assignment->setRelation('report', $report);
                 $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
                 $assignment->evaluateePosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
                 $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
@@ -90,7 +90,7 @@ class ManagerController extends Controller
         ])->get()->map(function($report) use ($user) {
             if ($report->assignments) {
                 $assignment = $report->assignments;
-                $assignment->report = $report;
+                $assignment->setRelation('report', $report);
                 $assignment->evaluatorName = $user->name;
                 $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
                 $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';

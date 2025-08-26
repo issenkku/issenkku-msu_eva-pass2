@@ -62,7 +62,7 @@
                                                 {{ $mainCriteria['name'] }}
                                             </h4>
                                             @if(!empty($mainCriteria['tooltips']))
-                                                <p class="text-sm text-gray-500 mt-1">{{ $mainCriteria['tooltips'] }}</p>
+                                                <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
                                         </div>
 
@@ -188,7 +188,7 @@
                                                 {{ $mainCriteria['name'] }}
                                             </h4>
                                             @if(!empty($mainCriteria['tooltips']))
-                                                <p class="text-sm text-gray-500 mt-1">{{ $mainCriteria['tooltips'] }}</p>
+                                                <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
                                         </div>
 

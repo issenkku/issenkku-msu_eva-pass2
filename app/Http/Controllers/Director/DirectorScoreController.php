@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Director;
 
 use App\Http\Controllers\Controller;
-use App\Models\Reports;
-use Illuminate\Http\Request;
+use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
-use App\Models\Assignments;
-use App\Models\EvidenceAnswer;
+use App\Models\Reports;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DirectorScoreController extends Controller
@@ -52,13 +51,16 @@ class DirectorScoreController extends Controller
         $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
         $assignment->evaluatorPosition = $assignment->evaluatorUser?->position?->name ?? '-';
 
-        $formatThai = function($datetime) {
-            if (!$datetime) return '-';
+        $formatThai = function ($datetime) {
+            if (! $datetime) {
+                return '-';
+            }
             \Carbon\Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
             $date = \Carbon\Carbon::parse($datetime);
             $year = $date->year + 543;
-            return $date->translatedFormat('j F') . " {$year}";
+
+            return $date->translatedFormat('j F')." {$year}";
         };
 
         $startTime = $assignment && $assignment->assignmentData ? $assignment->assignmentData->start_time : null;
@@ -92,29 +94,29 @@ class DirectorScoreController extends Controller
         });
 
         $canEdit = in_array($report->status, ['Director_assigned', 'Director_draft']);
-        $readonly = !$canEdit; // true if status is something else
+        $readonly = ! $canEdit; // true if status is something else
 
         // Process categories and their evaluation lists
         $categoryItems = [];
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
             $categories = $report->reportData->criteriaVersion->categories()
-                ->with(['evaluationLists' => function($query) {
+                ->with(['evaluationLists' => function ($query) {
                     $query->with([
-                        'quantitySubCriterias.mainCriteria', 
-                        'qualitySubCriterias.mainCriteria'
+                        'quantitySubCriterias.mainCriteria',
+                        'qualitySubCriterias.mainCriteria',
                     ])->orderBy('sequence');
                 }])
                 ->orderBy('sequence')
                 ->get();
-            
+
             foreach ($categories as $category) {
                 $categoryData = [
                     'id' => $category->id,
                     'main_categories' => $category->main_categories,
                     'sub_categories' => $category->sub_categories,
                     'sequence' => $category->sequence,
-                    'evaluation_lists' => []
+                    'evaluation_lists' => [],
                 ];
 
                 foreach ($category->evaluationLists as $list) {
@@ -125,22 +127,22 @@ class DirectorScoreController extends Controller
                         'sum_score' => $list->sum_score,
                         'sequence' => $list->sequence,
                         'quantity_items' => [],
-                        'quality_items' => []
+                        'quality_items' => [],
                     ];
 
                     // Process quantity items for this evaluation list
                     if ($list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
                         $quantityMainGroups = $list->quantitySubCriterias->groupBy('quantity_main_criteria_id');
-                        
+
                         foreach ($quantityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
@@ -154,8 +156,8 @@ class DirectorScoreController extends Controller
                                         'description' => $subCriteria->description ?? null,
                                         'score_a' => $subCriteria->score_a,
                                         'score_b' => $subCriteria->score_b,
-                                        'tor_compliant' => $quantityScore?->score_C ?? '', 
-                                        'score_d' => $quantityScore?->score_D ?? '', 
+                                        'tor_compliant' => $quantityScore?->score_C ?? '',
+                                        'score_d' => $quantityScore?->score_D ?? '',
                                         'score_description' => $quantityScore->description ?? '',
                                         'evidence' => $evidenceLink,
                                     ];
@@ -165,26 +167,26 @@ class DirectorScoreController extends Controller
                             }
                         }
                     }
-                    
+
                     // Process quality items for this evaluation list
                     if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
                         $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
-                        
+
                         foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
                             $mainCriteria = $subCriterias->first()->mainCriteria;
-                            
+
                             if ($mainCriteria) {
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'sub_criterias' => []
+                                    'sub_criterias' => [],
                                 ];
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -214,7 +216,7 @@ class DirectorScoreController extends Controller
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('director.show', ['id' => $id, 'readonly' => 1]);
         }
-        
+
         return view('director_dashboard.director', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
             'startTime', 'endTime', 'reportName',
