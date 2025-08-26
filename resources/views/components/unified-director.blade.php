@@ -312,6 +312,54 @@
             </div>
         </div>
     @endif
+
+    <!-- summary score -->
+     @php
+        $totalQuantityScore = 0;
+        $totalQualityScore = 0;
+
+        foreach($categoryItems as $category) {
+            foreach($category['evaluation_lists'] as $evalList) {
+                // Quantity
+                foreach($evalList['quantity_items'] as $mainCriteria) {
+                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                        $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
+                    }
+                }
+                // Quality
+                foreach($evalList['quality_items'] as $mainCriteria) {
+                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                        $totalQualityScore += floatval($subCriteria['score'] ?? 0);
+                    }
+                }
+            }
+        }
+        $totalScore = $totalQuantityScore + $totalQualityScore;
+    @endphp
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
+        <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-5a2 2 0 00-2-2h-1V7a4 4 0 10-8 0v5H9a2 2 0 00-2 2v5a2 2 0 002 2z"/>
+            </svg>
+            สรุปคะแนนรวม
+        </h3>
+
+        <div class="space-y-3 text-blue-800">
+            <div class="flex justify-between items-center">
+                <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
+                <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
+                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+            </div>
+        </div>
+
+        <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
+            <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+        </div>
+    </div>
 </div>
 
 {{-- JavaScript for Quality Checkbox Handling --}}
@@ -328,6 +376,42 @@ function calculateScoreD(input) {
 
     document.getElementById(`score-D-${subCriteriaId}`).value = scoreD ? scoreD.toFixed(2) : '';
 }
+
+function recalculateSummaryScores() {
+    // Quantity: sum all score_D inputs
+    let quantitySum = 0;
+    document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]').forEach(input => {
+        let val = parseFloat(input.value);
+        if (!isNaN(val)) quantitySum += val;
+    });
+
+    // Quality: sum all quality score inputs
+    let qualitySum = 0;
+    document.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
+        let val = parseFloat(input.value);
+        if (!isNaN(val)) qualitySum += val;
+    });
+
+    // Update the summary fields
+    document.getElementById('quantity-summary').textContent = quantitySum.toFixed(2);
+    document.getElementById('quality-summary').textContent = qualitySum.toFixed(2);
+    document.getElementById('total-summary').textContent = (quantitySum + qualitySum).toFixed(2);
+}
+
+// Listen for changes on all relevant inputs
+document.addEventListener('DOMContentLoaded', function() {
+    // Existing code...
+
+    // Attach event listeners for real-time summary
+    document.querySelectorAll(
+        'input[name^="quantity_list"][name$="[score_C]"], input[name^="quantity_list"][name$="[score_D]"], input[name^="quality_list"][name$="[score]"]'
+    ).forEach(input => {
+        input.addEventListener('input', recalculateSummaryScores);
+    });
+
+    // Initial calculation
+    recalculateSummaryScores();
+});
 
 function handleQualityCheckboxChange(checkbox) {
     const subCriteriaId = checkbox.dataset.subCriteriaId;

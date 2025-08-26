@@ -181,6 +181,7 @@ class DashboardEvaluateeController extends Controller
                                         'score_a' => $subCriteria->score_a,
                                         'score_b' => $subCriteria->score_b,
                                         'tor_compliant' => $quantityScore?->score_C ?? '',
+                                        'score_d' => $quantityScore?->score_D ?? '',  
                                         'score_description' => $quantityScore->description ?? '',
                                         'evidence' => $evidenceLink,
                                     ];
