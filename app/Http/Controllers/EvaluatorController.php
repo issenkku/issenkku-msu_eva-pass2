@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class EvaluatorController extends Controller
 {
@@ -380,7 +381,7 @@ class EvaluatorController extends Controller
 
     public function update(Request $request, $id)
     {
-        \Log::info('Update evaluation scores for report ID: '.$id);
+        Log::info('Update evaluation scores for report ID: '.$id);
         $validated = $request->validate([
             'scores' => 'required|array',
             'scores.*' => 'required|numeric|min:0',
@@ -542,7 +543,7 @@ class EvaluatorController extends Controller
             'status' => $report->status,
         ];
 
-        \Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
+        Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
             $message->to($user->email, $user->name)
                 ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
         });
