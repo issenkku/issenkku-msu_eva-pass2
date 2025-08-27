@@ -16,7 +16,7 @@
     </div>
 
     <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
-        <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ count($users) }} คน)</h2>
+        <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ $users->total() }} คน)</h2>
         <div class="d-flex gap-2 align-items-center flex-wrap">
             <x-button 
                 type="secondary" 
@@ -62,7 +62,9 @@
                 :options="$positions->pluck('name', 'id')->toArray()"
             />
         </form>
-        <x-search-bar /> <!-- <<<< เรียกใช้งาน Component -->
+        <x-search-bar 
+            placeholder="ค้นหาชื่อ, รหัสพนักงาน..."
+        /> <!-- <<<< เรียกใช้งาน Component -->
     </div>
 
     <div class="overflow-x-auto">

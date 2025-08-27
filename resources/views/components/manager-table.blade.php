@@ -1,4 +1,4 @@
-@props(['evaluations', 'statusCounts'])
+@props(['evaluations', 'statusCounts', 'years'])
 
 @php
     use Carbon\Carbon;
@@ -62,6 +62,16 @@
 
 <div class="bg-white rounded-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
+    <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
+        <x-search-bar  
+            placeholder="ค้นหาชื่อ, รายงาน..."
+        /> 
+        <x-filter-badge-single 
+            name="year"
+            placeholder="ปีการประเมินทั้งหมด"
+            :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+        />
+    </div>
 
     <!-- Status Badges -->
     @php
@@ -109,6 +119,7 @@
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
                         <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
+                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
                         <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
                     </tr>
@@ -189,6 +200,8 @@
                             </td>
 
                             <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
+
+                            <td class="p-4 border-b text-gray-500">{{ $evaluatorAssignment->evaluatorName ?? '-' }}</td>
 
                             <td class="p-4 border-b text-center min-w-[200px]">
                                 @php

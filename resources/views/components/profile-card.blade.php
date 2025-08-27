@@ -1,6 +1,6 @@
 @props(['user','title'])
 
-<div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-md">
+<div class="bg-purple-50 p-6 rounded-2xl shadow-md border-purple-300 border">
     <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">{{ $title}}</h3>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-6 sm:gap-x-10 lg:gap-x-16">

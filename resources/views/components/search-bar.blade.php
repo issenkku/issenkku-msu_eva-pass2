@@ -1,4 +1,8 @@
 <!-- resources/views/components/search-bar.blade.php -->
+ @props([
+    'placeholder'
+])
+
 <form action="{{ url()->current() }}" method="GET" class="flex items-center space-x-2">
     
     <!-- Search Input -->
@@ -6,9 +10,9 @@
         <input 
             type="text" 
             name="search" 
-            placeholder="ค้นหาชื่อ, รหัสพนักงาน..."
+            placeholder="{{ $placeholder ?? 'ค้นหา...' }}"
             value="{{ request('search') }}"
-            class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
         >
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,7 +24,7 @@
     <!-- Submit Button (ส่วนที่เพิ่มเข้ามา) -->
     <button 
         type="submit" 
-        class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+        class="px-5 py-2 rounded-lg bg-gray-400 text-white hover:bg-gray-500 transition"
     >
         ค้นหา
     </button>

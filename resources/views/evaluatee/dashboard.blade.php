@@ -20,6 +20,7 @@
     <x-evaluation-summary 
         :evaluations="$evaluations" 
         :status-counts="$statusCounts"
+        :years="$years"
     />
 </div>
 

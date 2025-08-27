@@ -52,6 +52,32 @@ class EvaluatorController extends Controller
             return $assignment;
         });
 
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
+                $evaluateeName = optional($assignment->evaluateeUser)->name ?? '';
+                $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
+                return str_contains(strtolower($evaluateeName), strtolower($searchTerm))
+                    || str_contains(strtolower($reportTitle), strtolower($searchTerm));
+            });
+        }
+
+        $years = $evaluations->pluck('assignmentData.start_time')
+            ->filter()
+            ->map(function($dt) {
+                return Carbon::parse($dt)->year;
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        if ($request->filled('year')) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($request) {
+                $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+                return $year == $request->input('year');
+            });
+        }
+
         // Count status for filtered assignments only (same department only)
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
@@ -69,6 +95,7 @@ class EvaluatorController extends Controller
             'user' => $user,
             'statusCounts' => $statusCounts,
             'evaluations' => $evaluations, // Only same-department evaluations
+            'years' => $years
         ]);
     }
 
