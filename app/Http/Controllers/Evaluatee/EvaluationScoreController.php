@@ -37,12 +37,24 @@ class EvaluationScoreController extends Controller
                 return $statusCheck;
             }
 
-            $request->merge([
-                'evidence_list' => collect($request->input('evidence_list'))
-                    ->filter(fn ($item) => ! empty($item['link'])) // Only keep filled links
-                    ->values()
-                    ->all(),
-            ]);
+            // --- Flatten evidence_list to array of {evaluation_list_id, link} ---
+            $evidenceInput = $request->input('evidence_list', []);
+            $evidenceFlat = [];
+            foreach ($evidenceInput as $evalListId => $item) {
+                if (isset($item['links']) && is_array($item['links'])) {
+                    foreach ($item['links'] as $link) {
+                        $link = trim($link);
+                        if ($link !== '') {
+                            $evidenceFlat[] = [
+                                'evaluation_list_id' => $evalListId,
+                                'link' => $link,
+                            ];
+                        }
+                    }
+                }
+            }
+            $request->merge(['evidence_list_flat' => $evidenceFlat]);
+            // ------------------------------------------------------------
 
             $validated = $request->validate([
                 'quantity_list' => 'nullable|array',
@@ -54,9 +66,9 @@ class EvaluationScoreController extends Controller
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric',
 
-                'evidence_list' => 'nullable|array',
-                'evidence_list.*.evaluation_list_id' => 'nullable|integer|exists:evaluation_lists,id',
-                'evidence_list.*.link' => 'nullable|string',
+                'evidence_list_flat' => 'nullable|array',
+                'evidence_list_flat.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
+                'evidence_list_flat.*.link' => 'required|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
             ]);
@@ -117,27 +129,17 @@ class EvaluationScoreController extends Controller
                 }
             }
 
-            foreach ($validated['evidence_list'] as $item) {
-                $link = trim($item['link'] ?? '');
-
-                if ($link === '') {
-                    continue; // skip this item
-                }
-
-                $evaluationListId = is_array($item['evaluation_list_id'])
-                    ? $item['evaluation_list_id'][0]
-                    : (int) $item['evaluation_list_id'];
-
+            // Save all evidence links
+            foreach ($validated['evidence_list_flat'] ?? [] as $item) {
                 EvidenceAnswer::create([
-                    'evaluation_list_id' => $evaluationListId,
+                    'evaluation_list_id' => $item['evaluation_list_id'],
                     'report_id' => $reportId,
-                    'link' => $item['link'] ?? null,
+                    'link' => $item['link'],
                 ]);
             }
 
             $status = $validated['status'];
             $report->status = $status;
-            // $report->save();
             if ($report->save() && $status === 'Pending') {
                 $this->sendEvaluationCompletedMail($reportId);
             }

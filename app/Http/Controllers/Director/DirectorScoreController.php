@@ -87,10 +87,10 @@ class DirectorScoreController extends Controller
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
             ->get()
-            ->keyBy('evaluation_list_id');
+            ->groupBy('evaluation_list_id');
 
-        $evidenceMap = $evidenceAnswers->mapWithKeys(function ($item) {
-            return [$item->evaluation_list_id => $item->link];
+        $evidenceMap = $evidenceAnswers->mapWithKeys(function ($items, $evalListId) {
+            return [$evalListId => $items->pluck('link')->filter()->values()->toArray()];
         });
 
         $canEdit = in_array($report->status, ['Director_assigned', 'Director_draft']);
@@ -147,7 +147,7 @@ class DirectorScoreController extends Controller
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $quantityScore = $quantityScores[$subCriteria->id] ?? null;
-                                    $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
+                                    $evidenceLinks = $evidenceMap[$list->id] ?? [];
 
                                     $mainCriteriaData['sub_criterias'][] = [
                                         'id' => $subCriteria->id,
@@ -159,7 +159,7 @@ class DirectorScoreController extends Controller
                                         'tor_compliant' => $quantityScore?->score_C ?? '',
                                         'score_d' => $quantityScore?->score_D ?? '',
                                         'score_description' => $quantityScore->description ?? '',
-                                        'evidence' => $evidenceLink,
+                                        'evidence' => $evidenceLinks,
                                     ];
                                 }
 
@@ -185,8 +185,8 @@ class DirectorScoreController extends Controller
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
-                                    $evidenceLink = $evidenceAnswers[$list->id]->link ?? '';
-
+                                    $evidenceLinks = $evidenceMap[$list->id] ?? [];
+                                    
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -197,7 +197,7 @@ class DirectorScoreController extends Controller
                                         'num_score' => $subCriteria->num_score,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',
-                                        'evidence' => $evidenceLink,
+                                        'evidence' => $evidenceLinks,
                                     ];
                                 }
 
