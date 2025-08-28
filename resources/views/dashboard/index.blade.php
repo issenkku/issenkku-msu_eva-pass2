@@ -354,7 +354,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Status Chart
-            const statusLabels = ['Assigned', 'Draft', 'Pending', 'Completed'];
+            const statusLabels = ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'อยู่ระหว่างการรับรอง', 'เสร็จสิ้น'];
             const statusData = [
                 {{ $statusCounts_chart['Assigned'] ?? 0 }},
                 {{ $statusCounts_chart['Draft'] ?? 0 }},
@@ -370,14 +370,14 @@
                         label: 'Report Status',
                         data: statusData ?? [0, 0, 0, 0],
                         backgroundColor: [
+                            'rgba(251, 36, 36, 0.8)',
                             'rgba(59, 130, 246, 0.8)', // ASSIGNED color
-                            'rgba(156, 163, 175, 0.8)', // DRAFT color
                             'rgba(251, 191, 36, 0.8)', // PENDING color
                             'rgba(16, 185, 129, 0.8)' // COMPLETED color
                         ],
                         borderColor: [
+                            'rgba(246, 59, 59, 1)',
                             'rgba(59, 130, 246, 1)',
-                            'rgba(156, 163, 175, 1)',
                             'rgba(251, 191, 36, 1)',
                             'rgba(16, 185, 129, 1)'
                         ],
@@ -430,33 +430,67 @@
                 scoreDistCtx, {
                     type: 'scatter',
                     data: {
-                        datasets: [{
-                            label: 'Report Scores',
-                            data: scatterData_chart,
-                            backgroundColor: 'rgba(79, 70, 229, 0.7)',
-                            borderColor: 'rgba(79, 70, 229, 1)',
-                            borderWidth: 1,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: function(context) {
-                                const value = context.dataset.data[context.dataIndex].y;
-                                return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
-                                    'rgba(239, 68, 68, 0.8)';
-                            }
-                        }]
+                        datasets: [
+                            {
+                                label: 'คะแนนรวม',
+                                data: scatterData_chart,
+                                backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                pointBackgroundColor: function(context) {
+                                    const value = context.dataset.data[context.dataIndex].y;
+                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
+                                        'rgba(239, 68, 68, 0.8)';
+                                }
+                            },
+                            {
+                                label: 'คะแนนปริมาณ',
+                                data: scatterData_chart.map(d => ({ x: d.x, y: d.quantity })),
+                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                pointBackgroundColor: function(context) {
+                                    const value = context.dataset.data[context.dataIndex].y;
+                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
+                                        'rgba(255, 99, 132, 0.6)';
+                                }
+                            },
+                            {
+                                label: 'คะแนนคุณภาพ',
+                                data: scatterData_chart.map(d => ({ x: d.x, y: d.quality })),
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                pointBackgroundColor: function(context) {
+                                    const value = context.dataset.data[context.dataIndex].y;
+                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
+                                        'rgba(75, 192, 192, 0.6)';
+                                }
+                            },
+                    ]
                     },
                     options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `(${context.parsed.x}, ${context.parsed.y})`;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             x: {
                                 title: {
                                     display: true,
-                                    text: 'Report Number'
+                                    text: 'ชุดรายงานการประเมิน'
                                 }
                             },
                             y: {
                                 title: {
                                     display: true,
-                                    text: 'Score'
+                                    text: 'คะแนน'
                                 }
                             }
                         },
@@ -464,7 +498,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `Report ${context.parsed.x}: ${context.parsed.y.toFixed(2)}%`;
+                                        return `Report ${context.parsed.x}: ${context.parsed.y.toFixed(2)}`;
                                     }
                                 }
                             }

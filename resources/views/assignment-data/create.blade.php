@@ -209,8 +209,12 @@
                             กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก
                         </div>
                         <div class="flex justify-center items-center gap-2 flex-wrap">
-                            <button type="button" id="reset-btn"
+                            <a href="/assignment-data"
                                 class="px-6 py-2 bg-gray-300 text-gray-800 font-semibold rounded-md hover:bg-gray-400 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i>ย้อนกลับ
+</a>
+                            <button type="button" id="reset-btn"
+                                class="px-6 py-2 bg-white text-blue-800 border-2 border-blue-500 font-semibold rounded-md hover:bg-blue-20 transition-colors">
                                 <i class="fas fa-undo mr-2"></i>ล้างค่า
                             </button>
                             <button type="submit"
