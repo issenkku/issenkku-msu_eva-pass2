@@ -9,7 +9,8 @@
 
     <x-manager-table  
         :evaluations="$evaluations"  
-        :statusCounts="$statusCounts" />
+        :statusCounts="$statusCounts"
+        :years="$years" />
 </div>
 
 <!-- Mobile-friendly spacing -->

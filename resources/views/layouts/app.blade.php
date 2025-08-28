@@ -527,7 +527,7 @@
                                 <i class="fa fa-user"></i> {{ auth()->user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="/settings/profile">ตั้งค่าโปรไฟล์</a></li>
+                                <li><a class="dropdown-item" href="/profile">ตั้งค่าโปรไฟล์</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
@@ -635,7 +635,7 @@
                     <i class="fa fa-user"></i>
                     <span>{{ auth()->user()->name }}</span>
                 </div>
-                <a href="/settings/profile" class="mobile-nav-item" style="padding: 10px 0; border: none;">
+                <a href="/profile" class="mobile-nav-item" style="padding: 10px 0; border: none;">
                     <i class="fas fa-user-edit" style="width: 20px; margin-right: 10px;"></i>
                     ตั้งค่าโปรไฟล์
                 </a>

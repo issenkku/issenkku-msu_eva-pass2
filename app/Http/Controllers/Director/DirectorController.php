@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Director;
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DirectorController extends Controller
 {
@@ -48,6 +49,7 @@ class DirectorController extends Controller
                 // Get evaluator information from assignment_data
                 $assignment->setAttribute('evaluatorPosition', $assignment->assignmentData?->evaluatorPosition?->name ?? '-');
                 $assignment->setAttribute('evaluateeAssignedPosition', $assignment->assignmentData?->evaluateePosition?->name ?? '-');
+                $assignment->setAttribute('evaluatorName', $assignment->getEvaluatorUser()?->name ?? '-');
 
                 // Add time information
                 $assignment->setAttribute('startTime', $assignment->assignmentData?->start_time ?? null);
@@ -113,6 +115,36 @@ class DirectorController extends Controller
             return null;
         })->filter();
 
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+
+            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
+                $evaluateeName = $assignment->evaluateeUser?->name ?? '';
+                $evaluatorName = $assignment->getEvaluatorUser()?->name ?? '-';
+                $reportTitle   = $assignment->report?->reportData?->report_title ?? '';
+
+                return Str::contains(strtolower($evaluateeName), strtolower($searchTerm))
+                    || Str::contains(strtolower($reportTitle), strtolower($searchTerm))
+                    || Str::contains(strtolower($evaluatorName), strtolower($searchTerm));
+            });
+        }
+
+        $years = $evaluations->pluck('assignmentData.start_time')
+            ->filter()
+            ->map(function($dt) {
+                return \Carbon\Carbon::parse($dt)->year;
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        if ($request->filled('year')) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($request) {
+                $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+                return $year == $request->input('year');
+            });
+        }
+
         // Count status for ALL evaluations (Director sees everything)
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
@@ -140,6 +172,7 @@ class DirectorController extends Controller
             'userAsEvaluatee' => $userAsEvaluatee, // Director's evaluatee assignments
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data
+            'years' => $years
         ]);
     }
 }

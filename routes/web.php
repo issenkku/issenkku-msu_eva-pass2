@@ -45,8 +45,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/import/template', [UserController::class, 'downloadTemplate'])->name('import.template');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::post('/import', [UserController::class, 'import'])->name('import');
-        Route::put('/{user}', [UserController::class, 'update'])->name('update');
-        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
+        Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('assignment-data')->name('assignment-data.')->group(function () {

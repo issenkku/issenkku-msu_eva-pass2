@@ -28,6 +28,32 @@ class DashboardEvaluateeController extends Controller
             return $assignment;
         });
 
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
+                $evaluatorName = optional($assignment->evaluatorUser)->name ?? '';
+                $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
+                return str_contains(strtolower($evaluatorName), strtolower($searchTerm))
+                    || str_contains(strtolower($reportTitle), strtolower($searchTerm));
+            });
+        }
+
+        $years = $user->assignment->pluck('assignmentData.start_time')
+            ->filter()
+            ->map(function($dt) {
+                return \Carbon\Carbon::parse($dt)->year;
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        if ($request->filled('year')) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($request) {
+                $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+                return $year == $request->input('year');
+            });
+        }
+
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
             'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Assigned']),
@@ -42,7 +68,8 @@ class DashboardEvaluateeController extends Controller
         return view('evaluatee.dashboard', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $user->assignment,
+            'evaluations' => $evaluations,
+            'years' => $years,
         ]);
     }
 
@@ -166,6 +193,12 @@ class DashboardEvaluateeController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
+                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                        return [
+                                            'id' => $formula->id,
+                                            'condition' => $formula->condition,
+                                        ];
+                                    }),
                                     'sub_criterias' => [],
                                 ];
 
