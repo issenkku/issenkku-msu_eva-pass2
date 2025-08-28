@@ -114,7 +114,7 @@ class AssignmentDataController extends Controller
 
             DB::commit();
 
-            return redirect()->route('assignment-data.create')->with('success', 'สร้าง Assignment สำเร็จแล้ว');
+            return redirect()->route('assignment-data.index')->with('success', 'สร้าง Assignment สำเร็จแล้ว');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error storing assignment data', [
