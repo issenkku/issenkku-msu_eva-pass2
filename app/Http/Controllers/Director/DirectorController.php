@@ -121,7 +121,7 @@ class DirectorController extends Controller
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = $assignment->evaluateeUser?->name ?? '';
                 $evaluatorName = $assignment->getEvaluatorUser()?->name ?? '-';
-                $reportTitle   = $assignment->report?->reportData?->report_title ?? '';
+                $reportTitle = $assignment->report?->reportData?->report_title ?? '';
 
                 return Str::contains(strtolower($evaluateeName), strtolower($searchTerm))
                     || Str::contains(strtolower($reportTitle), strtolower($searchTerm))
@@ -131,7 +131,7 @@ class DirectorController extends Controller
 
         $years = $evaluations->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function($dt) {
+            ->map(function ($dt) {
                 return \Carbon\Carbon::parse($dt)->year;
             })
             ->unique()
@@ -141,6 +141,7 @@ class DirectorController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -172,7 +173,7 @@ class DirectorController extends Controller
             'userAsEvaluatee' => $userAsEvaluatee, // Director's evaluatee assignments
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data
-            'years' => $years
+            'years' => $years,
         ]);
     }
 }

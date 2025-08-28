@@ -33,6 +33,7 @@ class DashboardEvaluateeController extends Controller
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluatorName = optional($assignment->evaluatorUser)->name ?? '';
                 $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
+
                 return str_contains(strtolower($evaluatorName), strtolower($searchTerm))
                     || str_contains(strtolower($reportTitle), strtolower($searchTerm));
             });
@@ -40,7 +41,7 @@ class DashboardEvaluateeController extends Controller
 
         $years = $user->assignment->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function($dt) {
+            ->map(function ($dt) {
                 return \Carbon\Carbon::parse($dt)->year;
             })
             ->unique()
@@ -50,6 +51,7 @@ class DashboardEvaluateeController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -193,7 +195,7 @@ class DashboardEvaluateeController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                    'formulas' => $mainCriteria->formulas->map(function ($formula) {
                                         return [
                                             'id' => $formula->id,
                                             'condition' => $formula->condition,
@@ -243,7 +245,7 @@ class DashboardEvaluateeController extends Controller
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLinks = $evidenceMap[$list->id] ?? [];
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 

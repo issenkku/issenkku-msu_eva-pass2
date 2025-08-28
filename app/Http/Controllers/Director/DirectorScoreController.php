@@ -186,7 +186,7 @@ class DirectorScoreController extends Controller
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLinks = $evidenceMap[$list->id] ?? [];
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 

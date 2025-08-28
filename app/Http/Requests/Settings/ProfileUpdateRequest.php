@@ -34,6 +34,7 @@ class ProfileUpdateRequest extends FormRequest
             'bio' => 'nullable|string|max:1000',
             'portfolio' => 'nullable|string|max:2000',
             'profile_photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
+            'is_public_profile_enabled' => ['boolean'],
 
             // Password fields
             'current_password' => ['nullable', 'string', 'current_password'],

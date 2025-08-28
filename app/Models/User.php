@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -40,6 +41,8 @@ class User extends Authenticatable implements CanResetPassword
         'status',
         'position_id',
         'department_id',
+        'public_profile_uuid',
+        'is_public_profile_enabled',
     ];
 
     /**
@@ -60,7 +63,22 @@ class User extends Authenticatable implements CanResetPassword
     {
         return [
             'password' => 'hashed',
+            'is_public_profile_enabled' => 'boolean',
         ];
+    }
+
+    /**
+     * Boot method to generate UUID on creating
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->public_profile_uuid)) {
+                $user->public_profile_uuid = (string) Str::uuid();
+            }
+        });
     }
 
     public function getActivitylogOptions(): LogOptions
@@ -127,5 +145,30 @@ class User extends Authenticatable implements CanResetPassword
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new CustomResetPassword($token));
+    }
+
+    /**
+     * Generate UUID for public profile if not exists
+     */
+    public function generatePublicProfileUuid()
+    {
+        if (empty($this->public_profile_uuid)) {
+            $this->public_profile_uuid = (string) Str::uuid();
+            $this->save();
+        }
+
+        return $this->public_profile_uuid;
+    }
+
+    /**
+     * Get public profile URL
+     */
+    public function getPublicProfileUrlAttribute()
+    {
+        if (empty($this->public_profile_uuid)) {
+            $this->generatePublicProfileUuid();
+        }
+
+        return route('profile.public', $this->public_profile_uuid);
     }
 }
