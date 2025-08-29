@@ -19,13 +19,6 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pr-10 pl-10">
         <div class="grid grid-cols-1 md:grid-rows-2 gap-2">
             <x-summary-score
-                title="คะแนนเฉลี่ย"
-                :value="$averageScore"
-                subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
-                color="purple"
-            />
-
-            <x-summary-score
                 title="คะแนนสูงสุด"
                 :value="$highestScore"
                 subtitle="คะแนนสูงสุดทุกปีการประเมิน"
@@ -33,11 +26,23 @@
                 icon="fas fa-trophy"
                 iconSize="text-3xl"
             />
+
+            <x-summary-score
+                title="คะแนนเฉลี่ย"
+                :value="$averageScore"
+                subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
+                color="purple"
+            />
         </div>
+
+        <x-scatter-chart-component 
+            :scatter-data="$scatterData"
+            chart-id="myChart"
+            title="กราฟการกระจายตัวของคะแนน"
+        />
+
     </div>
 
-    
-    
     <!-- Evaluation Summary -->
     <x-evaluation-summary 
         :evaluations="$evaluations" 

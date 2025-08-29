@@ -74,7 +74,7 @@
                     // Quality
                     foreach($evalList['quality_items'] as $mainCriteria) {
                         foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                            $totalQualityScore += floatval($subCriteria['score'] ?? 0);
+                            $totalQualityScore += floatval($subCriteria['calculated_score'] ?? 0);
                         }
                     }
                 }

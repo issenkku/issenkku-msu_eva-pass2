@@ -395,7 +395,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.label}: ${context.raw} report(s)`;
+                                    return `${context.label}: ${context.raw} รายงาน`;
                                 }
                             }
                         }
@@ -586,7 +586,7 @@
         }
 
         function openReportDetails(reportId) {
-            window.open(`/dashboard/${reportId}`, '_blank') ;
+            window.open(`/dashboard-data/${reportId}`, '_blank') ;
         }
     </script>
 @endpush
