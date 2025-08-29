@@ -8,6 +8,8 @@ use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use Illuminate\Http\Request;
+use App\Services\ScoreService;
+use App\Services\GraphDataService;
 
 class DashboardEvaluateeController extends Controller
 {
@@ -27,6 +29,14 @@ class DashboardEvaluateeController extends Controller
 
             return $assignment;
         });
+
+        $userReports = $user->assignment->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $highestScore = ScoreService::calculateHighestScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -72,6 +82,9 @@ class DashboardEvaluateeController extends Controller
             'statusCounts' => $statusCounts,
             'evaluations' => $evaluations,
             'years' => $years,
+            'averageScore' => $averageScore,
+            'highestScore' => $highestScore,
+            'scatterData' => $scatterData,
         ]);
     }
 

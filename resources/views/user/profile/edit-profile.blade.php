@@ -205,12 +205,12 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-6 flex items-center justify-between">
-            {{-- <x-button 
+        <div class="mt-6 flex items-center gap-3">
+            <x-button 
                 type= defualt 
                 text="ย้อนกลับ" 
                 icon="fas fa-arrow-left"
-                href="{{ route('profile.show') }}" /> --}}
+                href="{{ route('profile.show') }}" /> 
             <x-button 
                 type="warning"
                 buttonType="submit" 

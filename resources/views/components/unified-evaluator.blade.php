@@ -66,6 +66,33 @@
                                             @endif
                                         </div>
 
+                                        @if(!empty($mainCriteria['formulas']) && count($mainCriteria['formulas']) > 0)
+                                            <div class="ml-6 mb-6">
+                                                <div class="p-4 bg-green-50 rounded-xl shadow-sm">
+                                                    <h4 class="text-lg font-semibold text-green-700 mb-3 flex items-center">
+                                                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
+                                                        </svg>
+                                                        สูตรการคำนวณ 
+                                                    </h4>
+
+                                                    <div class="space-y-3">
+                                                        @foreach($mainCriteria['formulas'] as $formula)
+                                                            @if(!empty($formula['condition']))
+                                                                <div class="p-4 bg-white border border-green-200 rounded-lg text-center">
+                                                                    <span class="text-sm md:text-lg font-medium text-gray-800 block">
+                                                                        {{ $formula['condition'] }}
+                                                                    </span>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         {{-- Quantity Sub Criteria --}}
                                         <div class="space-y-3 ml-6 mb-6">
                                             @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)

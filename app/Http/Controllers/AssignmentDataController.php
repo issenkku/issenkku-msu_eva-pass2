@@ -77,11 +77,6 @@ class AssignmentDataController extends Controller
                 'end_time' => $request->end_time,
             ]);
 
-            $report = Reports::create([
-                'report_data_id' => $request->report_data_id,
-                'status' => 'Assigned',
-            ]);
-
             // ดึงผู้ใช้จากตำแหน่งที่เลือก
             $evaluateePosition = Positions::find($request->evaluatees);
             $evaluatorPosition = Positions::find($request->evaluators);
@@ -102,6 +97,11 @@ class AssignmentDataController extends Controller
 
             // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งนี้
             foreach ($evaluateeUsers as $evaluateeUser) {
+                $report = Reports::create([
+                    'report_data_id' => $request->report_data_id,
+                    'status' => 'Assigned',
+                ]);
+
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,

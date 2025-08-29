@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\ScoreService;
+use App\Services\GraphDataService;  
 
 class DashboardController extends Controller
 {
@@ -86,13 +88,13 @@ class DashboardController extends Controller
         // $totalParticipants = $reportsQuery->distinct('evaluatees.id')->count('evaluatees.id');
 
         // Calculate average score
-        $averageScore = $this->calculateAverageScore($reportsQuery->get());
+        $averageScore = ScoreService::calculateAverageScore($reportsQuery->get());
 
         // Status Chart (Bar Chart)
-        $statusCounts = $this->statusCounts($reportsQuery->get());
+        $statusCounts = GraphDataService::statusCounts($reportsQuery->get());
 
         // Score Distribution Chart (Scatter Plot)
-        $scatterData = $this->scatterData($reportsQuery->get());
+        $scatterData = GraphDataService::scatterData($reportsQuery->get());
 
         // Get reports with scores
         $reportsWithScores = $this->reportsWithScores($reportsQuery->get());
@@ -123,218 +125,6 @@ class DashboardController extends Controller
         //     'reports' => $reportsWithScores,
         //     'evaluationPeriod' => $evaluationPeriod,
         // ]);
-    }
-
-    private function calculateAverageScore($reports)
-    {
-        if ($reports->isEmpty()) {
-            return 0;
-        }
-
-        $totalScore = 0;
-        $reportCount = 0;
-
-        foreach ($reports as $report) {
-            $quantityScore = QuantityScore::where('report_id', $report->report_id)
-                ->sum('score_D') ?? 0;
-
-            $qualityData = DB::table('quality_scores')
-                ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                ->join('reports', 'quality_scores.report_id', '=', 'reports.id')
-                ->select(
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.id as quality_main_criteria_id',
-                    'quality_main_criterias.ratio',
-                    'evaluation_lists.sum_score',
-                    'reports.id as report_id',
-                )
-                ->where('quality_scores.report_id', $report->report_id)
-                ->groupBy(
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_main_criterias.id',
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.ratio',
-                    'reports.id',
-                    'evaluation_lists.sum_score'
-
-                )
-                ->get();
-
-            $groupedMainCriterias = [];
-            foreach ($qualityData as $subCriteria) {
-                $evalListId = $subCriteria->evaluation_list_id;
-                $mainCriteriaId = $subCriteria->quality_main_criteria_id;
-
-                if (! isset($groupedMainCriterias[$evalListId])) {
-                    $groupedMainCriterias[$evalListId] = [];
-                }
-                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
-                    $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
-                }
-
-                $groupedMainCriterias[$evalListId][$mainCriteriaId][] = $subCriteria;
-            }
-            // Process the grouped data
-            $arrScoreEva = [];
-            foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
-                foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
-                    $ratio = (float) $subCriterias[0]->ratio;
-                    $SumMaxScoreSub = [];
-                    $SumAccScoreSub = [];
-                    foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
-                        $score = round((float) $subCriteria->score, 2);
-                        if ($maxScorePerSub > 0) {
-                            $SumMaxScoreSub[] = $maxScorePerSub;
-                            $SumAccScoreSub[] = $score;
-                        }
-                    }
-                    $maxSum = array_sum($SumMaxScoreSub);
-                    $accSum = array_sum($SumAccScoreSub);
-                    $scoreRatioMain = 0;
-                    if ($maxSum > 0) {
-                        $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                    }
-                    $arrScoreEva[] = ($scoreRatioMain / 100) * $sum_score_Eva;
-                }
-            }
-            $qualityScore = array_sum($arrScoreEva);
-
-            $totalScore += ($quantityScore + $qualityScore);
-            $reportCount++;
-        }
-
-        return round($totalScore / $reportCount, 2);
-    }
-
-    private function statusCounts($reports)
-    {
-        $statusCounts = [
-            'Assigned' => 0,
-            'Draft' => 0,
-            'Pending' => 0,
-            'Completed' => 0,
-        ];
-
-        foreach ($reports as $report) {
-            switch ($report->report_status) {
-                case 'Assigned':
-                    $statusCounts['Assigned']++;
-                    break;
-                case 'Draft':
-                    $statusCounts['Draft']++;
-                    break;
-                case 'Pending':
-                    $statusCounts['Pending']++;
-                    break;
-                case 'Completed':
-                    $statusCounts['Completed']++;
-                    break;
-            }
-        }
-
-        return $statusCounts;
-    }
-
-    private function scatterData($reports)
-    {
-        $scatterData = [];
-
-        if ($reports->isEmpty()) {
-            return $scatterData;
-        }
-
-        $i = 1;
-        foreach ($reports as $report) {
-            $quantityScore = QuantityScore::where('report_id', $report->report_id)
-                ->sum('score_D') ?? 0;
-
-            $qualityData = DB::table('quality_scores')
-                ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                ->join('reports', 'quality_scores.report_id', '=', 'reports.id')
-                ->select(
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.id as quality_main_criteria_id',
-                    'quality_main_criterias.ratio',
-                    'evaluation_lists.sum_score',
-                    'reports.id as report_id',
-                )
-                ->where('quality_scores.report_id', $report->report_id)
-                ->groupBy(
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_main_criterias.id',
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.ratio',
-                    'reports.id',
-                    'evaluation_lists.sum_score'
-                )
-                ->get();
-
-            $groupedMainCriterias = [];
-            foreach ($qualityData as $subCriteria) {
-                $evalListId = $subCriteria->evaluation_list_id;
-                $mainCriteriaId = $subCriteria->quality_main_criteria_id;
-
-                if (! isset($groupedMainCriterias[$evalListId])) {
-                    $groupedMainCriterias[$evalListId] = [];
-                }
-                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
-                    $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
-                }
-
-                $groupedMainCriterias[$evalListId][$mainCriteriaId][] = $subCriteria;
-            }
-
-            $arrScoreEva = [];
-            foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
-                foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
-                    $ratio = (float) $subCriterias[0]->ratio;
-                    $SumMaxScoreSub = [];
-                    $SumAccScoreSub = [];
-                    foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
-                        $score = round((float) $subCriteria->score, 2);
-                        if ($maxScorePerSub > 0) {
-                            $SumMaxScoreSub[] = $maxScorePerSub;
-                            $SumAccScoreSub[] = $score;
-                        }
-                    }
-                    $maxSum = array_sum($SumMaxScoreSub);
-                    $accSum = array_sum($SumAccScoreSub);
-                    $scoreRatioMain = 0;
-                    if ($maxSum > 0) {
-                        $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                    }
-                    $arrScoreEva[] = ($scoreRatioMain / 100) * $sum_score_Eva;
-                }
-            }
-            $qualityScore = array_sum($arrScoreEva);
-
-            $totalScore = ($quantityScore + $qualityScore);
-
-            $scatterData[] = [
-                'x' => $i++,
-                'y' => round($totalScore, 2),
-            ];
-        }
-
-        return $scatterData;
     }
 
     private function reportsWithScores($reports)
