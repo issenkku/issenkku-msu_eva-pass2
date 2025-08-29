@@ -7,9 +7,9 @@ use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
-use Illuminate\Http\Request;
-use App\Services\ScoreService;
 use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Illuminate\Http\Request;
 
 class DashboardEvaluateeController extends Controller
 {

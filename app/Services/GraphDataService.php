@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\QuantityScore;
@@ -21,7 +22,7 @@ class GraphDataService
             if (($report->status ?? $report->report_status ?? null) !== 'Completed') {
                 continue;
             }
-            
+
             $quantityScore = QuantityScore::where('report_id', $reportId)->sum('score_D') ?? 0;
 
             $qualityData = DB::table('quality_scores')
@@ -99,7 +100,7 @@ class GraphDataService
                 'x' => $i++,
                 'y' => round($totalScore, 2),
                 'quantity' => round($quantityScore, 2),
-                'quality'  => round($qualityScore, 2),
+                'quality' => round($qualityScore, 2),
             ];
         }
 
@@ -119,7 +120,7 @@ class GraphDataService
             $status = $report->report_status;
 
             if (in_array($status, [
-                'Assigned'
+                'Assigned',
             ])) {
                 $statusCounts['Assigned']++;
             } elseif (in_array($status, [
@@ -132,7 +133,7 @@ class GraphDataService
                 'Director_assigned',
                 'Director_draft',
                 'Manager_assign',
-                'Manager_draft'
+                'Manager_draft',
             ])) {
                 $statusCounts['Pending']++;
             } elseif (in_array($status, [

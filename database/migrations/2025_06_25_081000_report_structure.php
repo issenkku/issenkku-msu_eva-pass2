@@ -78,6 +78,7 @@ return new class extends Migration
             $table->string('name');
             $table->integer('sequence');
             $table->decimal('num_score', 5, 2);
+            $table->text('description')->nullable();
             $table->foreignId('quality_main_criteria_id')->constrained('quality_main_criterias')->onDelete('cascade');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');
             $table->foreignId('evaluation_list_id')->constrained('evaluation_lists')->onDelete('cascade');

@@ -145,7 +145,7 @@ class EvaluatorScoreController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                    'formulas' => $mainCriteria->formulas->map(function ($formula) {
                                         return [
                                             'id' => $formula->id,
                                             'condition' => $formula->condition,
@@ -203,6 +203,7 @@ class EvaluatorScoreController extends Controller
                                         'id' => $subCriteria->id,
                                         'name' => $subCriteria->name,
                                         'sequence' => $subCriteria->sequence,
+                                        'description' => $subCriteria->description ?? null,
                                         'num_score' => $subCriteria->num_score,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',

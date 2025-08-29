@@ -223,6 +223,7 @@ class EvaluatorController extends Controller
                 'qs.name as sub_name',
                 'qs.sequence as sub_sequence',
                 'qs.num_score',
+                'qs.description',
                 'qscore.score as filled_score',
                 'eanswer.link as evidence_link'
             )
@@ -250,6 +251,7 @@ class EvaluatorController extends Controller
                 $query->orderBy('sequence')->with([
                     'quantitySubCriterias.mainCriteria:id,name,tooltips',
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    'qualitySubCriterias:id,name,sequence,num_score,description,quality_main_criteria_id,criteria_version_id,evaluation_list_id',
                 ]);
             },
         ])
@@ -289,6 +291,7 @@ class EvaluatorController extends Controller
                     if ($data) {
                         $sub->filled_score = $data->filled_score;
                         $sub->evidence_link = $data->evidence_link;
+                        $sub->description = $data->description;
                     }
                 }
             }

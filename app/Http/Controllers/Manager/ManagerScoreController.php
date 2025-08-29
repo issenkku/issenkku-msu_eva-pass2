@@ -143,7 +143,7 @@ class ManagerScoreController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                    'formulas' => $mainCriteria->formulas->map(function ($formula) {
                                         return [
                                             'id' => $formula->id,
                                             'condition' => $formula->condition,

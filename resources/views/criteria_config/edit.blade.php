@@ -312,7 +312,7 @@
                                                         </svg>
                                                     </button>
                                                 </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
                                                         <span name="qual_sub_sequence" class="qual_sub_sequence text-gray-700 font-medium text-lg">1</span>
@@ -325,6 +325,12 @@
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">คะแนนสูงสุด <span class="text-red-500">*</span></label>
                                                         <input type="number" name="num_score" class="num_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนนสูงสุด">
                                                     </div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="block text-sm font-medium text-gray-600 mb-2">คำอธิบาย</label>
+                                                    <textarea name="qual_sub_description" rows="6" id="qual_sub_description_1"
+                                                        class="qual_sub_description richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
+                                                        placeholder="ใส่คำอธิบายการให้คะแนน"></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -403,44 +409,92 @@
         // Clean up all existing Summernote instances
         function cleanupSummernote() {
             $('.richtext-editor').each(function() {
-                if ($(this).hasClass('note-editor')) {
-                    $(this).summernote('destroy');
+                if ($(this).summernote && typeof $(this).summernote === 'function') {
+                    try {
+                        // Check if summernote is initialized
+                        if ($(this).next('.note-editor').length > 0) {
+                            $(this).summernote('destroy');
+                        }
+                    } catch (e) {
+                        console.log('Error destroying summernote:', e);
+                    }
                 }
+                
+                // Remove any leftover Summernote DOM elements
+                $(this).next('.note-editor').remove();
+                
                 // Reset any Summernote classes and attributes
                 $(this).removeClass('note-editor note-frame note-editable');
                 $(this).removeAttr('style');
+                $(this).show(); // Make sure textarea is visible
             });
         }
 
         // Initialize Summernote for rich text editors
-        function initializeSummernote() {
-            // First clean up any existing instances
-            cleanupSummernote();
+        function initializeSummernote(container = null) {
+            // If container is provided, only initialize editors in that container
+            const targetSelector = container ? $(container).find('.richtext-editor') : $('.richtext-editor');
             
-            $('.richtext-editor').each(function() {
-                // Check if Summernote is already initialized
-                if (!$(this).hasClass('note-editor')) {
-                    $(this).summernote({
-                        height: 250,
-                        toolbar: [
-                            ['style', ['style']],
-                            ['font', ['bold', 'italic', 'underline', 'clear']],
-                            ['color', ['color']],
-                            ['para', ['ul', 'ol', 'paragraph']],
-                            ['table', ['table']],
-                            ['insert', ['link', 'hr']],
-                            ['view', ['fullscreen', 'codeview', 'help']]
-                        ],
-                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
-                        lang: 'th-TH',
-                        callbacks: {
-                            onInit: function() {
-                                // Ensure content is loaded properly
-                            }
+            // Clean up existing instances in the target area
+            if (container) {
+                $(container).find('.richtext-editor').each(function() {
+                    const $editor = $(this);
+                    try {
+                        if ($editor.hasClass('note-editor') || $editor.next('.note-editor').length > 0) {
+                            $editor.summernote('destroy');
                         }
-                    });
-                }
-            });
+                    } catch (e) {
+                        // Ignore errors during cleanup
+                    }
+                });
+            } else {
+                cleanupSummernote();
+            }
+            
+            // Wait a moment for cleanup to complete
+            setTimeout(() => {
+                targetSelector.each(function() {
+                    const $editor = $(this);
+                    let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
+                    
+                    // Use specific placeholder for quality sub criteria description
+                    if ($editor.hasClass('qual_sub_description') || 
+                        $editor.attr('name')?.includes('qual_sub_description')) {
+                        placeholder = 'ใส่คำอธิบายการให้คะแนน';
+                    }
+                    
+                    // Double check that summernote is not already initialized
+                    if ($editor.next('.note-editor').length === 0 && !$editor.hasClass('note-editor')) {
+                        try {
+                            $editor.summernote({
+                                height: 250,
+                                toolbar: [
+                                    ['style', ['style']],
+                                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                                    ['color', ['color']],
+                                    ['para', ['ul', 'ol', 'paragraph']],
+                                    ['table', ['table']],
+                                    ['insert', ['link', 'hr']],
+                                    ['view', ['fullscreen', 'codeview', 'help']]
+                                ],
+                                placeholder: placeholder,
+                                lang: 'th-TH',
+                                callbacks: {
+                                    onInit: function() {
+                                        // Ensure content is loaded properly
+                                        console.log('Summernote initialized for:', $editor.attr('class'));
+                                    },
+                                    onChange: function(contents, $editable) {
+                                        $editor.val(contents);
+                                    }
+                                }
+                            });
+                        } catch (e) {
+                            console.error('Error initializing summernote:', e);
+                        }
+                    }
+                });
+            }, 100);
         }
 
         // Initialize Summernote when document is ready
@@ -518,23 +572,22 @@
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
             
-            // Destroy Summernote instances from cloned node and reinitialize
+            // Properly handle Summernote instances in cloned node
             $(node).find('.richtext-editor').each(function() {
                 const $editor = $(this);
                 
-                // If Summernote is initialized, destroy it
-                if ($editor.hasClass('note-editor')) {
-                    $editor.summernote('destroy');
-                }
+                // Remove any existing Summernote DOM elements
+                $editor.next('.note-editor').remove();
                 
                 // Generate new unique ID for cloned editor
                 const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 this.id = newId;
                 this.value = ''; // Clear content
                 
-                // Remove any Summernote-related classes
+                // Remove any Summernote-related classes and reset styles
                 $editor.removeClass('note-editor note-frame note-editable');
                 $editor.removeAttr('style');
+                $editor.show(); // Ensure textarea is visible
             });
             
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
@@ -812,6 +865,10 @@
             const newBlock = cloneAndClear('.qual_sub_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
+            
+            // Initialize Summernote for new rich text editors in the new block
+            initializeSummernote(newBlock);
+            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -833,6 +890,11 @@
                 if (data.data) {
                     originalData = data.data;
                     populateForm(data.data);
+                    
+                    // Initialize Summernote for all rich text editors after populating data
+                    setTimeout(() => {
+                        initializeSummernote();
+                    }, 500);
                 } else {
                     showError('ไม่พบข้อมูลเวอร์ชัน');
                 }
@@ -879,10 +941,11 @@
             updateSequences();
             updateButtonStates('.category_block:not([style*="display: none"])', '.move_category_up_btn', '.move_category_down_btn');
             
-            // Initialize Summernote after all data is populated
+            // Initialize Summernote after all data is populated and DOM is ready
             setTimeout(function() {
+                console.log('Initializing Summernote after data population...');
                 initializeSummernote();
-            }, 1000);
+            }, 1500); // Increased timeout to ensure all DOM manipulation is complete
         }
 
         function createCategoryFromData(categoryData) {
@@ -1008,6 +1071,11 @@
                         const subBlock = subBlockTemplate.cloneNode(true);
                         subBlock.querySelector('.qual_sub_name').value = subData.name || '';
                         subBlock.querySelector('.num_score').value = subData.num_score || '';
+                        
+                        // Handle description with potential HTML content
+                        const descTextarea = subBlock.querySelector('.qual_sub_description');
+                        descTextarea.value = subData.description || '';
+                        
                         subContainer.appendChild(subBlock);
                     });
                 } else {
@@ -1234,6 +1302,11 @@
                             qualBlock.querySelectorAll('.qual_sub_criteria_block').forEach((subBlock, subIndex) => {
                                 const subName = subBlock.querySelector('.qual_sub_name').value.trim();
                                 const numScore = subBlock.querySelector('.num_score').value;
+                                // Get content from Summernote editor if available, otherwise from textarea
+                                const descriptionTextarea = subBlock.querySelector('.qual_sub_description');
+                                const subDescription = $(descriptionTextarea).hasClass('note-editor')
+                                    ? $(descriptionTextarea).summernote('code') 
+                                    : descriptionTextarea.value.trim() || '';
 
                                 if (!subName || !numScore) {
                                     throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพย่อยที่ ${subIndex + 1}`);
@@ -1242,7 +1315,8 @@
                                 qualMain.quality_sub_criterias.push({
                                     name: subName,
                                     sequence: subIndex + 1,
-                                    num_score: parseFloat(numScore)
+                                    num_score: parseFloat(numScore),
+                                    description: subDescription
                                 });
                             });
 

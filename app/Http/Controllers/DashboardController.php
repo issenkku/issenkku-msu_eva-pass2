@@ -9,12 +9,12 @@ use App\Models\Department;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;  
 
 class DashboardController extends Controller
 {
