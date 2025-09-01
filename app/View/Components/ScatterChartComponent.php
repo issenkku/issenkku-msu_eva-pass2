@@ -19,18 +19,19 @@ class ScatterChartComponent extends Component
     public $showDownload;
 
     public $customOptions;
-
+    public $scatterData;
+    
     public function __construct(
         $chartId = 'scatterChart',
         $title = 'การกระจายตัวของคะแนน',
-        $data = [],
+        $scatterData = [],
         $height = 'h-80',
         $showDownload = true,
         $customOptions = []
     ) {
         $this->chartId = $chartId;
         $this->title = $title;
-        $this->data = $data;
+        $this->scatterData = $scatterData;
         $this->height = $height;
         $this->showDownload = $showDownload;
         $this->customOptions = $customOptions;

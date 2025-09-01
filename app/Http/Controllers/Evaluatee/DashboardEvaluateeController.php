@@ -77,6 +77,8 @@ class DashboardEvaluateeController extends Controller
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
+        // dd($scatterData);
+
         return view('evaluatee.dashboard', [
             'user' => $user,
             'statusCounts' => $statusCounts,
@@ -248,10 +250,29 @@ class DashboardEvaluateeController extends Controller
                             $mainCriteria = $subCriterias->first()->mainCriteria;
 
                             if ($mainCriteria) {
+                                $totalScore = 0;
+                                $totalMaxScore = 0;
+
+                                foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
+                                    $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                                    if ($qualityScore && $qualityScore->score !== null && $qualityScore->score !== '') {
+                                        $totalScore += (float) $qualityScore->score;
+                                    }
+                                    $totalMaxScore += (float) $subCriteria->num_score;
+                                }
+                                
+                                // Calculate main criteria calculated score using arrScoreEva logic
+                                $mainCalculatedScore = 0;
+                                if ($totalMaxScore > 0) {
+                                    $scoreRatioMain = $mainCriteria->ratio * ($totalScore / $totalMaxScore);
+                                    $mainCalculatedScore = ($scoreRatioMain / 100) * $list->sum_score;
+                                }
+                                
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
+                                    'main_calculated_score' => round($mainCalculatedScore, 2),
                                     'sub_criterias' => [],
                                 ];
 
@@ -262,6 +283,12 @@ class DashboardEvaluateeController extends Controller
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
+                                    $calculatedScore = null;
+                                    if ($hasScore && $totalMaxScore > 0) {
+                                        $subRatio = $subCriteria->num_score / $totalMaxScore;
+                                        $calculatedScore = round($mainCalculatedScore * $subRatio, 2);
+                                    }
+
                                     $mainCriteriaData['sub_criterias'][] = [
                                         'id' => $subCriteria->id,
                                         'name' => $subCriteria->name,
@@ -269,6 +296,7 @@ class DashboardEvaluateeController extends Controller
                                         'num_score' => $subCriteria->num_score,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',
+                                        'calculated_score' => $calculatedScore,
                                         'evidence' => $evidenceLinks,
                                     ];
                                 }

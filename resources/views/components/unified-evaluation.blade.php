@@ -111,7 +111,7 @@
                                                                         ค่าน้ำหนักคะแนนที่ได้
                                                                     </label>
                                                                     <div class="text-base text-gray-800 p-2 rounded border text-center">
-                                                                        {{ $subCriteria['score_d'] ?: '0' }}
+                                                                        {{ $subCriteria['score_d'] ?: '0.00' }}
                                                                     </div>
                                                                 </div>
                                                             @else
@@ -211,15 +211,13 @@
                                                         </div>
                                                         {{-- Score (readonly, only when completed) --}}
                                                         @if($readonly && isset($report->status) && $report->status === 'Completed')
-                                                            <div class="w-full md:w-40">
-                                                                <input 
-                                                                    type="number" step="0.01" min="0" 
-                                                                    max="{{ $subCriteria['num_score'] }}"
-                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
-                                                                    value="{{ $subCriteria['score'] ?? '' }}"
-                                                                    readonly
-                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
-                                                                    placeholder="ไม่มีคะแนน">
+                                                            <div class="w-full md:w-60">
+                                                                <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center">
+                                                                    ค่าคะแนนตามสัดส่วน
+                                                                </label>
+                                                                <div class="text-base text-gray-800 p-2 rounded border text-center">
+                                                                        {{ $subCriteria['calculated_score'] ?: '0.00' }}
+                                                                </div>
                                                             </div>
                                                         @endif
                                                         {{-- Hidden Score Input for edit mode --}}

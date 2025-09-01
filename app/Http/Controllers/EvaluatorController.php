@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use App\Services\ScoreService;
+use App\Services\GraphDataService;
 
 class EvaluatorController extends Controller
 {
@@ -51,6 +53,16 @@ class EvaluatorController extends Controller
 
             return $assignment;
         });
+
+        $userReports = $sameDepartmentAssignments->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $chartData = GraphDataService::statusCounts($userReports);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -93,11 +105,27 @@ class EvaluatorController extends Controller
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
+        $totalEvaluations = $evaluations->count();
+
+        // dd($chartData);
+
+        $totalEvaluatees = $evaluations
+            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->groupBy('evaluateeUser.id')
+            ->count();
+
         return view('evaluator_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
             'evaluations' => $evaluations, // Only same-department evaluations
             'years' => $years,
+            'averageScore' => $averageScore,
+            'scatterData' => $scatterData,
+            'chartData' => $chartData,
+            'totalEvaluations' => $totalEvaluations,
+            'totalEvaluatees' => $totalEvaluatees,
+            'statusLabels' => $statusLabels,
+            'statusColors' => $statusColors,
         ]);
     }
 
