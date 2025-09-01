@@ -212,11 +212,8 @@
                                                         {{-- Score (readonly, only when completed) --}}
                                                         @if($readonly && isset($report->status) && $report->status === 'Completed')
                                                             <div class="w-full md:w-60">
-                                                                <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center">
-                                                                    ค่าคะแนนตามสัดส่วน
-                                                                </label>
                                                                 <div class="text-base text-gray-800 p-2 rounded border text-center">
-                                                                        {{ $subCriteria['calculated_score'] ?: '0.00' }}
+                                                                        {{ $subCriteria['score'] ?: '0.00' }}
                                                                 </div>
                                                             </div>
                                                         @endif
@@ -236,6 +233,12 @@
                                                     </div>
                                                 </div>
                                             @endforeach
+                                        @if($readonly)
+                                            <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
+                                                <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
+                                            </div>
+                                        @endif
                                         </div>
                                     @endforeach
                                 </div>

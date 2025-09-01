@@ -19,11 +19,27 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const {{ $chartId }}_dataObj = @json($data ?? []);
-    const {{ $chartId }}_labels = Object.keys({{ $chartId }}_dataObj);
-    const {{ $chartId }}_data = Object.values({{ $chartId }}_dataObj);
+    // Now we use the processed data from the component
+    const {{ $chartId }}_labels = @json($chartLabels);
+    const {{ $chartId }}_data = @json($chartData);
     const {{ $chartId }}_colors = @json($colors);
-    const {{ $chartId }}_ctx = document.getElementById('{{ $chartId }}').getContext('2d');
+    
+    // Debugging - you can remove these later
+    console.log('Chart ID: {{ $chartId }}');
+    console.log('Labels:', {{ $chartId }}_labels);
+    console.log('Data:', {{ $chartId }}_data);
+    
+    const {{ $chartId }}_ctx = document.getElementById('{{ $chartId }}');
+    
+    if (!{{ $chartId }}_ctx) {
+        console.error('Canvas element not found: {{ $chartId }}');
+        return;
+    }
+
+    if (!{{ $chartId }}_data || {{ $chartId }}_data.length === 0) {
+        console.error('No data provided for chart: {{ $chartId }}');
+        return;
+    }
 
     const {{ $chartId }}_chart = new Chart({{ $chartId }}_ctx, {
         type: 'bar',

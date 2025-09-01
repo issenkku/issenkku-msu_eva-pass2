@@ -8,9 +8,6 @@ use Illuminate\View\Component;
 
 class BarChart extends Component
 {
-    /**
-     * Create a new component instance.
-     */
     public $chartId;
     public $title;
     public $data;
@@ -19,6 +16,8 @@ class BarChart extends Component
     public $height;
     public $downloadable;
     public $chartOptions;
+    public $chartLabels; // Add this
+    public $chartData;   // Add this
 
     public function __construct(
         $chartId,
@@ -38,6 +37,27 @@ class BarChart extends Component
         $this->height = $height;
         $this->downloadable = $downloadable;
         $this->chartOptions = $chartOptions;
+        
+        // Process the data and labels
+        $this->processChartData();
+    }
+
+    private function processChartData()
+    {
+        // If labels are provided, use them with data array
+        if (!empty($this->labels)) {
+            $this->chartLabels = $this->labels;
+            $this->chartData = is_array($this->data) ? $this->data : [];
+        } else {
+            // If no labels, assume data is associative array
+            if (is_array($this->data)) {
+                $this->chartLabels = array_keys($this->data);
+                $this->chartData = array_values($this->data);
+            } else {
+                $this->chartLabels = [];
+                $this->chartData = [];
+            }
+        }
     }
 
     private function getDefaultColors()

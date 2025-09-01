@@ -60,7 +60,8 @@ class EvaluatorController extends Controller
 
         $averageScore = ScoreService::calculateAverageScore($userReports);
         $scatterData = GraphDataService::scatterData($userReports);
-        $chartData = GraphDataService::statusCounts($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
         $statusLabels = GraphDataService::getStatusLabels();
         $statusColors = GraphDataService::getStatusColors();
 
