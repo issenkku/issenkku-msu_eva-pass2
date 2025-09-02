@@ -96,6 +96,46 @@ class EvaluatorScoreController extends Controller
             return [$evalListId => $items->pluck('link')->filter()->values()->toArray()];
         });
 
+        // ✅ Calculate arrScoreEva (same logic as scatterData)
+        $qualityData = DB::table('quality_scores')
+            ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
+            ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
+            ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
+            ->where('quality_scores.report_id', $id)
+            ->selectRaw('
+                quality_sub_criterias.evaluation_list_id,
+                quality_main_criterias.id as main_id,
+                quality_main_criterias.ratio,
+                evaluation_lists.sum_score,
+                SUM(quality_scores.score) as total_score,
+                SUM(quality_sub_criterias.num_score) as total_max_score
+            ')
+            ->groupBy(
+                'quality_sub_criterias.evaluation_list_id',
+                'quality_main_criterias.id',
+                'quality_main_criterias.ratio',
+                'evaluation_lists.sum_score'
+            )
+            ->get();
+
+        // ✅ Build arrScoreEva lookup array
+        $arrScoreEva = [];
+        foreach ($qualityData as $row) {
+            $maxSum = (float) $row->total_max_score;
+            $accSum = (float) $row->total_score;
+            $ratio = (float) $row->ratio;
+            $sumScoreEva = (float) $row->sum_score;
+
+            if ($maxSum > 0) {
+                $scoreRatioMain = $ratio * ($accSum / $maxSum);
+                $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
+                
+                // Store with composite key for lookup
+                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $arrScoreEva[$key] = $calculatedScore;
+            }
+        }
+
         $canEdit = in_array($report->status, ['Pending', 'Evaluator_draft']);
         $readonly = ! $canEdit; // true if status is something else
 
@@ -177,7 +217,7 @@ class EvaluatorScoreController extends Controller
                         }
                     }
 
-                    // Process quality items for this evaluation list
+                    // ✅ Process quality items for this evaluation list (FIXED)
                     if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
                         $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
 
@@ -185,12 +225,29 @@ class EvaluatorScoreController extends Controller
                             $mainCriteria = $subCriterias->first()->mainCriteria;
 
                             if ($mainCriteria) {
+                                // ✅ Get the correct calculated score from arrScoreEva
+                                $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                                $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
+
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
+                                    'ratio' => $mainCriteria->ratio,
+                                    'main_calculated_score' => round($mainCalculatedScore, 2),
                                     'sub_criterias' => [],
                                 ];
+
+                                // Calculate totals for sub-criteria distribution
+                                $totalScore = 0;
+                                $totalMaxScore = 0;
+                                foreach ($subCriterias as $subCriteria) {
+                                    $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                                    if ($qualityScore && $qualityScore->score !== null && $qualityScore->score !== '') {
+                                        $totalScore += (float) $qualityScore->score;
+                                    }
+                                    $totalMaxScore += (float) $subCriteria->num_score;
+                                }
 
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
@@ -198,6 +255,13 @@ class EvaluatorScoreController extends Controller
 
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
+
+                                    // ✅ Calculate sub-criteria's portion of the main calculated score
+                                    $calculatedScore = null;
+                                    if ($hasScore && $totalMaxScore > 0) {
+                                        $subRatio = $subCriteria->num_score / $totalMaxScore;
+                                        $calculatedScore = round($mainCalculatedScore * $subRatio, 2);
+                                    }
 
                                     $mainCriteriaData['sub_criterias'][] = [
                                         'id' => $subCriteria->id,
@@ -207,6 +271,7 @@ class EvaluatorScoreController extends Controller
                                         'num_score' => $subCriteria->num_score,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',
+                                        'calculated_score' => $calculatedScore,
                                         'evidence' => $evidenceLinks,
                                     ];
                                 }
@@ -226,6 +291,11 @@ class EvaluatorScoreController extends Controller
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('evaluator.evaluator.show', ['id' => $id, 'readonly' => 1]);
         }
+
+        // dd([
+        //     'arrScoreEva_keys' => array_keys($arrScoreEva), // Show all generated keys
+        //     'total_arrScoreEva_sum' => array_sum($arrScoreEva), // This should match quality score from scatterData
+        // ]);
 
         return view('evaluator_dashboard.evaluator', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',

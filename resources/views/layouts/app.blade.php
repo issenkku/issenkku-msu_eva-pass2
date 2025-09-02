@@ -490,7 +490,7 @@
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/director-dashboard">หน้าการประเมิน</a>
+                                <a class="nav-link text-white" href="/director-dashboard">หน้าการรับรอง</a>
                             </li>
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
@@ -585,7 +585,7 @@
                 @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                     <a href="/director-dashboard" class="mobile-nav-item">
                         <i class="fas fa-user-tie" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าการประเมิน
+                        หน้าการรับรอง
                     </a>
                 @endif
                 

@@ -57,10 +57,12 @@
 
                                     @foreach($evaluationList['quantity_items'] as $mainCriteria)
                                         {{-- Main Criteria Header --}}
-                                        <div class="mb-4 border-l-4 border-green-400 pl-4 py-2 bg-green-50">
-                                            <h4 class="text-base font-semibold text-gray-800">
-                                                {{ $mainCriteria['name'] }}
-                                            </h4>
+                                        <div class="mb-4 border-l-4 border-purple-400 pl-4 py-2 bg-purple-50">
+                                            <div class="flex flex-col gap-1 flex-1 lg:flex-row lg:items-center lg:gap-3">
+                                                <h4 class="text-base font-semibold text-gray-800">
+                                                    {{ $mainCriteria['name'] }}
+                                                </h4>
+                                            </div>
                                             @if(!empty($mainCriteria['tooltips']))
                                                 <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
@@ -210,10 +212,19 @@
 
                                     @foreach($evaluationList['quality_items'] as $mainCriteria)
                                         {{-- Main Criteria Header --}}
-                                        <div class="mb-4 border-l-4 border-purple-400 pl-4 py-2 bg-purple-50">
-                                            <h4 class="text-base font-semibold text-gray-800">
-                                                {{ $mainCriteria['name'] }}
-                                            </h4>
+                                        <div class="main-criteria mb-4 border-l-4 border-purple-400 pl-4 py-2 bg-purple-50"
+                                            data-ratio="{{ $mainCriteria['ratio'] }}"
+                                            data-sum-score="{{ $evaluationList['sum_score'] }}"
+                                            data-main-id="{{ $mainCriteria['id'] }}">
+                                            <div class="flex items-center space-x-3">
+                                                <h4 class="text-base font-semibold text-gray-800">
+                                                    {{ $mainCriteria['name'] }}
+                                                </h4>
+                                                <span class="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                    สัดส่วน {{ $mainCriteria['ratio'] }} %
+                                                </span>
+                                            </div>
+                                            
                                             @if(!empty($mainCriteria['tooltips']))
                                                 <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
@@ -280,6 +291,11 @@
 
                                                 </div>
                                             @endforeach
+                                        <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                            <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
+                                            <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
+                                        </div>
+
                                         </div>
                                     @endforeach
                                 </div>
@@ -348,54 +364,6 @@
             </div>
         </div>
     @endif
-
-    <!-- summary score -->
-     @php
-        $totalQuantityScore = 0;
-        $totalQualityScore = 0;
-
-        foreach($categoryItems as $category) {
-            foreach($category['evaluation_lists'] as $evalList) {
-                // Quantity
-                foreach($evalList['quantity_items'] as $mainCriteria) {
-                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                        $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
-                    }
-                }
-                // Quality
-                foreach($evalList['quality_items'] as $mainCriteria) {
-                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                        $totalQualityScore += floatval($subCriteria['score'] ?? 0);
-                    }
-                }
-            }
-        }
-        $totalScore = $totalQuantityScore + $totalQualityScore;
-    @endphp
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
-        <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-5a2 2 0 00-2-2h-1V7a4 4 0 10-8 0v5H9a2 2 0 00-2 2v5a2 2 0 002 2z"/>
-            </svg>
-            สรุปคะแนนรวม
-        </h3>
-
-        <div class="space-y-3 text-blue-800">
-            <div class="flex justify-between items-center">
-                <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
-                <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
-            </div>
-        </div>
-
-        <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-            <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
-        </div>
-    </div>
 </div>
 
 {{-- JavaScript for Quality Checkbox Handling --}}
@@ -423,9 +391,26 @@ function recalculateSummaryScores() {
 
     // Quality: sum all quality score inputs
     let qualitySum = 0;
-    document.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
-        let val = parseFloat(input.value);
-        if (!isNaN(val)) qualitySum += val;
+    document.querySelectorAll('.main-criteria').forEach(criteria => {
+        const ratio = parseFloat(criteria.dataset.ratio) || 0;
+        const sumScoreEva = parseFloat(criteria.dataset.sumScore) || 0;
+
+        let totalScore = 0;
+        let totalMaxScore = 0;
+
+        criteria.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
+            const max = parseFloat(input.getAttribute("max")) || 0;
+            const val = parseFloat(input.value) || 0;
+
+            totalScore += val;
+            totalMaxScore += max;
+        });
+
+        if (totalMaxScore > 0) {
+            const scoreRatioMain = ratio * (totalScore / totalMaxScore);
+            const mainCalculatedScore = (scoreRatioMain / 100) * sumScoreEva;
+            qualitySum += mainCalculatedScore;
+        }
     });
 
     // Update the summary fields

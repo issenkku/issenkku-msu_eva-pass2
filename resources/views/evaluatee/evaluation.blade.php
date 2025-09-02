@@ -73,9 +73,7 @@
                     }
                     // Quality
                     foreach($evalList['quality_items'] as $mainCriteria) {
-                        foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                            $totalQualityScore += floatval($subCriteria['calculated_score'] ?? 0);
-                        }
+                        $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
                     }
                 }
             }
@@ -95,17 +93,17 @@
                 <div class="space-y-3 text-blue-800">
                     <div class="flex justify-between items-center">
                         <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
-                        <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
+                        <span class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                        <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                        <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
                     </div>
                 </div>
 
                 <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-                    <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+                    <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
                 </div>
             </div>
     
