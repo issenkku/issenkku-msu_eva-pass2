@@ -1333,9 +1333,9 @@
                             const qualTooltips = $(tooltipsTextarea).hasClass('note-editor')
                                 ? $(tooltipsTextarea).summernote('code') 
                                 : tooltipsTextarea.value.trim();
-                            if (!qualName || !qualRatio || !qualTooltips) {
+                            if (!qualName || !qualRatio) {
                                 alert(
-                                    `กรุณากรอกชื่อเกณฑ์, สัดส่วน, และคำอธิบายสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    `กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                 );
                                 valid = false;
                                 return;

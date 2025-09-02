@@ -19,8 +19,9 @@ class ScatterChartComponent extends Component
     public $showDownload;
 
     public $customOptions;
+
     public $scatterData;
-    
+
     public function __construct(
         $chartId = 'scatterChart',
         $title = 'การกระจายตัวของคะแนน',

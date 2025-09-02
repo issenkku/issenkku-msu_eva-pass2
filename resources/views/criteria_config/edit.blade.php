@@ -1286,8 +1286,8 @@
                                         qualTooltips = tooltipsElement.value.trim();
                                     }
 
-                                    if (!qualName || !qualRatio || !qualTooltips) {
-                                        throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
+                                    if (!qualName || !qualRatio) {
+                                        throw new Error(`กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
                                     }
 
                                     const qualMain = {

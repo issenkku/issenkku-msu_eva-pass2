@@ -7,15 +7,15 @@ use App\Models\Category;
 use App\Models\QualityScore;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Debugbar;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Assuming you have installed Laravel Debugbar for debugging
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;
 
 class EvaluatorController extends Controller
 {
@@ -110,7 +110,7 @@ class EvaluatorController extends Controller
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 

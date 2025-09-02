@@ -71,8 +71,8 @@ class GraphDataService
             $totalScore = $quantityScore + $qualityScore;
 
             $scatterData[] = [
-                'x'        => $i++,
-                'y'        => round($totalScore, 2),
+                'x' => $i++,
+                'y' => round($totalScore, 2),
                 'quantity' => round($quantityScore, 2),
                 'quality' => round($qualityScore, 2),
             ];
@@ -126,7 +126,7 @@ class GraphDataService
             'rgba(251, 36, 36, 0.8)',   // มอบหมาย
             'rgba(59, 130, 246, 0.8)',  // เริ่มกรอกข้อมูล
             'rgba(251, 191, 36, 0.8)',  // อยู่ระหว่างการรับรอง
-            'rgba(16, 185, 129, 0.8)'   // เสร็จสิ้น
+            'rgba(16, 185, 129, 0.8)',   // เสร็จสิ้น
         ];
     }
 }

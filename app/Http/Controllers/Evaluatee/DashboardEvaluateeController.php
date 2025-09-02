@@ -260,14 +260,14 @@ class DashboardEvaluateeController extends Controller
                                     }
                                     $totalMaxScore += (float) $subCriteria->num_score;
                                 }
-                                
+
                                 // Calculate main criteria calculated score using arrScoreEva logic
                                 $mainCalculatedScore = 0;
                                 if ($totalMaxScore > 0) {
                                     $scoreRatioMain = $mainCriteria->ratio * ($totalScore / $totalMaxScore);
                                     $mainCalculatedScore = ($scoreRatioMain / 100) * $list->sum_score;
                                 }
-                                
+
                                 $mainCriteriaData = [
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
