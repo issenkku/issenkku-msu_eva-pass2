@@ -30,17 +30,11 @@ class EvaluatorController extends Controller
             'department',
         ]);
 
+        $startDate = $request->input('start_time');
+        $endDate = $request->input('end_time');
+
         // Only get assignments where evaluatee is from the same department
-        $sameDepartmentAssignments = $user->evaluatorAssignments()
-            ->whereHas('evaluateeUser', function ($query) use ($user) {
-                $query->where('department_id', $user->department_id);
-            })
-            ->with([
-                'evaluateeUser.department',
-                'assignmentData',
-                'report.reportData',
-            ])
-            ->get();
+        $sameDepartmentAssignments = $user->assignmentsForDashboard()->get();
 
         $evaluations = $sameDepartmentAssignments->map(function ($assignment) use ($user) {
             $assignment->evaluatorName = $user->name; // current user
@@ -53,17 +47,6 @@ class EvaluatorController extends Controller
 
             return $assignment;
         });
-
-        $userReports = $sameDepartmentAssignments->map(function ($assignment) {
-            return $assignment->report;
-        })->filter();
-
-        $averageScore = ScoreService::calculateAverageScore($userReports);
-        $scatterData = GraphDataService::scatterData($userReports);
-        $countData = GraphDataService::statusCounts($userReports);
-        $chartData = array_values($countData);
-        $statusLabels = GraphDataService::getStatusLabels();
-        $statusColors = GraphDataService::getStatusColors();
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -91,6 +74,20 @@ class EvaluatorController extends Controller
             });
         }
 
+        if ($startDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
+                $assignmentStart = optional($assignment->assignmentData)->start_time;
+                return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
+            });
+        }
+
+        if ($endDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
+                $assignmentEnd = optional($assignment->assignmentData)->end_time;
+                return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
+            });
+        }
+
         // Count status for filtered assignments only (same department only)
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
@@ -112,6 +109,17 @@ class EvaluatorController extends Controller
             ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
+
+        $userReports = $evaluations->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
 
         return view('evaluator_dashboard.index', [
             'user' => $user,

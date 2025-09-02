@@ -195,7 +195,13 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $assignment->evaluatorUser->name }}</td>
+                            <td class="p-4 border-b text-gray-500">
+                                @foreach($assignment->evaluatorUsers as $evaluator)
+                                    <span class="inline-block px-2 py-1 flex">
+                                        {{ $evaluator->name }}
+                                    </span>
+                                @endforeach
+                            </td>
 
                             <td class="p-4 border-b text-center min-w-[200px]">
                                 @php

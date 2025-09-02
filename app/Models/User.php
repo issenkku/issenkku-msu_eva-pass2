@@ -128,4 +128,20 @@ class User extends Authenticatable implements CanResetPassword
     {
         $this->notify(new CustomResetPassword($token));
     }
+
+    public function assignmentsForDashboard()
+    {
+        $query = $this->evaluatorAssignments()
+            ->with([
+                'evaluateeUser.department',
+                'assignmentData',
+                'report.reportData',
+            ])
+            ->whereHas('evaluateeUser', function ($q) {
+                $q->where('department_id', $this->department_id);
+            });
+
+        return $query;
+    }
+
 }

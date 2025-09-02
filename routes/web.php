@@ -9,6 +9,7 @@ use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
 use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\EvaluatorScoreController;
+use App\Http\Controllers\FileExportController;
 use App\Http\Controllers\Manager\ManagerController;
 use App\Http\Controllers\Manager\ManagerScoreController;
 use App\Http\Controllers\Setting\DepartmentsController;
@@ -19,6 +20,8 @@ use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Exports\ReportsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::prefix('departments')->name('departments.')->group(function () {
@@ -110,6 +113,13 @@ Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->g
     // Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
     Route::get('/dashboard-data/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
+});
+
+Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|กรรมการ|ผู้ประเมิน'])->group(function () {
+    // Route::get('/export/reports', function () {
+    //     return Excel::download(new ReportsExport(), 'รายงานผลการประเมินโดยรวม.xlsx');
+    // })->name('export.reports');
+    Route::get('/export/reports', [FileExportController::class, 'exportDashboard'])->name('export.reports'); ;
 });
 
 Route::middleware('guest')->group(function () {

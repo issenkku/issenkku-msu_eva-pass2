@@ -26,7 +26,7 @@ class DashboardEvaluateeController extends Controller
         // $evaluations = $user->assignment->pluck('report')->filter();
 
         $evaluations = $user->assignment->map(function ($assignment) {
-            $assignment->load('evaluatorUser');
+            $assignment->load('evaluatorUsers');
 
             return $assignment;
         });
@@ -112,7 +112,7 @@ class DashboardEvaluateeController extends Controller
 
         // Find the assignment for the current user
         $assignment = $report->assignments->where('evaluatee_id', $user->id)->first();
-        $evaluator = $assignment->getEvaluatorUser();
+        $evaluators = $assignment ? $assignment->getEvaluatorUsers() : collect();
 
         if (! $assignment) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
@@ -355,7 +355,7 @@ class DashboardEvaluateeController extends Controller
 
         return view('evaluatee.evaluation', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
-            'startTime', 'endTime', 'reportName', 'evaluator',
+            'startTime', 'endTime', 'reportName', 'evaluators',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
             'quantityMainCriterias', 'categoryItems', 'evidenceMap',
             'readonly', 'versionName', 'reportComment', 'reportDescription'

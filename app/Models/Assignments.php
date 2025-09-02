@@ -47,8 +47,14 @@ class Assignments extends Model
 
     public function evaluatorUsers()
     {
-        return $this->hasMany(User::class, 'position_id', 'evaluator_position_id')
-            ->where('department_id', $this->evaluateeUser?->department_id);
+        return $this->hasManyThrough(
+            User::class,            // Final model
+            AssignmentData::class,  // Intermediate
+            'id',                   // Local key on AssignmentData
+            'position_id',          // Foreign key on Users
+            'assignment_data_id',   // Local key on Assignments
+            'evaluator_position_id' // Foreign key on AssignmentData
+        );
     }
 
     // Helper to get evaluator position
@@ -57,10 +63,11 @@ class Assignments extends Model
         return $this->assignmentData?->evaluatorPosition();
     }
 
-    public function getEvaluatorUser()
+    public function getEvaluatorUsers()
     {
         return $this->assignmentData
-            ? $this->assignmentData->evaluatorPosition()->first()?->user()->first()
-            : null;
+            ? $this->evaluatorUsers()->get()
+            : collect();
     }
+
 }
