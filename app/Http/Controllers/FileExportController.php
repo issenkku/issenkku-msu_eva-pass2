@@ -51,6 +51,12 @@ class FileExportController extends Controller
             $query->whereHas('assignmentData', fn ($q) => $q->where('end_time', '<=', $request->input('end_time')));
         }
 
+        if ($request->filled('department_name')) {
+            $departmentName = $request->input('department_name');
+            $query->whereHas('evaluateeUser.department', fn($q) => 
+                $q->where('department_name', $departmentName));
+        }
+
         return $query;
     }
 }

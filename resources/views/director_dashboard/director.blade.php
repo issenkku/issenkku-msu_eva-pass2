@@ -66,6 +66,7 @@
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
         />
+        
 
         <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">
             <h3 class="text-lg font-semibold text-purple-900 mb-4 flex items-center">

@@ -29,16 +29,25 @@
                     </div>
                     <div>
                         <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
-                        <select name="department_name"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                            <option value="">ทุกหน่วยงาน</option>
-                            @foreach ($departments ?? [] as $dept)
-                                <option value="{{ $dept->department_name }}"
-                                    {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                    {{ $dept->department_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="relative">
+                            <select name="department_name"
+                                class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                <option value="">ทุกหน่วยงาน</option>
+                                @foreach ($departments ?? [] as $dept)
+                                    <option value="{{ $dept->department_name }}"
+                                        {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                        {{ $dept->department_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            
+                            <!-- Custom arrow icon -->
+                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="flex md:justify-end lg:justify-end space-x-2 pt-2">
@@ -135,8 +144,8 @@
         function resetFilters() {
             document.querySelector('input[name="start_time"]').value = '';
             document.querySelector('input[name="end_time"]').value = '';
-            document.getElementById('filterForm').submit();
             document.querySelector('select[name="department_name"]').value = '';
+            document.getElementById('filterForm').submit();
         }
     </script>
 @endpush

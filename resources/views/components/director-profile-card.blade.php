@@ -16,7 +16,11 @@
         <div class="space-y-3">
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
-                <span class="text-gray-700">{{ $assignment->evaluatorName }}</span>
+                <span class="text-gray-700">
+                    @foreach($assignment->evaluatorUsers as $evaluator)
+                        <p>{{ $evaluator->name }}</p>
+                    @endforeach
+                 </span>
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>

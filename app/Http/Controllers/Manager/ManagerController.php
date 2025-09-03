@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
+use App\Models\Setting\Departments;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
+use App\Services\ScoreService;
+use App\Services\GraphDataService;
 
 class ManagerController extends Controller
 {
@@ -25,6 +29,11 @@ class ManagerController extends Controller
             'position',
             'department',
         ]);
+
+        $startDate = $request->input('start_time');
+        $endDate = $request->input('end_time');
+        $departmentName = $request->input('department_name');
+        $departments = Departments::all();
 
         // Get ALL reports with complete data (Director has access to everything)
         $allReportsData = Reports::with([
@@ -49,7 +58,7 @@ class ManagerController extends Controller
                 // Get evaluator information from assignment_data
                 $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
                 $assignment->evaluateeAssignedPosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-                $assignment->setAttribute('evaluatorName', $assignment->getEvaluatorUser()?->name ?? '-');
+                $assignment->setAttribute('evaluatorName', $assignment->getEvaluatorUsers()->pluck('name')->implode(', ') ?: '-');
 
                 // Add time information
                 $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
@@ -131,8 +140,8 @@ class ManagerController extends Controller
 
         $years = $evaluations->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function ($dt) {
-                return \Carbon\Carbon::parse($dt)->year;
+            ->map(function($dt) {
+                return Carbon::parse($dt)->year;
             })
             ->unique()
             ->sortDesc()
@@ -140,9 +149,28 @@ class ManagerController extends Controller
 
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
-                $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
-
+                $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
                 return $year == $request->input('year');
+            });
+        }
+
+        if ($startDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
+                $assignmentStart = optional($assignment->assignmentData)->start_time;
+                return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
+            });
+        }
+
+        if ($endDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
+                $assignmentEnd = optional($assignment->assignmentData)->end_time;
+                return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
+            });
+        }
+
+        if ($departmentName) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($departmentName) {
+                return optional($assignment->evaluateeUser?->department)->department_name === $departmentName;
             });
         }
 
@@ -165,6 +193,26 @@ class ManagerController extends Controller
             ];
         });
 
+         $totalEvaluations = $evaluations->count();
+
+        // dd($chartData);
+
+        $totalEvaluatees = $evaluations
+            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->groupBy('evaluateeUser.id')
+            ->count();
+
+        $userReports = $evaluations->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
+
         return view('manager_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
@@ -174,6 +222,14 @@ class ManagerController extends Controller
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data
             'years' => $years,
+            'averageScore' => $averageScore,
+            'scatterData' => $scatterData,
+            'chartData' => $chartData,
+            'totalEvaluations' => $totalEvaluations,
+            'totalEvaluatees' => $totalEvaluatees,
+            'statusLabels' => $statusLabels,
+            'statusColors' => $statusColors,
+            'departments' => $departments,
         ]);
     }
 }

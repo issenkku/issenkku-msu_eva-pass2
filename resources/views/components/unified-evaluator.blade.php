@@ -291,11 +291,10 @@
 
                                                 </div>
                                             @endforeach
-                                        <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                            <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
-                                            <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
-                                        </div>
-
+                                            <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
+                                                <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>

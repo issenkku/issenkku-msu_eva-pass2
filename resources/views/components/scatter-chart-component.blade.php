@@ -121,13 +121,13 @@ document.addEventListener('DOMContentLoaded', function() {
     datasets.push({
         label: 'คะแนนรวม',
         data: scatterData.map(d => ({ x: d.x, y: d.y })),
-        backgroundColor: 'rgba(79, 70, 229, 0.7)',
-        borderColor: 'rgba(79, 70, 229, 1)',
+        backgroundColor: 'rgba(229, 70, 70, 0.7)',
+        borderColor: 'rgba(229, 70, 70, 1)',
         pointRadius: 6,
         pointHoverRadius: 8,
         pointBackgroundColor: function(context) {
             const value = context.dataset.data[context.dataIndex].y;
-            return value >= 60 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+            return value >= 60 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.8)';
         }
     });
     
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
             pointHoverRadius: 8,
             pointBackgroundColor: function(context) {
                 const value = context.dataset.data[context.dataIndex].y;
-                return value >= 60 ? 'rgba(16, 185, 129, 0.8)' : 'rgba(255, 99, 132, 0.6)';
+                return value >= 60 ? 'rgba(255, 99, 132, 0.6)' : 'rgba(255, 99, 132, 0.6)';
             }
         });
     }

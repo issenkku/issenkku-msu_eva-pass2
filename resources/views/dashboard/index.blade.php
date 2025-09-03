@@ -93,19 +93,28 @@
                         </div>
                         <div>
                             <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
-                            <select name="department_name"
-                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                                <option value="">ทุกหน่วยงาน</option>
-                                @foreach ($departments ?? [] as $dept)
-                                    <option value="{{ $dept->department_name }}"
-                                        {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                        {{ $dept->department_name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <select name="department_name"
+                                    class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                    <option value="">ทุกหน่วยงาน</option>
+                                    @foreach ($departments ?? [] as $dept)
+                                        <option value="{{ $dept->department_name }}"
+                                            {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                            {{ $dept->department_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                
+                                <!-- Custom arrow icon -->
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-end space-x-2 pt-2">
+                    <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0">
                         <button type="button" onclick="resetFilters()"
                             class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
                         <button type="submit"
@@ -115,70 +124,40 @@
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Total Participants -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-lg hover-scale border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">จำนวนผู้เข้ารับการประเมิน</p>
-                            <p class="text-3xl font-bold mt-2 text-gray-900">{{ $totalParticipants ?? 0 }}</p>
-                            <p class="text-gray-500 text-sm mt-1">{{ $evaluationPeriod ?? 'รอบการประเมินปัจจุบัน' }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
+            <div class="gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <x-summary-score
+                        title="จำนวนผู้เข้ารับการประเมิน"
+                        :value="$totalEvaluatees"
+                        subtitle="จำนวนผู้เข้าร่วมการประเมินทั้งหมด"
+                        color="blue"
+                        icon="fas fa-users"
+                        iconSize="text-3xl"
+                    />
+
+                    <x-summary-score
+                        title="คะแนนเฉลี่ย"
+                        :value="$averageScore"
+                        subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
+                        color="purple"
+                    />
                 </div>
 
-                <!-- Average Score -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-lg hover-scale border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">คะแนนเฉลี่ย</p>
-                            <p class="text-3xl font-bold mt-2 text-gray-900">{{ $averageScore ?? 0 }}</p>
-                            <p class="text-gray-500 text-sm mt-1">{{ $evaluationPeriod ?? 'รอบการประเมินปัจจุบัน' }}</p>
-                        </div>
-                        <div class="p-3 bg-purple-100 rounded-lg">
-                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <x-bar-chart 
+                        chart-id="statusChart"
+                        title="สถานะผลการประเมิน"
+                        :data="$chartData"
+                        :labels="$statusLabels"
+                        :colors="$statusColors"
+                    />
 
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- Evaluation Results Status Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6 animate-fadeIn" style="animation-delay: 0.4s;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900">สถานะผลการประเมิน</h3>
-                        <div class="flex space-x-2">
-                            <button id="downloadChartBtn" class="text-gray-400 hover:text-gray-600 transition-colors" title="ดาวน์โหลดกราฟ">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a0 3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="h-80"><canvas id="statusChart"></canvas></div>
-                </div>
+                    <x-scatter-chart-component 
+                        :scatter-data="$scatterData"
+                        chart-id="myChart"
+                        title="กราฟการกระจายตัวของคะแนน"
+                    />
 
-                <!-- Score Distribution Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6 animate-fadeIn" style="animation-delay: 0.5s;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900">การกระจายตัวของคะแนน</h3>
-                        <div class="flex space-x-2">
-                            <button class="text-gray-400 hover:text-gray-600 transition-colors" title="ดาวน์โหลดกราฟ">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="h-80"><canvas id="scoreDistributionChart"></canvas></div>
                 </div>
             </div>
 
@@ -225,40 +204,35 @@
                             </tr>
                         </thead>
                         <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                            @forelse($reports ?? [] as $report)
+                            @forelse($evaluations as $evaluation)
                                 @php
-                                    // Flexible access for both arrays and objects
-                                    $evaluatee_name = is_array($report)
-                                        ? $report['evaluatee_name'] ?? 'Unknown User'
-                                        : $report->evaluatee_name ?? 'Unknown User';
-                                    $evaluator_name = is_array($report)
-                                        ? $report['evaluator_name'] ?? 'Unknown User'
-                                        : $report->evaluator_name ?? 'Unknown User';
-                                    $score = is_array($report) ? $report['score'] ?? 0 : $report->score ?? 0;
+                                    // Format score and date
+                                    $evaluateeName = $evaluation->evaluateeName ?? '-';
+                                    $evaluatorName = $evaluation->evaluatorName ?? '-';
+                                    $score = $evaluation->report->score ?? 0;
 
-                                    // Status field: supports 'status' (API/array) or 'report_status' (Eloquent)
-                                    $status = is_array($report)
-                                        ? $report['status'] ?? 'UNKNOWN'
-                                        : $report->report_status ?? ($report->status ?? 'UNKNOWN');
-
+                                    $status = $evaluation->report->report_status ?? ($evaluation->report->status ?? 'UNKNOWN');
                                     $statusMapping = [
                                         'Assigned' => 'ยังไม่ประเมิน',
-                                        'Draft' => 'กำลังดำเนินการ',
-                                        'Pending' => 'รอผลการประเมิน',
+                                        'Draft' => 'เริ่มกรอกข้อมูล',
+                                        'Pending' => 'รอผู้ประเมินประเมิน',
+                                        'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
+                                        'Director_assigned' => 'รอกรรมการรับรองผล',
+                                        'Director_draft' => 'กรรมการเริ่มรับรองผล',
+                                        'Manager_assign' => 'ยังไม่ประเมิน',
+                                        'Manager_draft' => 'กำลังดำเนินการ',
                                         'Completed' => 'ประเมินเสร็จสิ้น',
                                     ];
-
-                                    // Use mapping or fallback to raw status
                                     $prettyStatus = $statusMapping[$status] ?? $status;
 
-                                    // Color logic
                                     $statusClass = match ($status) {
                                         'Completed' => 'bg-green-100 text-green-800',
-                                        'Pending' => 'bg-yellow-100 text-yellow-800',
-                                        'Draft' => 'bg-gray-100 text-gray-800',
-                                        default => 'bg-red-100 text-red-800',
+                                        'Draft' => 'bg-blue-100 text-blue-800',
+                                        'Assigned' => 'bg-red-100 text-red-800',
+                                        default => 'bg-yellow-100 text-yellow-800',
                                     };
                                 @endphp
+
                                 <tr class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         {{ $loop->iteration }}
@@ -266,14 +240,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $evaluatee_name }}
+                                                {{ $evaluateeName }}
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $evaluator_name }}
+                                                {{ $evaluatorName }}
                                             </div>
                                         </div>
                                     </td>
@@ -288,7 +262,8 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors" onclick="openReportDetails('{{ $report['report_id'] }}')">
+                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors"
+                                            onclick="openReportDetails('{{ $evaluation->report->id ?? $evaluation->report->report_id ?? '' }}')">
                                             ดูรายละเอียด
                                         </button>
                                     </td>
@@ -353,161 +328,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Status Chart
-            const statusLabels = ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'อยู่ระหว่างการรับรอง', 'เสร็จสิ้น'];
-            const statusData = [
-                {{ $statusCounts_chart['Assigned'] ?? 0 }},
-                {{ $statusCounts_chart['Draft'] ?? 0 }},
-                {{ $statusCounts_chart['Pending'] ?? 0 }},
-                {{ $statusCounts_chart['Completed'] ?? 0 }}
-            ];
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            new Chart(statusCtx, {
-                type: 'bar',
-                data: {
-                    labels: statusLabels,
-                    datasets: [{
-                        label: 'Report Status',
-                        data: statusData ?? [0, 0, 0, 0],
-                        backgroundColor: [
-                            'rgba(251, 36, 36, 0.8)',
-                            'rgba(59, 130, 246, 0.8)', // ASSIGNED color
-                            'rgba(251, 191, 36, 0.8)', // PENDING color
-                            'rgba(16, 185, 129, 0.8)' // COMPLETED color
-                        ],
-                        borderColor: [
-                            'rgba(246, 59, 59, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(251, 191, 36, 1)',
-                            'rgba(16, 185, 129, 1)'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.raw} รายงาน`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeOutQuart'
-                    }
-                }
-            });
-
-            // Score Distribution Chart (Scatter Plot)
-            const scatterData_chart = {!! json_encode($scatterData_chart) !!};
-            const scoreDistCtx = document.getElementById('scoreDistributionChart').getContext('2d');
-            new Chart(
-                scoreDistCtx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [
-                            {
-                                label: 'คะแนนรวม',
-                                data: scatterData_chart,
-                                backgroundColor: 'rgba(79, 70, 229, 0.7)',
-                                pointRadius: 6,
-                                pointHoverRadius: 8,
-                                pointBackgroundColor: function(context) {
-                                    const value = context.dataset.data[context.dataIndex].y;
-                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
-                                        'rgba(239, 68, 68, 0.8)';
-                                }
-                            },
-                            {
-                                label: 'คะแนนปริมาณ',
-                                data: scatterData_chart.map(d => ({ x: d.x, y: d.quantity })),
-                                backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                                pointRadius: 6,
-                                pointHoverRadius: 8,
-                                pointBackgroundColor: function(context) {
-                                    const value = context.dataset.data[context.dataIndex].y;
-                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
-                                        'rgba(255, 99, 132, 0.6)';
-                                }
-                            },
-                            {
-                                label: 'คะแนนคุณภาพ',
-                                data: scatterData_chart.map(d => ({ x: d.x, y: d.quality })),
-                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                                pointRadius: 6,
-                                pointHoverRadius: 8,
-                                pointBackgroundColor: function(context) {
-                                    const value = context.dataset.data[context.dataIndex].y;
-                                    return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
-                                        'rgba(75, 192, 192, 0.6)';
-                                }
-                            },
-                    ]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `(${context.parsed.x}, ${context.parsed.y})`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'ชุดรายงานการประเมิน'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'คะแนน'
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Report ${context.parsed.x}: ${context.parsed.y.toFixed(2)}`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            );
-
-
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
@@ -531,7 +351,6 @@
             });
         });
 
-        window.reports = @json($reports);
         // Export functions
         function exportToExcel() {
             // Show loading indicator
