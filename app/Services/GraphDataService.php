@@ -117,6 +117,11 @@ class GraphDataService
             }
         }
 
+        return $statusCounts;
+    }
+
+    public static function getStatusLabels()
+    {
         return ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'อยู่ระหว่างการรับรอง', 'เสร็จสิ้น'];
     }
 

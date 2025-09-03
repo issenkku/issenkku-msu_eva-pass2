@@ -8,6 +8,8 @@ use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardEvaluateeController extends Controller
