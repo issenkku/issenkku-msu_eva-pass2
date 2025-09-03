@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;
 
 class ManagerController extends Controller
 {
@@ -140,7 +140,7 @@ class ManagerController extends Controller
 
         $years = $evaluations->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function($dt) {
+            ->map(function ($dt) {
                 return Carbon::parse($dt)->year;
             })
             ->unique()
@@ -150,6 +150,7 @@ class ManagerController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -157,6 +158,7 @@ class ManagerController extends Controller
         if ($startDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
                 $assignmentStart = optional($assignment->assignmentData)->start_time;
+
                 return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
             });
         }
@@ -164,6 +166,7 @@ class ManagerController extends Controller
         if ($endDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
                 $assignmentEnd = optional($assignment->assignmentData)->end_time;
+
                 return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
             });
         }
@@ -193,12 +196,12 @@ class ManagerController extends Controller
             ];
         });
 
-         $totalEvaluations = $evaluations->count();
+        $totalEvaluations = $evaluations->count();
 
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 

@@ -5,7 +5,6 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
-use App\Models\Assignments\Assignment;
 use App\Notifications\CustomResetPassword;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -190,12 +189,11 @@ class User extends Authenticatable implements CanResetPassword
 
     public function allAssignmentsForDashboard()
     {
-    return Assignment::query()
-        ->with([
-            'evaluateeUser.department',
-            'assignmentData',
-            'report.reportData',
-        ]);
+        return Assignments::query()
+            ->with([
+                'evaluateeUser.department',
+                'assignmentData',
+                'report.reportData',
+            ]);
     }
-
 }

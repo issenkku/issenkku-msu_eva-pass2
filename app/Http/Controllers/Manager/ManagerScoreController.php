@@ -38,7 +38,8 @@ class ManagerScoreController extends Controller
             'assignments.evaluatorUser',
         ])->findOrFail($id);
 
-        if (in_array($report->status, ['Assigned', 'Draft',
+        // Allow admin and ผู้บริหาร to access regardless of status
+        if (! ($user->hasRole('admin') || $user->hasRole('ผู้บริหาร')) && in_array($report->status, ['Assigned', 'Draft',
             'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'])) {
             abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
         }
@@ -127,9 +128,9 @@ class ManagerScoreController extends Controller
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                
+
                 // Store with composite key for lookup
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $key = $row->evaluation_list_id.'_'.$row->main_id;
                 $arrScoreEva[$key] = $calculatedScore;
             }
         }
@@ -223,7 +224,7 @@ class ManagerScoreController extends Controller
                             $mainCriteria = $subCriterias->first()->mainCriteria;
 
                             if ($mainCriteria) {
-                                $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                                $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
                                 $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
 
                                 $mainCriteriaData = [

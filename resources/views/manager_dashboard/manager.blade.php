@@ -103,11 +103,19 @@
         @endif
 
         <div class="flex justify-center gap-4 mt-8">
+            @if(auth()->user()->hasRole('admin'))
             <x-button 
-                    type= defualt 
+                    type="default" 
+                    text="ย้อนกลับ" 
+                    icon="fas fa-arrow-left"
+                    href="/dashboard" />
+            @elseif(auth()->user()->hasRole('ผู้บริหาร'))
+            <x-button 
+                    type="default" 
                     text="ย้อนกลับ" 
                     icon="fas fa-arrow-left"
                     href="/manager-dashboard" />
+            @endif
 
             @unless($readonly)
                 <x-button 

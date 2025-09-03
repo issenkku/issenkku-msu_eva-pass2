@@ -74,6 +74,7 @@ class DashboardController extends Controller
         if ($startDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
                 $assignmentStart = optional($assignment->assignmentData)->start_time;
+
                 return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
             });
         }
@@ -81,6 +82,7 @@ class DashboardController extends Controller
         if ($endDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
                 $assignmentEnd = optional($assignment->assignmentData)->end_time;
+
                 return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
             });
         }
@@ -96,7 +98,7 @@ class DashboardController extends Controller
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 
@@ -224,8 +226,8 @@ class DashboardController extends Controller
             }
             $qualityScore = array_sum($arrScoreEva);
             $report->report->quantity_score = round($quantityScore, 2);
-            $report->report->quality_score  = round($qualityScore, 2);
-            $report->report->score          = round($quantityScore + $qualityScore, 2);
+            $report->report->quality_score = round($qualityScore, 2);
+            $report->report->score = round($quantityScore + $qualityScore, 2);
 
             $reports_score[] = [
                 'assignment_data_id' => $report->assignment_data_id,

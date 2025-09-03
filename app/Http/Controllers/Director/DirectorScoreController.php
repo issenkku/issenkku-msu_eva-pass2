@@ -126,9 +126,9 @@ class DirectorScoreController extends Controller
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                
+
                 // Store with composite key for lookup
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $key = $row->evaluation_list_id.'_'.$row->main_id;
                 $arrScoreEva[$key] = $calculatedScore;
             }
         }
@@ -222,7 +222,7 @@ class DirectorScoreController extends Controller
                             $mainCriteria = $subCriterias->first()->mainCriteria;
 
                             if ($mainCriteria) {
-                                $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                                $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
                                 $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
 
                                 $mainCriteriaData = [

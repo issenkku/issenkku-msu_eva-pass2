@@ -53,8 +53,7 @@ class FileExportController extends Controller
 
         if ($request->filled('department_name')) {
             $departmentName = $request->input('department_name');
-            $query->whereHas('evaluateeUser.department', fn($q) => 
-                $q->where('department_name', $departmentName));
+            $query->whereHas('evaluateeUser.department', fn ($q) => $q->where('department_name', $departmentName));
         }
 
         return $query;

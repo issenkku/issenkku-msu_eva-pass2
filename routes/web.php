@@ -76,6 +76,9 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/bulk-destroy', [App\Http\Controllers\QualityScoresController::class, 'bulkDestroy'])->name('bulk-destroy');
     });
 
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
+
 });
 
 Route::middleware(['auth:sanctum', 'role:ผู้ประเมิน'])->group(function () {
@@ -104,15 +107,17 @@ Route::middleware(['auth:sanctum', 'role:กรรมการ'])->group(functio
 });
 Route::middleware(['auth:sanctum', 'role:ผู้บริหาร'])->group(function () {
     Route::get('/manager-dashboard', [ManagerController::class, 'dashboard'])->name('manager.dashboard');
-    Route::get('/manager/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
+    // Route::get('/manager/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
     Route::post('/manager/{id}/scores', [ManagerScoreController::class, 'storeManagerScores'])->name('manager_score.store');
 });
 
+Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|กรรมการ|ผู้ประเมิน'])->group(function () {
+    Route::get('/dashboard-data/{id}', [ManagerScoreController::class, 'manager'])->name('dashboard.data.show');
+});
+
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
-    Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
-    Route::get('/dashboard-data/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
+    Route::get('/manager/{id}', [ManagerScoreController::class, 'manager'])->name('manager.show');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|กรรมการ|ผู้ประเมิน'])->group(function () {
