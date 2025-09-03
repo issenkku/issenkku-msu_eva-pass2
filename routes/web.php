@@ -140,9 +140,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/', function (Request $request) {
         $user = $request->user();
 
-        if ($user->hasRole('admin') || $user->hasRole('ผู้บริหาร')) {
+        if ($user->hasRole('admin')) {
             // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
             return redirect()->route('dashboard'); // ชื่อ route ของ admin dashboard
+        }
+
+        if ($user->hasRole('ผู้บริหาร')) {
+            // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
+            return redirect()->route('manager.dashboard'); // ชื่อ route ของ admin dashboard
         }
 
         if ($user->hasRole('ผู้ประเมิน')) {

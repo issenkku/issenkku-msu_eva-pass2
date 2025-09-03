@@ -465,9 +465,9 @@
                     <ul class="nav nav-pills align-items-center gap-2">
                         
                         @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
-                            </li>
+                            </li> -->
                             <li class="nav-item">
                                 <a class="nav-link text-white " href="/manager-dashboard">หน้าการรับรอง</a>
                             </li>
@@ -565,10 +565,10 @@
             <div class="mobile-menu-content">
                 <!-- Role-based Navigation Links -->
                 @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร'))
-                    <a href="/dashboard" class="mobile-nav-item">
+                    <!-- <a href="/dashboard" class="mobile-nav-item">
                         <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
                         แดชบอร์ด
-                    </a>
+                    </a> -->
                     <a href="/manager-dashboard" class="mobile-nav-item">
                         <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
                         หน้าการรับรอง

@@ -144,4 +144,14 @@ class User extends Authenticatable implements CanResetPassword
         return $query;
     }
 
+    public function allAssignmentsForDashboard()
+{
+return Assignment::query()
+    ->with([
+        'evaluateeUser.department',
+        'assignmentData',
+        'report.reportData',
+    ]);
+}
+
 }

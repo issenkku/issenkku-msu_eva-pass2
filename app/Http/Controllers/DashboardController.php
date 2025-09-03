@@ -36,80 +36,97 @@ class DashboardController extends Controller
         // }
 
         // Base query for reports
-        $reportsQuery = Reports::query()
-            ->join('assignments', 'reports.id', '=', 'assignments.report_id')
-            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('users as evaluatees', 'assignments.evaluatee_id', '=', 'evaluatees.id')
-            ->join('positions as evaluator_position', 'assignment_datas.evaluator_position_id', '=', 'evaluator_position.id')
-            ->leftJoin('users as evaluators', function ($join) {
-                $join->on('evaluator_position.id', '=', 'evaluators.position_id');
-            })
-            ->join('departments as evaluatees_dept', 'evaluatees.department_id', '=', 'evaluatees_dept.id')
-            ->join('positions as evaluatees_position', 'evaluatees.position_id', '=', 'evaluatees_position.id')
-            ->select(
-                'assignment_datas.id as assignment_data_id',
-                'assignment_datas.start_time',
-                'assignment_datas.end_time',
-                'evaluatees.department_id as evaluatee_department_id',
-                'evaluatees.id as evaluatee_id',
-                'evaluatees.name as evaluatee_name',
-                'evaluatees.personnel_type as evaluatee_personnel_type',
-                'evaluatees.position_id as evaluatee_position_id',
-                'evaluatees_position.name as evaluatee_position_name',
-                'evaluatees_dept.department_name as evaluatee_department_name',
-                'evaluator_position.id as evaluator_position_id',
-                'evaluator_position.name as evaluator_position_name',
-                'evaluators.id as evaluator_user_id',
-                'evaluators.name as evaluator_user_name',
-                'reports.id as report_id',
-                'reports.status as report_status',
-                'reports.created_at as report_created_at',
-                'reports.updated_at as report_updated_at',
-                'reports.report_data_id as report_data_id',
-                'reports.comment as comment'
-            )->orderBy('reports.updated_at', 'desc');
+        $allReportsData = Reports::with([
+            'reportData', // report_datas table
+            'assignments.assignmentData.evaluatorPosition', // assignment_datas -> positions
+            'assignments.assignmentData.evaluateePosition', // assignment_datas -> positions
+            'assignments.evaluateeUser.department', // users -> departments (evaluatee)
+            'assignments.evaluateeUser.position', // users -> positions (evaluatee)
+        ])->get();
+
+        // Get ALL evaluations (Director can see everything, no department filtering)
+        $evaluations = $allReportsData->map(function ($report) {
+            if ($report->assignments) {
+                $assignment = $report->assignments;
+                $assignment->setRelation('report', $report);
+
+                // Get evaluatee information
+                $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+                $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+                $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
+
+                // Get evaluator information from assignment_data
+                $assignment->evaluatorPosition = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
+                $assignment->evaluateeAssignedPosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
+                $assignment->setAttribute('evaluatorName', $assignment->getEvaluatorUsers()->pluck('name')->implode(', ') ?: '-');
+
+                // Add time information
+                $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
+                $assignment->endTime = $assignment->assignmentData?->end_time ?? null;
+
+                return $assignment;
+            }
+
+            return null;
+        })->filter(); // Remove null values
 
         // Apply date filters if provided
         if ($startDate) {
-            $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
+            $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
+                $assignmentStart = optional($assignment->assignmentData)->start_time;
+                return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
+            });
         }
 
         if ($endDate) {
-            $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
+            $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
+                $assignmentEnd = optional($assignment->assignmentData)->end_time;
+                return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
+            });
         }
 
-        // Apply department filter if provided
         if ($departmentName) {
-            $reportsQuery->where('evaluatees_dept.department_name', $departmentName);
+            $evaluations = $evaluations->filter(function ($assignment) use ($departmentName) {
+                return optional($assignment->evaluateeUser?->department)->department_name === $departmentName;
+            });
         }
 
-        // Get total participants (unique evaluatees)
-        $totalParticipants = $reportsQuery->count('evaluatees.id');
-        // $totalParticipants = $reportsQuery->distinct('evaluatees.id')->count('evaluatees.id');
+        $totalEvaluations = $evaluations->count();
 
-        // Calculate average score
-        $averageScore = ScoreService::calculateAverageScore($reportsQuery->get());
+        // dd($chartData);
 
-        // Status Chart (Bar Chart)
-        $statusCounts = GraphDataService::statusCounts($reportsQuery->get());
+        $totalEvaluatees = $evaluations
+            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->groupBy('evaluateeUser.id')
+            ->count();
 
-        // Score Distribution Chart (Scatter Plot)
-        $scatterData = GraphDataService::scatterData($reportsQuery->get());
+        $userReports = $evaluations->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
 
         // Get reports with scores
-        $reportsWithScores = $this->reportsWithScores($reportsQuery->get());
+        $reportsWithScores = $this->reportsWithScores($evaluations);
 
         // Evaluation period for display
         $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
 
         return view('dashboard.index', [
-            // 'reports' => $groupedMainCriterias,
-
-            'totalParticipants' => $totalParticipants,
             'averageScore' => $averageScore,
+            'evaluations' => $evaluations,
+            'scatterData' => $scatterData,
+            'chartData' => $chartData,
+            'totalEvaluations' => $totalEvaluations,
+            'totalEvaluatees' => $totalEvaluatees,
+            'statusLabels' => $statusLabels,
+            'statusColors' => $statusColors,
             'departments' => $departments,
-            'statusCounts_chart' => $statusCounts,
-            'scatterData_chart' => $scatterData,
             // 'reports' => $reportsQuery->get(),
             'reports' => $reportsWithScores,
             'evaluationPeriod' => $evaluationPeriod,
@@ -206,6 +223,9 @@ class DashboardController extends Controller
                 }
             }
             $qualityScore = array_sum($arrScoreEva);
+            $report->report->quantity_score = round($quantityScore, 2);
+            $report->report->quality_score  = round($qualityScore, 2);
+            $report->report->score          = round($quantityScore + $qualityScore, 2);
 
             $reports_score[] = [
                 'assignment_data_id' => $report->assignment_data_id,

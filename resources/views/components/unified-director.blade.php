@@ -211,9 +211,14 @@
                                     @foreach($evaluationList['quality_items'] as $mainCriteria)
                                         {{-- Main Criteria Header --}}
                                         <div class="mb-4 border-l-4 border-purple-400 pl-4 py-2 bg-purple-50">
-                                            <h4 class="text-base font-semibold text-gray-800">
-                                                {{ $mainCriteria['name'] }}
-                                            </h4>
+                                            <div class="flex items-center space-x-3">
+                                                <h4 class="text-base font-semibold text-gray-800">
+                                                    {{ $mainCriteria['name'] }}
+                                                </h4>
+                                                <span class="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                    สัดส่วน {{ $mainCriteria['ratio'] }} %
+                                                </span>
+                                            </div>
                                             @if(!empty($mainCriteria['tooltips']))
                                                 <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
@@ -270,9 +275,12 @@
                                                             name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
                                                             value="{{ $subCriteria['id'] }}">
                                                     @endif
-
                                                 </div>
                                             @endforeach
+                                            <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
+                                                <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -343,7 +351,7 @@
     @endif
 
     <!-- summary score -->
-     @php
+    @php
         $totalQuantityScore = 0;
         $totalQualityScore = 0;
 
@@ -357,9 +365,7 @@
                 }
                 // Quality
                 foreach($evalList['quality_items'] as $mainCriteria) {
-                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                        $totalQualityScore += floatval($subCriteria['score'] ?? 0);
-                    }
+                    $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
                 }
             }
         }
@@ -380,13 +386,13 @@
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
             </div>
         </div>
 
         <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-            <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+            <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
         </div>
     </div>
 </div>
