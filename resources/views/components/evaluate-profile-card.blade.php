@@ -20,7 +20,11 @@
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
-            <span class="text-gray-700">{{ $assignment->evaluatorUser?->name ?? 'ไม่พบข้อมูล' }}</span>
+                 <span class="text-gray-700">
+                    @foreach($assignment->evaluatorUsers as $evaluator)
+                        <p>{{ $evaluator->name }}</p>
+                    @endforeach
+                 </span>
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>

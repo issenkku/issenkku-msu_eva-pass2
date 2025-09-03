@@ -116,14 +116,14 @@
             <table class="min-w-[900px] w-full border-collapse text-sm">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">อันดับ</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">อันดับ</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
+                        <th class="text-left p-3 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
+                        <th class="text-center p-3 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
+                        <th class="text-center p-3 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,21 +169,21 @@
                         @endphp
 
                         <tr class="hover:bg-gray-50 transition-colors {{ $isRecent ? 'bg-blue-50' : '' }}">
-                            <td class="p-4 border-b text-gray-500">
+                            <td class="p-3 border-b text-gray-500">
                                 {{ $index + 1 }}
                                 @if($isRecent)
                                     <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2" title="รายการล่าสุด"></span>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b">
+                            <td class="p-3 border-b max-w-[250px]">
                                 <div class="font-medium text-gray-800">{{ $reportTitle }}</div>
                                 @if($isRecent)
                                     <div class="text-xs text-blue-600 mt-1">รายการล่าสุด</div>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
+                            <td class="p-3 border-b text-gray-500">
                                 @if($startFormatted !== '-')
                                     <div class="font-medium">{{ $startFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $startFormatted['time'] }}</div>
@@ -192,7 +192,7 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
+                            <td class="p-3 border-b text-gray-500">
                                 @if($endFormatted !== '-')
                                     <div class="font-medium">{{ $endFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $endFormatted['time'] }}</div>
@@ -201,11 +201,17 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
+                            <td class="p-3 border-b text-gray-500">{{ $evaluateeName }}</td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluatorAssignment->evaluatorName ?? '-' }}</td>
+                            <td class="p-3 border-b text-gray-500">
+                                @foreach($evaluatorAssignment->getEvaluatorUsers() as $evaluator)
+                                    <span class="inline-block py-1 flex">
+                                        {{ $evaluator->name }}
+                                    </span>
+                                @endforeach
+                            </td>
 
-                            <td class="p-4 border-b text-center min-w-[200px]">
+                            <td class="p-3 border-b text-center min-w-[200px]">
                                 @php
                                     $statusClasses = [
                                         'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',
@@ -224,7 +230,7 @@
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center">
+                            <td class="p-3 border-b text-center">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
