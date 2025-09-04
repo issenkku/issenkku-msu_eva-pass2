@@ -52,7 +52,7 @@ class ManagerController extends Controller
 
                 // Get evaluatee information
                 $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
-                $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+                $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
                 $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
 
                 // Get evaluator information from assignment_data
@@ -129,7 +129,8 @@ class ManagerController extends Controller
 
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = $assignment->evaluateeUser?->name ?? '';
-                $evaluatorName = $assignment->getEvaluatorUser()?->name ?? '-';
+                $evaluatorName = $assignment->getEvaluatorUsers()->pluck('name')->implode(' ');
+                $evaluatorName = strtolower($evaluatorName);
                 $reportTitle   = $assignment->report?->reportData?->report_title ?? '';
 
                 return Str::contains(strtolower($evaluateeName), strtolower($searchTerm))
@@ -168,9 +169,12 @@ class ManagerController extends Controller
             });
         }
 
-        if ($departmentName) {
-            $evaluations = $evaluations->filter(function ($assignment) use ($departmentName) {
-                return optional($assignment->evaluateeUser?->department)->department_name === $departmentName;
+        if ($request->filled('department_name')) {
+            // $departmentName = $request->input('department_name');
+
+            $evaluations = $evaluations->filter(function ($assignment) use ($request) {
+                $department_name = optional($assignment->evaluateeUser?->department)->department_name;
+                return $department_name == $request->input('department_name');
             });
         }
 

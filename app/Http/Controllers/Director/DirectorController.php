@@ -129,7 +129,8 @@ class DirectorController extends Controller
 
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = $assignment->evaluateeUser?->name ?? '';
-                $evaluatorName = $assignment->getEvaluatorUser()?->name ?? '-';
+                $evaluatorName = $assignment->getEvaluatorUsers()->pluck('name')->implode(' ');
+                $evaluatorName = strtolower($evaluatorName);
                 $reportTitle   = $assignment->report?->reportData?->report_title ?? '';
 
                 return Str::contains(strtolower($evaluateeName), strtolower($searchTerm))

@@ -21,6 +21,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Exports\ReportsExport;
+use App\Exports\SingleReportExport;
+use App\Models\Assignments;
 use Maatwebsite\Excel\Facades\Excel;
 
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
@@ -119,7 +121,10 @@ Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|ก�
     // Route::get('/export/reports', function () {
     //     return Excel::download(new ReportsExport(), 'รายงานผลการประเมินโดยรวม.xlsx');
     // })->name('export.reports');
-    Route::get('/export/reports', [FileExportController::class, 'exportDashboard'])->name('export.reports'); ;
+    Route::get('/export/reports', [FileExportController::class, 'exportDashboard'])->name('export.reports');
+    Route::get('/admin/export/reports', [FileExportController::class, 'adminExportDashboard'])->name('admin.export.reports');
+    Route::get('/reports/{id}/export', [FileExportController::class, 'exportSingleReport'])
+    ->name('single.reports.export');
 });
 
 Route::middleware('guest')->group(function () {

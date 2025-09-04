@@ -62,13 +62,13 @@ class AuthController extends Controller
             $redirect = '/dashboard';
         } elseif ($user->hasRole('ผู้บริหาร')) {
             $redirect = '/manager-dashboard';
+        } elseif ($user->hasRole('กรรมการ')) {
+            $redirect = '/director-dashboard';
         } elseif ($user->hasRole('ผู้ประเมิน')) {
             $redirect = '/evaluator-dashboard';
         } elseif ($user->hasRole('ผู้รับการประเมิน')) {
             $redirect = '/evaluatee-dashboard';
-        } elseif ($user->hasRole('กรรมการ')) {
-            $redirect = '/director-dashboard';
-        }
+        } 
 
         return response()->json(['redirect' => $redirect]);
     }
