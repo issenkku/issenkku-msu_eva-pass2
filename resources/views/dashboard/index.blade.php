@@ -58,6 +58,66 @@
         }
     </style>
 
+    @php
+        use Carbon\Carbon;
+
+        function formatThaiDate($date)
+        {
+            if (!$date) return '-';
+
+            Carbon::setLocale('th'); 
+            setlocale(LC_TIME, 'th_TH.UTF-8');
+
+            $thaiMonth = $date->translatedFormat('j F'); 
+            $buddhistYear = $date->year + 543;
+            $time = $date->format('H:i');
+
+            return [
+                'date' => "{$thaiMonth} {$buddhistYear}",
+                'time' => "{$time} น."
+            ];
+        }
+
+        // Sort evaluations by most recent first
+        $sortedEvaluations = collect($evaluations)->sortByDesc(function($evaluatorAssignment) {
+            // Primary sort: by end_time (most recent first)
+            $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
+            if ($endTime) {
+                return Carbon::parse($endTime)->timestamp;
+            }
+            
+            // Secondary sort: by start_time if no end_time
+            $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
+            if ($startTime) {
+                return Carbon::parse($startTime)->timestamp;
+            }
+            
+            // Tertiary sort: by created_at or updated_at
+            return optional($evaluatorAssignment->report)->updated_at 
+                ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
+                : (optional($evaluatorAssignment)->created_at 
+                    ? Carbon::parse($evaluatorAssignment->created_at)->timestamp 
+                    : 0);
+        })->values(); // Reset array keys to ensure proper numbering
+
+        $filteredStatus = request('status');
+        if ($filteredStatus) {
+            // Map display names back to DB status (including multiple statuses)
+            $reverseMap = [
+                'มอบหมาย' => ['Assigned'],
+                'เริ่มกรอกข้อมูล' => ['Draft'],
+                'กำลังดำเนินการ' => ['Pending','Evaluator_draft','Director_assigned', 'Director_draft', 'Manager_draft', 'Manager_assign'],
+                'ประเมินเสร็จสิ้น' => ['Completed'],
+            ];
+
+            $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
+
+            $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
+                return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
+            })->values(); // Reset keys
+        }
+    @endphp
+
     <div class="min-h-screen py-8 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-row justify-between">
@@ -163,19 +223,13 @@
 
             <!-- Users Table -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
-                <div class="px-6 py-4 border-b border-gray-200">
+                <div class="px-6 pt-4 pb-2">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">ผลการประเมินรายบุคคล</h3>
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <button onclick="exportToExcel()"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3 m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                ส่งออกเป็น Excel
-                            </button>
+                            <x-export-button 
+                                :route="route('admin.export.reports', request()->query())"
+                                label="ส่งออกExcelทั้งหมด" />
                             <div class="relative">
                                 <input type="text" id="searchInput" placeholder="ค้นหาชื่อผู้รับการประเมิน"
                                     class="text-black w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -191,6 +245,45 @@
                     </div>
                 </div>
 
+                @php
+                    $statusStyles = [
+                        'มอบหมาย' => 'bg-red-100 text-red-800 hover:bg-red-200',
+                        'เริ่มกรอกข้อมูล' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+                        'กำลังดำเนินการ' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+                        'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
+                    ];
+
+                    $firstStatus = array_key_first($statusCounts);
+                @endphp
+
+                <div  class="flex flex-wrap justify-between gap-2 mx-4">
+                    <div class=" flex gap-3 mb-6 flex-wrap ">
+                        @foreach($statusCounts as $status => $count)
+                            @php
+                                $isShowAll = $status === $firstStatus;
+                                $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
+                                $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                                $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
+
+                                $url = $isShowAll
+                                    ? request()->url() 
+                                    : request()->fullUrlWithQuery(['status' => $status]);
+                            @endphp
+
+                            <a href="{{ $url }}"
+                            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+                                {{ $status }} ({{ $count }})
+                            </a>
+                        @endforeach
+                    </div>
+                    <x-filter-badge-single 
+                        name="year"
+                        placeholder="ปีการประเมินทั้งหมด"
+                        :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+                    />
+                </div>
+                
+
                 <div class="overflow-x-auto">
                     <table id="userParticipant" class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -200,11 +293,12 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้ประเมิน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">สถานะ</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">คะแนน</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">จัดการ</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">ส่งออกไฟล์</th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                            @forelse($evaluations as $evaluation)
+                            @forelse($sortedEvaluations as $evaluation)
                                 @php
                                     // Format score and date
                                     $evaluateeName = $evaluation->evaluateeName ?? '-';
@@ -262,10 +356,23 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors"
-                                            onclick="openReportDetails('{{ $evaluation->report->id ?? $evaluation->report->report_id ?? '' }}')">
-                                            ดูรายละเอียด
-                                        </button>
+                                        <div class="flex justify-center items-center h-full">
+                                            <button class="text-blue-600 hover:text-blue-900 transition-colors text-center"
+                                                onclick="openReportDetails('{{ $evaluation->report->id ?? $evaluation->report->report_id ?? '' }}')">
+                                                ดูรายละเอียด
+                                            </button>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 whitespace-nowrap">
+                                        <div class="flex justify-center items-center">
+                                            @if($status === 'Completed')
+                                                <a href="{{ route('single.reports.export', ['id' => $evaluation->report->id ?? 0]) }}"
+                                                class="p-2 bg-green-400 hover:bg-green-500 text-white rounded-md transition duration-200"
+                                                title="ส่งออกรายงานผลการประเมินของ {{ $evaluateeName  ?? 'บุคคล' }}">
+                                                    <i class="fas fa-file-export"></i>
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
