@@ -203,7 +203,7 @@
                                 @endforeach
                             </td>
 
-                            <td class="p-4 border-b text-center min-w-[200px]">
+                            <td class="py-4 px-2 border-b text-center min-w-[180px]">
                                 @php
                                     $statusClasses = [
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',

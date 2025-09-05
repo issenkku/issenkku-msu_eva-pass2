@@ -365,11 +365,11 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 foreach ($quantityMain['sub_criterias'] as $sub) {
                     $mainTotalScore += (float) $sub['score_d'];
                 }
-                $data[] = [$mainCounter.'. '.$quantityMain['name'], $mainTotalScore];
+                $data[] = [$quantityMain['name'], $mainTotalScore];
 
                 $subCounter = 1; // Counter for sub-criteria numbering
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $data[] = ['  '.$mainCounter.'.'.$subCounter.'. '.$sub['name'], $sub['score_d']];
+                    $data[] = ['  '.$sub['name'], $sub['score_d']];
                     $subCounter++;
                 }
                 $mainCounter++;
@@ -377,9 +377,11 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
 
             // Add quality main criteria (only main, no sub)
             foreach ($evaluationList['quality_items'] as $qualityMain) {
-                $data[] = [$mainCounter.'. '.$qualityMain['name'], $qualityMain['main_calculated_score']];
+                $data[] = [$qualityMain['name'], $qualityMain['main_calculated_score']];
                 $mainCounter++;
             }
+
+            $data[]=[' ', ' '];
         }
 
         return $data;

@@ -207,7 +207,7 @@
 
                             <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
 
-                            <td class="p-4 border-b text-center min-w-[200px]">
+                            <td class="py-4 px-2 border-b text-center min-w-[180px]">
                                 @php
                                     $statusClasses = [
                                         'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',

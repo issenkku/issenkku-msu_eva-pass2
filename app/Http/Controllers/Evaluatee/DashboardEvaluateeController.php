@@ -333,6 +333,7 @@ class DashboardEvaluateeController extends Controller
                                         'name' => $subCriteria->name,
                                         'sequence' => $subCriteria->sequence,
                                         'num_score' => $subCriteria->num_score,
+                                        'description' => $subCriteria->description,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',
                                         'calculated_score' => $calculatedScore,

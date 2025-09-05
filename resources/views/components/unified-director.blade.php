@@ -244,11 +244,6 @@
                                                                     คะแนน {{ $subCriteria['num_score'] }}
                                                                 </span>
                                                             </div>
-                                                            @if(!empty($subCriteria['description']))
-                                                                <div class="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400 mt-2">
-                                                                    {!! $subCriteria['description'] !!}
-                                                                </div>
-                                                            @endif
                                                         </div>
 
                                                         <!-- Input -->
@@ -275,6 +270,11 @@
                                                             </div>
                                                         @endif
                                                     </div>
+                                                    @if(!empty($subCriteria['description']))
+                                                        <div class="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400 mt-3">
+                                                            {!! $subCriteria['description'] !!}
+                                                        </div>
+                                                    @endif
 
                                                     {{-- Hidden Score Input --}}
                                                     @if(!$readonly)

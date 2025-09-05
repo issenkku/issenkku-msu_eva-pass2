@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Services\EvaluationService;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -87,7 +90,7 @@ class ManagerController extends Controller
             'userAsEvaluatee' => $userAsEvaluatee, // Director's evaluatee assignments
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data
-            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
+            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) =>  Carbon::parse($d)->year)->unique()->sortDesc(),
             'averageScore' => $averageScore,
             'scatterData' => $scatterData,
             'chartData' => $chartData,

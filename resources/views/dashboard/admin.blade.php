@@ -108,7 +108,7 @@
                 type= defualt 
                 text="ย้อนกลับ" 
                 icon="fas fa-arrow-left"
-                href="/director-dashboard" />
+                href="/dashboard" />
         </div>
     </form>
 </div>

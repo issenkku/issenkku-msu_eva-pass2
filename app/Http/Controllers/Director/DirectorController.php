@@ -10,9 +10,6 @@ use App\Services\ScoreService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;
 use App\Services\EvaluationService;
 
 class DirectorController extends Controller
