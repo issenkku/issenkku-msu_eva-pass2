@@ -223,24 +223,25 @@
 
             <!-- Users Table -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
-                <div class="px-6 pt-4 pb-2">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">ผลการประเมินรายบุคคล</h3>
+                <div class="px-6 pt-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">ผลการประเมินรายบุคคล</h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b">
                         <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative">
+                                <x-search-bar  
+                                    placeholder="ค้นหาชื่อ, รายงาน..."
+                                /> 
+                            </div>
+                        </div>
+                        <div  class="flex flex-wrap justify-between gap-2">
                             <x-export-button 
                                 :route="route('admin.export.reports', request()->query())"
                                 label="ส่งออกExcelทั้งหมด" />
-                            <div class="relative">
-                                <input type="text" id="searchInput" placeholder="ค้นหาชื่อผู้รับการประเมิน"
-                                    class="text-black w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
-                            </div>
+                             <x-filter-badge-single 
+                                name="year"
+                                placeholder="ปีการประเมินทั้งหมด"
+                                :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+                            />
                         </div>
                     </div>
                 </div>
@@ -256,7 +257,7 @@
                     $firstStatus = array_key_first($statusCounts);
                 @endphp
 
-                <div  class="flex flex-wrap justify-between gap-2 mx-4">
+                <div  class="flex flex-wrap justify-between gap-2 mx-4 pt-3">
                     <div class=" flex gap-3 mb-6 flex-wrap ">
                         @foreach($statusCounts as $status => $count)
                             @php
@@ -276,11 +277,6 @@
                             </a>
                         @endforeach
                     </div>
-                    <x-filter-badge-single 
-                        name="year"
-                        placeholder="ปีการประเมินทั้งหมด"
-                        :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
-                    />
                 </div>
                 
 
@@ -371,6 +367,8 @@
                                                 title="ส่งออกรายงานผลการประเมินของ {{ $evaluateeName  ?? 'บุคคล' }}">
                                                     <i class="fas fa-file-export"></i>
                                                 </a>
+                                            @else
+                                                <div>-</div>
                                             @endif
                                         </div>
                                     </td>

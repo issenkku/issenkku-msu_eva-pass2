@@ -16,9 +16,29 @@ use Illuminate\Support\Facades\DB;
 use App\Services\ScoreService;
 use App\Services\GraphDataService;  
 use App\Services\EvaluationService;
+use App\Services\ReportDataService;
 
 class DashboardController extends Controller
 {
+    protected $allowedEditStatuses = [];
+
+    protected $reportDataService;
+
+    public function __construct(ReportDataService $reportDataService)
+    {
+        $this->reportDataService = $reportDataService;
+    }
+
+    protected function checkReportEditableStatus(Reports $report, $action)
+    {
+        if (! in_array($report->status, $this->allowedEditStatuses)) {
+            return response()->json([
+                'message' => "Cannot {$action}.",
+            ], 403);
+        }
+
+        return null; // ถ้าผ่านการตรวจสอบ
+    }
     private function countByStatus($evaluations, $statuses)
     {
         return $evaluations->filter(function ($assignment) use ($statuses) {
@@ -102,17 +122,32 @@ class DashboardController extends Controller
             'evaluationPeriod' => $evaluationPeriod,
             'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
         ]);
+    }
 
-        // return response()->json([
-        //     'totalParticipants' => $totalParticipants,
-        //     'averageScore' => $averageScore,
-        //     'departments' => $departments,
-        //     'statusCounts_chart' => $statusCounts,
-        //     'scatterData_chart' => $scatterData,
-        //     // 'reports' => $reportsQuery->get(),
-        //     'reports' => $reportsWithScores,
-        //     'evaluationPeriod' => $evaluationPeriod,
-        // ]);
+    public function admin(Request $request, $id)
+    {
+        $user = $request->user()->load('position', 'department');
+
+        $data = $this->reportDataService->getReportData($id);
+        $report = $data['report'];
+
+        // if (in_array($report->status, ['Assigned', 'Draft',
+        //     'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'])) {
+        //     abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
+        // }
+
+        $canEdit = in_array($report->status, []);
+        $readonly = ! $canEdit; // true if status is something else
+
+        if ($readonly && $request->query('readonly') != 1) {
+            return redirect()->route('admin.show', ['id' => $id, 'readonly' => 1]);
+        }
+
+        return view('dashboard.admin', array_merge($data, [
+            'id' => $id,
+            'user' => $user,
+            'readonly' => $readonly,
+        ]));
     }
 
     private function reportsWithScores($reports)
