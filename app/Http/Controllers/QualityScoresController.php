@@ -111,39 +111,71 @@ class QualityScoresController extends Controller
             'timestamp' => now(),
         ]);
 
-        $request->validate([
-            'report_id' => 'required|exists:report_datas,id',
-            'quality_sub_criteria_id' => 'required|exists:quality_sub_criterias,id',
-            'users' => 'required|array|min:1',
-            'users.*' => 'exists:users,id',
-            'scores' => 'required|array',
-            'scores.*' => 'required|numeric|min:0|max:100',
-        ], [
-            'report_id.required' => 'กรุณาเลือกรายงานการประเมิน',
-            'report_id.exists' => 'รายงานการประเมินที่เลือกไม่ถูกต้อง',
-            'quality_sub_criteria_id.required' => 'กรุณาเลือกเกณฑ์การประเมิน',
-            'quality_sub_criteria_id.exists' => 'เกณฑ์การประเมินที่เลือกไม่ถูกต้อง',
-            'users.required' => 'กรุณาเลือกผู้ใช้งาน',
-            'users.min' => 'กรุณาเลือกผู้ใช้งานอย่างน้อย 1 คน',
-            'users.*.exists' => 'ผู้ใช้งานที่เลือกไม่ถูกต้อง',
-            'scores.required' => 'กรุณาระบุคะแนน',
-            'scores.*.required' => 'กรุณาระบุคะแนนให้ครบทุกคน',
-            'scores.*.numeric' => 'คะแนนต้องเป็นตัวเลขเท่านั้น',
-            'scores.*.min' => 'คะแนนต้องไม่น้อยกว่า 0',
-            'scores.*.max' => 'คะแนนต้องไม่เกิน 100',
-        ]);
-
-        // Log หลังจาก validation สำเร็จ
-        Log::info('QualityScore validation passed', [
-            'validated_data' => [
-                'report_id' => $request->report_id,
-                'quality_sub_criteria_id' => $request->quality_sub_criteria_id,
-                'users_count' => count($request->users),
-                'scores_count' => count($request->scores),
-            ],
-        ]);
-
         try {
+            Log::info('Starting validation process');
+
+            $request->validate([
+                'report_id' => 'required|exists:report_datas,id',
+                'users' => 'required|array|min:1',
+                'users.*' => 'exists:users,id',
+                'criterias' => 'required|array|min:1',
+                'criterias.*' => 'exists:quality_sub_criterias,id',
+                'scores' => 'required|array',
+                'scores.*' => 'required|numeric|min:0|max:100',
+            ], [
+                'report_id.required' => 'กรุณาเลือกรายงานการประเมิน',
+                'report_id.exists' => 'รายงานการประเมินที่เลือกไม่ถูกต้อง',
+                'users.required' => 'กรุณาเลือกผู้ใช้งาน',
+                'users.min' => 'กรุณาเลือกผู้ใช้งานอย่างน้อย 1 คน',
+                'users.*.exists' => 'ผู้ใช้งานที่เลือกไม่ถูกต้อง',
+                'criterias.required' => 'กรุณาเลือกเกณฑ์การประเมิน',
+                'criterias.min' => 'กรุณาเลือกเกณฑ์การประเมินอย่างน้อย 1 ข้อ',
+                'criterias.*.exists' => 'เกณฑ์การประเมินที่เลือกไม่ถูกต้อง',
+                'scores.required' => 'กรุณาระบุคะแนน',
+                'scores.*.required' => 'กรุณาระบุคะแนนให้ครบทุกช่อง',
+                'scores.*.numeric' => 'คะแนนต้องเป็นตัวเลขเท่านั้น',
+                'scores.*.min' => 'คะแนนต้องไม่น้อยกว่า 0',
+                'scores.*.max' => 'คะแนนต้องไม่เกิน 100',
+            ]);
+
+            Log::info('Validation passed');
+
+            // ตรวจสอบว่าจำนวนข้อมูล users, criterias, scores ตรงกันหรือไม่
+            $usersCount = count($request->users);
+            $criteriasCount = count($request->criterias);
+            $scoresCount = count($request->scores);
+
+            Log::info('Data counts check', [
+                'users_count' => $usersCount,
+                'criterias_count' => $criteriasCount,
+                'scores_count' => $scoresCount,
+            ]);
+
+            if ($scoresCount !== $usersCount || $usersCount !== $criteriasCount) {
+                Log::error('Data count mismatch', [
+                    'users_count' => $usersCount,
+                    'criterias_count' => $criteriasCount,
+                    'scores_count' => $scoresCount,
+                    'users' => $request->users,
+                    'criterias' => $request->criterias,
+                    'scores' => $request->scores,
+                ]);
+
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'ข้อมูลไม่สอดคล้องกัน กรุณาตรวจสอบข้อมูลและลองอีกครั้ง');
+            }
+
+            // Log หลังจาก validation สำเร็จ
+            Log::info('QualityScore validation passed', [
+                'validated_data' => [
+                    'report_id' => $request->report_id,
+                    'users_count' => $usersCount,
+                    'criterias_count' => $criteriasCount,
+                    'scores_count' => $scoresCount,
+                ],
+            ]);
+
             DB::beginTransaction();
 
             // Log เริ่มต้น transaction
@@ -166,23 +198,28 @@ class QualityScoresController extends Controller
             }
 
             $reportId = $report->id;
+            Log::info('Using report_id', ['report_id' => $reportId]);
 
             $createdScores = [];
             $updatedScores = [];
 
-            foreach ($request->users as $index => $userId) {
-                $score = $request->scores[$index] ?? 0;
+            // วนลูปผ่านแต่ละรายการ (ตอนนี้ users, criterias, scores มีจำนวนเท่ากัน)
+            for ($i = 0; $i < count($request->users); $i++) {
+                $userId = $request->users[$i];
+                $criteriaId = $request->criterias[$i];
+                $score = $request->scores[$i];
 
-                Log::info('Processing user score', [
+                Log::info('Processing user-criteria combination', [
                     'user_id' => $userId,
+                    'criteria_id' => $criteriaId,
                     'score' => $score,
-                    'index' => $index,
+                    'index' => $i,
                     'report_id' => $reportId,
                 ]);
 
                 // ตรวจสอบว่ามีคะแนนสำหรับ user และ criteria นี้แล้วหรือไม่
                 $existingScore = QualityScore::where('user_id', $userId)
-                    ->where('quality_sub_criteria_id', $request->quality_sub_criteria_id)
+                    ->where('quality_sub_criteria_id', $criteriaId)
                     ->where('report_id', $reportId)
                     ->first();
 
@@ -198,6 +235,7 @@ class QualityScoresController extends Controller
                     $updatedScores[] = [
                         'id' => $existingScore->id,
                         'user_id' => $userId,
+                        'criteria_id' => $criteriaId,
                         'old_score' => $existingScore->getOriginal('score'),
                         'new_score' => $score,
                     ];
@@ -205,14 +243,14 @@ class QualityScoresController extends Controller
                     // สร้างคะแนนใหม่
                     Log::info('Creating new score record', [
                         'user_id' => $userId,
-                        'quality_sub_criteria_id' => $request->quality_sub_criteria_id,
+                        'quality_sub_criteria_id' => $criteriaId,
                         'report_id' => $reportId,
                         'score' => $score,
                     ]);
 
                     $newScore = QualityScore::create([
                         'user_id' => $userId,
-                        'quality_sub_criteria_id' => $request->quality_sub_criteria_id,
+                        'quality_sub_criteria_id' => $criteriaId,
                         'report_id' => $reportId,
                         'score' => $score,
                     ]);
@@ -220,6 +258,7 @@ class QualityScoresController extends Controller
                     $createdScores[] = [
                         'id' => $newScore->id,
                         'user_id' => $userId,
+                        'criteria_id' => $criteriaId,
                         'score' => $score,
                     ];
 
@@ -239,11 +278,25 @@ class QualityScoresController extends Controller
                 'updated_scores_count' => count($updatedScores),
                 'created_scores' => $createdScores,
                 'updated_scores' => $updatedScores,
-                'total_processed' => count($request->users),
+                'total_processed' => count($createdScores) + count($updatedScores),
             ]);
 
+            $totalUsers = count(array_unique($request->users));
+            $totalCriterias = count(array_unique($request->criterias));
+
             return redirect()->route('quality-scores.index')
-                ->with('success', 'บันทึกคะแนนสำเร็จ');
+                ->with('success', "บันทึกคะแนนสำเร็จ สำหรับ {$totalUsers} คน ใน {$totalCriterias} เกณฑ์การประเมิน");
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Validation failed', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all(),
+            ]);
+
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'ข้อมูลไม่ถูกต้อง กรุณาตรวจสอบและลองอีกครั้ง');
 
         } catch (\Exception $e) {
             DB::rollback();

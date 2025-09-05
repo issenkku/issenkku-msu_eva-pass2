@@ -83,13 +83,14 @@ class ReportStructureController extends Controller
                             'quality_sub_criterias.name',
                             'quality_sub_criterias.sequence',
                             'num_score',
+                            'description',
                             'quality_main_criteria_id',
                             'evaluation_list_id'
                         )
                             ->orderBy('sequence');
                     },
                     'categories.evaluationLists.qualitySubCriterias.mainCriteria' => function ($query) {
-                        $query->select('id', 'name', 'ratio', 'tooltips', 'sequence');
+                        $query->select('id', 'name', 'ratio', 'tooltips', 'sequence')->orderBy('sequence');
                     },
                 ])
                 ->where('id', $id)
@@ -184,6 +185,7 @@ class ReportStructureController extends Controller
                                     'name' => $qSub->name,
                                     'sequence' => $qSub->sequence,
                                     'num_score' => (float) $qSub->num_score,
+                                    'description' => $qSub->description,
                                 ];
                             }
 
@@ -194,7 +196,10 @@ class ReportStructureController extends Controller
                                 'sequence' => $evalList->sequence,
                                 'annotation' => $evalList->annotation,
                                 'quantity_main_criterias' => array_values($quantityMainMap),
-                                'quality_main_criterias' => array_values($qualityMainMap),
+                                'quality_main_criterias' => collect($qualityMainMap)
+                                    ->sortBy('sequence')
+                                    ->values()
+                                    ->all(),
                             ];
                         })->values()->all(),
                     ];
@@ -257,6 +262,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.description' => 'nullable|string',
         ]);
 
         try {
@@ -375,6 +381,7 @@ class ReportStructureController extends Controller
                                                 'name' => $qlSub['name'],
                                                 'sequence' => $qlSub['sequence'],
                                                 'num_score' => $qlSub['num_score'],
+                                                'description' => $qlSub['description'] ?? null,
                                             ]);
                                         }
                                     }
@@ -463,6 +470,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.description' => 'nullable|string',
         ]);
 
         $version = CriteriaVersion::findOrFail($id);
@@ -594,6 +602,7 @@ class ReportStructureController extends Controller
                                                 'name' => $qlSub['name'],
                                                 'sequence' => $qlSub['sequence'],
                                                 'num_score' => $qlSub['num_score'],
+                                                'description' => $qlSub['description'] ?? null,
                                             ]);
                                         }
                                     }

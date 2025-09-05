@@ -2,22 +2,23 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Events\AfterSheet;
-use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class SingleReportExport implements WithMultipleSheets
 {
     protected $assignment;
+
     protected $categoryItems;
 
     public function __construct($assignment, $categoryItems = null)
@@ -29,10 +30,10 @@ class SingleReportExport implements WithMultipleSheets
     public function sheets(): array
     {
         $sheets = [];
-        
+
         // First sheet - Summary
         $sheets[] = new SummarySheet($this->assignment);
-        
+
         // Category sheets
         foreach ($this->categoryItems as $category) {
             $sheets[] = new CategorySheet($this->assignment, $category);
@@ -44,8 +45,8 @@ class SingleReportExport implements WithMultipleSheets
     private function getCategoryItems()
     {
         $report = $this->assignment->report;
-        
-        if (!$report || !$report->reportData || !$report->reportData->criteriaVersion) {
+
+        if (! $report || ! $report->reportData || ! $report->reportData->criteriaVersion) {
             return [];
         }
 
@@ -81,7 +82,7 @@ class SingleReportExport implements WithMultipleSheets
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $key = $row->evaluation_list_id.'_'.$row->main_id;
                 $arrScoreEva[$key] = $calculatedScore;
             }
         }
@@ -97,7 +98,7 @@ class SingleReportExport implements WithMultipleSheets
             ->get();
 
         $categoryItems = [];
-        
+
         foreach ($categories as $category) {
             $categoryData = [
                 'id' => $category->id,
@@ -124,7 +125,7 @@ class SingleReportExport implements WithMultipleSheets
 
                     foreach ($quantityMainGroups as $mainCriteriaId => $subCriterias) {
                         $mainCriteria = $subCriterias->first()->mainCriteria;
-                        
+
                         if ($mainCriteria) {
                             $mainCriteriaData = [
                                 'id' => $mainCriteria->id,
@@ -158,9 +159,9 @@ class SingleReportExport implements WithMultipleSheets
 
                     foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
                         $mainCriteria = $subCriterias->first()->mainCriteria;
-                        
+
                         if ($mainCriteria) {
-                            $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                            $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
                             $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
 
                             $evaluationListData['quality_items'][] = [
@@ -183,7 +184,7 @@ class SingleReportExport implements WithMultipleSheets
     }
 }
 
-class SummarySheet implements FromArray, WithStyles, WithColumnWidths, WithEvents, WithTitle
+class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyles, WithTitle
 {
     protected $assignment;
 
@@ -237,7 +238,7 @@ class SummarySheet implements FromArray, WithStyles, WithColumnWidths, WithEvent
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                $arrScoreEva[$row->evaluation_list_id . '_' . $row->main_id] = $calculatedScore;
+                $arrScoreEva[$row->evaluation_list_id.'_'.$row->main_id] = $calculatedScore;
             }
         }
         $qualityScore = round(array_sum($arrScoreEva), 2);
@@ -248,20 +249,20 @@ class SummarySheet implements FromArray, WithStyles, WithColumnWidths, WithEvent
         $end = optional($this->assignment->assignmentData)->end_time;
 
         $startDate = $start ? Carbon::parse($start)->locale('th')->translatedFormat('d M Y H:i') : '-';
-        $endDate   = $end ? Carbon::parse($end)->locale('th')->translatedFormat('d M Y H:i') : '-';
+        $endDate = $end ? Carbon::parse($end)->locale('th')->translatedFormat('d M Y H:i') : '-';
 
         if ($start) {
             $startDate = Carbon::parse($start)
                 ->locale('th')
-                ->translatedFormat('d M ') . (Carbon::parse($start)->year + 543) . Carbon::parse($start)->format(' H:i');
+                ->translatedFormat('d M ').(Carbon::parse($start)->year + 543).Carbon::parse($start)->format(' H:i');
         }
         if ($end) {
             $endDate = Carbon::parse($end)
                 ->locale('th')
-                ->translatedFormat('d M ') . (Carbon::parse($end)->year + 543) . Carbon::parse($end)->format(' H:i');
+                ->translatedFormat('d M ').(Carbon::parse($end)->year + 543).Carbon::parse($end)->format(' H:i');
         }
 
-        $evaluationRound = $startDate . ' ถึง ' . $endDate;
+        $evaluationRound = $startDate.' ถึง '.$endDate;
         $evaluators = $this->assignment->getEvaluatorUsers();
         $evaluatorNames = $evaluators->pluck('name')->implode(', ');
 
@@ -316,9 +317,10 @@ class SummarySheet implements FromArray, WithStyles, WithColumnWidths, WithEvent
     }
 }
 
-class CategorySheet implements FromArray, WithStyles, WithColumnWidths, WithEvents, WithTitle
+class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyles, WithTitle
 {
     protected $assignment;
+
     protected $category;
 
     public function __construct($assignment, $category)
@@ -329,26 +331,26 @@ class CategorySheet implements FromArray, WithStyles, WithColumnWidths, WithEven
 
     public function title(): string
     {
-        return 'หมวดหมู่ที่' . $this->category['sequence'];
+        return 'หมวดหมู่ที่'.$this->category['sequence'];
     }
 
     public function array(): array
     {
         $data = [];
         $data[] = ['หัวข้อเกณฑ์', 'คะแนน'];
-        $data[] = ['หัวข้อหลัก: ' .$this->category['main_categories'].' ('.$this->category['sub_categories'].')', ''];
+        $data[] = ['หัวข้อหลัก: '.$this->category['main_categories'].' ('.$this->category['sub_categories'].')', ''];
 
         foreach ($this->category['evaluation_lists'] as $evaluationList) {
             // Add evaluation list header
             $totalListScore = 0;
-            
+
             // Calculate total score for this evaluation list
             foreach ($evaluationList['quantity_items'] as $quantityMain) {
                 foreach ($quantityMain['sub_criterias'] as $sub) {
                     $totalListScore += (float) $sub['score_d'];
                 }
             }
-            
+
             foreach ($evaluationList['quality_items'] as $qualityMain) {
                 $totalListScore += (float) $qualityMain['main_calculated_score'];
             }
@@ -363,11 +365,11 @@ class CategorySheet implements FromArray, WithStyles, WithColumnWidths, WithEven
                 foreach ($quantityMain['sub_criterias'] as $sub) {
                     $mainTotalScore += (float) $sub['score_d'];
                 }
-                $data[] = [$mainCounter . '. ' . $quantityMain['name'], $mainTotalScore];
-                
+                $data[] = [$mainCounter.'. '.$quantityMain['name'], $mainTotalScore];
+
                 $subCounter = 1; // Counter for sub-criteria numbering
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $data[] = ['  ' . $mainCounter . '.' . $subCounter . '. ' . $sub['name'], $sub['score_d']];
+                    $data[] = ['  '.$mainCounter.'.'.$subCounter.'. '.$sub['name'], $sub['score_d']];
                     $subCounter++;
                 }
                 $mainCounter++;
@@ -375,7 +377,7 @@ class CategorySheet implements FromArray, WithStyles, WithColumnWidths, WithEven
 
             // Add quality main criteria (only main, no sub)
             foreach ($evaluationList['quality_items'] as $qualityMain) {
-                $data[] = [$mainCounter . '. ' . $qualityMain['name'], $qualityMain['main_calculated_score']];
+                $data[] = [$mainCounter.'. '.$qualityMain['name'], $qualityMain['main_calculated_score']];
                 $mainCounter++;
             }
         }

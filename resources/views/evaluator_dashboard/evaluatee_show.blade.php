@@ -179,7 +179,19 @@
                                                 @endphp
                                                 @if ($list_eva->quality_main_criteria_id === $current_main_id)
                                                     <tr>
-                                                        <td class="text-left">{{ $list_eva->name }}</td>
+                                                        <td class="text-left criteria-name-cell">
+                                                            <div class="criteria-name">{{ $list_eva->name }}</div>
+                                                            @if (!empty($list_eva->description))
+                                                                <div class="criteria-description">
+                                                                    {!! $list_eva->description !!}
+                                                                </div>
+                                                            @else
+                                                                {{-- Debug: Show if description is empty --}}
+                                                                <div class="criteria-description" style="background: #fef2f2; color: #dc2626; font-size: 12px;">
+                                                                    [Debug: No description data - {{ var_export($list_eva->description, true) }}]
+                                                                </div>
+                                                            @endif
+                                                        </td>
                                                         {{-- <td>
                                                             @if (!empty($list_eva->evidence_link))
                                                                 <a href="{{ $list_eva->evidence_link }}"
@@ -205,7 +217,19 @@
                                                         <td></td>
                                                     </tr>
                                                     <tr>
-                                                        <td class="text-left">{{ $list_eva->name }}</td>
+                                                        <td class="text-left criteria-name-cell">
+                                                            <div class="criteria-name">{{ $list_eva->name }}</div>
+                                                            @if (!empty($list_eva->description))
+                                                                <div class="criteria-description">
+                                                                    {!! $list_eva->description !!}
+                                                                </div>
+                                                            @else
+                                                                {{-- Debug: Show if description is empty --}}
+                                                                <div class="criteria-description" style="background: #fef2f2; color: #dc2626; font-size: 12px;">
+                                                                    [Debug: No description data - {{ var_export($list_eva->description, true) }}]
+                                                                </div>
+                                                            @endif
+                                                        </td>
                                                         {{-- <td>
                                                             @if (!empty($list_eva->evidence_link))
                                                                 <a href="{{ $list_eva->evidence_link }}"
@@ -498,6 +522,54 @@
 
         .text-left {
             text-align: left !important;
+        }
+
+        .criteria-name-cell {
+            max-width: 400px;
+            word-wrap: break-word;
+            vertical-align: top;
+        }
+
+        .criteria-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .criteria-description {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border-left: 3px solid #e2e8f0;
+        }
+
+        .criteria-description p {
+            margin-bottom: 6px;
+        }
+
+        .criteria-description p:last-child {
+            margin-bottom: 0;
+        }
+
+        .criteria-description ul, .criteria-description ol {
+            padding-left: 16px;
+            margin-bottom: 6px;
+        }
+
+        .criteria-description ul:last-child, .criteria-description ol:last-child {
+            margin-bottom: 0;
+        }
+
+        .criteria-description strong {
+            color: #374151;
+        }
+
+        .text-gray-500 {
+            color: #6b7280;
+            font-style: italic;
         }
 
         /* Action Section */

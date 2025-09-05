@@ -2,11 +2,32 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
-    <h2 class="text-2xl font-semibold mb-6">แก้ไขข้อมูลโปรไฟล์</h2>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold">แก้ไขข้อมูลโปรไฟล์</h2>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="enable-public-profile" 
+                       {{ $user->is_public_profile_enabled ? 'checked' : '' }}
+                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                <label for="enable-public-profile" class="text-sm font-medium text-gray-700">
+                    เปิดใช้โปรไฟล์สาธารณะ
+                </label>
+            </div>
+            <button type="button" id="copy-profile-link" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition-colors flex items-center gap-2 {{ !$user->is_public_profile_enabled ? 'opacity-50 cursor-not-allowed' : '' }}"
+                    {{ !$user->is_public_profile_enabled ? 'disabled' : '' }}>
+                <i class="fas fa-link"></i>
+                คัดลอกลิงก์โปรไฟล์
+            </button>
+        </div>
+    </div>
 
     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
+        
+        <!-- Hidden field for public profile setting -->
+        <input type="hidden" name="is_public_profile_enabled" id="is_public_profile_enabled" value="{{ $user->is_public_profile_enabled ? '1' : '0' }}">
 
         <!-- Profile Photo Section -->
         <div class="mb-8 flex items-center gap-6">
@@ -217,6 +238,50 @@ document.getElementById('phone').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length <= 10) {
         e.target.value = value;
+    }
+});
+
+// Copy public profile link
+document.getElementById('copy-profile-link').addEventListener('click', function() {
+    const isEnabled = document.getElementById('enable-public-profile').checked;
+    
+    if (!isEnabled) {
+        alert('กرุณาเปิดใช้โปรไฟล์สาธารณะก่อนคัดลอกลิงก์');
+        return;
+    }
+    
+    const publicUrl = "{{ $user->public_profile_url }}";
+    navigator.clipboard.writeText(publicUrl).then(function() {
+        // Show a temporary alert
+        const btn = document.getElementById('copy-profile-link');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกสำเร็จ!';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btn.classList.add('bg-green-600');
+        setTimeout(function() {
+            btn.innerHTML = original;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 1500);
+    }, function() {
+        alert('ไม่สามารถคัดลอกลิงก์ได้');
+    });
+});
+
+// Handle public profile toggle
+document.getElementById('enable-public-profile').addEventListener('change', function() {
+    const isEnabled = this.checked;
+    const copyBtn = document.getElementById('copy-profile-link');
+    const hiddenInput = document.getElementById('is_public_profile_enabled');
+    
+    hiddenInput.value = isEnabled ? '1' : '0';
+    
+    if (isEnabled) {
+        copyBtn.disabled = false;
+        copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        copyBtn.disabled = true;
+        copyBtn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 });
 </script>

@@ -2,35 +2,32 @@
 
 namespace App\Exports;
 
-use App\Models\Assignments;
-use App\Models\Reports;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Events\AfterSheet;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-
-class ReportsExport implements FromCollection, WithHeadings, WithStyles, WithColumnWidths, WithEvents
+class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, WithHeadings, WithStyles
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     protected $query;
 
-    public function __construct( $query = null)
+    public function __construct($query = null)
     {
         $this->query = $query;
     }
 
     public function collection()
     {
-        return  $this->query->get()->map(function ($assignment, $index) {
+        return $this->query->get()->map(function ($assignment, $index) {
             $report = $assignment->report;
 
             // 1️⃣ Evaluator names
@@ -74,7 +71,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithStyles, WithCol
                 if ($maxSum > 0) {
                     $scoreRatioMain = $ratio * ($accSum / $maxSum);
                     $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                    $key = $row->evaluation_list_id . '_' . $row->main_id;
+                    $key = $row->evaluation_list_id.'_'.$row->main_id;
                     $arrScoreEva[$key] = $calculatedScore;
                 }
             }
@@ -88,25 +85,26 @@ class ReportsExport implements FromCollection, WithHeadings, WithStyles, WithCol
             $end = optional($assignment->assignmentData)->end_time;
 
             $startDate = $start ? Carbon::parse($start)->locale('th')->translatedFormat('d M Y H:i') : '-';
-            $endDate   = $end ? Carbon::parse($end)->locale('th')->translatedFormat('d M Y H:i') : '-';
+            $endDate = $end ? Carbon::parse($end)->locale('th')->translatedFormat('d M Y H:i') : '-';
 
             // Convert to Buddhist year (+543)
             if ($start) {
                 $startDate = Carbon::parse($start)
                     ->locale('th')
-                    ->translatedFormat('d M ') . (Carbon::parse($start)->year + 543) . Carbon::parse($start)->format(' H:i');
+                    ->translatedFormat('d M ').(Carbon::parse($start)->year + 543).Carbon::parse($start)->format(' H:i');
             }
             if ($end) {
                 $endDate = Carbon::parse($end)
                     ->locale('th')
-                    ->translatedFormat('d M ') . (Carbon::parse($end)->year + 543) . Carbon::parse($end)->format(' H:i');
+                    ->translatedFormat('d M ').(Carbon::parse($end)->year + 543).Carbon::parse($end)->format(' H:i');
             }
 
-            $evaluationRound = $startDate . ' ถึง ' . $endDate;
+            $evaluationRound = $startDate.' ถึง '.$endDate;
 
             return [
                 $index + 1,
                 $evaluationRound,
+                optional($assignment->assignmentData)->start_time.' ถึง '.optional($assignment->assignmentData)->end_time,
                 $assignment->evaluateeUser?->name,
                 $assignment->evaluateeUser?->department?->department_name,
                 $assignment->evaluateeUser?->personnel_type,
@@ -150,7 +148,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithStyles, WithCol
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['argb' => 'D3D3D3'],
-                ]
+                ],
             ],
         ];
     }
@@ -179,7 +177,7 @@ class ReportsExport implements FromCollection, WithHeadings, WithStyles, WithCol
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
-                
+
                 // Apply font to A1:M100 range
                 $sheet->getStyle('A1:M100')->getFont()->setName('TH Sarabun New')->setSize(14);
             },

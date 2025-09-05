@@ -69,7 +69,7 @@
         /> 
         <div  class="flex flex-wrap justify-between gap-2">
             <x-export-button 
-                :route="route('admin.export.reports', request()->query())"
+                :route="route('export.reports', request()->query())"
                 label="ส่งออกExcelทั้งหมด" />
             <x-filter-badge-single 
                 name="year"

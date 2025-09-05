@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Public profile route - ไม่ต้อง login
-Route::get('profile/{user:employee_id}', [ProfileController::class, 'showPublic'])->name('profile.public');
+Route::get('profile/{uuid}', [ProfileController::class, 'showPublic'])->name('profile.public');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::redirect('settings', '/settings/profile');

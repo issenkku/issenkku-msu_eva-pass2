@@ -8,9 +8,6 @@ use App\Models\Setting\Departments;
 use App\Services\EvaluationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;
 
 class ManagerController extends Controller
 {
@@ -62,12 +59,12 @@ class ManagerController extends Controller
             ];
         });
 
-         $totalEvaluations = $evaluations->count();
+        $totalEvaluations = $evaluations->count();
 
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Director;
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -66,7 +69,7 @@ class DirectorController extends Controller
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 

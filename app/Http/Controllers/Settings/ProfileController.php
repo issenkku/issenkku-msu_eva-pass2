@@ -29,8 +29,12 @@ class ProfileController extends Controller
     /**
      * Show public profile page for any user.
      */
-    public function showPublic(User $user)
+    public function showPublic($uuid)
     {
+        $user = User::where('public_profile_uuid', $uuid)
+            ->where('is_public_profile_enabled', true)
+            ->firstOrFail();
+
         $user = $user->load('position', 'department', 'roles');
 
         return view('user.profile.show-profile-public', compact('user'));

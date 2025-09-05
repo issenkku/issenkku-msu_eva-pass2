@@ -2,21 +2,28 @@
 
 namespace App\View\Components;
 
-use Closure;
-use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
 class BarChart extends Component
 {
     public $chartId;
+
     public $title;
+
     public $data;
+
     public $labels;
+
     public $colors;
+
     public $height;
+
     public $downloadable;
+
     public $chartOptions;
+
     public $chartLabels; // Add this
+
     public $chartData;   // Add this
 
     public function __construct(
@@ -37,7 +44,7 @@ class BarChart extends Component
         $this->height = $height;
         $this->downloadable = $downloadable;
         $this->chartOptions = $chartOptions;
-        
+
         // Process the data and labels
         $this->processChartData();
     }
@@ -45,7 +52,7 @@ class BarChart extends Component
     private function processChartData()
     {
         // If labels are provided, use them with data array
-        if (!empty($this->labels)) {
+        if (! empty($this->labels)) {
             $this->chartLabels = $this->labels;
             $this->chartData = is_array($this->data) ? $this->data : [];
         } else {

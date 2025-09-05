@@ -449,7 +449,7 @@
                                                         </svg>
                                                     </button>
                                                 </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                                     <div>
                                                         <label
                                                             class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
@@ -472,6 +472,12 @@
                                                             class="num_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนนสูงสุด">
                                                     </div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="block text-sm font-medium text-gray-600 mb-2">คำอธิบาย</label>
+                                                    <textarea name="qual_sub_description" rows="6" id="qual_sub_description_1"
+                                                        class="qual_sub_description richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
+                                                        placeholder="ใส่คำอธิบายการให้คะแนน"></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -594,26 +600,36 @@
     <script>
         // Initialize Summernote for rich text editors
         function initializeSummernote() {
-            $('.richtext-editor').summernote({
-                height: 250,
-                toolbar: [
-                    ['style', ['style']],
-                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                    ['fontname', ['fontname']],
-                    ['color', ['color']],
-                    ['para', ['ul', 'ol', 'paragraph']],
-                    ['table', ['table']],
-                    ['insert', ['link', 'picture']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
-                ],
-                placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
-                lang: 'th-TH',
-                callbacks: {
-                    onChange: function(contents, $editable) {
-                        // Update the textarea value when content changes
-                        $(this).val(contents);
-                    }
+            $('.richtext-editor').each(function() {
+                const $editor = $(this);
+                let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
+                
+                // Use specific placeholder for quality sub criteria description
+                if ($editor.hasClass('qual_sub_description')) {
+                    placeholder = 'ใส่คำอธิบายการให้คะแนน';
                 }
+                
+                $editor.summernote({
+                    height: 250,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['fontname', ['fontname']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ],
+                    placeholder: placeholder,
+                    lang: 'th-TH',
+                    callbacks: {
+                        onChange: function(contents, $editable) {
+                            // Update the textarea value when content changes
+                            $(this).val(contents);
+                        }
+                    }
+                });
             });
         }
 
@@ -1097,6 +1113,31 @@
                 let newBlock = cloneAndClear('.qual_sub_criteria_block');
                 parent.appendChild(newBlock);
                 updateQualSubSequence(parent);
+                
+                // Initialize Summernote for new rich text editors in the new block
+                setTimeout(function() {
+                    $(newBlock).find('.qual_sub_description.richtext-editor').summernote({
+                        height: 200,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['fontname', ['fontname']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        placeholder: 'ใส่คำอธิบายการให้คะแนน',
+                        lang: 'th-TH',
+                        callbacks: {
+                            onChange: function(contents, $editable) {
+                                $(this).val(contents);
+                            }
+                        }
+                    });
+                }, 100);
+                
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1292,9 +1333,9 @@
                             const qualTooltips = $(tooltipsTextarea).hasClass('note-editor')
                                 ? $(tooltipsTextarea).summernote('code') 
                                 : tooltipsTextarea.value.trim();
-                            if (!qualName || !qualRatio || !qualTooltips) {
+                            if (!qualName || !qualRatio) {
                                 alert(
-                                    `กรุณากรอกชื่อเกณฑ์, สัดส่วน, และคำอธิบายสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    `กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                 );
                                 valid = false;
                                 return;
@@ -1316,6 +1357,11 @@
                                     .value.trim();
                                 const numScore = subQ.querySelector('.num_score')
                                     .value;
+                                // Get content from Summernote editor if available, otherwise from textarea
+                                const descriptionTextarea = subQ.querySelector('.qual_sub_description');
+                                const subDescription = $(descriptionTextarea).hasClass('note-editor')
+                                    ? $(descriptionTextarea).summernote('code') 
+                                    : descriptionTextarea.value.trim() || '';
                                 if (!subName || !numScore) {
                                     showValidationErrorModal(`กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`);
                                     valid = false;
@@ -1327,7 +1373,8 @@
                                     sequence: Number(subQ.querySelector(
                                             '.qual_sub_sequence')
                                         .textContent),
-                                    num_score: Number(numScore)
+                                    num_score: Number(numScore),
+                                    description: subDescription
                                 });
                             });
 

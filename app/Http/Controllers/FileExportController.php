@@ -14,31 +14,31 @@ class FileExportController extends Controller
     {
         $query = $this->filteredAssignmentsQuery($request);
 
-        return Excel::download(new ReportsExport( $query), 'รายงานการประเมินผล.xlsx');
+        return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
     public function adminExportDashboard(Request $request)
     {
         $query = $this->adminFilteredAssignmentsQuery($request);
 
-        return Excel::download(new ReportsExport( $query), 'รายงานการประเมินผล.xlsx');
+        return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
     public function exportSingleReport($id)
     {
         // Find the report first
         $report = Reports::with(
-            'assignments.evaluateeUser.department', 
+            'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
             'assignments.report.quantityScores',
             'assignments.report.qualityScores',
             'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
             'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria'
-            )->findOrFail($id);
+        )->findOrFail($id);
 
         $assignment = $report->assignments;
 
-        if (!$assignment) {
+        if (! $assignment) {
             abort(404, 'Assignment not found for this report.');
         }
 
@@ -53,7 +53,7 @@ class FileExportController extends Controller
 
         $username = $assignment->evaluateeUser?->name ?? 'ไม่ทราบชื่อ';
 
-        $fileName = 'รายงานผลการประเมินรายบุคคล-' . str_replace(' ', '_', $username) . '.xlsx';
+        $fileName = 'รายงานผลการประเมินรายบุคคล-'.str_replace(' ', '_', $username).'.xlsx';
 
         return Excel::download(new SingleReportExport($assignment), $fileName);
     }
@@ -69,13 +69,11 @@ class FileExportController extends Controller
             $search = strtolower($request->input('search'));
             $query->where(function ($q) use ($search) {
                 // Search evaluatee name
-                $q->whereHas('evaluateeUser', fn($q2) =>
-                    $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                $q->whereHas('evaluateeUser', fn ($q2) => $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
                 );
 
                 // Search report title
-                $q->orWhereHas('report.reportData', fn($q2) =>
-                    $q2->whereRaw('LOWER(report_title) LIKE ?', ["%{$search}%"])
+                $q->orWhereHas('report.reportData', fn ($q2) => $q2->whereRaw('LOWER(report_title) LIKE ?', ["%{$search}%"])
                 );
             });
         }
@@ -83,15 +81,15 @@ class FileExportController extends Controller
         // Year filter
         if ($request->filled('year')) {
             $year = $request->input('year');
-            $query->whereHas('assignmentData', fn($q) => $q->whereYear('start_time', $year));
+            $query->whereHas('assignmentData', fn ($q) => $q->whereYear('start_time', $year));
         }
 
         // Start/End date filters
         if ($request->filled('start_time')) {
-            $query->whereHas('assignmentData', fn($q) => $q->where('start_time', '>=', $request->input('start_time')));
+            $query->whereHas('assignmentData', fn ($q) => $q->where('start_time', '>=', $request->input('start_time')));
         }
         if ($request->filled('end_time')) {
-            $query->whereHas('assignmentData', fn($q) => $q->where('end_time', '<=', $request->input('end_time')));
+            $query->whereHas('assignmentData', fn ($q) => $q->where('end_time', '<=', $request->input('end_time')));
         }
 
         return $query;
@@ -108,18 +106,15 @@ class FileExportController extends Controller
             $search = strtolower($request->input('search'));
             $query->where(function ($q) use ($search) {
                 // Search evaluatee name
-                $q->whereHas('evaluateeUser', fn($q2) =>
-                    $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                $q->whereHas('evaluateeUser', fn ($q2) => $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
                 );
 
                 // Search report title
-                $q->orWhereHas('report.reportData', fn($q2) =>
-                    $q2->whereRaw('LOWER(report_title) LIKE ?', ["%{$search}%"])
+                $q->orWhereHas('report.reportData', fn ($q2) => $q2->whereRaw('LOWER(report_title) LIKE ?', ["%{$search}%"])
                 );
 
                 // Search evaluator names through assignmentData -> evaluator_position_id -> users
-                $q->orWhereHas('assignmentData.evaluatorPosition.user', fn($q2) =>
-                    $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
+                $q->orWhereHas('assignmentData.evaluatorPosition.user', fn ($q2) => $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
                 );
             });
         }
@@ -127,22 +122,21 @@ class FileExportController extends Controller
         // Year filter
         if ($request->filled('year')) {
             $year = $request->input('year');
-            $query->whereHas('assignmentData', fn($q) => $q->whereYear('start_time', $year));
+            $query->whereHas('assignmentData', fn ($q) => $q->whereYear('start_time', $year));
         }
 
         // Start/End date filters
         if ($request->filled('start_time')) {
-            $query->whereHas('assignmentData', fn($q) => $q->where('start_time', '>=', $request->input('start_time')));
+            $query->whereHas('assignmentData', fn ($q) => $q->where('start_time', '>=', $request->input('start_time')));
         }
         if ($request->filled('end_time')) {
-            $query->whereHas('assignmentData', fn($q) => $q->where('end_time', '<=', $request->input('end_time')));
+            $query->whereHas('assignmentData', fn ($q) => $q->where('end_time', '<=', $request->input('end_time')));
         }
 
         if ($request->has('department_name') && $request->input('department_name') !== '') {
             $department_name = $request->input('department_name');
 
-            $query->whereHas('evaluateeUser.department', fn($q) =>
-                $q->whereRaw('LOWER(department_name) = ?', [strtolower($department_name)])
+            $query->whereHas('evaluateeUser.department', fn ($q) => $q->whereRaw('LOWER(department_name) = ?', [strtolower($department_name)])
             );
         }
 

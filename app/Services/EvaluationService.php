@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Reports;
@@ -67,9 +68,10 @@ class EvaluationService
             });
         }
 
-        if (!empty($filters['year'])) {
+        if (! empty($filters['year'])) {
             $evaluations = $evaluations->filter(function ($assignment) use ($filters) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $filters['year'];
             });
         }
@@ -90,7 +92,7 @@ class EvaluationService
             });
         }
 
-        if (!empty($filters['department_name'])) {
+        if (! empty($filters['department_name'])) {
             $evaluations = $evaluations->filter(function ($assignment) use ($filters) {
                 return optional($assignment->evaluateeUser?->department)->department_name === $filters['department_name'];
             });

@@ -7,9 +7,9 @@ use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
-use Illuminate\Http\Request;
-use App\Services\ScoreService;
 use App\Services\GraphDataService;
+use App\Services\ScoreService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardEvaluateeController extends Controller
@@ -45,6 +45,7 @@ class DashboardEvaluateeController extends Controller
                 $evaluatorName = $assignment->getEvaluatorUsers()->pluck('name')->implode(' ');
                 $evaluatorName = strtolower($evaluatorName);
                 $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
+
                 return str_contains(strtolower($evaluatorName), strtolower($searchTerm))
                     || str_contains(strtolower($reportTitle), strtolower($searchTerm));
             });
@@ -52,7 +53,7 @@ class DashboardEvaluateeController extends Controller
 
         $years = $user->assignment->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function($dt) {
+            ->map(function ($dt) {
                 return \Carbon\Carbon::parse($dt)->year;
             })
             ->unique()
@@ -62,6 +63,7 @@ class DashboardEvaluateeController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -193,9 +195,9 @@ class DashboardEvaluateeController extends Controller
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                
+
                 // Store with composite key for lookup
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $key = $row->evaluation_list_id.'_'.$row->main_id;
                 $arrScoreEva[$key] = $calculatedScore;
             }
         }
@@ -249,7 +251,7 @@ class DashboardEvaluateeController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                    'formulas' => $mainCriteria->formulas->map(function ($formula) {
                                         return [
                                             'id' => $formula->id,
                                             'condition' => $formula->condition,
@@ -289,7 +291,7 @@ class DashboardEvaluateeController extends Controller
                             $mainCriteria = $subCriterias->first()->mainCriteria;
 
                             if ($mainCriteria) {
-                                $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                                $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
                                 $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
 
                                 $mainCriteriaData = [
@@ -315,7 +317,7 @@ class DashboardEvaluateeController extends Controller
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLinks = $evidenceMap[$list->id] ?? [];
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 

@@ -129,9 +129,9 @@ class EvaluatorScoreController extends Controller
             if ($maxSum > 0) {
                 $scoreRatioMain = $ratio * ($accSum / $maxSum);
                 $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                
+
                 // Store with composite key for lookup
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
+                $key = $row->evaluation_list_id.'_'.$row->main_id;
                 $arrScoreEva[$key] = $calculatedScore;
             }
         }
@@ -185,7 +185,7 @@ class EvaluatorScoreController extends Controller
                                     'id' => $mainCriteria->id,
                                     'name' => $mainCriteria->name,
                                     'tooltips' => $mainCriteria->tooltips,
-                                    'formulas' => $mainCriteria->formulas->map(function($formula) {
+                                    'formulas' => $mainCriteria->formulas->map(function ($formula) {
                                         return [
                                             'id' => $formula->id,
                                             'condition' => $formula->condition,
@@ -226,7 +226,7 @@ class EvaluatorScoreController extends Controller
 
                             if ($mainCriteria) {
                                 // ✅ Get the correct calculated score from arrScoreEva
-                                $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
+                                $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
                                 $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
 
                                 $mainCriteriaData = [
@@ -252,7 +252,7 @@ class EvaluatorScoreController extends Controller
                                 foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                                     $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                                     $evidenceLinks = $evidenceMap[$list->id] ?? [];
-                                    
+
                                     $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                                     $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
@@ -267,6 +267,7 @@ class EvaluatorScoreController extends Controller
                                         'id' => $subCriteria->id,
                                         'name' => $subCriteria->name,
                                         'sequence' => $subCriteria->sequence,
+                                        'description' => $subCriteria->description ?? null,
                                         'num_score' => $subCriteria->num_score,
                                         'user_selected' => $userSelected,
                                         'score' => $qualityScore?->score ?? '',

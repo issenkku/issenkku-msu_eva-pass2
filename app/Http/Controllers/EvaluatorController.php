@@ -7,15 +7,15 @@ use App\Models\Category;
 use App\Models\QualityScore;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Debugbar;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Assuming you have installed Laravel Debugbar for debugging
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;
 
 class EvaluatorController extends Controller
 {
@@ -53,6 +53,7 @@ class EvaluatorController extends Controller
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = optional($assignment->evaluateeUser)->name ?? '';
                 $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
+
                 return str_contains(strtolower($evaluateeName), strtolower($searchTerm))
                     || str_contains(strtolower($reportTitle), strtolower($searchTerm));
             });
@@ -60,7 +61,7 @@ class EvaluatorController extends Controller
 
         $years = $evaluations->pluck('assignmentData.start_time')
             ->filter()
-            ->map(function($dt) {
+            ->map(function ($dt) {
                 return Carbon::parse($dt)->year;
             })
             ->unique()
@@ -70,6 +71,7 @@ class EvaluatorController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -77,6 +79,7 @@ class EvaluatorController extends Controller
         if ($startDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
                 $assignmentStart = optional($assignment->assignmentData)->start_time;
+
                 return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
             });
         }
@@ -84,6 +87,7 @@ class EvaluatorController extends Controller
         if ($endDate) {
             $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
                 $assignmentEnd = optional($assignment->assignmentData)->end_time;
+
                 return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
             });
         }
@@ -106,7 +110,7 @@ class EvaluatorController extends Controller
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 
@@ -258,6 +262,7 @@ class EvaluatorController extends Controller
                 'qs.name as sub_name',
                 'qs.sequence as sub_sequence',
                 'qs.num_score',
+                'qs.description',
                 'qscore.score as filled_score',
                 'eanswer.link as evidence_link'
             )
@@ -285,6 +290,7 @@ class EvaluatorController extends Controller
                 $query->orderBy('sequence')->with([
                     'quantitySubCriterias.mainCriteria:id,name,tooltips',
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    'qualitySubCriterias:id,name,sequence,num_score,description,quality_main_criteria_id,criteria_version_id,evaluation_list_id',
                 ]);
             },
         ])
@@ -324,6 +330,7 @@ class EvaluatorController extends Controller
                     if ($data) {
                         $sub->filled_score = $data->filled_score;
                         $sub->evidence_link = $data->evidence_link;
+                        $sub->description = $data->description;
                     }
                 }
             }

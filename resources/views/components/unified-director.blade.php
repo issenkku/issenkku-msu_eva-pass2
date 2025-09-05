@@ -234,19 +234,26 @@
 
                                                 <div class="p-4 bg-white border border-gray-200 rounded-lg">
                                                     <div class="flex flex-col gap-2 p-3 border-b border-gray-100 lg:flex-row lg:items-center lg:justify-between">
-                                                        <!-- Name + Badge -->
-                                                        <div class="flex flex-col gap-1 flex-1 lg:flex-row lg:items-center lg:gap-3">
-                                                            <span class="text-base text-gray-800 font-medium">
-                                                                {{ $subCriteria['name'] }}
-                                                            </span>
-                                                            <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full w-max">
-                                                                คะแนน {{ $subCriteria['num_score'] }}
-                                                            </span>
+                                                        <!-- Name + Description + Badge -->
+                                                        <div class="flex flex-col gap-1 flex-1">
+                                                            <div class="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-3">
+                                                                <span class="text-base text-gray-800 font-medium">
+                                                                    {{ $subCriteria['name'] }}
+                                                                </span>
+                                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full w-max">
+                                                                    คะแนน {{ $subCriteria['num_score'] }}
+                                                                </span>
+                                                            </div>
+                                                            @if(!empty($subCriteria['description']))
+                                                                <div class="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400 mt-2">
+                                                                    {!! $subCriteria['description'] !!}
+                                                                </div>
+                                                            @endif
                                                         </div>
 
                                                         <!-- Input -->
                                                         @if(!$readonly)
-                                                            <div class="w-full lg:w-1/4">
+                                                            <div class="w-full lg:w-1/4 mt-2 lg:mt-0">
                                                                 <input 
                                                                     type="number" step="0.01" min="0" 
                                                                     max="{{ $subCriteria['num_score'] }}"
@@ -256,15 +263,15 @@
                                                                     placeholder="ใส่คะแนน">
                                                             </div>
                                                         @else
-                                                            <div class="w-full lg:w-1/4">
+                                                            <div class="w-full lg:w-1/4 mt-2 lg:mt-0">
                                                                 <input 
                                                                     type="number" step="0.01" min="0" 
                                                                     max="{{ $subCriteria['num_score'] }}"
                                                                     name="quality_list[{{ $subCriteria['id'] }}][score]" 
                                                                     value="{{ $subCriteria['score'] ?? '' }}"
                                                                     readonly
-                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
-                                                                    placeholder="ไม่มีคะแนน">
+                                                                    class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
+                                                                    placeholder="0">
                                                             </div>
                                                         @endif
                                                     </div>

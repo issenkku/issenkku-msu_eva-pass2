@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
                 'employee_id' => '002',
                 'password' => Hash::make('password002'),
                 'email' => 'evaluator1@gmail.com',
-                'phone' => '098-521-18213',
+                'phone' => '098-521-1823',
                 'personnel_type' => 'วิชาการ',
                 'bio' => null,
                 'status' => 'active',
@@ -51,7 +51,7 @@ class UserSeeder extends Seeder
                 'employee_id' => '003',
                 'password' => Hash::make('password003'),
                 'email' => 'evaluator2@gmail.com',
-                'phone' => '098-521-18214',
+                'phone' => '098-521-1814',
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
@@ -66,7 +66,7 @@ class UserSeeder extends Seeder
                 'employee_id' => '004',
                 'password' => Hash::make('password004'),
                 'email' => 'evaluatee1@gmail.com',
-                'phone' => '084-515-54545',
+                'phone' => '084-515-5445',
                 'personnel_type' => 'วิชาการ',
                 'bio' => null,
                 'status' => 'active',
@@ -81,7 +81,7 @@ class UserSeeder extends Seeder
                 'employee_id' => '005',
                 'password' => Hash::make('password005'),
                 'email' => 'evaluatee2@gmail.com',
-                'phone' => '084-632-32846',
+                'phone' => '084-632-3846',
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
@@ -96,7 +96,7 @@ class UserSeeder extends Seeder
                 'employee_id' => '006',
                 'password' => Hash::make('password006'),
                 'email' => 'manager@gmail.com',
-                'phone' => '084-632-32847',
+                'phone' => '084-632-3287',
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
@@ -122,6 +122,6 @@ class UserSeeder extends Seeder
             ],
         ]);
 
-        User::factory()->count(50)->create();
+        // User::factory()->count(50)->create();
     }
 }

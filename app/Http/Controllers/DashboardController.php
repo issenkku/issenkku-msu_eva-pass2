@@ -9,12 +9,12 @@ use App\Models\Department;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\ScoreService;
-use App\Services\GraphDataService;  
 use App\Services\EvaluationService;
 use App\Services\ReportDataService;
 
@@ -85,7 +85,7 @@ class DashboardController extends Controller
         // dd($chartData);
 
         $totalEvaluatees = $evaluations
-            ->filter(fn($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
 
@@ -230,8 +230,8 @@ class DashboardController extends Controller
             }
             $qualityScore = array_sum($arrScoreEva);
             $report->report->quantity_score = round($quantityScore, 2);
-            $report->report->quality_score  = round($qualityScore, 2);
-            $report->report->score          = round($quantityScore + $qualityScore, 2);
+            $report->report->quality_score = round($qualityScore, 2);
+            $report->report->score = round($quantityScore + $qualityScore, 2);
 
             $reports_score[] = [
                 'assignment_data_id' => $report->assignment_data_id,

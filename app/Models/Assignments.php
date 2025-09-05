@@ -69,5 +69,4 @@ class Assignments extends Model
             ? $this->evaluatorUsers()->get()
             : collect();
     }
-
 }

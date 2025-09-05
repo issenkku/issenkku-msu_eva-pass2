@@ -18,6 +18,7 @@ class QualitySubCriteria extends Model
         'name',
         'sequence',
         'num_score',
+        'description',
         'quality_main_criteria_id',
         'criteria_version_id',
         'evaluation_list_id',

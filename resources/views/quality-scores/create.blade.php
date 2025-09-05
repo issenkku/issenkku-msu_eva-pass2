@@ -162,6 +162,49 @@
             color: #721c24;
         }
 
+        .criteria-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+
+        .criteria-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .criteria-name {
+            font-weight: 500;
+            color: #333333;
+            margin-bottom: 4px;
+        }
+
+        .criteria-main {
+            font-size: 0.8rem;
+            color: #666666;
+        }
+
+        .remove-criteria {
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            color: #dc3545;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.15s ease;
+        }
+
+        .remove-criteria:hover {
+            background-color: #f5c6cb;
+        }
+
         .user-score-row {
             display: flex;
             align-items: center;
@@ -208,6 +251,36 @@
 
         .remove-user:hover {
             background-color: #f5c6cb;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+        }
+
+        .btn-outline-danger {
+            color: #dc3545;
+            border-color: #dc3545;
+            background-color: transparent;
+        }
+
+        .btn-outline-danger:hover {
+            color: white;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-outline-warning {
+            color: #ffc107;
+            border-color: #ffc107;
+            background-color: transparent;
+        }
+
+        .btn-outline-warning:hover {
+            color: #212529;
+            background-color: #ffc107;
+            border-color: #ffc107;
         }
 
         .selected-users-container {
@@ -259,8 +332,8 @@
         <!-- Header -->
         <div class="card">
             <div class="card-header">
-                <h4><i class="fas fa-plus me-2"></i>เพิ่มคะแนนคุณภาพ</h4>
-                <p class="mb-0 text-muted">เพิ่มคะแนนคุณภาพสำหรับผู้ใช้งานในเกณฑ์การประเมิน</p>
+                <h4><i class="fas fa-plus me-2"></i>เพิ่มคะแนนคุณภาพ (หลายเกณฑ์)</h4>
+                <p class="mb-0 text-muted">เพิ่มคะแนนคุณภาพสำหรับผู้ใช้งานในหลายเกณฑ์การประเมินพร้อมกัน</p>
             </div>
         </div>
 
@@ -278,7 +351,7 @@
         <!-- Form Container -->
         <div class="form-container">
             <div class="form-header">
-                <h4><i class="fas fa-edit me-2"></i>ฟอร์มเพิ่มคะแนนคุณภาพ</h4>
+                <h4><i class="fas fa-edit me-2"></i>ฟอร์มเพิ่มคะแนนคุณภาพ (หลายเกณฑ์)</h4>
             </div>
 
             <form method="POST" action="{{ route('quality-scores.store') }}" id="qualityScoreForm">
@@ -306,16 +379,25 @@
 
                     <!-- เลือกเกณฑ์การประเมิน -->
                     <div class="form-group">
-                        <label for="quality_sub_criteria_id" class="form-label">
-                            เกณฑ์การประเมิน <span class="text-danger">*</span>
+                        <label for="quality_sub_criteria_select" class="form-label">
+                            เลือกเกณฑ์การประเมิน <span class="text-danger">*</span>
                         </label>
-                        <select name="quality_sub_criteria_id" id="quality_sub_criteria_id" 
-                                class="form-select @error('quality_sub_criteria_id') is-invalid @enderror" required disabled>
-                            <option value="">-- เลือกรายงานก่อน --</option>
+                        <select id="quality_sub_criteria_select" class="form-select" multiple="multiple" disabled style="width: 100%;">
+                            <!-- จะถูกเติมจาก JavaScript -->
                         </select>
-                        @error('quality_sub_criteria_id')
+                        @error('criteria')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                    </div>
+
+                    <!-- แสดงเกณฑ์ที่เลือก -->
+                    <div class="form-group" id="selectedCriteriaContainer" style="display: none;">
+                        <label class="form-label">เกณฑ์การประเมินที่เลือก</label>
+                        <div id="selectedCriteriaList" class="selected-users-container">
+                            <div id="noCriteriaMessage" class="no-users-message">
+                                ยังไม่ได้เลือกเกณฑ์การประเมิน
+                            </div>
+                        </div>
                     </div>
 
                     <!-- เลือกผู้ใช้งาน -->
@@ -335,31 +417,31 @@
                         @enderror
                     </div>
 
-                    <!-- รายการผู้ใช้งานที่เลือก -->
+                    <!-- รายการผู้ใช้งานและคะแนน -->
                     <div class="form-group">
-                        <label class="form-label">ผู้ใช้งานและคะแนน</label>
+                        <label class="form-label">ผู้ใช้งานและคะแนนตามเกณฑ์</label>
                         
                         <!-- ตัวเลือกการให้คะแนน -->
                         <div class="mb-3" id="scoreTypeContainer" style="display: none;">
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="score_type" id="same_score" value="same" checked>
                                 <label class="form-check-label" for="same_score">
-                                    คะแนนเดียวกันทุกคน
+                                    คะแนนเดียวกันทุกคนทุกเกณฑ์
                                 </label>
                             </div>
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="radio" name="score_type" id="individual_score" value="individual">
                                 <label class="form-check-label" for="individual_score">
-                                    คะแนนแยกรายบุคคล
+                                    คะแนนแยกรายบุคคลและรายเกณฑ์
                                 </label>
                             </div>
                         </div>
 
-                        <!-- คะแนนสำหรับทุกคน -->
+                        <!-- คะแนนสำหรับทุกคนทุกเกณฑ์ -->
                         <div class="mb-3" id="commonScoreContainer" style="display: none;">
-                            <label for="common_score" class="form-label">คะแนนสำหรับทุกคน <span class="text-danger">*</span></label>
-                            <input type="number" id="common_score" class="form-control" min="0" max="100" step="0.1" placeholder="กรอกคะแนนสำหรับทุกคน">
-                            <small class="text-muted">คะแนนนี้จะถูกใช้สำหรับผู้ใช้งานทุกคนที่เลือก</small>
+                            <label for="common_score" class="form-label">คะแนนสำหรับทุกคนทุกเกณฑ์ <span class="text-danger">*</span></label>
+                            <input type="number" id="common_score" class="form-control" min="0" max="100" step="0.1" placeholder="กรอกคะแนนสำหรับทุกคนทุกเกณฑ์">
+                            <small class="text-muted">คะแนนนี้จะถูกใช้สำหรับผู้ใช้งานทุกคนในทุกเกณฑ์การประเมินที่เลือก</small>
                         </div>
 
                         <div id="selectedUsersContainer" class="selected-users-container">
@@ -387,12 +469,20 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let selectedUsers = [];
+    let selectedCriterias = [];
     let userCounter = 0;
 
     $(document).ready(function() {
-        // Initialize Select2
+        // Initialize Select2 for users
         $('#user_select').select2({
             placeholder: 'เลือกผู้ใช้งานหลายคน...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Initialize Select2 for criteria
+        $('#quality_sub_criteria_select').select2({
+            placeholder: 'เลือกเกณฑ์การประเมินหลายข้อ...',
             allowClear: true,
             width: '100%'
         });
@@ -400,7 +490,6 @@
         // Handle user selection change
         $('#user_select').on('change', function() {
             const selectedValues = $(this).val() || [];
-            const newUsers = [];
             
             // Clear existing users array
             selectedUsers = [];
@@ -433,6 +522,40 @@
             updateSubmitButton();
         });
 
+        // Handle criteria selection change
+        $('#quality_sub_criteria_select').on('change', function() {
+            const selectedValues = $(this).val() || [];
+            
+            // Clear existing criteria array
+            selectedCriterias = [];
+            
+            // Add selected criteria
+            selectedValues.forEach(criteriaId => {
+                const option = $(this).find(`option[value="${criteriaId}"]`);
+                const criteriaName = option.text();
+                const optgroup = option.closest('optgroup');
+                const mainCriteriaName = optgroup.length > 0 ? optgroup.attr('label') : '';
+                
+                selectedCriterias.push({
+                    id: criteriaId,
+                    name: criteriaName,
+                    mainCriteriaName: mainCriteriaName
+                });
+            });
+            
+            // Show/hide criteria container
+            if (selectedCriterias.length > 0) {
+                $('#selectedCriteriaContainer').show();
+            } else {
+                $('#selectedCriteriaContainer').hide();
+            }
+            
+            // Update UI
+            updateSelectedCriteriaUI();
+            updateSelectedUsersUI();
+            updateSubmitButton();
+        });
+
         // Handle score type change
         $('input[name="score_type"]').on('change', function() {
             updateSelectedUsersUI();
@@ -460,24 +583,25 @@
 
     // ฟังก์ชันดึงเกณฑ์การประเมินตาม Report ที่เลือก
     function loadCriteriasByReport(reportId) {
-        const criteriaSelect = document.getElementById('quality_sub_criteria_id');
+        const criteriaSelect = $('#quality_sub_criteria_select');
         
         if (!reportId) {
-            criteriaSelect.innerHTML = '<option value="">-- เลือกรายงานก่อน --</option>';
-            criteriaSelect.disabled = true;
+            criteriaSelect.empty();
+            criteriaSelect.prop('disabled', true);
+            criteriaSelect.trigger('change');
             updateSubmitButton();
             return;
         }
 
         // แสดง loading
-        criteriaSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
-        criteriaSelect.disabled = true;
+        criteriaSelect.empty().append('<option value="">-- กำลังโหลด... --</option>');
+        criteriaSelect.prop('disabled', true);
 
         // เรียก API เพื่อดึงเกณฑ์
         fetch(`{{ route('quality-scores.get-criteria-by-report') }}?report_id=${reportId}`)
             .then(response => response.json())
             .then(data => {
-                criteriaSelect.innerHTML = '<option value="">-- เลือกเกณฑ์การประเมิน --</option>';
+                criteriaSelect.empty();
                 
                 if (data.criterias && data.criterias.length > 0) {
                     // จัดกลุ่มตาม main criteria
@@ -491,30 +615,37 @@
 
                     // สร้าง optgroup
                     Object.keys(groupedCriterias).forEach(mainCriteriaName => {
-                        const optgroup = document.createElement('optgroup');
-                        optgroup.label = mainCriteriaName;
+                        const optgroup = $('<optgroup>').attr('label', mainCriteriaName);
                         
                         groupedCriterias[mainCriteriaName].forEach(criteria => {
-                            const option = document.createElement('option');
-                            option.value = criteria.id;
-                            option.textContent = criteria.name;
-                            optgroup.appendChild(option);
+                            const option = $('<option>').attr('value', criteria.id).text(criteria.name);
+                            optgroup.append(option);
                         });
                         
-                        criteriaSelect.appendChild(optgroup);
+                        criteriaSelect.append(optgroup);
                     });
                     
-                    criteriaSelect.disabled = false;
+                    criteriaSelect.prop('disabled', false);
                 } else {
-                    criteriaSelect.innerHTML = '<option value="">-- ไม่มีเกณฑ์การประเมินในรายงานนี้ --</option>';
+                    criteriaSelect.append('<option value="">-- ไม่มีเกณฑ์การประเมินในรายงานนี้ --</option>');
                 }
                 
+                // Clear previous selections
+                selectedCriterias = [];
+                updateSelectedCriteriaUI();
                 updateSubmitButton();
             })
             .catch(error => {
                 console.error('Error:', error);
-                criteriaSelect.innerHTML = '<option value="">-- เกิดข้อผิดพลาดในการโหลด --</option>';
+                criteriaSelect.empty().append('<option value="">-- เกิดข้อผิดพลาดในการโหลด --</option>');
             });
+    }
+
+    function removeCriteria(criteriaId) {
+        // Remove from Select2
+        const currentValues = $('#quality_sub_criteria_select').val() || [];
+        const newValues = currentValues.filter(id => id !== criteriaId);
+        $('#quality_sub_criteria_select').val(newValues).trigger('change');
     }
 
     function removeUser(userId) {
@@ -524,14 +655,50 @@
         $('#user_select').val(newValues).trigger('change');
     }
 
+    function updateSelectedCriteriaUI() {
+        const container = document.getElementById('selectedCriteriaList');
+        const noCriteriaMessage = document.getElementById('noCriteriaMessage');
+
+        if (selectedCriterias.length === 0) {
+            noCriteriaMessage.style.display = 'block';
+            container.querySelectorAll('.criteria-row').forEach(row => row.remove());
+            return;
+        }
+
+        noCriteriaMessage.style.display = 'none';
+
+        // ล้าง existing rows
+        container.querySelectorAll('.criteria-row').forEach(row => row.remove());
+
+        // สร้าง rows ใหม่
+        selectedCriterias.forEach((criteria, index) => {
+            const row = document.createElement('div');
+            row.className = 'criteria-row';
+            
+            row.innerHTML = `
+                <div class="criteria-info">
+                    <div class="criteria-name">${criteria.name}</div>
+                    <div class="criteria-main">หมวดหลัก: ${criteria.mainCriteriaName}</div>
+                </div>
+                <button type="button" class="remove-criteria" onclick="removeCriteria('${criteria.id}')" title="ลบเกณฑ์">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            container.appendChild(row);
+        });
+    }
+
     function updateSelectedUsersUI() {
         const container = document.getElementById('selectedUsersContainer');
         const noUsersMessage = document.getElementById('noUsersMessage');
         const scoreType = $('input[name="score_type"]:checked').val();
         const commonScore = $('#common_score').val();
 
-        if (selectedUsers.length === 0) {
+        if (selectedUsers.length === 0 || selectedCriterias.length === 0) {
             noUsersMessage.style.display = 'block';
+            noUsersMessage.textContent = selectedUsers.length === 0 ? 
+                'ยังไม่ได้เลือกผู้ใช้งาน กรุณาเลือกผู้ใช้งานจากรายการด้านบน' :
+                'ยังไม่ได้เลือกเกณฑ์การประเมิน กรุณาเลือกเกณฑ์การประเมินก่อน';
             container.querySelectorAll('.user-score-row').forEach(row => row.remove());
             return;
         }
@@ -541,53 +708,67 @@
         // ล้าง existing rows
         container.querySelectorAll('.user-score-row').forEach(row => row.remove());
 
-        // สร้าง rows ใหม่
-        selectedUsers.forEach((user, index) => {
-            const row = document.createElement('div');
-            row.className = 'user-score-row';
-            
-            let scoreInputHtml = '';
-            if (scoreType === 'same') {
-                // โหมดคะแนนเดียวกัน - แสดงคะแนนแต่ไม่ให้แก้ไข
-                scoreInputHtml = `
-                    <div class="score-input-group">
-                        <label class="form-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label>
-                        <input type="number" name="scores[${index}]" class="form-control score-input" 
-                               min="0" max="100" step="0.1" value="${commonScore}" readonly 
-                               style="background-color: #f8f9fa;">
-                        <input type="hidden" name="users[${index}]" value="${user.id}">
+        // สร้าง rows ใหม่สำหรับแต่ละผู้ใช้และแต่ละเกณฑ์
+        selectedUsers.forEach((user, userIndex) => {
+            selectedCriterias.forEach((criteria, criteriaIndex) => {
+                const index = userIndex * selectedCriterias.length + criteriaIndex;
+                const row = document.createElement('div');
+                row.className = 'user-score-row';
+                
+                let scoreInputHtml = '';
+                if (scoreType === 'same') {
+                    // โหมดคะแนนเดียวกัน - แสดงคะแนนแต่ไม่ให้แก้ไข
+                    scoreInputHtml = `
+                        <div class="score-input-group">
+                            <label class="form-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label>
+                            <input type="number" name="scores[${index}]" class="form-control score-input" 
+                                   min="0" max="100" step="0.1" value="${commonScore}" readonly 
+                                   style="background-color: #f8f9fa;">
+                            <input type="hidden" name="users[${index}]" value="${user.id}">
+                            <input type="hidden" name="criterias[${index}]" value="${criteria.id}">
+                        </div>
+                    `;
+                } else {
+                    // โหมดคะแนนแยกรายบุคคล
+                    scoreInputHtml = `
+                        <div class="score-input-group">
+                            <label class="form-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label>
+                            <input type="number" name="scores[${index}]" class="form-control score-input" 
+                                   min="0" max="100" step="0.1" placeholder="0.0" onchange="updateSubmitButton()">
+                            <input type="hidden" name="users[${index}]" value="${user.id}">
+                            <input type="hidden" name="criterias[${index}]" value="${criteria.id}">
+                        </div>
+                    `;
+                }
+                
+                row.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-email">${user.email}</div>
+                        <div class="criteria-name" style="font-size: 0.8rem; color: #007bff; margin-top: 4px;">
+                            ${criteria.name}
+                        </div>
+                    </div>
+                    ${scoreInputHtml}
+                    <div class="d-flex flex-column gap-1">
+                        <button type="button" class="remove-user btn btn-sm btn-outline-danger" 
+                                onclick="removeUser('${user.id}')" title="ลบผู้ใช้งาน">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                        <button type="button" class="remove-criteria btn btn-sm btn-outline-warning" 
+                                onclick="removeCriteria('${criteria.id}')" title="ลบเกณฑ์">
+                            <i class="fas fa-minus"></i>
+                        </button>
                     </div>
                 `;
-            } else {
-                // โหมดคะแนนแยกรายบุคคล
-                scoreInputHtml = `
-                    <div class="score-input-group">
-                        <label class="form-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label>
-                        <input type="number" name="scores[${index}]" class="form-control score-input" 
-                               min="0" max="100" step="0.1" placeholder="0.0" onchange="updateSubmitButton()">
-                        <input type="hidden" name="users[${index}]" value="${user.id}">
-                    </div>
-                `;
-            }
-            
-            row.innerHTML = `
-                <div class="user-info">
-                    <div class="user-name">${user.name}</div>
-                    <div class="user-email">${user.email}</div>
-                </div>
-                ${scoreInputHtml}
-                <button type="button" class="remove-user" onclick="removeUser('${user.id}')" title="ลบผู้ใช้งาน">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            container.appendChild(row);
+                container.appendChild(row);
+            });
         });
     }
 
     function updateSubmitButton() {
         const submitBtn = document.getElementById('submitBtn');
         const reportSelect = document.getElementById('report_id');
-        const criteriaSelect = document.getElementById('quality_sub_criteria_id');
         const scoreType = $('input[name="score_type"]:checked').val();
         
         let scoresValid = false;
@@ -599,7 +780,7 @@
         } else {
             // โหมดคะแนนแยกรายบุคคล - ตรวจสอบแต่ละช่อง
             const scoreInputs = document.querySelectorAll('.score-input');
-            scoresValid = true;
+            scoresValid = scoreInputs.length > 0;
             scoreInputs.forEach(input => {
                 if (!input.value || input.value === '' || parseFloat(input.value) < 0 || parseFloat(input.value) > 100) {
                     scoresValid = false;
@@ -608,8 +789,8 @@
         }
 
         const canSubmit = selectedUsers.length > 0 && 
+                         selectedCriterias.length > 0 &&
                          reportSelect.value &&
-                         criteriaSelect.value && 
                          scoresValid;
 
         submitBtn.disabled = !canSubmit;
@@ -620,15 +801,17 @@
         loadCriteriasByReport(this.value);
     });
 
-    document.getElementById('quality_sub_criteria_id').addEventListener('change', function() {
-        updateSubmitButton();
-    });
-
     // ป้องกันการส่งฟอร์มเมื่อไม่พร้อม
     document.getElementById('qualityScoreForm').addEventListener('submit', function(e) {
         if (selectedUsers.length === 0) {
             e.preventDefault();
             alert('กรุณาเลือกผู้ใช้งานอย่างน้อย 1 คน');
+            return false;
+        }
+
+        if (selectedCriterias.length === 0) {
+            e.preventDefault();
+            alert('กรุณาเลือกเกณฑ์การประเมินอย่างน้อย 1 ข้อ');
             return false;
         }
 
