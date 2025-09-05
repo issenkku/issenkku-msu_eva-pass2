@@ -67,11 +67,16 @@
         <x-search-bar  
             placeholder="ค้นหาชื่อ, รายงาน..."
         /> 
-        <x-filter-badge-single 
-            name="year"
-            placeholder="ปีการประเมินทั้งหมด"
-            :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
-        />
+        <div  class="flex flex-wrap justify-between gap-2">
+            <x-export-button 
+                :route="route('admin.export.reports', request()->query())"
+                label="ส่งออกExcelทั้งหมด" />
+            <x-filter-badge-single 
+                name="year"
+                placeholder="ปีการประเมินทั้งหมด"
+                :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+            />
+        </div>
     </div>
 
     <!-- Status Badges -->
@@ -271,10 +276,20 @@
                                 @endphp
 
                                 @if($action && $evaluateeId)
-                                    <a href="{{ $url }}"
-                                    class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
-                                        {{ $action['label'] }}
-                                    </a>
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ $url }}"
+                                        class="min-w-[120px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
+                                            {{ $action['label'] }}
+                                        </a>
+
+                                        @if($status === 'ประเมินเสร็จสิ้น')
+                                            <a href="{{ route('single.reports.export', ['id' => $report->id ?? 0]) }}"
+                                            class="p-2 bg-green-400 hover:bg-green-500 text-white rounded-md shadow transition duration-200"
+                                            title="ส่งออกรายงานผลการประเมินของ {{ $evaluatee->name ?? 'บุคคล' }}">
+                                                <i class="fas fa-file-export"></i>
+                                            </a>
+                                        @endif
+                                    </div>
                                 @else
                                     <span class="text-sm text-gray-400">-</span>
                                 @endif

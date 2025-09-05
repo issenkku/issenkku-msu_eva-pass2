@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -80,8 +81,29 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             // 4️⃣ Total score
             $totalScore = $quantityScore + $qualityScore;
 
+            $start = optional($assignment->assignmentData)->start_time;
+            $end = optional($assignment->assignmentData)->end_time;
+
+            $startDate = $start ? Carbon::parse($start)->locale('th')->translatedFormat('d M Y H:i') : '-';
+            $endDate = $end ? Carbon::parse($end)->locale('th')->translatedFormat('d M Y H:i') : '-';
+
+            // Convert to Buddhist year (+543)
+            if ($start) {
+                $startDate = Carbon::parse($start)
+                    ->locale('th')
+                    ->translatedFormat('d M ').(Carbon::parse($start)->year + 543).Carbon::parse($start)->format(' H:i');
+            }
+            if ($end) {
+                $endDate = Carbon::parse($end)
+                    ->locale('th')
+                    ->translatedFormat('d M ').(Carbon::parse($end)->year + 543).Carbon::parse($end)->format(' H:i');
+            }
+
+            $evaluationRound = $startDate.' ถึง '.$endDate;
+
             return [
                 $index + 1,
+                $evaluationRound,
                 optional($assignment->assignmentData)->start_time.' ถึง '.optional($assignment->assignmentData)->end_time,
                 $assignment->evaluateeUser?->name,
                 $assignment->evaluateeUser?->department?->department_name,

@@ -42,7 +42,8 @@ class DashboardEvaluateeController extends Controller
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
-                $evaluatorName = optional($assignment->evaluatorUser)->name ?? '';
+                $evaluatorName = $assignment->getEvaluatorUsers()->pluck('name')->implode(' ');
+                $evaluatorName = strtolower($evaluatorName);
                 $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
 
                 return str_contains(strtolower($evaluatorName), strtolower($searchTerm))
