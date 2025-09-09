@@ -11,6 +11,8 @@ use App\Services\GraphDataService;
 use App\Services\ScoreService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class DashboardEvaluateeController extends Controller
 {
@@ -81,10 +83,20 @@ class DashboardEvaluateeController extends Controller
 
         // dd($scatterData);
 
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage)->values(),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('evaluatee.dashboard', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $evaluations,
+            'evaluations' => $paginatedEvaluations,
             'years' => $years,
             'averageScore' => $averageScore,
             'highestScore' => $highestScore,

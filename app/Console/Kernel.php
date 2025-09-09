@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('notify:enddate')->daily();
+        $schedule->command('reports:update-statuses')->everyMinute();
     }
 
     protected function commands()

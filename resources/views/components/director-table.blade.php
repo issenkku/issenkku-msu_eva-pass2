@@ -21,24 +21,21 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($evaluatorAssignment) {
-        // Primary sort: by end_time (most recent first)
+    $sortedEvaluations = $evaluations->sortByDesc(function($evaluatorAssignment) {
         $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
         if ($endTime) {
             return Carbon::parse($endTime)->timestamp;
         }
-        
-        // Secondary sort: by start_time if no end_time
+
         $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
         if ($startTime) {
             return Carbon::parse($startTime)->timestamp;
         }
-        
-        // Tertiary sort: by created_at or updated_at
-        return optional($evaluatorAssignment->report)->updated_at 
+
+        return optional($evaluatorAssignment->report)->updated_at
             ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
-            : (optional($evaluatorAssignment)->created_at 
-                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp 
+            : (optional($evaluatorAssignment)->created_at
+                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp
                 : 0);
     })->values(); // Reset array keys to ensure proper numbering
 
@@ -305,6 +302,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="px-6 py-3 border-t border-gray-200">
+            {{ $evaluations->links() }}
         </div>
     </div>
 </div>

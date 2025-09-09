@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Services\EvaluationService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DirectorController extends Controller
 {
@@ -38,6 +39,7 @@ class DirectorController extends Controller
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
+        $evaluations = $evaluationService->sortEvaluations($evaluations);
 
         $userAsEvaluatee = $evaluationService->getUserAsEvaluatee($user);
         $userAsEvaluator = $evaluationService->getUserAsEvaluator($user);
@@ -81,11 +83,21 @@ class DirectorController extends Controller
         $statusLabels = GraphDataService::getStatusLabels();
         $statusColors = GraphDataService::getStatusColors();
 
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('director_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
             'departmentCounts' => $departmentCounts, // Department breakdown
-            'evaluations' => $evaluations, // ALL evaluations (Director view)
+            'evaluations' => $paginatedEvaluations, // ALL evaluations (Director view)
             'userAsEvaluatee' => $userAsEvaluatee, // Director's evaluatee assignments
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data

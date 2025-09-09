@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Rappasoft\LaravelAuthenticationLog\Traits\AuthenticationLoggable;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Activitylog\LogOptions;
@@ -84,12 +85,14 @@ class User extends Authenticatable implements CanResetPassword
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
+            ->logFillable()
             ->logOnlyDirty()
-            ->useLogName('user_info') // custom log_name in DB
+            ->useLogName('จัดการผู้ใช้') // custom log_name in DB
             ->setDescriptionForEvent(function (string $eventName) {
                 return match ($eventName) {
                     'updated' => 'แก้ไขข้อมูลผู้ใช้',
                     'created' => 'สร้างผู้ใช้ใหม่',
+                    'deleted' => 'ลบข้อมูลผู้ใช้',
                     default => $eventName,
                 };
             });

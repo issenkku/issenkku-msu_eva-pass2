@@ -10,6 +10,8 @@ use App\Models\Reports;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Facades\LogBatch;
+use Spatie\Activitylog\Facades\Activity;
 
 class EvaluationScoreController extends Controller
 {
@@ -75,11 +77,16 @@ class EvaluationScoreController extends Controller
 
             DB::beginTransaction();
 
+            $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
+            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+            $oldEvidences      = EvidenceAnswer::where('report_id', $reportId)->get();
+
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
             QualityScore::where('report_id', $reportId)->delete();
             EvidenceAnswer::where('report_id', $reportId)->delete();
 
+            $newQuantityScores = [];
             if (isset($validated['quantity_list'])) {
                 foreach ($validated['quantity_list'] as $item) {
                     $subCriteriaId = is_array($item['quantity_sub_criteria_id'])
@@ -106,10 +113,12 @@ class EvaluationScoreController extends Controller
                         'score_D' => $scoreD,
                         'description' => $description,
                     ]);
+                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
             }
 
             // ✅ Quality loop with check
+            $newQualityScores = [];
             if (isset($validated['quality_list'])) {
                 foreach ($validated['quality_list'] as $item) {
                     $score = $item['score'] ?? null;
@@ -126,21 +135,51 @@ class EvaluationScoreController extends Controller
                         'report_id' => $reportId,
                         'score' => $score,
                     ]);
+                    $newQualityScores[] = compact('subCriteriaId', 'score');
                 }
             }
 
             // Save all evidence links
+            $newEvidences = [];
             foreach ($validated['evidence_list_flat'] ?? [] as $item) {
                 EvidenceAnswer::create([
                     'evaluation_list_id' => $item['evaluation_list_id'],
                     'report_id' => $reportId,
                     'link' => $item['link'],
                 ]);
+                $newEvidences[] = $item;
             }
 
+            $statusMessages = [
+                'Draft'   => 'ผู้รับประเมินกรอกข้อมูล',
+                'Pending' => 'ผู้รับประเมินส่งข้อมูล',
+                'Assigned'=> 'ระบบมอบหมาย',
+                'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
+            ];
+
+            $oldStatus = $report->status;
             $status = $validated['status'];
             $report->status = $status;
-            if ($report->save() && $status === 'Pending') {
+            $report->save();
+
+            // ---- Spatie Activity Log ----
+            activity()
+                ->causedBy($request->user()) // who did it
+                ->useLog('การประเมิน')
+                ->performedOn($report)     // which model
+                ->withProperties([
+                    'สถานะรายงานก่อนหน้า' => $oldStatus,
+                    'อัพเดตสถานะรายงาน' => $status,
+                    'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
+                    'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
+                    'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,
+                    'อัพเดตคะแนนเชิงคุณภาพ' => $newQualityScores,
+                    'หลักฐานก่อนหน้า' => $oldEvidences,
+                    'อัพเดตหลักฐาน' => $newEvidences,
+                ])
+                ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
+
+            if ($status === 'Pending') {
                 $this->sendEvaluationCompletedMail($reportId);
             }
 
@@ -160,7 +199,7 @@ class EvaluationScoreController extends Controller
     // อีเมลแจ้งเตือนเมื่อส่งแบบประเมิน
     private function sendEvaluationCompletedMail($reportId)
     {
-        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
         if (! $report) {
             return;
         }

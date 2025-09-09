@@ -86,10 +86,14 @@ class ManagerScoreController extends Controller
 
             DB::beginTransaction();
 
+            $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
+            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
             QualityScore::where('report_id', $reportId)->delete();
 
+            $newQuantityScores = [];
             if (isset($validated['quantity_list'])) {
                 foreach ($validated['quantity_list'] as $item) {
                     $subCriteriaId = is_array($item['quantity_sub_criteria_id'])
@@ -114,10 +118,12 @@ class ManagerScoreController extends Controller
                         'score_C' => $scoreC,
                         'score_D' => $scoreD,
                     ]);
+                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD');
                 }
             }
 
             // ✅ Quality loop with check
+            $newQualityScores = [];
             if (isset($validated['quality_list'])) {
                 foreach ($validated['quality_list'] as $item) {
                     $score = $item['score'] ?? null;
@@ -134,8 +140,19 @@ class ManagerScoreController extends Controller
                         'report_id' => $reportId,
                         'score' => $score,
                     ]);
+                    $newQualityScores[] = compact('subCriteriaId', 'score');
                 }
             }
+
+            $statusMessages = [
+                'Manager_draft'   => 'คณบดีกรอกคะแนน',
+                'Completed' => 'คณบดีอนุมัติ',
+                'Assigned'=> 'ระบบมอบหมาย',
+                'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
+            ];
+
+            $oldStatus = $report->status;
+            $oldComment = $report->comment;
 
             $status = $validated['status'];
             $report->status = $status;
@@ -143,11 +160,28 @@ class ManagerScoreController extends Controller
             if (isset($validated['comment'])) {
                 $report->comment = $validated['comment'];
             }
+            $newComment = $report->comment;
 
             $report->save();
             // if ($report->save() && $status === 'Pending') {
             //     $this->sendEvaluationCompletedMail($reportId);
             // }
+
+            activity()
+                ->causedBy($request->user()) // who did it
+                ->useLog('การประเมิน')
+                ->performedOn($report)     // which model
+                ->withProperties([
+                    'สถานะรายงานก่อนหน้า' => $oldStatus,
+                    'อัพเดตสถานะรายงาน' => $status,
+                    'ความคิดเห็นก่อนหน้า' => $oldComment,
+                    'อัพเดตความคิดเห็น'   => $newComment,
+                    'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
+                    'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
+                    'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,
+                    'อัพเดตคะแนนเชิงคุณภาพ' => $newQualityScores,
+                ])
+                ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
             DB::commit();
 

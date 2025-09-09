@@ -21,7 +21,7 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($evaluatorAssignment) {
+    $sortedEvaluations = $evaluations->sortByDesc(function($evaluatorAssignment) {
         // Primary sort: by end_time (most recent first)
         $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
         if ($endTime) {
@@ -302,6 +302,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="px-6 py-3 border-t border-gray-200">
+            {{ $evaluations->links() }}
         </div>
     </div>
 </div>

@@ -21,7 +21,7 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($assignment) {
+    $sortedEvaluations = $evaluations->sortByDesc(function($assignment) {
         // Primary sort: by end_time (most recent first)
         $endTime = optional($assignment->assignmentData)->end_time;
         if ($endTime) {
@@ -292,5 +292,8 @@
                     @endforelse
                 </tbody>
         </table>
+    </div>
+    <div class="mt-6">
+        {{ $evaluations->links() }}
     </div>
 </div>

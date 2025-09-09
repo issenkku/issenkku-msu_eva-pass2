@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Services\EvaluationService;
 use App\Services\ReportDataService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
 {
@@ -53,7 +54,6 @@ class DashboardController extends Controller
         // Get filter parameters
         $startDate = $request->input('start_time');
         $endDate = $request->input('end_time');
-        $departmentName = $request->input('department_name');
 
         // Fetch all departments for the filter dropdown
         $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']);
@@ -70,6 +70,7 @@ class DashboardController extends Controller
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
+        $evaluations = $evaluationService->sortEvaluations($evaluations);
 
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
@@ -106,10 +107,20 @@ class DashboardController extends Controller
         // Evaluation period for display
         $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
 
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('dashboard.index', [
             'averageScore' => $averageScore,
             'statusCounts' => $statusCounts,
-            'evaluations' => $evaluations,
+            'evaluations' => $paginatedEvaluations,
             'scatterData' => $scatterData,
             'chartData' => $chartData,
             'totalEvaluations' => $totalEvaluations,

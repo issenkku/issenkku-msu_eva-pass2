@@ -299,21 +299,21 @@ class AssignmentDataController extends Controller
 
     private function sendEvaluationCompletedMail($reportId)
     {
-        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
         if (! $report) {
             return;
         }
 
         // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
-        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        $assignment = Assignments::where('report_id', $reportId)->first();
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluatee_id);
+        $user = User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }
-        $evaluator_name = \App\Models\User::find($assignment->evaluator);
+        $evaluator_name = User::find($assignment->evaluator);
         if (! $evaluator_name || ! $evaluator_name->email) {
             return;
         }
@@ -359,7 +359,7 @@ class AssignmentDataController extends Controller
 
         foreach ($users as $user) {
             // ตรวจสอบว่า $user เป็น User model จริงหรือไม่
-            if (! ($user instanceof \App\Models\User)) {
+            if (! ($user instanceof User)) {
                 continue;
             }
 

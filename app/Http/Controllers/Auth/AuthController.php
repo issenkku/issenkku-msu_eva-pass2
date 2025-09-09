@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -56,6 +57,12 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate(); // prevent session fixation
 
+        activity()
+                ->causedBy($request->user()) // who did it
+                ->useLog('การเข้าใช้งาน')
+                ->withProperties(['ip' => $request->ip()])
+                ->log("ผู้ใช้เข้าสู่ระบบ");
+
         // กำหนด path redirect ตาม role (ส่งกลับไปให้ JS ใช้ window.location.href = response.data.redirect)
         $redirect = '/';
         if ($user->hasRole('admin')) {
@@ -75,10 +82,18 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        activity()
+            ->causedBy($request->user()) // who did it
+            ->useLog('การเข้าใช้งาน')
+            ->withProperties(['ip' => $request->ip()])
+            ->log("ผู้ใช้ออกจากระบบ");
+            
         Auth::logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        
 
         return redirect('/login')->with('success', 'ออกจากระบบสำเร็จ');
     }

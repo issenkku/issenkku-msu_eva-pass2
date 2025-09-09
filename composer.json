@@ -15,10 +15,12 @@
         "laravel/sanctum": "^4.1",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
+        "predis/predis": "^3.2",
         "rappasoft/laravel-authentication-log": "^5.0",
         "spatie/laravel-activitylog": "*",
         "spatie/laravel-permission": "^6.20",
-        "tightenco/ziggy": "^2.4"
+        "tightenco/ziggy": "^2.4",
+        "torann/geoip": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

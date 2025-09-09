@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EvaluatorController extends Controller
 {
@@ -125,10 +126,20 @@ class EvaluatorController extends Controller
         $statusLabels = GraphDataService::getStatusLabels();
         $statusColors = GraphDataService::getStatusColors();
 
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('evaluator_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $evaluations, // Only same-department evaluations
+            'evaluations' => $paginatedEvaluations, // Only same-department evaluations
             'years' => $years,
             'averageScore' => $averageScore,
             'scatterData' => $scatterData,

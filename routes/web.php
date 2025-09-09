@@ -16,6 +16,7 @@ use App\Http\Controllers\Setting\DepartmentsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
+use App\Http\Controllers\User\ActivityLogController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +53,15 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/import', [UserController::class, 'import'])->name('import');
         Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::group(['middleware' => ['auth']], function () {
+        // Activity Log Routes
+        Route::get('/user/management/log', [ActivityLogController::class, 'index'])
+            ->name('user.management.log');
+        
+        Route::get('/user/management/log/{activity}', [ActivityLogController::class, 'show'])
+            ->name('user.management.log.show');
     });
 
     Route::prefix('assignment-data')->name('assignment-data.')->group(function () {

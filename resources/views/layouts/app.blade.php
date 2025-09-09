@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ระบบประเมินบุคลากร</title>
+    <link rel="icon" href="{{ asset('favicon-msu.png') }}" type="image/png" sizes="32x32">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -500,8 +501,15 @@
                         @endif
 
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
-                        <li class="nav-item">
-                            <a class="nav-link text-white" href="{{ route('users.index') }}">จัดการสมาชิก</a>
+                        <li class="nav-item dropdown">
+                            <!-- <a class="nav-link text-white" href="{{ route('users.index') }}">จัดการสมาชิก</a> -->
+                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                ข้อมูลผู้ใช้
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="settingDropdown">
+                                <li><a class="dropdown-item" href="{{ route('users.index') }}">จัดการสมาชิก</a></li>
+                                <li><a class="dropdown-item" href="{{ route('user.management.log') }}">ประวัติการเข้าใช้งาน</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -604,6 +612,10 @@
                     <a href="{{ route('users.index') }}" class="mobile-nav-item">
                         <i class="fas fa-users" style="width: 20px; margin-right: 10px;"></i>
                         จัดการสมาชิก
+                    </a>
+                    <a href="{{ route('user.management.log') }}" class="mobile-nav-item">
+                        <i class="fas fa-history" style="width: 20px; margin-right: 10px;"></i>
+                        ประวัติการเข้าใช้งาน
                     </a>
                     <a href="/criteria-config" class="mobile-nav-item">
                         <i class="fas fa-cogs" style="width: 20px; margin-right: 10px;"></i>
