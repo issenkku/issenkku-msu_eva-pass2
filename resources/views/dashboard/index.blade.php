@@ -350,10 +350,10 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex justify-center items-center h-full">
-                                            <button class="text-blue-600 hover:text-blue-900 transition-colors text-center"
-                                                onclick="openReportDetails('{{ $evaluation->report->id ?? $evaluation->report->report_id ?? '' }}')">
+                                            <a href="{{ url('/dashboard-data/' . ($evaluation->report->id ?? $evaluation->report->report_id ?? '')) }}"
+                                            class="text-blue-600 hover:text-blue-900 transition-colors text-center">
                                                 ดูรายละเอียด
-                                            </button>
+                                            </a>
                                         </div>
                                     </td>
                                     <td class="px-3 py-4 whitespace-nowrap">
@@ -442,59 +442,6 @@
                 document.getElementById('empty-state').style.display = hasMatch ? 'none' : 'block';
             });
         });
-
-        // Export functions
-        function exportToExcel() {
-            // Show loading indicator
-            document.getElementById('loading-state').style.display = 'block';
-
-            setTimeout(() => {
-                const tableData = [];
-                // Add header row in Thai
-                tableData.push([
-                    'ลำดับ',
-                    'รอบประเมิน',
-                    'ชื่อ-สกุล',
-                    'แผนก',
-                    'กลุ่มงาน',
-                    'ตำแหน่ง',
-                    'คะแนนรวม',
-                    'คะแนนด้านปริมาณ',
-                    'คะแนนด้านคุณภาพ',
-                    'ข้อเสนอแนะ',
-                    'ชื่อผู้ประเมิน',
-                    'สร้างเมื่อ',
-                    'แก้ไขเมื่อ',
-                ]);
-
-                (window.reports || []).forEach((report, index) => {
-                    tableData.push([
-                        index + 1,
-                        `${report.start_time || ''} ถึง ${report.end_time || ''}`,
-                        report.evaluatee_name || '',
-                        report.evaluatee_department_name || '',
-                        report.evaluatee_personnel_type || '',
-                        report.evaluatee_position_name || '',
-                        report.score ?? '',
-                        report.quantity_score ?? '',
-                        report.quality_score ?? '',
-                        report.comment ?? '',
-                        report.evaluator_name || '',
-                        report.created_at || '',
-                        report.updated_at || '',
-                    ]);
-                });
-
-                // Create XLSX and export
-                const ws = XLSX.utils.aoa_to_sheet(tableData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Evaluation Results");
-                XLSX.writeFile(wb, "evaluation_results.xlsx");
-
-                // Hide loading indicator
-                document.getElementById('loading-state').style.display = 'none';
-            }, 1000);
-        }
 
         function openReportDetails(reportId) {
             window.open(`/dashboard-data/${reportId}`, '_blank') ;

@@ -5,10 +5,12 @@ namespace App\Models;
 use App\Models\Setting\Positions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class AssignmentData extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $table = 'assignment_datas';
 
@@ -77,5 +79,21 @@ class AssignmentData extends Model
             'id',
             'evaluatee_id'
         );
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->useLogName('จัดการรอบการประเมิน') // custom log_name in DB
+            ->setDescriptionForEvent(function (string $eventName) {
+                return match ($eventName) {
+                    'updated' => 'แก้ไขรอบการประเมิน',
+                    'created' => 'สร้างรอบการประเมิน',
+                    'deleted' => 'ลบรอบการประเมิน',
+                    default => $eventName,
+                };
+            });
     }
 }

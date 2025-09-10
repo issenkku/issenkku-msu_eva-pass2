@@ -209,23 +209,26 @@ class EvaluationScoreController extends Controller
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluator);
+
+        $evaluators = $assignment->getEvaluatorUsers();
         $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
-        if (! $user || ! $user->email) {
-            return;
+        foreach ($evaluators as $user) {
+            if (! $user || ! $user->email) {
+                continue;
+            }
+
+            $mailData = [
+                'name' => $user->name,
+                'report_title' => optional($report->reportData)->report_title,
+                'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+                'status' => $report->status,
+                'evaluatee_name' => optional($evaluatee)->name,
+            ];
+
+            \Mail::send('emails.evaluatee_pending', $mailData, function ($message) use ($user) {
+                $message->to($user->email, $user->name)
+                        ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
+            });
         }
-
-        $mailData = [
-            'name' => $user->name,
-            'report_title' => optional($report->reportData)->report_title,
-            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
-            'status' => $report->status,
-            'evaluatee_name' => $evaluatee->name,
-        ];
-
-        \Mail::send('emails.evalautee_Pending', $mailData, function ($message) use ($user) {
-            $message->to($user->email, $user->name)
-                ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
-        });
     }
 }

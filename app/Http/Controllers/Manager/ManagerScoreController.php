@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\EvidenceAnswer;
+use Illuminate\Support\Facades\Mail;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
@@ -163,9 +164,9 @@ class ManagerScoreController extends Controller
             $newComment = $report->comment;
 
             $report->save();
-            // if ($report->save() && $status === 'Pending') {
-            //     $this->sendEvaluationCompletedMail($reportId);
-            // }
+            if ($status === 'Completed') {
+                $this->sendEvaluationCompletedMail($reportId);
+            }
 
             activity()
                 ->causedBy($request->user()) // who did it
@@ -194,5 +195,35 @@ class ManagerScoreController extends Controller
 
             return response()->json(['message' => 'Error processing evaluation scores', 'error' => $e->getMessage()], 500);
         }
+    }
+
+    private function sendEvaluationCompletedMail($reportId)
+    {
+        $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        if (! $report) {
+            return;
+        }
+
+        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
+        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        if (! $assignment) {
+            return;
+        }
+        $user = \App\Models\User::find($assignment->evaluatee_id);
+        if (! $user || ! $user->email) {
+            return;
+        }
+
+        $mailData = [
+            'name' => $user->name,
+            'report_title' => optional($report->reportData)->report_title,
+            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+            'status' => $report->status,
+        ];
+
+        Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
+            $message->to($user->email, $user->name)
+                ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
+        });
     }
 }
