@@ -73,6 +73,10 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 y: {
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'จำนวน'
+                    },
                     ticks: {
                         precision: 0
                     },

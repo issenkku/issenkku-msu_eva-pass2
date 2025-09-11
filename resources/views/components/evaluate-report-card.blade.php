@@ -5,7 +5,8 @@
     'reportComment' => '-',
 ])
 
-<div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-md">
+<div class="p-6 rounded-2xl shadow-md"
+    style="background: linear-gradient(180deg, #faf1ffff 0%, #f9f5ffff 100%); border-color: #f3e8ff;">
     <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">ข้อมูลเกณฑ์ประเมิน</h3>
 
     <div class="grid grid-cols-1 gap-6">

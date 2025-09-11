@@ -89,6 +89,46 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- ผู้รับการประเมิน Section -->
+                        <div class="bg-blue-50 rounded-lg p-6 position-card">
+                            <div class="flex items-center mb-4">
+                                <div class="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-2 text-xs font-semibold">
+                                    A
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้รับการประเมิน</h3>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    รายชื่อตำแหน่งผู้รับการประเมิน:
+                                </label>
+                                <div class="text-sm text-gray-500">
+                                    <span id="evaluatees-available-count">0</span> ตำแหน่งที่แสดง จาก
+                                    <span id="evaluatees-total-count">0</span> ตำแหน่งทั้งหมด
+                                </div>
+                            </div>
+                            <select id="evaluatees" name="evaluatees" required
+                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- เลือกตำแหน่งผู้รับการประเมิน --</option>
+                                @foreach ($evaluatees as $position)
+                                    <option value="{{ $position->id }}"
+                                        data-position-name="{{ $position->name }}"
+                                        data-user-count="{{ $position->user->count() }}">
+                                        {{ $position->name }} ({{ $position->user->count() }} คน)
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <!-- Selected Display for Evaluatees -->
+                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-blue-200">
+                                <p class="text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-check-circle mr-2 text-blue-500"></i>ตำแหน่งผู้รับการประเมินที่เลือก:
+                                    <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">0</span> ตำแหน่ง
+                                </p>
+                                <div id="selected-evaluatees" class="flex flex-col gap-2">
+                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- ผู้ประเมิน Section -->
                         <div class="bg-green-50 rounded-lg p-6 position-card">
                             <div class="flex items-center mb-4">
@@ -130,46 +170,7 @@
                             </div>
                         </div>
 
-                        <!-- ผู้รับการประเมิน Section -->
-                        <div class="bg-blue-50 rounded-lg p-6 position-card">
-                            <div class="flex items-center mb-4">
-                                <div class="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full mr-2 text-xs font-semibold">
-                                    A
-                                </div>
-                                <h3 class="text-lg font-medium text-gray-700">ตำแหน่งผู้รับการประเมิน</h3>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    รายชื่อตำแหน่งผู้รับการประเมิน:
-                                </label>
-                                <div class="text-sm text-gray-500">
-                                    <span id="evaluatees-available-count">0</span> ตำแหน่งที่แสดง จาก
-                                    <span id="evaluatees-total-count">0</span> ตำแหน่งทั้งหมด
-                                </div>
-                            </div>
-                            <select id="evaluatees" name="evaluatees" required
-                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">-- เลือกตำแหน่งผู้รับการประเมิน --</option>
-                                @foreach ($evaluatees as $position)
-                                    <option value="{{ $position->id }}"
-                                        data-position-name="{{ $position->name }}"
-                                        data-user-count="{{ $position->user->count() }}">
-                                        {{ $position->name }} ({{ $position->user->count() }} คน)
-                                    </option>
-                                @endforeach
-                            </select>
-
-                            <!-- Selected Display for Evaluatees -->
-                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-blue-200">
-                                <p class="text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-check-circle mr-2 text-blue-500"></i>ตำแหน่งผู้รับการประเมินที่เลือก:
-                                    <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">0</span> ตำแหน่ง
-                                </p>
-                                <div id="selected-evaluatees" class="flex flex-col gap-2">
-                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกตำแหน่ง</span>
-                                </div>
-                            </div>
-                        </div>
+                        
 
                     </div>
                 </div>

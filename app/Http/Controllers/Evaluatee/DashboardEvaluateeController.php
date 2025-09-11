@@ -81,6 +81,39 @@ class DashboardEvaluateeController extends Controller
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
+        $unfinishedAssignments = $evaluations->filter(function ($assignment) {
+            $status = optional($assignment->report)->status ?? 'Assigned';
+
+            // unfinished statuses only
+            return in_array($status, ['Assigned', 'Draft']);
+        })->map(function ($assignment) {
+            $startTime = optional($assignment->assignmentData)->start_time;
+            $endTime   = optional($assignment->assignmentData)->end_time;
+
+            // Format Thai date
+            $formatThai = function ($datetime) {
+                if (!$datetime) return '-';
+                \Carbon\Carbon::setLocale('th');
+                setlocale(LC_TIME, 'th_TH.UTF-8');
+                $date = \Carbon\Carbon::parse($datetime);
+                $year = $date->year + 543;
+                return $date->translatedFormat('j F')." {$year}";
+            };
+
+            $daysLeft = $endTime ? now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($endTime)->startOfDay(), false) : null;
+
+            return [
+                'id'       => $assignment->report->id ?? null,
+                'title'    => optional($assignment->report->reportData)->report_title ?? 'ไม่พบชื่อรายงาน',
+                'period'   => ($startTime ? $formatThai($startTime) : '-') . ' - ' . ($endTime ? $formatThai($endTime) : '-'),
+                'deadline' => $endTime ? $formatThai($endTime) : '-',
+                'daysLeft' => $daysLeft,
+            ];
+        })->filter(function ($assignment) {
+            // keep only > 0 days left, or exactly 0 (deadline today)
+            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] >= 0;
+        });
+
         // dd($scatterData);
 
         $page = $request->input('page', 1);
@@ -101,6 +134,7 @@ class DashboardEvaluateeController extends Controller
             'averageScore' => $averageScore,
             'highestScore' => $highestScore,
             'scatterData' => $scatterData,
+            'unfinishedAssignments' => $unfinishedAssignments,
         ]);
     }
 
