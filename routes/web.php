@@ -165,6 +165,11 @@ Route::middleware('auth:sanctum')->group(function () {
             return redirect()->route('manager.dashboard'); // ชื่อ route ของ admin dashboard
         }
 
+        if ($user->hasRole('กรรมการ')) {
+            // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
+            return redirect()->route('director.dashboard'); // ชื่อ route ของ admin dashboard
+        }
+
         if ($user->hasRole('ผู้ประเมิน')) {
             // ถ้าเป็นผู้ประเมิน ให้ไปที่ dashboard ของผู้ประเมิน
             return redirect()->route('evaluator.index');
