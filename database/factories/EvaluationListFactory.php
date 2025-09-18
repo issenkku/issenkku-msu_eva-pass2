@@ -23,8 +23,8 @@ class EvaluationListFactory extends Factory
             'sum_score' => fake()->numberBetween(1, 100),
             'sequence' => fake()->numberBetween(1, 5),
             'annotation' => fake()->text(30),
-            'categorie_id' => Category::inRandomOrder()->first()?->id,
-            'criteria_version_id' => CriteriaVersion::inRandomOrder()->first()?->id,
+            'categorie_id' => Category::factory(),
+            'criteria_version_id' => CriteriaVersion::factory(),
         ];
     }
 }

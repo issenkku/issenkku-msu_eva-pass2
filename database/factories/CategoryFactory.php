@@ -21,7 +21,7 @@ class CategoryFactory extends Factory
             'main_categories' => fake()->word(),
             'sub_categories' => fake()->word(),
             'sequence' => fake()->numberBetween(1, 5),
-            'criteria_version_id' => CriteriaVersion::first()?->id,
+            'criteria_version_id' => CriteriaVersion::factory(),
         ];
     }
 }

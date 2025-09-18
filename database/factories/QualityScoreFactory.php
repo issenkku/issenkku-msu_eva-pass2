@@ -20,8 +20,8 @@ class QualityScoreFactory extends Factory
     {
         return [
             'score' => fake()->randomFloat(2, 1, 6),
-            'quality_sub_criteria_id' => QualitySubCriteria::inRandomOrder()->first()?->id,
-            'report_id' => Reports::inRandomOrder()->first()?->id,
+            'quality_sub_criteria_id' => QualitySubCriteria::factory(),
+            'report_id' => Reports::factory(),
         ];
     }
 }

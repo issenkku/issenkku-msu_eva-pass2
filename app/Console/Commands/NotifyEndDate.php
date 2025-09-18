@@ -6,6 +6,7 @@ use App\Models\AssignmentData;
 use App\Models\Setting\Settings;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use App\Mail\NotifyEndDateMail;
 use Illuminate\Support\Facades\Mail;
 
 class NotifyEndDate extends Command
@@ -58,12 +59,12 @@ class NotifyEndDate extends Command
                         $daysLeft = $today->diffInDays($carbonDate, false);
                         $daysLeftText = $daysLeft == 0 ? 'วันนี้' : "อีก {$daysLeft} วัน";
 
-                        Mail::raw(
-                            "แจ้งเตือนวันสิ้นสุดการประเมิน: กำหนดสิ้นสุดการประเมินคือ ({$endDateTh}) {$daysLeftText} กรุณาตรวจสอบและดำเนินการประเมินให้เรียบร้อยก่อนถึงกำหนด",
-                            function ($message) use ($user) {
-                                $message->to($user->email)
-                                    ->subject('แจ้งเตือนวันสิ้นสุดการประเมินใกล้ถึงกำหนด');
-                            }
+                        Mail::to($user->email)->send(
+                            new NotifyEndDateMail(
+                                $user->name,
+                                $endDateTh,
+                                $daysLeftText
+                            )
                         );
                         $successCount++;
                     } catch (\Exception $e) {

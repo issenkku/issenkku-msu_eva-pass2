@@ -25,7 +25,10 @@ class UpdateReportStatuses extends Command
 
         foreach ($items as $item) {
             foreach ($item->assignments as $assignment) {
-                if ($assignment->report && $assignment->report->status === 'Draft') {
+                if (
+                    $assignment->report &&
+                    in_array($assignment->report->status, ['Draft', 'Assigned'])
+                ) {
                     $assignment->report->update(['status' => 'Pending']);
                     $updated++;
                 }

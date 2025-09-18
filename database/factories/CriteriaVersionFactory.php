@@ -14,7 +14,7 @@ class CriteriaVersionFactory extends Factory
     {
         return [
             'version_name' => $this->faker->words(3, true),
-            'created_by' => User::inRandomOrder()->first()?->id,
+            'created_by' => User::factory(),
         ];
     }
 }

@@ -24,9 +24,9 @@ class QuantitySubCriteriaFactory extends Factory
             'sequence' => fake()->numberBetween(1, 10),
             'score_a' => fake()->numberBetween(1, 20),
             'score_b' => fake()->numberBetween(20, 400),
-            'quantity_main_criteria_id' => QuantityMainCriteria::inRandomOrder()->first()?->id,
-            'criteria_version_id' => CriteriaVersion::inRandomOrder()->first()?->id,
-            'evaluation_list_id' => EvaluationList::inRandomOrder()->first()?->id,
+            'quantity_main_criteria_id' => QuantityMainCriteria::factory(),
+            'criteria_version_id' => CriteriaVersion::factory(),
+            'evaluation_list_id' => EvaluationList::factory(),
         ];
     }
 }

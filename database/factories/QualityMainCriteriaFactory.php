@@ -22,7 +22,7 @@ class QualityMainCriteriaFactory extends Factory
             'sequence' => fake()->numberBetween(1, 10),
             'ratio' => fake()->numberBetween(20, 100),
             'tooltips' => fake()->text(30),
-            'criteria_version_id' => CriteriaVersion::inRandomOrder()->first()?->id,
+            'criteria_version_id' => CriteriaVersion::factory(),
         ];
     }
 }

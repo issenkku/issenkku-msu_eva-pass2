@@ -36,8 +36,8 @@ class UserFactory extends Factory
             'personnel_type' => $this->faker->randomElement($personnelTypes),
             'bio' => null,
             'status' => 'active',
-            'position_id' => $this->faker->numberBetween(1, 21),
-            'department_id' => $this->faker->numberBetween(1, 14),
+            'position_id' => \Database\Factories\PositionFactory::new()->create(),
+            'department_id' => \Database\Factories\DepartmentFactory::new()->create(),
             'created_at' => now(),
             'updated_at' => now(),
         ];
