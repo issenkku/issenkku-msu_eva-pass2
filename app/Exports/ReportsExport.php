@@ -104,7 +104,6 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             return [
                 $index + 1,
                 $evaluationRound,
-                optional($assignment->assignmentData)->start_time.' ถึง '.optional($assignment->assignmentData)->end_time,
                 $assignment->evaluateeUser?->name,
                 $assignment->evaluateeUser?->department?->department_name,
                 $assignment->evaluateeUser?->personnel_type,

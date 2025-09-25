@@ -26,7 +26,6 @@ class ReportSeeder extends Seeder
             // 'status' => 'Assigned', // หรือเปลี่ยนตาม field ที่โมเดลคุณต้องการ
             // 'report_data_id' => ReportData::inRandomOrder()->first()?->id, // Uncomment if you have ReportData model
         ]);
-        // }
 
         // 2. Create EvidenceAnswer for each existing EvaluationList
         $evaluationLists = EvaluationList::all();
