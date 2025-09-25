@@ -21,6 +21,9 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
             // Add other custom route files here if needed
+            Route::prefix('api')
+                ->middleware('api')
+                ->group(base_path('routes/report.php'));
         });
     }
 }

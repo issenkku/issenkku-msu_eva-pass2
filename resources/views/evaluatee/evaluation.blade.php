@@ -4,8 +4,20 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>แบบประเมินผลงาน</h1>
+        {{-- <p class="version">เวอร์ชัน: {{ $versionName }}</p> --}}
+    </div>
+
+    <x-evaluate-report-card 
+        :reportName="$reportName"
+        :reportDescription="$reportDescription"
+        :assessmentType="$assessmentType"
+        :reportComment="$reportComment"
+    />
+
     <x-evaluate-profile-card 
-        :evaluatorName="$evaluatorName"
         :startTimeFormatted="$startTimeFormatted"
         :endTimeFormatted="$endTimeFormatted"
         :reportName="$reportName"
@@ -39,24 +51,62 @@
             <fieldset disabled>
         @endif
 
-        <div class="space-y-8">
-            <x-quantity-table
-                :evaluationItems="$evaluationItems"
-                title="ด้านปริมาณ"
-                :readonly="$readonly"
-                :evidenceMap="$evidenceMap"
-            />
+        <x-unified-evaluation
+            :categoryItems="$categoryItems"
+            :readonly="$readonly"
+            :evidenceMap="$evidenceMap"
+            :report="$report"
+        />
 
-            <x-quality-table
-                :qualityItems="$qualityItems" 
-                title="ด้านคุณภาพ"
-                :readonly="$readonly"
-                :evidenceMap="$evidenceMap"
-            />
-        </div>
+        <!-- summary score -->
+        @php
+            $totalQuantityScore = 0;
+            $totalQualityScore = 0;
+
+            foreach($categoryItems as $category) {
+                foreach($category['evaluation_lists'] as $evalList) {
+                    // Quantity
+                    foreach($evalList['quantity_items'] as $mainCriteria) {
+                        foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                            $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
+                        }
+                    }
+                    // Quality
+                    foreach($evalList['quality_items'] as $mainCriteria) {
+                        $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
+                    }
+                }
+            }
+            $totalScore = $totalQuantityScore + $totalQualityScore;
+        @endphp
 
         {{-- Comments Section - Only show when status is Completed --}}
         @if(isset($report->status) && $report->status === 'Completed')
+            <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
+                <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-5a2 2 0 00-2-2h-1V7a4 4 0 10-8 0v5H9a2 2 0 00-2 2v5a2 2 0 002 2z"/>
+                    </svg>
+                    สรุปคะแนนรวม
+                </h3>
+
+                <div class="space-y-3 text-blue-800">
+                    <div class="flex justify-between items-center">
+                        <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
+                        <span class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
+                        <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
+                    <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+                </div>
+            </div>
+    
             <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">
                 <h3 class="text-lg font-semibold text-purple-900 mb-4 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,6 +128,7 @@
                         <p class="text-gray-500 italic">ไม่มีความคิดเห็นเพิ่มเติม</p>
                     </div>
                 @endif
+            </div>
         @endif
 
         <input type="hidden" name="status" id="formStatus" value="submitted">
@@ -87,15 +138,25 @@
         @endif
 
         <div class="flex justify-center gap-4 mt-8">
-            <a href="/evaluatee-dashboard" class="px-6 py-2 bg-white rounded-md text-center hover:bg-gray-200 w-40">กลับ</a>
+            <x-button 
+                    type= defualt 
+                    text="ย้อนกลับ" 
+                    icon="fas fa-arrow-left"
+                    href="/evaluatee-dashboard" />
 
             @unless($readonly)
-                <button type="submit" onclick="setFormStatus('Draft')" class="bg-pink-400 text-white px-6 py-2 rounded-md hover:bg-pink-500 w-40">
-                    บันทึกร่าง
-                </button>
-                <button type="button" id="openModalBtn" class="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 w-40">
-                    ส่งแบบประเมิน
-                </button>
+                <x-button 
+                    type="secondary"
+                    buttonType="submit" 
+                    text="บันทึกร่าง" 
+                    onclick="setFormStatus('Draft')" 
+                    icon="fas fa-save" />
+                <x-button 
+                    type="primary"
+                    buttonType="button" 
+                    text="ส่งแบบประเมิน"
+                    id="openModalBtn"
+                    icon="fas fa-paper-plane" />
             @endunless
         </div>
     </form>
@@ -173,6 +234,20 @@
         max-width: 100%;
         padding: 0 1rem;
     }
+}
+/* Header Styles */
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 3px solid #f3f4f6;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
 }
 </style>
 

@@ -1,4 +1,4 @@
-@props(['evaluations', 'statusCounts'])
+@props(['evaluations', 'statusCounts', 'years'])
 
 @php
     use Carbon\Carbon;
@@ -21,7 +21,7 @@
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = collect($evaluations)->sortByDesc(function($assignment) {
+    $sortedEvaluations = $evaluations->sortByDesc(function($assignment) {
         // Primary sort: by end_time (most recent first)
         $endTime = optional($assignment->assignmentData)->end_time;
         if ($endTime) {
@@ -41,21 +41,69 @@
                 ? Carbon::parse($assignment->created_at)->timestamp 
                 : 0);
     })->values(); // Reset array keys to ensure proper numbering
+
+    $filteredStatus = request('status');
+    if ($filteredStatus) {
+        // Map display name back to DB status
+        $reverseMap = [
+            'ยังไม่ประเมิน' => ['Assigned'],
+            'กำลังดำเนินการ' => ['Draft'],
+            'รอผลการประเมิน' => ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
+            'ประเมินเสร็จสิ้น' => ['Completed'],
+        ];
+
+        $statusCode = $reverseMap[$filteredStatus] ?? $filteredStatus;
+
+        $sortedEvaluations = $sortedEvaluations->filter(function($assignment) use ($statusCode) {
+            return in_array(optional($assignment->report)->status, $statusCode);
+        })->values(); // Reset keys
+    }
 @endphp
 
 <div class="bg-white rounded-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
+    <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
+        <x-search-bar  
+            placeholder="ค้นหาชื่อ, รายงาน..."
+        /> 
+        <x-filter-badge-single 
+            name="year"
+            placeholder="ปีการประเมินทั้งหมด"
+            :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+        />
+    </div>
 
     <!-- Status Badges -->
-    {{-- <div class="flex gap-3 mb-6 flex-wrap">
+    @php
+        $statusStyles = [
+            'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
+            'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+            'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+            'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
+        ];
+
+        $firstStatus = array_key_first($statusCounts);
+    @endphp
+
+    <div class="flex gap-3 mb-6 flex-wrap">
         @foreach($statusCounts as $status => $count)
-            <x-status-badge 
-                :status="$status" 
-                :count="$count" 
-                :active="request('status') === $status" 
-            />
+            @php
+                $isShowAll = $status === $firstStatus;
+                $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
+                $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
+
+                $url = $isShowAll
+                    ? request()->url() 
+                    : request()->fullUrlWithQuery(['status' => $status]);
+            @endphp
+
+            <a href="{{ $url }}"
+            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+                {{ $status }} ({{ $count }})
+            </a>
         @endforeach
-    </div> --}}
+    </div>
 
     <!-- Table Format -->
     <div class="relative overflow-x-auto">
@@ -80,7 +128,6 @@
                         @php
                             $report = $assignment->report;
                             $assignmentData = $assignment->assignmentData;
-                            $evaluator = $assignment->evaluatorUser;
 
                             $reportTitle = optional(optional($assignmentData)->report)->reportData->report_title
                                 ?? optional($report)->reportData->report_title
@@ -90,15 +137,18 @@
                             $statusMapping = [
                                 'Assigned' => 'ยังไม่ประเมิน',
                                 'Draft' => 'กำลังดำเนินการ',
-                                'Pending' => 'รอผลการประเมิน',
+                                'Pending' => 'รอผู้ประเมินประเมิน',
+                                'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
+                                'Director_assigned' => 'รอกรรมการรับรองผล',
+                                'Director_draft' => 'กรรมการเริ่มรับรองผล',
+                                'Manager_assign' => 'รอคณบดีรับรองผล',
+                                'Manager_draft' => 'คณบดีเริ่มรับรองผล',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
 
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
-
-                            $evaluatorName = optional($evaluator)->name ?? '-';
 
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
@@ -145,14 +195,25 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluatorName }}</td>
+                            <td class="p-4 border-b text-gray-500">
+                                @foreach($assignment->evaluatorUsers as $evaluator)
+                                    <span class="inline-block px-2 py-1 flex">
+                                        {{ $evaluator->name }}
+                                    </span>
+                                @endforeach
+                            </td>
 
-                            <td class="p-4 border-b text-center min-w-[180px]">
+                            <td class="py-4 px-2 border-b text-center min-w-[180px]">
                                 @php
                                     $statusClasses = [
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
-                                        'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอผู้ประเมินประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'ผู้ประเมินเริ่มประเมิน' => 'bg-yellow-100 text-yellow-800',
+                                        'รอกรรมการรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'กรรมการเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'รอคณบดีรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'คณบดีเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
@@ -162,7 +223,7 @@
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center">
+                            <td class="p-4 border-b text-center \">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
@@ -173,9 +234,29 @@
                                             'label' => 'ประเมินต่อ',
                                             'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
                                         ],
-                                        'รอผลการประเมิน' => [
+                                        'รอผู้ประเมินประเมิน' => [
                                             'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                        ],
+                                        'ผู้ประเมินเริ่มประเมิน' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                                        ],
+                                        'รอกรรมการรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                                        ],
+                                        'กรรมการเริ่มรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                                        ],
+                                        'รอคณบดีรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
+                                        ],
+                                        'คณบดีเริ่มรับรองผล' => [
+                                            'label' => 'ดูการกรอกข้อมูล',
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
@@ -193,7 +274,7 @@
 
                                 @if($action)
                                     <a href="{{ $url }}"
-                                    class="inline-block px-4 py-2 text-sm font-medium rounded-md shadow transition duration-200 {{ $action['classes'] }}">
+                                    class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
                                         {{ $action['label'] }}
                                     </a>
                                 @else
@@ -211,5 +292,8 @@
                     @endforelse
                 </tbody>
         </table>
+    </div>
+    <div class="mt-6">
+        {{ $evaluations->links() }}
     </div>
 </div>

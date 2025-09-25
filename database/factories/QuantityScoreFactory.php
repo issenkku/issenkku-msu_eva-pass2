@@ -21,8 +21,8 @@ class QuantityScoreFactory extends Factory
         return [
             'score_C' => fake()->numberBetween(1, 5),
             'score_D' => fake()->numberBetween(1, 40),
-            'quantity_sub_criteria_id' => QuantitySubCriteria::inRandomOrder()->first()?->id,
-            'report_id' => Reports::inRandomOrder()->first()?->id,
+            'quantity_sub_criteria_id' => QuantitySubCriteria::factory(),
+            'report_id' => Reports::factory(),
         ];
     }
 }

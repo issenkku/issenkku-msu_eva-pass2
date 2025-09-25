@@ -58,6 +58,63 @@
         }
     </style>
 
+    @php
+        use Carbon\Carbon;
+
+        function formatThaiDate($date)
+        {
+            if (!$date) return '-';
+
+            Carbon::setLocale('th'); 
+            setlocale(LC_TIME, 'th_TH.UTF-8');
+
+            $thaiMonth = $date->translatedFormat('j F'); 
+            $buddhistYear = $date->year + 543;
+            $time = $date->format('H:i');
+
+            return [
+                'date' => "{$thaiMonth} {$buddhistYear}",
+                'time' => "{$time} น."
+            ];
+        }
+
+        // Sort evaluations by most recent first
+        $sortedEvaluations = $evaluations->sortByDesc(function($evaluatorAssignment) {
+            $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
+            if ($endTime) {
+                return Carbon::parse($endTime)->timestamp;
+            }
+
+            $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
+            if ($startTime) {
+                return Carbon::parse($startTime)->timestamp;
+            }
+
+            return optional($evaluatorAssignment->report)->updated_at
+                ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
+                : (optional($evaluatorAssignment)->created_at
+                    ? Carbon::parse($evaluatorAssignment->created_at)->timestamp
+                    : 0);
+        })->values(); // Reset array keys to ensure proper numbering
+
+        $filteredStatus = request('status');
+        if ($filteredStatus) {
+            // Map display names back to DB status (including multiple statuses)
+            $reverseMap = [
+                'มอบหมาย' => ['Assigned'],
+                'เริ่มกรอกข้อมูล' => ['Draft'],
+                'กำลังดำเนินการ' => ['Pending','Evaluator_draft','Director_assigned', 'Director_draft', 'Manager_draft', 'Manager_assign'],
+                'ประเมินเสร็จสิ้น' => ['Completed'],
+            ];
+
+            $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
+
+            $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
+                return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
+            })->values(); // Reset keys
+        }
+    @endphp
+
     <div class="min-h-screen py-8 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-row justify-between">
@@ -93,19 +150,28 @@
                         </div>
                         <div>
                             <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
-                            <select name="department_name"
-                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                                <option value="">ทุกหน่วยงาน</option>
-                                @foreach ($departments ?? [] as $dept)
-                                    <option value="{{ $dept->department_name }}"
-                                        {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                        {{ $dept->department_name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="relative">
+                                <select name="department_name"
+                                    class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                    <option value="">ทุกหน่วยงาน</option>
+                                    @foreach ($departments ?? [] as $dept)
+                                        <option value="{{ $dept->department_name }}"
+                                            {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                            {{ $dept->department_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                
+                                <!-- Custom arrow icon -->
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-end space-x-2 pt-2">
+                    <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0">
                         <button type="button" onclick="resetFilters()"
                             class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
                         <button type="submit"
@@ -115,102 +181,101 @@
             </div>
 
             <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Total Participants -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-lg hover-scale border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">จำนวนผู้เข้ารับการประเมิน</p>
-                            <p class="text-3xl font-bold mt-2 text-gray-900">{{ $totalParticipants ?? 0 }}</p>
-                            <p class="text-gray-500 text-sm mt-1">{{ $evaluationPeriod ?? 'รอบการประเมินปัจจุบัน' }}</p>
-                        </div>
-                        <div class="p-3 bg-blue-100 rounded-lg">
-                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
+            <div class="gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <x-summary-score
+                        title="จำนวนผู้เข้ารับการประเมิน"
+                        :value="$totalEvaluatees"
+                        subtitle="จำนวนผู้เข้าร่วมการประเมินทั้งหมด"
+                        color="blue"
+                        icon="fas fa-users"
+                        iconSize="text-3xl"
+                    />
+
+                    <x-summary-score
+                        title="คะแนนเฉลี่ย"
+                        :value="$averageScore"
+                        subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
+                        color="purple"
+                    />
                 </div>
 
-                <!-- Average Score -->
-                <div class="stat-card bg-white rounded-xl p-6 shadow-lg hover-scale border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm font-medium">คะแนนเฉลี่ย</p>
-                            <p class="text-3xl font-bold mt-2 text-gray-900">{{ $averageScore ?? 0 }}</p>
-                            <p class="text-gray-500 text-sm mt-1">{{ $evaluationPeriod ?? 'รอบการประเมินปัจจุบัน' }}</p>
-                        </div>
-                        <div class="p-3 bg-purple-100 rounded-lg">
-                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <x-bar-chart 
+                        chart-id="statusChart"
+                        title="สถานะผลการประเมิน"
+                        :data="$chartData"
+                        :labels="$statusLabels"
+                        :colors="$statusColors"
+                    />
 
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <!-- Evaluation Results Status Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6 animate-fadeIn" style="animation-delay: 0.4s;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900">สถานะผลการประเมิน</h3>
-                        <div class="flex space-x-2">
-                            <button id="downloadChartBtn" class="text-gray-400 hover:text-gray-600 transition-colors" title="ดาวน์โหลดกราฟ">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a0 3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="h-80"><canvas id="statusChart"></canvas></div>
-                </div>
+                    <x-scatter-chart-component 
+                        :scatter-data="$scatterData"
+                        chart-id="myChart"
+                        title="กราฟการกระจายตัวของคะแนน"
+                    />
 
-                <!-- Score Distribution Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6 animate-fadeIn" style="animation-delay: 0.5s;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900">การกระจายตัวของคะแนน</h3>
-                        <div class="flex space-x-2">
-                            <button class="text-gray-400 hover:text-gray-600 transition-colors" title="ดาวน์โหลดกราฟ">
-                                <!-- SVG Icon ไม่เปลี่ยนแปลง -->
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="h-80"><canvas id="scoreDistributionChart"></canvas></div>
                 </div>
             </div>
 
             <!-- Users Table -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">ผลการประเมินรายบุคคล</h3>
+                <div class="px-6 pt-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">ผลการประเมินรายบุคคล</h3>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b">
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <button onclick="exportToExcel()"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3 m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                                ส่งออกเป็น Excel
-                            </button>
                             <div class="relative">
-                                <input type="text" id="searchInput" placeholder="ค้นหาชื่อผู้รับการประเมิน"
-                                    class="text-black w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                </div>
+                                <x-search-bar  
+                                    placeholder="ค้นหาชื่อ, รายงาน..."
+                                /> 
                             </div>
+                        </div>
+                        <div  class="flex flex-wrap justify-between gap-2">
+                            <x-export-button 
+                                :route="route('admin.export.reports', request()->query())"
+                                label="ส่งออกExcelทั้งหมด" />
+                             <x-filter-badge-single 
+                                name="year"
+                                placeholder="ปีการประเมินทั้งหมด"
+                                :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
+                            />
                         </div>
                     </div>
                 </div>
+
+                @php
+                    $statusStyles = [
+                        'มอบหมาย' => 'bg-red-100 text-red-800 hover:bg-red-200',
+                        'เริ่มกรอกข้อมูล' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
+                        'กำลังดำเนินการ' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
+                        'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800 hover:bg-green-200',
+                    ];
+
+                    $firstStatus = array_key_first($statusCounts);
+                @endphp
+
+                <div  class="flex flex-wrap justify-between gap-2 mx-4 pt-3">
+                    <div class=" flex gap-3 mb-6 flex-wrap ">
+                        @foreach($statusCounts as $status => $count)
+                            @php
+                                $isShowAll = $status === $firstStatus;
+                                $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
+                                $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+                                $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
+
+                                $url = $isShowAll
+                                    ? request()->url() 
+                                    : request()->fullUrlWithQuery(['status' => $status]);
+                            @endphp
+
+                            <a href="{{ $url }}"
+                            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+                                {{ $status }} ({{ $count }})
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+                
 
                 <div class="overflow-x-auto">
                     <table id="userParticipant" class="min-w-full divide-y divide-gray-200">
@@ -219,39 +284,42 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ลำดับ</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้รับการประเมิน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้ประเมิน</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">สถานะ</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">คะแนน</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">จัดการ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">สถานะ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">คะแนน</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">จัดการ</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">ส่งออกไฟล์</th>
                             </tr>
                         </thead>
                         <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                            @forelse($reports ?? [] as $report)
+                            @forelse($sortedEvaluations as $evaluation)
                                 @php
-                                    // Flexible access for both arrays and objects
-                                    $evaluatee_name = is_array($report)
-                                        ? $report['evaluatee_name'] ?? 'Unknown User'
-                                        : $report->evaluatee_name ?? 'Unknown User';
-                                    $evaluator_name = is_array($report)
-                                        ? $report['evaluator_name'] ?? 'Unknown User'
-                                        : $report->evaluator_name ?? 'Unknown User';
-                                    $score = is_array($report) ? $report['score'] ?? 0 : $report->score ?? 0;
+                                    // Format score and date
+                                    $evaluateeName = $evaluation->evaluateeName ?? '-';
+                                    $evaluatorName = $evaluation->evaluatorName ?? '-';
+                                    $score = $evaluation->report->score ?? 0;
 
-                                    // Status field: supports 'status' (API/array) or 'report_status' (Eloquent)
-                                    $status = is_array($report)
-                                        ? $report['status'] ?? 'UNKNOWN'
-                                        : $report->report_status ?? ($report->status ?? 'UNKNOWN');
+                                    $status = $evaluation->report->report_status ?? ($evaluation->report->status ?? 'UNKNOWN');
+                                    $statusMapping = [
+                                        'Assigned' => 'ยังไม่ประเมิน',
+                                        'Draft' => 'เริ่มกรอกข้อมูล',
+                                        'Pending' => 'รอผู้ประเมินประเมิน',
+                                        'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
+                                        'Director_assigned' => 'รอกรรมการรับรองผล',
+                                        'Director_draft' => 'กรรมการเริ่มรับรองผล',
+                                        'Manager_assign' => 'ยังไม่ประเมิน',
+                                        'Manager_draft' => 'กำลังดำเนินการ',
+                                        'Completed' => 'ประเมินเสร็จสิ้น',
+                                    ];
+                                    $prettyStatus = $statusMapping[$status] ?? $status;
 
-                                    // Pretty label for status
-                                    $prettyStatus = ucfirst(strtolower($status));
-
-                                    // Color logic
                                     $statusClass = match ($status) {
                                         'Completed' => 'bg-green-100 text-green-800',
-                                        'Pending' => 'bg-yellow-100 text-yellow-800',
-                                        'Draft' => 'bg-gray-100 text-gray-800',
-                                        default => 'bg-blue-100 text-blue-800',
+                                        'Draft' => 'bg-blue-100 text-blue-800',
+                                        'Assigned' => 'bg-red-100 text-red-800',
+                                        default => 'bg-yellow-100 text-yellow-800',
                                     };
                                 @endphp
+
                                 <tr class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         {{ $loop->iteration }}
@@ -259,18 +327,18 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $evaluatee_name }}
+                                                {{ $evaluateeName }}
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $evaluator_name }}
+                                                {{ $evaluatorName }}
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
                                         <span
                                             class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $statusClass }}">
                                             {{ $prettyStatus }}
@@ -281,9 +349,25 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900 mr-3 transition-colors" onclick="openReportDetails('{{ $report['report_id'] }}')">
-                                            ดูรายละเอียด
-                                        </button>
+                                        <div class="flex justify-center items-center h-full">
+                                            <a href="{{ url('/dashboard-data/' . ($evaluation->report->id ?? $evaluation->report->report_id ?? '')) }}"
+                                            class="text-blue-600 hover:text-blue-900 transition-colors text-center">
+                                                ดูรายละเอียด
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td class="px-3 py-4 whitespace-nowrap">
+                                        <div class="flex justify-center items-center">
+                                            @if($status === 'Completed')
+                                                <a href="{{ route('single.reports.export', ['id' => $evaluation->report->id ?? 0]) }}"
+                                                class="p-2 bg-green-400 hover:bg-green-500 text-white rounded-md transition duration-200"
+                                                title="ส่งออกรายงานผลการประเมินของ {{ $evaluateeName  ?? 'บุคคล' }}">
+                                                    <i class="fas fa-file-export"></i>
+                                                </a>
+                                            @else
+                                                <div>-</div>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
@@ -314,19 +398,9 @@
 
                 <!-- Pagination if needed -->
                 <div class="px-6 py-3 border-t border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <div class="text-sm text-gray-500">
-                            แสดง <span class="font-medium">1</span> ถึง <span class="font-medium">10</span> จาก <span
-                                class="font-medium">{{ $totalParticipants ?? 50 }}</span> รายการ
-                        </div>
-                        <div class="flex space-x-2">
-                            <button
-                                class="px-3 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-50">ก่อนหน้า</button>
-                            <button
-                                class="px-3 py-1 rounded border border-gray-300 text-gray-500 hover:bg-gray-50">ถัดไป</button>
-                        </div>
-                    </div>
+                    {{ $evaluations->links() }}
                 </div>
+
             </div>
         </div>
     </div>
@@ -346,127 +420,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Status Chart
-            const statusLabels = ['Assigned', 'Draft', 'Pending', 'Completed'];
-            const statusData = [
-                {{ $statusCounts_chart['Assigned'] ?? 0 }},
-                {{ $statusCounts_chart['Draft'] ?? 0 }},
-                {{ $statusCounts_chart['Pending'] ?? 0 }},
-                {{ $statusCounts_chart['Completed'] ?? 0 }}
-            ];
-            const statusCtx = document.getElementById('statusChart').getContext('2d');
-            new Chart(statusCtx, {
-                type: 'bar',
-                data: {
-                    labels: statusLabels,
-                    datasets: [{
-                        label: 'Report Status',
-                        data: statusData ?? [0, 0, 0, 0],
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.8)', // ASSIGNED color
-                            'rgba(156, 163, 175, 0.8)', // DRAFT color
-                            'rgba(251, 191, 36, 0.8)', // PENDING color
-                            'rgba(16, 185, 129, 0.8)' // COMPLETED color
-                        ],
-                        borderColor: [
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(156, 163, 175, 1)',
-                            'rgba(251, 191, 36, 1)',
-                            'rgba(16, 185, 129, 1)'
-                        ],
-                        borderWidth: 1,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.raw} report(s)`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
-                    },
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeOutQuart'
-                    }
-                }
-            });
-
-            // Score Distribution Chart (Scatter Plot)
-            const scatterData_chart = {!! json_encode($scatterData_chart) !!};
-            const scoreDistCtx = document.getElementById('scoreDistributionChart').getContext('2d');
-            new Chart(
-                scoreDistCtx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [{
-                            label: 'Report Scores',
-                            data: scatterData_chart,
-                            backgroundColor: 'rgba(79, 70, 229, 0.7)',
-                            borderColor: 'rgba(79, 70, 229, 1)',
-                            borderWidth: 1,
-                            pointRadius: 6,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: function(context) {
-                                const value = context.dataset.data[context.dataIndex].y;
-                                return value >= 60 ? 'rgba(16, 185, 129, 0.8)' :
-                                    'rgba(239, 68, 68, 0.8)';
-                            }
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Report Number'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Score'
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `Report ${context.parsed.x}: ${context.parsed.y.toFixed(2)}%`;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            );
-
-
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
@@ -490,62 +443,8 @@
             });
         });
 
-        window.reports = @json($reports);
-        // Export functions
-        function exportToExcel() {
-            // Show loading indicator
-            document.getElementById('loading-state').style.display = 'block';
-
-            setTimeout(() => {
-                const tableData = [];
-                // Add header row in Thai
-                tableData.push([
-                    'ลำดับ',
-                    'รอบประเมิน',
-                    'ชื่อ-สกุล',
-                    'แผนก',
-                    'กลุ่มงาน',
-                    'ตำแหน่ง',
-                    'คะแนนรวม',
-                    'คะแนนด้านปริมาณ',
-                    'คะแนนด้านคุณภาพ',
-                    'ข้อเสนอแนะ',
-                    'ชื่อผู้ประเมิน',
-                    'สร้างเมื่อ',
-                    'แก้ไขเมื่อ',
-                ]);
-
-                (window.reports || []).forEach((report, index) => {
-                    tableData.push([
-                        index + 1,
-                        `${report.start_time || ''} ถึง ${report.end_time || ''}`,
-                        report.evaluatee_name || '',
-                        report.evaluatee_department_name || '',
-                        report.evaluatee_personnel_type || '',
-                        report.evaluatee_position_name || '',
-                        report.score ?? '',
-                        report.quantity_score ?? '',
-                        report.quality_score ?? '',
-                        report.comment ?? '',
-                        report.evaluator_name || '',
-                        report.created_at || '',
-                        report.updated_at || '',
-                    ]);
-                });
-
-                // Create XLSX and export
-                const ws = XLSX.utils.aoa_to_sheet(tableData);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Evaluation Results");
-                XLSX.writeFile(wb, "evaluation_results.xlsx");
-
-                // Hide loading indicator
-                document.getElementById('loading-state').style.display = 'none';
-            }, 1000);
-        }
-
         function openReportDetails(reportId) {
-            window.open(`/dashboard/${reportId}`, '_blank') ;
+            window.open(`/dashboard-data/${reportId}`, '_blank') ;
         }
     </script>
 @endpush

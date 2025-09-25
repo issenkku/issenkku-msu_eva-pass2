@@ -3,27 +3,60 @@
 namespace App\Http\Controllers;
 
 use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\Category;
 use App\Models\Department;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Models\User;
-use App\Models\Assignments;
-use App\Models\Category;
-use Illuminate\Support\Facades\Auth;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\EvaluationService;
+use App\Services\ReportDataService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request)
+    protected $allowedEditStatuses = [];
+
+    protected $reportDataService;
+
+    public function __construct(ReportDataService $reportDataService)
+    {
+        $this->reportDataService = $reportDataService;
+    }
+
+    protected function checkReportEditableStatus(Reports $report, $action)
+    {
+        if (! in_array($report->status, $this->allowedEditStatuses)) {
+            return response()->json([
+                'message' => "Cannot {$action}.",
+            ], 403);
+        }
+
+        return null; // ถ้าผ่านการตรวจสอบ
+    }
+    private function countByStatus($evaluations, $statuses)
+    {
+        return $evaluations->filter(function ($assignment) use ($statuses) {
+            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+
+            return in_array($reportStatus, $statuses);
+        })->count();
+    }
+
+    public function index(Request $request, EvaluationService $evaluationService)
     {
         // Get filter parameters
         $startDate = $request->input('start_time');
         $endDate = $request->input('end_time');
-        $departmentName = $request->input('department_name');
 
         // Fetch all departments for the filter dropdown
+        $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']);
         $departments = Department::all();
 
         // If no filters are provided, don't set default dates to ensure all data is fetched
@@ -34,301 +67,98 @@ class DashboardController extends Controller
         // }
 
         // Base query for reports
-        $reportsQuery = Reports::query()
-            ->join('assignments', 'reports.id', '=', 'assignments.report_id')
-            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('users as evaluatees', 'assignments.evaluatee', '=', 'evaluatees.id')
-            ->join('users as evaluators', 'assignments.evaluator', '=', 'evaluators.id')
-            ->join('departments as evaluatees_dept', 'evaluatees.department_id', '=', 'evaluatees_dept.id')
-            ->join('positions as evaluatees_position', 'evaluatees.position_id', '=', 'evaluatees_position.id')
-            ->select(
-                'assignment_datas.id as assignment_data_id',
-                'assignment_datas.start_time',
-                'assignment_datas.end_time',
-                'evaluatees.department_id as evaluatee_department_id',
-                'evaluatees.id as evaluatee_id',
-                'evaluatees.name as evaluatee_name',
-                'evaluatees.personnel_type as evaluatee_personnel_type',
-                'evaluatees.position_id as evaluatee_position_id',
-                'evaluatees_position.name as evaluatee_position_name',
-                'evaluatees_dept.department_name as evaluatee_department_name',
-                'evaluators.id as evaluator_id',
-                'evaluators.name as evaluator_name',
-                'reports.id as report_id',
-                'reports.status as report_status',
-                'reports.created_at as report_created_at',
-                'reports.updated_at as report_updated_at',
-                'reports.report_data_id as report_data_id'
-            )->orderBy('reports.updated_at', 'desc');
+        $allReportsData = $evaluationService->getAllReportsWithAssignments();
+        $evaluations = $evaluationService->mapAssignments($allReportsData);
+        $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
+        $evaluations = $evaluationService->sortEvaluations($evaluations);
 
-        // Apply date filters if provided
-        if ($startDate) {
-            $reportsQuery->where('assignment_datas.start_time', '>=', $startDate);
-        }
+        $statusCounts = [
+            'ทั้งหมด' => $evaluations->count(),
+            'มอบหมาย' => $this->countByStatus($evaluations, ['Assigned']),
+            'เริ่มกรอกข้อมูล' => $this->countByStatus($evaluations, ['Draft']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations, 
+            ['Pending','Evaluator_draft','Director_assigned','Director_draft', 'Manager_draft', 'Manager_assign']),
+            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
+        ];
 
-        if ($endDate) {
-            $reportsQuery->where('assignment_datas.end_time', '<=', $endDate);
-        }
+        $totalEvaluations = $evaluations->count();
 
-        // Apply department filter if provided
-        if ($departmentName) {
-            $reportsQuery->where('evaluatees_dept.department_name', $departmentName);
-        }
+        // dd($chartData);
 
-        // Get total participants (unique evaluatees)
-        $totalParticipants = $reportsQuery->count('evaluatees.id');
-        // $totalParticipants = $reportsQuery->distinct('evaluatees.id')->count('evaluatees.id');
+        $totalEvaluatees = $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->groupBy('evaluateeUser.id')
+            ->count();
 
-        // Calculate average score
-        $averageScore = $this->calculateAverageScore($reportsQuery->get());
+        $userReports = $evaluations->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
 
-        // Status Chart (Bar Chart)
-        $statusCounts = $this->statusCounts($reportsQuery->get());
-
-        // Score Distribution Chart (Scatter Plot)
-        $scatterData = $this->scatterData($reportsQuery->get());
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
 
         // Get reports with scores
-        $reportsWithScores = $this->reportsWithScores($reportsQuery->get());
+        $reportsWithScores = $this->reportsWithScores($evaluations);
 
         // Evaluation period for display
         $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
 
-        return view('dashboard.index', [
-            // 'reports' => $groupedMainCriterias,
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
-            'totalParticipants' => $totalParticipants,
+        return view('dashboard.index', [
             'averageScore' => $averageScore,
+            'statusCounts' => $statusCounts,
+            'evaluations' => $paginatedEvaluations,
+            'scatterData' => $scatterData,
+            'chartData' => $chartData,
+            'totalEvaluations' => $totalEvaluations,
+            'totalEvaluatees' => $totalEvaluatees,
+            'statusLabels' => $statusLabels,
+            'statusColors' => $statusColors,
             'departments' => $departments,
-            'statusCounts_chart' => $statusCounts,
-            'scatterData_chart' => $scatterData,
             // 'reports' => $reportsQuery->get(),
             'reports' => $reportsWithScores,
             'evaluationPeriod' => $evaluationPeriod,
+            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
         ]);
-
-        // return response()->json([
-        //     'totalParticipants' => $totalParticipants,
-        //     'averageScore' => $averageScore,
-        //     'departments' => $departments,
-        //     'statusCounts_chart' => $statusCounts,
-        //     'scatterData_chart' => $scatterData,
-        //     // 'reports' => $reportsQuery->get(),
-        //     'reports' => $reportsWithScores,
-        //     'evaluationPeriod' => $evaluationPeriod,
-        // ]);
     }
 
-    private function calculateAverageScore($reports)
+    public function admin(Request $request, $id)
     {
-        if ($reports->isEmpty()) {
-            return 0;
+        $user = $request->user()->load('position', 'department');
+
+        $data = $this->reportDataService->getReportData($id);
+        $report = $data['report'];
+
+        // if (in_array($report->status, ['Assigned', 'Draft',
+        //     'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'])) {
+        //     abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
+        // }
+
+        $canEdit = in_array($report->status, []);
+        $readonly = ! $canEdit; // true if status is something else
+
+        if ($readonly && $request->query('readonly') != 1) {
+            return redirect()->route('admin.show', ['id' => $id, 'readonly' => 1]);
         }
 
-        $totalScore = 0;
-        $reportCount = 0;
-
-        foreach ($reports as $report) {
-            $quantityScore = QuantityScore::where('report_id', $report->report_id)
-                ->sum('score_D') ?? 0;
-
-            $qualityData = DB::table('quality_scores')
-                ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                ->join('reports', 'quality_scores.report_id', '=', 'reports.id')
-                ->select(
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.id as quality_main_criteria_id',
-                    'quality_main_criterias.ratio',
-                    'evaluation_lists.sum_score',
-                    'reports.id as report_id',
-                )
-                ->where('quality_scores.report_id', $report->report_id)
-                ->groupBy(
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_main_criterias.id',
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.ratio',
-                    'reports.id',
-                    'evaluation_lists.sum_score'
-
-                )
-                ->get();
-
-            $groupedMainCriterias = [];
-            foreach ($qualityData as $subCriteria) {
-                $evalListId = $subCriteria->evaluation_list_id;
-                $mainCriteriaId = $subCriteria->quality_main_criteria_id;
-
-                if (! isset($groupedMainCriterias[$evalListId])) {
-                    $groupedMainCriterias[$evalListId] = [];
-                }
-                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
-                    $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
-                }
-
-                $groupedMainCriterias[$evalListId][$mainCriteriaId][] = $subCriteria;
-            }
-            // Process the grouped data
-            $arrScoreEva = [];
-            foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
-                foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
-                    $ratio = (float) $subCriterias[0]->ratio;
-                    $SumMaxScoreSub = [];
-                    $SumAccScoreSub = [];
-                    foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
-                        $score = round((float) $subCriteria->score, 2);
-                        if ($maxScorePerSub > 0) {
-                            $SumMaxScoreSub[] = $maxScorePerSub;
-                            $SumAccScoreSub[] = $score;
-                        }
-                    }
-                    $maxSum = array_sum($SumMaxScoreSub);
-                    $accSum = array_sum($SumAccScoreSub);
-                    $scoreRatioMain = 0;
-                    if ($maxSum > 0) {
-                        $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                    }
-                    $arrScoreEva[] = ($scoreRatioMain / 100) * $sum_score_Eva;
-                }
-            }
-            $qualityScore = array_sum($arrScoreEva);
-
-            $totalScore += ($quantityScore + $qualityScore);
-            $reportCount++;
-        }
-
-        return round($totalScore / $reportCount, 2);
-    }
-
-    private function statusCounts($reports)
-    {
-        $statusCounts = [
-            'Assigned' => 0,
-            'Draft' => 0,
-            'Pending' => 0,
-            'Completed' => 0,
-        ];
-
-        foreach ($reports as $report) {
-            switch ($report->report_status) {
-                case 'Assigned':
-                    $statusCounts['Assigned']++;
-                    break;
-                case 'Draft':
-                    $statusCounts['Draft']++;
-                    break;
-                case 'Pending':
-                    $statusCounts['Pending']++;
-                    break;
-                case 'Completed':
-                    $statusCounts['Completed']++;
-                    break;
-            }
-        }
-
-        return $statusCounts;
-    }
-
-    private function scatterData($reports)
-    {
-        $scatterData = [];
-
-        if ($reports->isEmpty()) {
-            return $scatterData;
-        }
-
-        $i = 1;
-        foreach ($reports as $report) {
-            $quantityScore = QuantityScore::where('report_id', $report->report_id)
-                ->sum('score_D') ?? 0;
-
-            $qualityData = DB::table('quality_scores')
-                ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                ->join('reports', 'quality_scores.report_id', '=', 'reports.id')
-                ->select(
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.id as quality_main_criteria_id',
-                    'quality_main_criterias.ratio',
-                    'evaluation_lists.sum_score',
-                    'reports.id as report_id',
-                )
-                ->where('quality_scores.report_id', $report->report_id)
-                ->groupBy(
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_main_criterias.id',
-                    'quality_scores.quality_sub_criteria_id',
-                    'quality_scores.score',
-                    'quality_sub_criterias.num_score',
-                    'quality_main_criterias.ratio',
-                    'reports.id',
-                    'evaluation_lists.sum_score'
-                )
-                ->get();
-
-            $groupedMainCriterias = [];
-            foreach ($qualityData as $subCriteria) {
-                $evalListId = $subCriteria->evaluation_list_id;
-                $mainCriteriaId = $subCriteria->quality_main_criteria_id;
-
-                if (! isset($groupedMainCriterias[$evalListId])) {
-                    $groupedMainCriterias[$evalListId] = [];
-                }
-                if (! isset($groupedMainCriterias[$evalListId][$mainCriteriaId])) {
-                    $groupedMainCriterias[$evalListId][$mainCriteriaId] = [];
-                }
-
-                $groupedMainCriterias[$evalListId][$mainCriteriaId][] = $subCriteria;
-            }
-
-            $arrScoreEva = [];
-            foreach ($groupedMainCriterias as $evalListId => $mainCriterias) {
-                foreach ($mainCriterias as $mainCriteriaId => $subCriterias) {
-                    $sum_score_Eva = (float) $subCriterias[0]->sum_score;
-                    $ratio = (float) $subCriterias[0]->ratio;
-                    $SumMaxScoreSub = [];
-                    $SumAccScoreSub = [];
-                    foreach ($subCriterias as $subCriteria) {
-                        $maxScorePerSub = round((float) $subCriteria->num_score, 2);
-                        $score = round((float) $subCriteria->score, 2);
-                        if ($maxScorePerSub > 0) {
-                            $SumMaxScoreSub[] = $maxScorePerSub;
-                            $SumAccScoreSub[] = $score;
-                        }
-                    }
-                    $maxSum = array_sum($SumMaxScoreSub);
-                    $accSum = array_sum($SumAccScoreSub);
-                    $scoreRatioMain = 0;
-                    if ($maxSum > 0) {
-                        $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                    }
-                    $arrScoreEva[] = ($scoreRatioMain / 100) * $sum_score_Eva;
-                }
-            }
-            $qualityScore = array_sum($arrScoreEva);
-
-            $totalScore = ($quantityScore + $qualityScore);
-
-            $scatterData[] = [
-                'x' => $i++,
-                'y' => round($totalScore, 2),
-            ];
-        }
-
-        return $scatterData;
+        return view('dashboard.admin', array_merge($data, [
+            'id' => $id,
+            'user' => $user,
+            'readonly' => $readonly,
+        ]));
     }
 
     private function reportsWithScores($reports)
@@ -355,7 +185,8 @@ class DashboardController extends Controller
                     'quality_main_criterias.id as quality_main_criteria_id',
                     'quality_main_criterias.ratio',
                     'evaluation_lists.sum_score',
-                    'reports.id as report_id'
+                    'reports.id as report_id',
+                    'reports.comment as comment',
                 )
                 ->where('quality_scores.report_id', $report->report_id)
                 ->groupBy(
@@ -409,6 +240,9 @@ class DashboardController extends Controller
                 }
             }
             $qualityScore = array_sum($arrScoreEva);
+            $report->report->quantity_score = round($quantityScore, 2);
+            $report->report->quality_score = round($qualityScore, 2);
+            $report->report->score = round($quantityScore + $qualityScore, 2);
 
             $reports_score[] = [
                 'assignment_data_id' => $report->assignment_data_id,
@@ -421,8 +255,12 @@ class DashboardController extends Controller
                 'evaluatee_position_id' => $report->evaluatee_position_id,
                 'evaluatee_position_name' => $report->evaluatee_position_name,
                 'evaluatee_department_name' => $report->evaluatee_department_name,
-                'evaluator_id' => $report->evaluator_id,
-                'evaluator_name' => $report->evaluator_name,
+                'evaluator_position_id' => $report->evaluator_position_id,
+                'evaluator_position_name' => $report->evaluator_position_name,
+                'evaluator_user_id' => $report->evaluator_user_id ?? null,
+                'evaluator_name' => $report->evaluator_user_name ?
+                    trim(($report->evaluator_user_prefix ?? '').' '.$report->evaluator_user_name) :
+                    ('ตำแหน่ง: '.$report->evaluator_position_name),
                 'report_id' => $report->report_id,
                 'status' => $report->report_status,
                 'created_at' => date('Y-m-d', strtotime($report->report_created_at)),
@@ -430,6 +268,7 @@ class DashboardController extends Controller
                 'quantity_score' => round($quantityScore, 2),
                 'quality_score' => round($qualityScore, 2),
                 'score' => round($quantityScore + $qualityScore, 2),
+                'comment' => $report->comment ?? null,
             ];
         }
 
@@ -461,10 +300,16 @@ class DashboardController extends Controller
             'report.reportData.criteriaVersion',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser',
         ])
             ->where('report_id', $id)
             ->firstOrFail();
+
+        // Try to get evaluator user separately to avoid relationship issues
+        $evaluatorUser = null;
+        if ($assignment->assignmentData && $assignment->assignmentData->evaluator_position_id) {
+            $evaluatorUser = User::where('position_id', $assignment->assignmentData->evaluator_position_id)
+                ->first();
+        }
 
         $report = $assignment->report;
         $reportData = $report->reportData;
@@ -493,8 +338,8 @@ class DashboardController extends Controller
                 'position' => optional(optional($assignment->evaluateeUser)->position)->name ?? '-',
             ],
             'evaluator' => [
-                'name' => optional($assignment->evaluatorUser)->prefix.' '.optional($assignment->evaluatorUser)->name,
-                'employee_id' => optional($assignment->evaluatorUser)->employee_id,
+                'name' => $evaluatorUser ? ($evaluatorUser->prefix.' '.$evaluatorUser->name) : '-',
+                'employee_id' => $evaluatorUser ? $evaluatorUser->employee_id : '-',
             ],
             'dates' => [
                 'created_at' => $this->formatThaiDate($report->created_at),

@@ -36,4 +36,9 @@ class QuantityMainCriteria extends Model
     {
         return $this->belongsTo(QuantityMainCriteria::class, 'quantity_main_criteria_id');
     }
+
+    public function formulas(): HasMany
+    {
+        return $this->hasMany(Formula::class, 'quantity_main_criteria_id');
+    }
 }

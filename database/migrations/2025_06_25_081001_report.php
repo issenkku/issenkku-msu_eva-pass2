@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->decimal('score_C', 5, 2)->nullable();
             $table->decimal('score_D', 5, 2)->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
 
             $table->index(['quantity_sub_criteria_id', 'report_id'], 'quantity_scores_all_idx');

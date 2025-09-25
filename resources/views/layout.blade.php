@@ -16,6 +16,8 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         * {
             font-family: 'Kanit', sans-serif;
@@ -34,6 +36,14 @@
             border-bottom: 1px solid #dee2e6;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
             padding: 15px 0;
+            position: fixed;
+            top: 0;
+        }
+
+        .navbar-custom.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.95) 0%, rgba(118, 75, 162, 0.95) 100%);
         }
 
         .navbar-brand-custom {
@@ -190,6 +200,12 @@
             .dropdown-menu-custom {
                 margin-top: 5px;
             }
+
+            .nav-link-custom i,
+            .dropdown-item-custom i {
+                width: 1.25rem;
+                text-align: center;
+            }
         }
 
         /* Remove unnecessary visual effects */
@@ -336,7 +352,9 @@
 
                     <!-- จัดการระบบ Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link nav-link-custom dropdown-toggle" href="#" id="navbarSystemDropdown"
+                        <a class="nav-link nav-link-custom dropdown-toggle 
+                           {{ request()->routeIs(['quality-scores.*']) ? 'active' : '' }}"
+                            href="#" id="navbarSystemDropdown"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog me-2 text-gray"></i>
                             จัดการระบบ
@@ -346,6 +364,13 @@
                                 <a class="dropdown-item dropdown-item-custom" href="#">
                                     <i class="fas fa-users me-2 text-gray"></i>
                                     จัดการผู้ใช้
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('quality-scores.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('quality-scores.index') }}">
+                                    <i class="fas fa-star me-2 text-gray"></i>
+                                    คะแนนคุณภาพ
                                 </a>
                             </li>
                             <li>

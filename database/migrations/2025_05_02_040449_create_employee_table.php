@@ -22,7 +22,6 @@ return new class extends Migration
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
             $table->string('department_name');
-            $table->string('faculty');
         });
 
         Schema::create('settings', function (Blueprint $table) {
@@ -57,7 +56,7 @@ return new class extends Migration
 
         Schema::create('user_histories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->text('action');
             $table->timestamp('action_timestamp');
         });

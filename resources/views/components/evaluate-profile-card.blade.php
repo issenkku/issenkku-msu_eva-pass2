@@ -1,5 +1,4 @@
 @props([
-    'evaluatorName' => 'ไม่พบข้อมูล',
     'startTimeFormatted' => '-',
     'endTimeFormatted' => '-',
     'reportName' => 'ไม่พบชื่อรายงาน',
@@ -9,7 +8,8 @@
     'assessmentType' => null
 ])
 
-<div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-md">
+<div class="p-6 rounded-2xl shadow-md"
+    style="background: linear-gradient(180deg, #ffffffff 0%, #f9f5ffff 100%); border-color: #f3e8ff;">
     <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">ข้อมูลผู้รับการประเมิน</h3>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -21,7 +21,11 @@
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
-                <span class="text-gray-700">{{ $evaluatorName}}</span>
+                 <span class="text-gray-700">
+                    @foreach($assignment->evaluatorUsers as $evaluator)
+                        <p>{{ $evaluator->name }}</p>
+                    @endforeach
+                 </span>
             </div>
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>

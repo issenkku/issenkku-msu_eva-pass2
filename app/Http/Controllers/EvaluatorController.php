@@ -7,11 +7,16 @@ use App\Models\Category;
 use App\Models\QualityScore;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\GraphDataService;
+use App\Services\ScoreService;
 use Carbon\Carbon;
 use Debugbar;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Assuming you have installed Laravel Debugbar for debugging
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EvaluatorController extends Controller
 {
@@ -20,90 +25,139 @@ class EvaluatorController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $userId = Auth::id() ?? 2; // user ล็อกอิน หรือ default 2
+        // Load user with all necessary relationships
+        $user = $request->user()->load([
+            'position',
+            'department',
+        ]);
 
-        if (! $userId) {
-            abort(403, 'Unauthorized');
-        }
+        $startDate = $request->input('start_time');
+        $endDate = $request->input('end_time');
 
-        $currentUser = User::with('department', 'position')->find($userId);
+        // Only get assignments where evaluatee is from the same department
+        $sameDepartmentAssignments = $user->assignmentsForDashboard()->get();
 
-        if (! $currentUser) {
-            abort(404, 'ไม่พบผู้ใช้งาน');
-        }
-        $statusFilter = $request->input('status');
+        $evaluations = $sameDepartmentAssignments->map(function ($assignment) use ($user) {
+            $assignment->evaluatorName = $user->name; // current user
+            $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+            $assignment->sameDepartment = true; // Always true since we filtered at database level
 
-        // ดึงข้อมูล assignments แบบ paginate
-        $assignments = DB::table('assignments')
-            ->join('assignment_datas', 'assignments.assignment_data_id', '=', 'assignment_datas.id')
-            ->join('reports', 'assignments.report_id', '=', 'reports.id')
-            ->join('report_datas', 'reports.report_data_id', '=', 'report_datas.id')
-            ->join('users as evaluatee', 'assignments.evaluatee', '=', 'evaluatee.id')
-            ->where('assignments.evaluator', $currentUser->id)
-            ->whereNotIn('reports.status', ['Assigned', 'Draft']);
+            // Optional: Add department names for display
+            $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+            $assignment->evaluatorDepartment = $user->department?->name ?? '-';
 
-        if ($statusFilter && $statusFilter !== '') {
-
-            $assignments->where('reports.status', $statusFilter);
-        }
-
-        $assignments = $assignments->select(
-            'assignments.assignment_data_id as assignment_data_id',
-            'assignment_datas.start_time',
-            'assignment_datas.end_time',
-            'reports.status',
-            'reports.id as report_id',
-            'report_datas.report_title',
-            'report_datas.assessment_type',
-            'evaluatee.id as evaluatee_id',
-            'evaluatee.prefix as evaluatee_prefix',
-            'evaluatee.name as evaluatee_name',
-            'evaluatee.employee_id as evaluatee_employee_id'
-        )
-            ->orderBy('assignment_datas.start_time', 'desc')
-            ->paginate(5);
-
-        // แปลงข้อมูลเพื่อเพิ่มฟิลด์ sequence, format วันที่ และสถานะ
-        $formattedAssignments = $assignments->getCollection()->map(function ($assignment, $index) use ($assignments) {
-            $statusInfo = $this->getStatusInfo($assignment->status ?? null, $assignment->end_time);
-
-            return (object) [
-                'sequence' => ($assignments->currentPage() - 1) * $assignments->perPage() + $index + 1,
-                'assignment_data_id' => $assignment->assignment_data_id,
-                'report_id' => $assignment->report_id,
-                'report_title' => $assignment->report_title,
-                'assessment_type' => $assignment->assessment_type,
-                'evaluatee_id' => $assignment->evaluatee_id,
-                'evaluatee_name' => $assignment->evaluatee_prefix.$assignment->evaluatee_name,
-                'evaluatee_employee_id' => $assignment->evaluatee_employee_id,
-                'start_date' => $this->formatThaiDate($assignment->start_time),
-                'end_date' => $this->formatThaiDate($assignment->end_time),
-                'status_text' => $statusInfo['text'],
-                'status_class' => $statusInfo['class'],
-                'status_color' => $statusInfo['color'],
-            ];
+            return $assignment;
         });
 
-        // เซ็ต collection ใหม่ใน paginator
-        $assignments->setCollection($formattedAssignments);
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
+                $evaluateeName = optional($assignment->evaluateeUser)->name ?? '';
+                $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
 
-        // ตัวอย่างข้อมูล evaluatorInfo แบบง่าย
-        $evaluatorInfo = [
-            'name' => $currentUser->prefix.$currentUser->name,
-            'employee_id' => $currentUser->employee_id,
-            'department' => optional($currentUser->department)->department_name ?? '-',
-            'position' => optional($currentUser->position)->name ?? '-',
-            'email' => $currentUser->email ?? '-',
-            'personnel_type' => $currentUser->personnel_type ?? '-',
-            'experience' => $this->calculateExperience($currentUser->created_at),
-            'average_score' => $this->getAverageEvaluationScore($currentUser->id),
+                return str_contains(strtolower($evaluateeName), strtolower($searchTerm))
+                    || str_contains(strtolower($reportTitle), strtolower($searchTerm));
+            });
+        }
+
+        $years = $evaluations->pluck('assignmentData.start_time')
+            ->filter()
+            ->map(function ($dt) {
+                return Carbon::parse($dt)->year;
+            })
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        if ($request->filled('year')) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($request) {
+                $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
+                return $year == $request->input('year');
+            });
+        }
+
+        if ($startDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
+                $assignmentStart = optional($assignment->assignmentData)->start_time;
+
+                return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
+            });
+        }
+
+        if ($endDate) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
+                $assignmentEnd = optional($assignment->assignmentData)->end_time;
+
+                return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
+            });
+        }
+
+        // Count status for filtered assignments only (same department only)
+        $statusCounts = [
+            'ทั้งหมด' => $evaluations->count(),
+            'รอการกรอกข้อมูล' => $this->countByStatus($evaluations, ['Assigned', 'Draft']),
+            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Pending']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Evaluator_draft']),
+            'รอผลการประเมิน' => $this->countByStatus($evaluations, [
+                'Director_assigned', 'Director_draft',
+                'Manager_draft', 'Manager_assign',
+            ]),
+            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
+        $totalEvaluations = $evaluations->count();
+
+        // dd($chartData);
+
+        $totalEvaluatees = $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
+            ->groupBy('evaluateeUser.id')
+            ->count();
+
+        $userReports = $evaluations->map(function ($assignment) {
+            return $assignment->report;
+        })->filter();
+
+        $averageScore = ScoreService::calculateAverageScore($userReports);
+        $scatterData = GraphDataService::scatterData($userReports);
+        $countData = GraphDataService::statusCounts($userReports);
+        $chartData = array_values($countData);
+        $statusLabels = GraphDataService::getStatusLabels();
+        $statusColors = GraphDataService::getStatusColors();
+
+        $page = $request->input('page', 1);
+        $perPage = 10;
+        $paginatedEvaluations = new LengthAwarePaginator(
+            $evaluations->forPage($page, $perPage),
+            $evaluations->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         return view('evaluator_dashboard.index', [
-            'assignments' => $assignments,
-            'evaluatorInfo' => $evaluatorInfo,
-            'statusFilter' => $statusFilter,
+            'user' => $user,
+            'statusCounts' => $statusCounts,
+            'evaluations' => $paginatedEvaluations, // Only same-department evaluations
+            'years' => $years,
+            'averageScore' => $averageScore,
+            'scatterData' => $scatterData,
+            'chartData' => $chartData,
+            'totalEvaluations' => $totalEvaluations,
+            'totalEvaluatees' => $totalEvaluatees,
+            'statusLabels' => $statusLabels,
+            'statusColors' => $statusColors,
         ]);
+    }
+
+    private function countByStatus($evaluations, $statuses)
+    {
+        return $evaluations->filter(function ($assignment) use ($statuses) {
+            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
+
+            return in_array($reportStatus, $statuses);
+        })->count();
     }
 
     public function show(Request $request, $assignmentId)
@@ -219,6 +273,7 @@ class EvaluatorController extends Controller
                 'qs.name as sub_name',
                 'qs.sequence as sub_sequence',
                 'qs.num_score',
+                'qs.description',
                 'qscore.score as filled_score',
                 'eanswer.link as evidence_link'
             )
@@ -246,6 +301,7 @@ class EvaluatorController extends Controller
                 $query->orderBy('sequence')->with([
                     'quantitySubCriterias.mainCriteria:id,name,tooltips',
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    'qualitySubCriterias:id,name,sequence,num_score,description,quality_main_criteria_id,criteria_version_id,evaluation_list_id',
                 ]);
             },
         ])
@@ -285,6 +341,7 @@ class EvaluatorController extends Controller
                     if ($data) {
                         $sub->filled_score = $data->filled_score;
                         $sub->evidence_link = $data->evidence_link;
+                        $sub->description = $data->description;
                     }
                 }
             }
@@ -299,21 +356,44 @@ class EvaluatorController extends Controller
         ]);
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $userId = Auth::id() ?? 2;
 
+        $user = $request->user()->load('position', 'department');
+
+        $report = Reports::with([
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
+            'assignments.assignmentData',
+            'assignments.evaluateeUser.department',
+            'assignments.evaluateeUser.position',
+            'assignments.evaluatorUser',
+        ])->findOrFail($id);
+
+        // Find the assignment for the current evaluator
         $assignment = Assignments::with([
             'assignmentData',
-            'report',
-            'report.reportData.criteriaVersion',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser',
         ])
             ->where('report_id', $id)
-            ->where('evaluator', $userId)
-            ->firstOrFail();
+            ->whereHas('assignmentData', function ($q) use ($user) {
+                $q->where('evaluator_position_id', $user->position_id);
+            })
+            ->whereHas('evaluateeUser', function ($q) use ($user) {
+                $q->where('department_id', $user->department_id);
+            })
+            ->first();
+
+        if (! $assignment) {
+            abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
+        }
+
+        // Add evaluatee info like in dashboard
+        $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
+        $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
+        $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
+        $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
 
         $criteriaVersionId = $assignment->report->reportData->criteria_version_id ?? null;
 
@@ -383,7 +463,7 @@ class EvaluatorController extends Controller
 
     public function update(Request $request, $id)
     {
-        // \Log::info('Update evaluation scores for report ID: '.$id);
+        Log::info('Update evaluation scores for report ID: '.$id);
         $validated = $request->validate([
             'scores' => 'required|array',
             'scores.*' => 'required|numeric|min:0',
@@ -408,7 +488,7 @@ class EvaluatorController extends Controller
 
         Reports::where('id', $id)->update([
             'comment' => $request->input('comment'),
-            'status' => $request->has('change_status') ? 'Completed' : DB::raw('status'),
+            'status' => $request->has('change_status') ? 'Director_assigned' : DB::raw('status'),
         ]);
 
         // ส่งอีเมลแจ้งเตือนเมื่อประเมินเสร็จ
@@ -533,7 +613,7 @@ class EvaluatorController extends Controller
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluatee);
+        $user = \App\Models\User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }
@@ -545,7 +625,7 @@ class EvaluatorController extends Controller
             'status' => $report->status,
         ];
 
-        \Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
+        Mail::send('emails.evaluation_completed', $mailData, function ($message) use ($user) {
             $message->to($user->email, $user->name)
                 ->subject('แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์');
         });

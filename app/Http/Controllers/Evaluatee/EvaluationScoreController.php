@@ -10,6 +10,8 @@ use App\Models\Reports;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Facades\LogBatch;
+use Spatie\Activitylog\Facades\Activity;
 
 class EvaluationScoreController extends Controller
 {
@@ -37,36 +39,54 @@ class EvaluationScoreController extends Controller
                 return $statusCheck;
             }
 
-            $request->merge([
-                'evidence_list' => collect($request->input('evidence_list'))
-                    ->filter(fn ($item) => ! empty($item['link'])) // Only keep filled links
-                    ->values()
-                    ->all(),
-            ]);
+            // --- Flatten evidence_list to array of {evaluation_list_id, link} ---
+            $evidenceInput = $request->input('evidence_list', []);
+            $evidenceFlat = [];
+            foreach ($evidenceInput as $evalListId => $item) {
+                if (isset($item['links']) && is_array($item['links'])) {
+                    foreach ($item['links'] as $link) {
+                        $link = trim($link);
+                        if ($link !== '') {
+                            $evidenceFlat[] = [
+                                'evaluation_list_id' => $evalListId,
+                                'link' => $link,
+                            ];
+                        }
+                    }
+                }
+            }
+            $request->merge(['evidence_list_flat' => $evidenceFlat]);
+            // ------------------------------------------------------------
 
             $validated = $request->validate([
                 'quantity_list' => 'nullable|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
+                'quantity_list.*.description' => 'nullable|string|max:1000',
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric',
 
-                'evidence_list' => 'nullable|array',
-                'evidence_list.*.evaluation_list_id' => 'nullable|integer|exists:evaluation_lists,id',
-                'evidence_list.*.link' => 'nullable|string',
+                'evidence_list_flat' => 'nullable|array',
+                'evidence_list_flat.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
+                'evidence_list_flat.*.link' => 'required|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
             ]);
 
             DB::beginTransaction();
 
+            $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
+            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+            $oldEvidences      = EvidenceAnswer::where('report_id', $reportId)->get();
+
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
             QualityScore::where('report_id', $reportId)->delete();
             EvidenceAnswer::where('report_id', $reportId)->delete();
 
+            $newQuantityScores = [];
             if (isset($validated['quantity_list'])) {
                 foreach ($validated['quantity_list'] as $item) {
                     $subCriteriaId = is_array($item['quantity_sub_criteria_id'])
@@ -75,6 +95,7 @@ class EvaluationScoreController extends Controller
 
                     $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
+                    $description = $item['description'] ?? null;
 
                     if ($scoreC === null) {
                         continue;
@@ -90,11 +111,14 @@ class EvaluationScoreController extends Controller
                         'report_id' => $reportId,
                         'score_C' => $scoreC,
                         'score_D' => $scoreD,
+                        'description' => $description,
                     ]);
+                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
             }
 
             // ✅ Quality loop with check
+            $newQualityScores = [];
             if (isset($validated['quality_list'])) {
                 foreach ($validated['quality_list'] as $item) {
                     $score = $item['score'] ?? null;
@@ -111,31 +135,51 @@ class EvaluationScoreController extends Controller
                         'report_id' => $reportId,
                         'score' => $score,
                     ]);
+                    $newQualityScores[] = compact('subCriteriaId', 'score');
                 }
             }
 
-            foreach ($validated['evidence_list'] as $item) {
-                $link = trim($item['link'] ?? '');
-
-                if ($link === '') {
-                    continue; // skip this item
-                }
-
-                $evaluationListId = is_array($item['evaluation_list_id'])
-                    ? $item['evaluation_list_id'][0]
-                    : (int) $item['evaluation_list_id'];
-
+            // Save all evidence links
+            $newEvidences = [];
+            foreach ($validated['evidence_list_flat'] ?? [] as $item) {
                 EvidenceAnswer::create([
-                    'evaluation_list_id' => $evaluationListId,
+                    'evaluation_list_id' => $item['evaluation_list_id'],
                     'report_id' => $reportId,
-                    'link' => $item['link'] ?? null,
+                    'link' => $item['link'],
                 ]);
+                $newEvidences[] = $item;
             }
 
+            $statusMessages = [
+                'Draft'   => 'ผู้รับประเมินกรอกข้อมูล',
+                'Pending' => 'ผู้รับประเมินส่งข้อมูล',
+                'Assigned'=> 'ระบบมอบหมาย',
+                'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
+            ];
+
+            $oldStatus = $report->status;
             $status = $validated['status'];
             $report->status = $status;
-            // $report->save();
-            if ($report->save() && $status === 'Pending') {
+            $report->save();
+
+            // ---- Spatie Activity Log ----
+            activity()
+                ->causedBy($request->user()) // who did it
+                ->useLog('การประเมิน')
+                ->performedOn($report)     // which model
+                ->withProperties([
+                    'สถานะรายงานก่อนหน้า' => $oldStatus,
+                    'อัพเดตสถานะรายงาน' => $status,
+                    'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
+                    'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
+                    'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,
+                    'อัพเดตคะแนนเชิงคุณภาพ' => $newQualityScores,
+                    'หลักฐานก่อนหน้า' => $oldEvidences,
+                    'อัพเดตหลักฐาน' => $newEvidences,
+                ])
+                ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
+
+            if ($status === 'Pending') {
                 $this->sendEvaluationCompletedMail($reportId);
             }
 
@@ -155,7 +199,7 @@ class EvaluationScoreController extends Controller
     // อีเมลแจ้งเตือนเมื่อส่งแบบประเมิน
     private function sendEvaluationCompletedMail($reportId)
     {
-        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
         if (! $report) {
             return;
         }
@@ -165,23 +209,26 @@ class EvaluationScoreController extends Controller
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluator);
-        $evaluatee = \App\Models\User::find($assignment->evaluatee);
-        if (! $user || ! $user->email) {
-            return;
+
+        $evaluators = $assignment->getEvaluatorUsers();
+        $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
+        foreach ($evaluators as $user) {
+            if (! $user || ! $user->email) {
+                continue;
+            }
+
+            $mailData = [
+                'name' => $user->name,
+                'report_title' => optional($report->reportData)->report_title,
+                'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
+                'status' => $report->status,
+                'evaluatee_name' => optional($evaluatee)->name,
+            ];
+
+            \Mail::send('emails.evaluatee_pending', $mailData, function ($message) use ($user) {
+                $message->to($user->email, $user->name)
+                        ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
+            });
         }
-
-        $mailData = [
-            'name' => $user->name,
-            'report_title' => optional($report->reportData)->report_title,
-            'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
-            'status' => $report->status,
-            'evaluatee_name' => $evaluatee->name,
-        ];
-
-        \Mail::send('emails.evalautee_Pending', $mailData, function ($message) use ($user) {
-            $message->to($user->email, $user->name)
-                ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
-        });
     }
 }

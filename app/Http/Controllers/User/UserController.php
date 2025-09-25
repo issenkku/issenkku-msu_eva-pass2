@@ -3,19 +3,26 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Imports\UsersImport;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
     // create page to add use
-
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -23,7 +30,7 @@ class UserController extends Controller
             'name' => 'required|string|max:100|unique:users,name',
             'employee_id' => 'required|max:20|unique:users,employee_id',
             'password' => ['required', 'max:50'],
-            'email' => 'required|string|lowercase|email:rfc,dns|max:50|unique:users,email',
+            'email' => 'required|string|lowercase|email:rfc|max:50|unique:users,email',
             'phone' => 'required|max:20|unique:users,phone',
             'personnel_type' => 'required|string|max:100',
             'bio' => 'nullable|string|max:1000',
@@ -60,6 +67,173 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
     }
 
+    public function import(Request $request)
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'import_file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+            ]);
+
+            // Start database transaction
+            DB::beginTransaction();
+            $import = new UsersImport;
+            Excel::import($import, $request->file('import_file'));
+            DB::commit();
+
+            return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+            Log::error('Excel validation error', ['errors' => $e->errors()]);
+
+            return redirect()->back()
+                ->with('error', 'ข้อมูลในไฟล์ไม่ถูกต้อง')
+                ->with('validation_errors', $e->errors());
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Import error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล: '.$e->getMessage());
+        }
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'prefix' => 'คำนำหน้า',
+            'name' => 'ชื่อ-สกุล',
+            'employee_id' => 'รหัสพนักงาน',
+            'department' => 'สาขาวิชา',
+            'position' => 'ตำแหน่ง',
+            'personnel_type' => 'ประเภทบุคลากร',
+            'email' => 'อีเมล',
+            'phone' => 'เบอร์โทร',
+            'bio' => 'ประวัติการศึกษา',
+            'password' => 'รหัสผ่าน',
+            'status' => 'สถานะ',
+            'role' => 'บทบาท',
+        ];
+
+        // Create sample data
+        $sampleData = [
+            [
+                'คำนำหน้า' => 'นาย',
+                'ชื่อ-สกุล' => 'สมชาย ใจดี',
+                'รหัสพนักงาน' => 'EMP001',
+                'สาขาวิชา' => 'หน่วยห้องสมุด',
+                'ตำแหน่ง' => 'กลุ่มงานบริหาร',
+                'ประเภทบุคลากร' => 'สนับสนุน',
+                'อีเมล' => 'somchai@university.ac.th',
+                'เบอร์โทร' => '081-234-5678',
+                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
+                'รหัสผ่าน' => '123456',
+                'สถานะ' => 'active',
+                'บทบาท' => 'admin',
+            ],
+            [
+                'คำนำหน้า' => 'นาง',
+                'ชื่อ-สกุล' => 'สมหญิง ใจดี',
+                'รหัสพนักงาน' => 'EMP002',
+                'สาขาวิชา' => 'สาธารณสุขศาสตรมหาบัณฑิต',
+                'ตำแหน่ง' => 'คณบดี',
+                'ประเภทบุคลากร' => 'สนับสนุน',
+                'อีเมล' => 'somying@university.ac.th',
+                'เบอร์โทร' => '097-535-7378',
+                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
+                'รหัสผ่าน' => '123456',
+                'สถานะ' => 'active',
+                'บทบาท' => 'ผู้บริหาร',
+            ],
+            [
+                'คำนำหน้า' => 'นางสาว',
+                'ชื่อ-สกุล' => 'พรุ่งนี้ ใจดี',
+                'รหัสพนักงาน' => 'EMP003',
+                'สาขาวิชา' => 'สาธารณสุขศาสตรมหาบัณฑิต',
+                'ตำแหน่ง' => 'ผู้ช่วยคณบดีฝ่ายวิเทศสัมพันธ์',
+                'ประเภทบุคลากร' => 'วิชาการ',
+                'อีเมล' => 'tomorrow@university.ac.th',
+                'เบอร์โทร' => '089-761-1745',
+                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
+                'รหัสผ่าน' => '123456',
+                'สถานะ' => 'active',
+                'บทบาท' => 'ผู้ประเมิน',
+            ],
+            [
+                'คำนำหน้า' => 'นาย',
+                'ชื่อ-สกุล' => 'วันนี้ ใจดี',
+                'รหัสพนักงาน' => 'EMP004',
+                'สาขาวิชา' => 'สำนักงานเลขานุการ',
+                'ตำแหน่ง' => 'หัวหน้าสำนักงานเลขานุการ',
+                'ประเภทบุคลากร' => 'สนับสนุน',
+                'อีเมล' => 'today@university.ac.th',
+                'เบอร์โทร' => '089-875-7564',
+                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
+                'รหัสผ่าน' => '123456',
+                'สถานะ' => 'active',
+                'บทบาท' => 'ผู้รับการประเมิน',
+            ],
+            [
+                'คำนำหน้า' => 'นาย',
+                'ชื่อ-สกุล' => 'ชีวิต ใจดี',
+                'รหัสพนักงาน' => 'EMP005',
+                'สาขาวิชา' => 'กลุ่มงานบริหาร',
+                'ตำแหน่ง' => 'รองคณบดีฝ่ายบริหารและแผน',
+                'ประเภทบุคลากร' => 'วิชาการ',
+                'อีเมล' => 'life@university.ac.th',
+                'เบอร์โทร' => '083-329-7451',
+                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
+                'รหัสผ่าน' => '123456',
+                'สถานะ' => 'active',
+                'บทบาท' => 'กรรมการ',
+            ],
+        ];
+
+        return Excel::download(
+            new class($sampleData, $headers) implements FromArray, WithHeadings, WithStyles
+            {
+                private $data;
+
+                private $headers;
+
+                public function __construct($data, $headers)
+                {
+                    $this->data = $data;
+                    $this->headers = $headers;
+                }
+
+                public function array(): array
+                {
+                    return $this->data;
+                }
+
+                public function headings(): array
+                {
+                    return array_values($this->headers);
+                }
+
+                public function styles(Worksheet $sheet)
+                {
+                    // Apply "TH Sarabun New" font to the entire sheet
+                    $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
+
+                    // Make the header row bold
+                    $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+                }
+            },
+            'user_import_template.xlsx'
+        );
+    }
+
     public function index(Request $request)
     {
         // เริ่มต้น Query Builder พร้อมกับ Eager Loading ที่จำเป็น
@@ -79,19 +253,16 @@ class UserController extends Controller
 
         // --- Filter ที่มีอยู่เดิม ---
         if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
+            $query->whereIn('department_id', (array) $request->department_id);
         }
         if ($request->filled('position_id')) {
-            $query->where('position_id', $request->position_id);
+            $query->whereIn('position_id', (array) $request->position_id);
         }
         if ($request->filled('personnel_type')) {
-            // หมายเหตุ: ถ้า filter นี้มาจาก <x-filter> ที่คุณให้มาก่อนหน้า
-            // ชื่อ name อาจจะเป็น 'personnel_type_id' ไม่ใช่ 'personnel_type'
-            // กรุณาตรวจสอบให้ตรงกัน
-            $query->where('personnel_type', $request->personnel_type);
+            $query->whereIn('personnel_type', (array) $request->personnel_type);
         }
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->whereIn('status', (array) $request->status);
         }
         // -------------------------
 
@@ -109,23 +280,33 @@ class UserController extends Controller
 
     public function update(Request $request, User $user): RedirectResponse
     {
-        $rules = ([
+        $rules = [
             'prefix' => 'required|string|max:10',
             'name' => 'required|string|max:100',
-            'phone' => ['required', 'max:20',
-                Rule::unique('users', 'phone')->ignore($user->id)],
+            'phone' => [
+                'required',
+                'max:20',
+                Rule::unique('users', 'phone')->ignore($user->id),
+            ],
             'personnel_type' => 'required|string|max:100',
             'bio' => 'nullable|string|max:1000',
             'status' => 'required|max:20',
-            'position_id' => 'required|integer',
-            'department_id' => 'required|integer',
+            'position_id' => 'required|exists:positions,id',
+            'department_id' => 'required|exists:departments,id',
             'role' => 'nullable|string',
-            'employee_id' => ['required', 'max:20',
+            'employee_id' => [
+                'required',
+                'max:20',
                 Rule::unique('users', 'employee_id')->ignore($user->id),
             ],
-            'email' => ['required', 'string', 'email:rfc,dns', 'max:50',
-                Rule::unique('users')->ignore($user->id), ],
-        ]);
+            'email' => [
+                'required',
+                'string',
+                'email:rfc',
+                'max:50',
+                Rule::unique('users')->ignore($user->id),
+            ],
+        ];
 
         if ($request->filled('password')) {
             $rules['password'] = ['required', 'confirmed', 'max:50'];

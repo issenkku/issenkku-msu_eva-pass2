@@ -30,17 +30,17 @@ class Reports extends Model
 
     public function quantityScores()
     {
-        return $this->hasMany(QuantityScore::class);
+        return $this->hasMany(QuantityScore::class, 'report_id');
     }
 
     public function qualityScores()
     {
-        return $this->hasMany(QualityScore::class);
+        return $this->hasMany(QualityScore::class, 'report_id');
     }
 
     public function evidenceAnswers()
     {
-        return $this->hasMany(EvidenceAnswer::class);
+        return $this->hasMany(EvidenceAnswer::class, 'report_id');
     }
 
     public function assignments()

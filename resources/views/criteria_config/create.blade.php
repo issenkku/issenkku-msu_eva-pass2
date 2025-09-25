@@ -20,12 +20,9 @@
                         ข้อมูลเกณฑ์การประเมิน
                     </h2>
                     <div class="space-y-6">
-                        <div>
-                            <label for="version_name" class="block text-sm font-medium text-gray-700 mb-2">ชื่อรุ่น <span
-                                    class="text-red-500">*</span></label>
-                            <input id="version_name" required name="version_name"
-                                class="version_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
-                                placeholder="เช่น Demo Version 2024">
+                        <!-- ซ่อนช่องกรอกปีผู้ประเมิน -->
+                        <div style="display: none;">
+                            <input id="version_name" name="version_name" class="version_name" type="text">
                             <input type="hidden" id="auth-user-id" value="{{ Auth::user()->id }}">
                         </div>
                         <div>
@@ -57,10 +54,10 @@
                             </div>
                             <div>
                                 <label for="comment"
-                                    class="block text-sm font-medium text-gray-700 mb-2">ความคิดเห็นเพิ่มเติม</label>
+                                    class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
                                 <input id="comment"
                                     class="comment border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
-                                    placeholder="ความคิดเห็นเพิ่มเติม">
+                                    placeholder="หมายเหตุ">
                             </div>
                         </div>
                     </div>
@@ -265,7 +262,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
                                                 <span name="quant_main_sequence"
@@ -278,12 +275,25 @@
                                                     class="quant_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="ชื่อเกณฑ์ปริมาณ">
                                             </div>
+                                        </div>
+                                        <div class="mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
                                                         class="text-red-500">*</span></label>
-                                                <input name="quant_tooltips"
-                                                    class="quant_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
-                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                                <textarea name="quant_tooltips" rows="8" id="quant_tooltips_1"
+                                                    class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="คำอธิบายเพิ่มเติม"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
+                                                    <span class="text-red-500">*</span>
+                                                </label>
+                                                <span class="text-xs text-gray-500">(A=ค่าน้ำหนัก, B=ภาระงานมาตรฐาน, C=ภาระงานที่ทำได้, D=คะแนนที่คำนวณได้)</span>
+                                                <textarea name="quant_formula" rows="3"
+                                                    class="quant_formula border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="กำหนดสูตรการคำนวณ เช่น D = A × C / B">D = A × C / B</textarea>
                                             </div>
                                         </div>
                                         <div
@@ -395,7 +405,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
                                                 <span name="qual_main_sequence"
@@ -415,12 +425,14 @@
                                                     class="qual_ratio border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="สัดส่วน">
                                             </div>
+                                        </div>
+                                        <div class="mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
                                                         class="text-red-500">*</span></label>
-                                                <input name="qual_tooltips"
-                                                    class="qual_tooltips border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
-                                                    placeholder="คำอธิบายเพิ่มเติม">
+                                                <textarea name="qual_tooltips" rows="8" id="qual_tooltips_1"
+                                                    class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
+                                                    placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                             </div>
                                         </div>
                                         <div
@@ -437,7 +449,7 @@
                                                         </svg>
                                                     </button>
                                                 </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                                                     <div>
                                                         <label
                                                             class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
@@ -460,6 +472,12 @@
                                                             class="num_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนนสูงสุด">
                                                     </div>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <label class="block text-sm font-medium text-gray-600 mb-2">คำอธิบาย</label>
+                                                    <textarea name="qual_sub_description" rows="6" id="qual_sub_description_1"
+                                                        class="qual_sub_description richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
+                                                        placeholder="ใส่คำอธิบายการให้คะแนน"></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -544,7 +562,7 @@
                     </svg>
                 </div>
                 <h3 class="text-xl font-bold text-gray-900 mb-3">ยืนยันการบันทึกข้อมูล</h3>
-                <p class="text-gray-600 mb-3">ชื่อรุ่น: <span id="version_name_display" class="font-medium"></span></p>
+                <p class="text-gray-600 mb-3">ชื่อเกณฑ์: <span id="version_name_display" class="font-medium"></span></p>
                 <p class="text-gray-600 mb-6">คุณต้องการบันทึกข้อมูลเกณฑ์การประเมินนี้หรือไม่?</p>
                 <div class="flex justify-center space-x-4">
                     <button id="cancel_modal_btn"
@@ -580,10 +598,70 @@
 
 @push('scripts')
     <script>
+        // Initialize Summernote for rich text editors
+        function initializeSummernote() {
+            $('.richtext-editor').each(function() {
+                const $editor = $(this);
+                let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
+                
+                // Use specific placeholder for quality sub criteria description
+                if ($editor.hasClass('qual_sub_description')) {
+                    placeholder = 'ใส่คำอธิบายการให้คะแนน';
+                }
+                
+                $editor.summernote({
+                    height: 250,
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['fontname', ['fontname']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture']],
+                        ['view', ['fullscreen', 'codeview', 'help']]
+                    ],
+                    placeholder: placeholder,
+                    lang: 'th-TH',
+                    callbacks: {
+                        onChange: function(contents, $editable) {
+                            // Update the textarea value when content changes
+                            $(this).val(contents);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Initialize Summernote when document is ready
+        $(document).ready(function() {
+            setTimeout(function() {
+                initializeSummernote();
+            }, 100);
+        });
+
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
+            
+            // Destroy Summernote instances from cloned node and reinitialize
+            $(node).find('.richtext-editor').each(function() {
+                const $editor = $(this);
+                
+                // If Summernote is initialized, destroy it
+                if ($editor.hasClass('note-editor')) {
+                    $editor.summernote('destroy');
+                }
+                
+                // Generate new unique ID for cloned editor
+                const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                this.id = newId;
+                this.value = ''; // Clear content
+            });
+            
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
             node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+            node.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
+            node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
                 '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
             ).forEach(e => e.remove());
@@ -600,6 +678,7 @@
                 const index = container.querySelectorAll('.category_block').length + 1;
                 node.querySelector('.category_sequence').textContent = index;
             }
+            
             return node;
         }
 
@@ -657,8 +736,8 @@
             document.getElementById('loading_overlay').classList.add('hidden');
         }
 
-        function showConfirmModal(versionName) {
-            document.getElementById('version_name_display').textContent = versionName || 'ไม่ระบุ';
+        function showConfirmModal(reportTitle) {
+            document.getElementById('version_name_display').textContent = reportTitle || 'ไม่ระบุ';
             document.getElementById('confirm_modal').classList.remove('hidden');
         }
 
@@ -707,13 +786,11 @@
         document.getElementById('jsonForm').addEventListener('submit', function(e) {
             // Prevent default submit for custom validation
             e.preventDefault();
-            // Basic required fields
-            const versionName = document.getElementById('version_name').value.trim();
+            // Basic required fields (ไม่ต้องตรวจสอบ version_name อีกต่อไป)
             const reportTitle = document.getElementById('report_title').value.trim();
             const reportDescription = document.getElementById('report_description').value.trim();
             const assessmentType = document.getElementById('assessment_type').value.trim();
             let errorMsg = '';
-            if (!versionName) errorMsg += 'กรุณากรอกชื่อรุ่น\n';
             if (!reportTitle) errorMsg += 'กรุณากรอกชื่อเกณฑ์\n';
             if (!reportDescription) errorMsg += 'กรุณากรอกรายละเอียดเกณฑ์\n';
             if (!assessmentType) errorMsg += 'กรุณาเลือกประเภทการประเมิน\n';
@@ -721,8 +798,13 @@
                 showValidationErrorModal(errorMsg.replace(/\n/g, '<br>'));
                 return false;
             }
+            // Generate version_name automatically
+            const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
+            const versionName = `${currentYear}_AUTO`;
+            document.getElementById('version_name').value = "เกณฑ์เวอร์ชั่น" + versionName;
+
             // If valid, show confirm modal
-            showConfirmModal(versionName);
+            showConfirmModal(reportTitle); // Show report title instead of version name
         }, true);
 
         function hideConfirmModal() {
@@ -774,6 +856,12 @@
                 const block = e.target.closest('.quant_criteria_block');
                 const container = block.closest('.quantity_main_criterias_container');
             if (container.querySelectorAll('.quant_criteria_block').length > 1) {
+                // Clean up Summernote instances before removing block
+                $(block).find('.richtext-editor').each(function() {
+                    if ($(this).hasClass('note-editor')) {
+                        $(this).summernote('destroy');
+                    }
+                });
                 block.remove();
                 updateQuantMainSequence(container);
                 updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
@@ -797,6 +885,12 @@
                 const block = e.target.closest('.qual_criteria_block');
                 const container = block.closest('.quality_main_criterias_container');
             if (container.querySelectorAll('.qual_criteria_block').length > 1) {
+                // Clean up Summernote instances before removing block
+                $(block).find('.richtext-editor').each(function() {
+                    if ($(this).hasClass('note-editor')) {
+                        $(this).summernote('destroy');
+                    }
+                });
                 block.remove();
                 updateQualMainSequence(container);
                 updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
@@ -932,6 +1026,31 @@
                 parent.appendChild(newBlock);
                 updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                 updateQuantMainSequence(parent);
+                
+                // Initialize Summernote for new rich text editors
+                setTimeout(function() {
+                    $(newBlock).find('.richtext-editor').summernote({
+                        height: 250,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['fontname', ['fontname']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
+                        lang: 'th-TH',
+                        callbacks: {
+                            onChange: function(contents, $editable) {
+                                $(this).val(contents);
+                            }
+                        }
+                    });
+                }, 100);
+                
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -957,6 +1076,31 @@
                 parent.appendChild(newBlock);
                 updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                 updateQualMainSequence(parent);
+                
+                // Initialize Summernote for new rich text editors
+                setTimeout(function() {
+                    $(newBlock).find('.richtext-editor').summernote({
+                        height: 250,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['fontname', ['fontname']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
+                        lang: 'th-TH',
+                        callbacks: {
+                            onChange: function(contents, $editable) {
+                                $(this).val(contents);
+                            }
+                        }
+                    });
+                }, 100);
+                
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -969,6 +1113,31 @@
                 let newBlock = cloneAndClear('.qual_sub_criteria_block');
                 parent.appendChild(newBlock);
                 updateQualSubSequence(parent);
+                
+                // Initialize Summernote for new rich text editors in the new block
+                setTimeout(function() {
+                    $(newBlock).find('.qual_sub_description.richtext-editor').summernote({
+                        height: 200,
+                        toolbar: [
+                            ['style', ['style']],
+                            ['font', ['bold', 'italic', 'underline', 'clear']],
+                            ['fontname', ['fontname']],
+                            ['color', ['color']],
+                            ['para', ['ul', 'ol', 'paragraph']],
+                            ['table', ['table']],
+                            ['insert', ['link', 'picture']],
+                            ['view', ['fullscreen', 'codeview', 'help']]
+                        ],
+                        placeholder: 'ใส่คำอธิบายการให้คะแนน',
+                        lang: 'th-TH',
+                        callbacks: {
+                            onChange: function(contents, $editable) {
+                                $(this).val(contents);
+                            }
+                        }
+                    });
+                }, 100);
+                
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1014,12 +1183,7 @@
         document.getElementById('jsonForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            const versionName = document.querySelector('.version_name').value.trim();
-            if (!versionName) {
-                //alert('กรุณากรอกชื่อรุ่น');
-                return;
-            }
-
+            // ไม่ต้องตรวจสอบ version_name เพราะจะ generate อัตโนมัติ
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
             if (!reportTitle || !reportDescription) {
@@ -1027,8 +1191,19 @@
                 return;
             }
 
+            // Generate version_name อัตโนมัติ
+            const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
+            const versionName = `เกณฑ์ประเมินปี ${currentYear} ครั้งที่ AUTO`;
+            
+            // Save all Summernote content back to textareas before collecting data
+            $('.richtext-editor').each(function() {
+                if ($(this).hasClass('note-editor')) {
+                    $(this).val($(this).summernote('code'));
+                }
+            });
+            
             finalData = {
-                version_name: versionName,
+                version_name: versionName, // สร้างชื่ออัตโนมัติ
                 created_by: document.getElementById('auth-user-id')?.value || 1,
                 report_datas: [],
                 categories: []
@@ -1090,8 +1265,12 @@
                             (qMain, qj) => {
                                 const quantName = qMain.querySelector('.quant_name').value
                                     .trim();
-                                const quantTooltips = qMain.querySelector('.quant_tooltips')
-                                    .value.trim();
+                                // Get content from Summernote editor if available, otherwise from textarea
+                                const tooltipsTextarea = qMain.querySelector('.quant_tooltips');
+                                const quantTooltips = $(tooltipsTextarea).hasClass('note-editor')
+                                    ? $(tooltipsTextarea).summernote('code') 
+                                    : tooltipsTextarea.value.trim();
+                                const quantFormula = qMain.querySelector('.quant_formula')?.value.trim() || '';
                                 if (!quantName || !quantTooltips) {
                                     // alert(
                                     //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
@@ -1103,8 +1282,10 @@
                                 let quantMain = {
                                     name: quantName,
                                     tooltips: quantTooltips,
+                                    description: qMain.querySelector('.quant_description')?.value.trim() || '',
                                     sequence: Number(qMain.querySelector(
                                         '.quant_main_sequence').textContent),
+                                    formula: quantFormula,
                                     quantity_sub_criterias: []
                                 };
 
@@ -1147,11 +1328,14 @@
                             qMain, qj) => {
                             const qualName = qMain.querySelector('.qual_name').value.trim();
                             const qualRatio = qMain.querySelector('.qual_ratio').value;
-                            const qualTooltips = qMain.querySelector('.qual_tooltips').value
-                                .trim();
-                            if (!qualName || !qualRatio || !qualTooltips) {
+                            // Get content from Summernote editor if available, otherwise from textarea
+                            const tooltipsTextarea = qMain.querySelector('.qual_tooltips');
+                            const qualTooltips = $(tooltipsTextarea).hasClass('note-editor')
+                                ? $(tooltipsTextarea).summernote('code') 
+                                : tooltipsTextarea.value.trim();
+                            if (!qualName || !qualRatio) {
                                 alert(
-                                    `กรุณากรอกชื่อเกณฑ์, สัดส่วน, และคำอธิบายสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
+                                    `กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                 );
                                 valid = false;
                                 return;
@@ -1173,6 +1357,11 @@
                                     .value.trim();
                                 const numScore = subQ.querySelector('.num_score')
                                     .value;
+                                // Get content from Summernote editor if available, otherwise from textarea
+                                const descriptionTextarea = subQ.querySelector('.qual_sub_description');
+                                const subDescription = $(descriptionTextarea).hasClass('note-editor')
+                                    ? $(descriptionTextarea).summernote('code') 
+                                    : descriptionTextarea.value.trim() || '';
                                 if (!subName || !numScore) {
                                     showValidationErrorModal(`กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`);
                                     valid = false;
@@ -1184,7 +1373,8 @@
                                     sequence: Number(subQ.querySelector(
                                             '.qual_sub_sequence')
                                         .textContent),
-                                    num_score: Number(numScore)
+                                    num_score: Number(numScore),
+                                    description: subDescription
                                 });
                             });
 
@@ -1211,7 +1401,7 @@
                 return;
             }
 
-            showConfirmModal(finalData.version_name);
+            showConfirmModal(reportTitle); // แสดง report_title แทน finalData.version_name
         });
 
         document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {

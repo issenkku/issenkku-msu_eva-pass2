@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
  */
-class AssignmentFactory extends Factory
+class AssignmentsFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -22,8 +22,7 @@ class AssignmentFactory extends Factory
         return [
             'assignment_data_id' => AssignmentData::factory(),
             'report_id' => Reports::factory(),
-            'evaluatee' => User::factory(),
-            'evaluator' => User::factory(),
+            'evaluatee_id' => User::factory(),
         ];
     }
 }

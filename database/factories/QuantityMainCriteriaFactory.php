@@ -20,7 +20,7 @@ class QuantityMainCriteriaFactory extends Factory
         return [
             'name' => fake()->sentence(2),
             'tooltips' => fake()->text(30),
-            'criteria_version_id' => CriteriaVersion::inRandomOrder()->first()?->id,
+            'criteria_version_id' => CriteriaVersion::factory()
         ];
     }
 }

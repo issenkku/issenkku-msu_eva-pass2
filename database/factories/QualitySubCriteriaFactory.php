@@ -23,9 +23,9 @@ class QualitySubCriteriaFactory extends Factory
             'name' => fake()->sentence(2),
             'sequence' => fake()->numberBetween(1, 10),
             'num_score' => fake()->randomFloat(2, 6, 8),
-            'quality_main_criteria_id' => QualityMainCriteria::inRandomOrder()->first()?->id,
-            'criteria_version_id' => CriteriaVersion::inRandomOrder()->first()?->id,
-            'evaluation_list_id' => EvaluationList::inRandomOrder()->first()?->id,
+            'quality_main_criteria_id' => QualityMainCriteria::factory(),
+            'criteria_version_id' => CriteriaVersion::factory(),
+            'evaluation_list_id' => EvaluationList::factory(),
         ];
     }
 }

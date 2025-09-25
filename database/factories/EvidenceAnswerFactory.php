@@ -20,8 +20,8 @@ class EvidenceAnswerFactory extends Factory
     {
         return [
             'link' => fake()->url(),
-            'evaluation_list_id' => EvaluationList::inRandomOrder()->first()?->id,
-            'report_id' => Reports::inRandomOrder()->first()?->id,
+            'evaluation_list_id' => EvaluationList::factory(),
+            'report_id' => Reports::factory(),
         ];
     }
 }

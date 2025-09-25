@@ -37,8 +37,8 @@
         <!-- Column 3 -->
         <div class="space-y-4">
              <div class="flex">
-                <span class="font-bold w-24 shrink-0">Email:</span>
-                <span class="text-gray-700">{{ $user['email'] ?? 'N/A' }}</span>
+                <span class="font-bold w-24 shrink-0 ">Email:</span>
+                <span class="text-gray-700 break-all">{{ $user['email'] ?? 'N/A' }}</span>
             </div>
             <div class="flex">
                 <span class="font-bold w-24 shrink-0">ประเภทบุคลากร:</span>

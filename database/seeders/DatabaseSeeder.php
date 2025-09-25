@@ -20,10 +20,11 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             UserSeeder::class,
             RoleSeeder::class,
-            CompleteDataSeeder::class,
+            ReportStructureRealSeeder::class,
+            // CompleteDataSeeder::class,
             // ReportStructureSeeder::class,
             // ReportSeeder::class,
-            AssignmentPerReportSeeder::class,
+            // AssignmentPerReportSeeder::class,
         ]);
     }
 }

@@ -18,14 +18,21 @@ class QualitySubCriteria extends Model
         'name',
         'sequence',
         'num_score',
+        'description',
         'quality_main_criteria_id',
         'criteria_version_id',
         'evaluation_list_id',
     ];
 
-    public function mainCriteria(): BelongsTo
+    public function qualityMainCriteria(): BelongsTo
     {
         return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
+    }
+
+    // Alias for consistency with QuantitySubCriteria
+    public function mainCriteria(): BelongsTo
+    {
+        return $this->qualityMainCriteria();
     }
 
     public function criteriaVersion(): BelongsTo

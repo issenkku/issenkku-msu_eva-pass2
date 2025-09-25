@@ -27,7 +27,7 @@ class ReportDataFactory extends Factory
             'report_description' => fake()->text(20),
             'assessment_type' => fake()->randomElement($assessment_type_arr),
             'comment' => fake()->text(20),
-            'criteria_version_id' => CriteriaVersion::first()?->id,
+            'criteria_version_id' => CriteriaVersion::factory(),
         ];
     }
 }

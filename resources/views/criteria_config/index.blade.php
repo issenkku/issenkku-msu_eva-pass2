@@ -9,9 +9,11 @@
                 <h2 class="text-3xl font-bold text-gray-800">
                     กำหนดเกณฑ์การประเมิน
                 </h2>
-                <a href="{{ route('criteria_config.create') }}" class="px-5 py-2 bg-lime-400 text-gray-800 font-semibold rounded-md hover:bg-lime-300">
-                    เพิ่มเกณฑ์
-                </a>
+                <x-button 
+                    type="primary" 
+                    text="เพิ่มเกณฑ์" 
+                    href="{{ route('criteria_config.create') }}"
+                    icon="fas fa-plus" />
             </div>
 
             <hr class="mb-8">
@@ -119,11 +121,20 @@
                     creatorName = item.created_by;
                 }
                 card.innerHTML = `
-                    <h3 class="text-xl font-semibold text-gray-900">${item.version_name || 'ไม่ระบุชื่อเวอร์ชัน'}</h3>
+                    <h3 class="text-xl font-semibold text-gray-900">${item.report_title || 'ไม่ระบุชื่อรายงาน'}</h3>
                     <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${creatorName}</span></p>
-                    <div class="flex space-x-2 mt-auto">
-                        <a href="/criteria-config/${item.id}/edit" class="flex-1 text-center px-4 py-2 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500">แก้ไข</a>
-                        <button type="button" onclick="showDeleteModal(${item.id}, this)" class="flex-1 text-center px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-500 hover:text-white">ลบ</button>
+                    <div class="flex space-x-2 items-center justify-center">
+                        <x-button 
+                            type="warning"
+                            text="แก้ไข"
+                            icon="fas fa-edit"
+                            href="/criteria-config/${item.id}/edit" />
+                        <x-button 
+                            type="danger" 
+                            text="ลบ" 
+                            buttonType="button" 
+                            icon="fas fa-trash-alt"
+                            onclick="showDeleteModal(${item.id}, this)" />
                     </div>
                 `;
                 grid.appendChild(card);
@@ -141,26 +152,32 @@
             if (deleteModal) return;
             deleteModal = document.createElement('div');
             deleteModal.id = 'delete-modal';
-            deleteModal.className = 'fixed top-0 left-0 w-full z-50 flex justify-center hidden';
+            deleteModal.className = 'fixed inset-0 z-[99999] flex items-center justify-center'; // high z-index, full screen
+
+            // Add overlay and modal box
             deleteModal.innerHTML = `
-                <div class="mt-6 bg-white border border-red-200 rounded-xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
+                <div class="fixed inset-0 bg-gray-800 bg-opacity-40 modal-overlay"></div>
+                <div class="relative z-10 mt-6 bg-white border border-red-200 rounded-xl shadow-2xl max-w-md w-full p-8 text-center animate-fade-in">
                     <div class="mx-auto mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
                         <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">ยืนยันการลบเวอร์ชัน</h3>
                     <p class="text-gray-600 mb-6">คุณต้องการลบเวอร์ชันนี้หรือไม่? <br><span class="text-red-500 font-semibold">ข้อมูลนี้จะไม่สามารถกู้คืนได้</span></p>
                     <div class="flex justify-center gap-4 mt-4">
-                        <button id="confirm-delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-500">ลบ</button>
                         <button id="cancel-delete-btn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300">ยกเลิก</button>
+                        <button id="confirm-delete-btn" class="px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-500">ลบ</button>
                     </div>
                 </div>
             `;
             document.body.appendChild(deleteModal);
+
+            // Prevent closing by clicking overlay
+            deleteModal.querySelector('.modal-overlay').onclick = function(e) { e.stopPropagation(); };
+
             // Event listeners
             deleteModal.querySelector('#cancel-delete-btn').onclick = function() {
                 hideDeleteModal();
             };
-            // ไม่ต้องปิด modal เมื่อคลิกพื้นหลัง
             deleteModal.querySelector('#confirm-delete-btn').onclick = function() {
                 if (deleteTargetId && deleteTargetBtn) {
                     doDeleteCriteriaVersion(deleteTargetId, deleteTargetBtn);
@@ -175,7 +192,7 @@
             deleteModal.classList.remove('hidden');
         }
         function hideDeleteModal() {
-            deleteModal.classList.add('hidden');
+            if (deleteModal) deleteModal.classList.add('hidden');
             deleteTargetId = null;
             deleteTargetBtn = null;
         }

@@ -14,7 +14,7 @@ test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'employee_id' => $user->employee_id,
         'password' => 'password',
     ]);
 
@@ -26,7 +26,7 @@ test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
     $this->post('/login', [
-        'email' => $user->email,
+        'employee_id' => $user->employee_id,
         'password' => 'wrong-password',
     ]);
 

@@ -23,7 +23,7 @@ class ReportsFactory extends Factory
             'status' => fake()->randomElement($status),
             // or if you want to always use 'Assigned':
             // 'status' => 'Assigned',
-            'report_data_id' => ReportData::inRandomOrder()->first()?->id,
+            'report_data_id' => ReportData::factory(),
         ];
     }
 }

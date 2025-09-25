@@ -22,6 +22,7 @@ class QuantitySubCriteria extends Model
         'quantity_main_criteria_id',
         'criteria_version_id',
         'evaluation_list_id',
+        'description',
     ];
 
     public function mainCriteria(): BelongsTo

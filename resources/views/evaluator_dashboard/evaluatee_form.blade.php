@@ -280,10 +280,17 @@
 
             <!-- ปุ่มส่งข้อมูล -->
             <div class="action-section">
-                <button type="button" class="btn-back secondary"
-                    onclick="window.location='{{ route('evaluator.index') }}'">ยกเลิก</button>
-                <button type="button" class="btn-back primary" onclick="confirmSubmit()">รับรองผลการประเมิน</button>
-                <button type="button" class="btn-back warning" onclick="confirmReject()">ไม่อนุมัติ</button>
+                <x-button 
+                    type= defualt 
+                    text="ย้อนกลับ" 
+                    icon="fas fa-arrow-left"
+                    href="{{ route('evaluator.index') }}" />
+                <x-button 
+                    type="primary"
+                    buttonType="button" 
+                    text="รับรองผล"
+                    icon="fas fa-check-circle"
+                    onclick="confirmSubmit()" />
             </div>
     </form>
 
@@ -293,6 +300,66 @@
         @method('PUT')
     </form>
 
+    <div id="submitConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">ยืนยันการบันทึกข้อมูล</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-600">
+                        คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3 space-x-4">
+                    <button id="cancelSubmitModalBtn" class="btn btn-secondary w-28">
+                        ยกเลิก
+                    </button>
+                    <button id="confirmSubmitModalBtn" class="btn btn-primary w-28">
+                        ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rejectConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">ยืนยันการบันทึกข้อมูล</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-600">
+                        คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3 space-x-4">
+                    <button id="cancelSubmitModalBtn" class="btn btn-secondary w-28">
+                        ยกเลิก
+                    </button>
+                    <button id="confirmSubmitModalBtn" class="btn btn-primary w-28">
+                        ยืนยัน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-4">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-6"></div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">กำลังส่งข้อมูล</h3>
+            <p class="text-gray-600">กรุณารอสักครู่...</p>
+        </div>
+    </div>
 
     <script>
         // Show loading overlay
@@ -327,26 +394,125 @@
 
             if (emptyFound) {
                 alert("กรุณากรอกคะแนนให้ครบทุกช่องก่อนบันทึกข้อมูล");
-                return; // ไม่ส่งฟอร์ม
+                return; 
             }
 
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการบันทึกคะแนนและส่งแบบประเมิน?")) {
-                const form = document.querySelector('form');
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'change_status';
-                input.value = '1';
-                form.appendChild(input);
-                form.submit();
+            // 2. เปิด Modal แทนการใช้ confirm()
+            const modal = document.getElementById('submitConfirmationModal');
+            if (modal) {
+                modal.classList.remove('hidden');
             }
         }
-
 
         function confirmReject() {
-            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการไม่อนุมัติแบบประเมินนี้?")) {
-                document.getElementById('reject-form').submit();
+            const modal = document.getElementById('rejectConfirmationModal');
+            if (modal) {
+                modal.classList.remove('hidden');
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Submit Modal Elements
+            const submitModal = document.getElementById('submitConfirmationModal');
+            const cancelSubmitBtn = document.getElementById('cancelSubmitModalBtn');
+            const confirmSubmitBtn = document.getElementById('confirmSubmitModalBtn');
+
+            // Reject Modal Elements
+            const rejectModal = document.getElementById('rejectConfirmationModal');
+            const cancelRejectBtn = document.getElementById('cancelRejectModalBtn');
+            const confirmRejectBtn = document.getElementById('confirmRejectModalBtn');
+
+            // Submit Modal Event Listeners
+            if (submitModal && cancelSubmitBtn && confirmSubmitBtn) {
+                // ปุ่มยกเลิกการส่ง
+                cancelSubmitBtn.addEventListener('click', function() {
+                    submitModal.classList.add('hidden');
+                });
+
+                // ปุ่มยืนยันการส่ง
+                confirmSubmitBtn.addEventListener('click', function() {
+                    const form = document.querySelector('#approve_eva');
+                    if (form) {
+                        // แสดง loading overlay
+                        showLoading();
+
+                        // สร้าง hidden input เพื่อบอกว่าเป็นการส่งแบบอนุมัติ
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'change_status';
+                        input.value = '1'; 
+                        form.appendChild(input);
+                        
+                        // ปิด Modal แล้วส่งฟอร์ม
+                        submitModal.classList.add('hidden');
+                        
+                        // เพิ่มการจัดการ error สำหรับกรณีที่ส่งข้อมูลไม่สำเร็จ
+                        form.addEventListener('submit', function() {
+                            // ถ้า form ถูก submit แล้วแต่ยังอยู่ในหน้าเดิม (เกิด error) ให้ซ่อน loading
+                            setTimeout(function() {
+                                hideLoading();
+                            }, 5000); // ซ่อน loading หลังจาก 5 วินาที
+                        });
+                        
+                        form.submit();
+                        //window.location.href = "/evaluator-dashboard"; // Redirect ไปยังหน้า index
+                    }
+                });
+
+                // ปิด Modal เมื่อคลิกพื้นหลัง
+                submitModal.addEventListener('click', function(event) {
+                    if (event.target === submitModal) {
+                        submitModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Reject Modal Event Listeners
+            if (rejectModal && cancelRejectBtn && confirmRejectBtn) {
+                // ปุ่มยกเลิกการปฏิเสธ
+                cancelRejectBtn.addEventListener('click', function() {
+                    rejectModal.classList.add('hidden');
+                });
+
+                // ปุ่มยืนยันการปฏิเสธ
+                confirmRejectBtn.addEventListener('click', function() {
+                    const rejectForm = document.getElementById('reject-form');
+                    if (rejectForm) {
+                        // แสดง loading overlay
+                        showLoading();
+
+                        // ปิด Modal แล้วส่งฟอร์ม
+                        rejectModal.classList.add('hidden');
+                        
+                        // เพิ่มการจัดการ error สำหรับกรณีที่ส่งข้อมูลไม่สำเร็จ
+                        rejectForm.addEventListener('submit', function() {
+                            setTimeout(function() {
+                                hideLoading();
+                            }, 5000);
+                        });
+                        
+                        rejectForm.submit();
+                    }
+                });
+
+                // ปิด Modal เมื่อคลิกพื้นหลัง
+                rejectModal.addEventListener('click', function(event) {
+                    if (event.target === rejectModal) {
+                        rejectModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            // ซ่อน loading overlay เมื่อหน้าโหลดเสร็จ (กรณีที่ redirect กลับมา)
+            window.addEventListener('load', function() {
+                hideLoading();
+            });
+
+            // ซ่อน loading overlay เมื่อกลับมาที่หน้านี้
+            window.addEventListener('pageshow', function() {
+                hideLoading();
+            });
+        });
     </script>
     <style>
         /* Reset and Base Styles */

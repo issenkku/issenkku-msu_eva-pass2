@@ -7,7 +7,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
+            input: [
+                'resources/js/app.ts',
+                'resources/css/app.css',
+            ],
             ssr: 'resources/js/ssr.ts',
             refresh: true,
         }),
@@ -24,6 +27,17 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': path.resolve(__dirname, './resources/js'),
+        },
+    },
+    build: {
+        outDir: 'public/build',   // ✅ force Vite to build into Laravel's expected path
+        manifest: 'manifest.json',           // ✅ generate manifest.json
+        emptyOutDir: true,        // ✅ clean old files
+        rollupOptions: {
+            input: [
+                'resources/js/app.ts',
+                'resources/css/app.css',
+            ],
         },
     },
 });

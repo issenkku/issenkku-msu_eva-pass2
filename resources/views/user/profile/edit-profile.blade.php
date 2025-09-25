@@ -2,11 +2,54 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
-    <h2 class="text-2xl font-semibold mb-6">แก้ไขข้อมูลโปรไฟล์</h2>
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-semibold">แก้ไขข้อมูลโปรไฟล์</h2>
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="enable-public-profile" 
+                       {{ $user->is_public_profile_enabled ? 'checked' : '' }}
+                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                <label for="enable-public-profile" class="text-sm font-medium text-gray-700">
+                    เปิดใช้โปรไฟล์สาธารณะ
+                </label>
+            </div>
+            <button type="button" id="copy-profile-link" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition-colors flex items-center gap-2 {{ !$user->is_public_profile_enabled ? 'opacity-50 cursor-not-allowed' : '' }}"
+                    {{ !$user->is_public_profile_enabled ? 'disabled' : '' }}>
+                <i class="fas fa-link"></i>
+                คัดลอกลิงก์โปรไฟล์
+            </button>
+        </div>
+    </div>
 
     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
+        
+        <!-- Hidden field for public profile setting -->
+        <input type="hidden" name="is_public_profile_enabled" id="is_public_profile_enabled" value="{{ $user->is_public_profile_enabled ? '1' : '0' }}">
+
+        <!-- Profile Photo Section -->
+        <div class="mb-8 flex items-center gap-6">
+            <div class="flex-shrink-0">
+                <img id="preview-photo" 
+                     src="{{ $user->profile_photo_url }}" 
+                     alt="Profile Photo"
+                     class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg">
+            </div>
+            <div class="flex-grow">
+                <label for="profile_photo" class="block text-sm font-medium text-gray-700 mb-2">รูปโปรไฟล์</label>
+                <input type="file" 
+                       id="profile_photo" 
+                       name="profile_photo" 
+                       accept="image/*"
+                       class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 @error('profile_photo') border-red-500 @enderror">
+                @error('profile_photo')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                <p class="mt-1 text-sm text-gray-500">รองรับไฟล์ JPG, JPEG, PNG, GIF ขนาดไม่เกิน 2MB</p>
+            </div>
+        </div>
 
         <div class="flex items-center mb-6 gap-4">
             <div class="w-40">
@@ -120,6 +163,16 @@
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
+
+            <div class="col-span-2">
+                <label for="portfolio" class="block text-sm font-medium text-gray-700 mb-1">ผลงาน</label>
+                <textarea id="portfolio" name="portfolio" rows="6"
+                          class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('portfolio') border-red-500 @enderror"
+                          placeholder="กรอกข้อมูลผลงาน เช่น งานวิจัย, บทความ, หนังสือ, รางวัลที่ได้รับ และผลงานอื่นๆ ที่สำคัญ">{{ old('portfolio', $user->portfolio ?? '') }}</textarea>
+                @error('portfolio')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
         </div>
 
         <!-- Password Change Section -->
@@ -152,37 +205,83 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="mt-6 flex items-center justify-between">
-            <a href="{{ route('profile.show') }}"
-               class="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                ยกเลิก
-            </a>
-            <button type="submit"
-                    class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-                บันทึกการเปลี่ยนแปลง
-            </button>
+        <div class="mt-6 flex items-center gap-3">
+            <x-button 
+                type= defualt 
+                text="ย้อนกลับ" 
+                icon="fas fa-arrow-left"
+                href="{{ route('profile.show') }}" /> 
+            <x-button 
+                type="warning"
+                buttonType="submit" 
+                text="บันทึกการเปลี่ยนแปลง" 
+                icon="fas fa-save" />
         </div>
     </form>
 </div>
 
 <script>
 // Preview photo when selected
-// document.getElementById('photo').addEventListener('change', function(e) {
-//     const file = e.target.files[0];
-//     if (file) {
-//         const reader = new FileReader();
-//         reader.onload = function(e) {
-//             document.getElementById('preview-photo').src = e.target.result;
-//         };
-//         reader.readAsDataURL(file);
-//     }
-// });
+document.getElementById('profile_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview-photo').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 // Format phone number as user types
 document.getElementById('phone').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length <= 10) {
         e.target.value = value;
+    }
+});
+
+// Copy public profile link
+document.getElementById('copy-profile-link').addEventListener('click', function() {
+    const isEnabled = document.getElementById('enable-public-profile').checked;
+    
+    if (!isEnabled) {
+        alert('กرุณาเปิดใช้โปรไฟล์สาธารณะก่อนคัดลอกลิงก์');
+        return;
+    }
+    
+    const publicUrl = "{{ $user->public_profile_url }}";
+    navigator.clipboard.writeText(publicUrl).then(function() {
+        // Show a temporary alert
+        const btn = document.getElementById('copy-profile-link');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> คัดลอกสำเร็จ!';
+        btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        btn.classList.add('bg-green-600');
+        setTimeout(function() {
+            btn.innerHTML = original;
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        }, 1500);
+    }, function() {
+        alert('ไม่สามารถคัดลอกลิงก์ได้');
+    });
+});
+
+// Handle public profile toggle
+document.getElementById('enable-public-profile').addEventListener('change', function() {
+    const isEnabled = this.checked;
+    const copyBtn = document.getElementById('copy-profile-link');
+    const hiddenInput = document.getElementById('is_public_profile_enabled');
+    
+    hiddenInput.value = isEnabled ? '1' : '0';
+    
+    if (isEnabled) {
+        copyBtn.disabled = false;
+        copyBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        copyBtn.disabled = true;
+        copyBtn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 });
 </script>
