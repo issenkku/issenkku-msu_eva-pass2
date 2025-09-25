@@ -197,6 +197,7 @@ class DashboardController extends Controller
                     'quality_sub_criterias.num_score',
                     'quality_main_criterias.ratio',
                     'reports.id',
+                    'reports.comment',
                     'evaluation_lists.sum_score'
                 )
                 ->get();
