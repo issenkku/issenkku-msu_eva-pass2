@@ -181,10 +181,7 @@ class User extends Authenticatable implements CanResetPassword
                 'evaluateeUser.department',
                 'assignmentData',
                 'report.reportData',
-            ])
-            ->whereHas('evaluateeUser', function ($q) {
-                $q->where('department_id', $this->department_id);
-            });
+            ]);
 
         return $query;
     }

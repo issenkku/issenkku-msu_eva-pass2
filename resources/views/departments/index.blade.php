@@ -367,7 +367,7 @@
                                                 text="แก้ไข" 
                                                 class="text-sm"
                                                 icon="fas fa-edit"
-                                                onclick="handleEdit({{ $department->id }}, '{{ $department->department_name }}', '{{ $department->faculty }}')" 
+                                                onclick="handleEdit({{ $department->id }}, '{{ $department->department_name }}')" 
                                             />
                                             <x-button 
                                                 type="danger" 
@@ -421,13 +421,6 @@
                                 placeholder="กรุณาระบุชื่อแผนก">
                             <div class="text-red-500 text-sm mt-1 hidden" id="department_nameError">กรุณากรอกชื่อแผนก</div>
                         </div>
-
-                        {{-- <div class="mb-3">
-                            <label for="faculty" class="form-label">ชื่อคณะ <span class="text-danger">*</span></label>
-                            <input type="text" id="faculty" name="faculty" class="form-control" required
-                                placeholder="กรุณาระบุชื่อคณะ">
-                            <div class="text-red-500 text-sm mt-1 hidden" id="facultyError">กรุณากรอกชื่อคณะ</div>
-                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -479,46 +472,24 @@
         function validateForm() {
             const department_nameInput = document.getElementById('department_name');
             const department_nameError = document.getElementById('department_nameError');
-            const facultyInput = document.getElementById('faculty');
-            const facultyError = document.getElementById('facultyError');
             const submitBtn = document.getElementById('departmentSubmitBtn');
             
-            if (!department_nameInput || !department_nameError || !facultyInput || !facultyError|| !submitBtn) return false;
+            if (!department_nameInput || !department_nameError || !submitBtn) return false;
 
             const department_nameValue = department_nameInput.value.trim();
-            const facultyValue = facultyInput.value.trim();
             let isValid = true;
 
             // ตรวจสอบชื่อตำแหน่ง (required field)
-            if (department_nameValue === '' && facultyValue === '') {
+            if (department_nameValue === '') {
                 department_nameInput.classList.add('is-invalid');
                 department_nameError.style.display = 'block';
-                department_nameError.textContent = 'กรุณากรอกชื่อตำแหน่ง';
-
-                facultyInput.classList.add('is-invalid');
-                facultyError.style.display = 'block';
-                facultyError.textContent = 'กรุณากรอกชื่อคณะ';
+                department_nameError.textContent = 'กรุณากรอกชื่อแผนก';
 
                 isValid = false;
             } else {
                 department_nameInput.classList.remove('is-invalid');
                 department_nameError.style.display = 'none';
-
-                facultyInput.classList.remove('is-invalid');
-                facultyError.style.display = 'none';
             }
-
-            // Validate faculty
-            if (facultyValue === '') {
-                facultyInput.classList.add('is-invalid');
-                facultyError.style.display = 'block';
-                facultyError.textContent = 'กรุณากรอกชื่อคณะ';
-                isValid = false;
-            } else {
-                facultyInput.classList.remove('is-invalid');
-                facultyError.style.display = 'none';
-            }
-
             // อัพเดทสถานะปุ่มส่ง
             updateSubmitButton(isValid);
             isFormValid = isValid;
@@ -562,12 +533,11 @@
 
             modalEl.addEventListener('shown.bs.modal', function () {
                 document.getElementById('department_name').focus();
-                document.getElementById('faculty').focus();
             });
         }
 
         // ฟังก์ชันเปิด modal สำหรับแก้ไขข้อมูล
-        function handleEdit(id, name, faculty) {
+        function handleEdit(id, name) {
             clearModalBackdrop();
 
             const form = document.getElementById('departmentForm');
@@ -594,7 +564,6 @@
 
             modalEl.addEventListener('shown.bs.modal', function () {
                 document.getElementById('department_name').focus();
-                document.getElementById('faculty').focus();
             });
         }
 
@@ -679,8 +648,6 @@
 
             // เพิ่ม event listeners สำหรับ real-time validation
             const department_nameInput = document.getElementById('department_name');
-            const facultyInput = document.getElementById('faculty');
-
             if (department_nameInput) {
                 // ตรวจสอบทันทีเมื่อพิมพ์
                 department_nameInput.addEventListener('input', function() {
@@ -694,28 +661,6 @@
 
                 // ตรวจสอบเมื่อกด Enter
                 department_nameInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (validateForm()) {
-                            submitForm();
-                        }
-                    }
-                });
-            }
-
-            if (facultyInput) {
-                // ตรวจสอบทันทีเมื่อพิมพ์
-                facultyInput.addEventListener('input', function() {
-                    validateForm();
-                });
-
-                // ตรวจสอบเมื่อ focus out
-                facultyInput.addEventListener('blur', function() {
-                    validateForm();
-                });
-
-                // ตรวจสอบเมื่อกด Enter
-                facultyInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         if (validateForm()) {
