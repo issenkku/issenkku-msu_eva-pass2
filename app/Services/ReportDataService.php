@@ -23,9 +23,6 @@ class ReportDataService
         ->whereHas('assignmentData', function ($q) use ($user) {
             $q->where('evaluator_position_id', $user->position_id);
         })
-        ->whereHas('evaluateeUser', function ($q) use ($user) {
-            $q->where('department_id', $user->department_id);
-        })
         ->first();
     }
 
