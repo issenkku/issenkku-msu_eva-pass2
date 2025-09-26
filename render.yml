@@ -16,6 +16,7 @@ services:
     buildCommand: ""
     startCommand: "/usr/local/bin/start.sh"
     healthCheckPath: "/"
+    port: 8000  # Explicitly specify port
     envVars:
       - key: APP_NAME
         value: LaravelApp
