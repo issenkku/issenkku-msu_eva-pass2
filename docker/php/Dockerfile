@@ -65,9 +65,9 @@ RUN addgroup -g 1000 appuser && adduser -u 1000 -G appuser -s /bin/sh -D appuser
 RUN composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 
 # Copy configuration files
-COPY ./docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY ./docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./docker/php/start.sh /usr/local/bin/start.sh
+COPY ../nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./start.sh /usr/local/bin/start.sh
 
 # Configure nginx for single container
 RUN sed -i 's/listen 80;/listen 8000;/' /etc/nginx/conf.d/default.conf && \
