@@ -97,6 +97,10 @@ RUN mkdir -p /var/log/nginx /var/lib/nginx/tmp /run/nginx /var/log/supervisor
 # Copy and modify nginx config for single container
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 # Modify nginx config for Render (port 8000 and localhost php-fpm)
 RUN sed -i 's/listen 80;/listen 8000;/' /etc/nginx/conf.d/default.conf && \
     sed -i 's/fastcgi_pass app:9000;/fastcgi_pass 127.0.0.1:9000;/' /etc/nginx/conf.d/default.conf
