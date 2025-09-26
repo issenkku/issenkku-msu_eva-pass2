@@ -28,8 +28,8 @@
                             <input id="report_title" required name="report_title" class="report_title border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="ชื่อเกณฑ์การประเมิน">
                         </div>
                         <div>
-                            <label for="report_description" class="block text-sm font-medium text-gray-700 mb-2">รายละเอียดเกณฑ์ <span class="text-red-500">*</span></label>
-                            <textarea id="report_description" rows="4" required name="report_description" class="report_description border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="รายละเอียดเพิ่มเติมของเกณฑ์"></textarea>
+                            <label for="report_description" class="block text-sm font-medium text-gray-700 mb-2">รายละเอียดเกณฑ์ <span class="text-red-500"></span></label>
+                            <textarea id="report_description" rows="4" name="report_description" class="report_description border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="รายละเอียดเพิ่มเติมของเกณฑ์"></textarea>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -38,6 +38,7 @@
                                     <option value="">-- เลือกประเภทการประเมิน --</option>
                                     <option value="กลุ่มวิชาการ">กลุ่มวิชาการ</option>
                                     <option value="กลุ่มสนับสนุน">กลุ่มสนับสนุน</option>
+                                    <option value="กลุ่มสนับสนุน">กลุ่มบริหาร</option>
                                 </select>
                             </div>
                             <div>
@@ -196,7 +197,7 @@
                                             </div>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500"></span></label>
                                             <textarea name="quant_tooltips" class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
@@ -228,11 +229,11 @@
                                                         <input name="quant_sub_name" class="quant_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน A <span class="text-red-500">*</span></label>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)<span class="text-red-500">*</span></label>
                                                         <input type="number" name="score_a" class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน B <span class="text-red-500">*</span></label>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">หน่วยภาระงานมาตรฐาน (B) <span class="text-red-500">*</span></label>
                                                         <input type="number" name="score_b" class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน B">
                                                     </div>
                                                 </div>
@@ -298,7 +299,7 @@
                                             </div>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500">*</span></label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500"></span></label>
                                             <textarea name="qual_tooltips" class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
                                         <!-- Quality Sub Criteria Container -->
@@ -1123,7 +1124,7 @@
             const reportDescription = document.getElementById('report_description').value.trim();
             const assessmentType = document.getElementById('assessment_type').value.trim();
 
-            if (!versionName || !reportTitle || !reportDescription || !assessmentType) {
+            if (!versionName || !reportTitle || !assessmentType) {
                 alert('กรุณากรอกข้อมูลพื้นฐานให้ครบถ้วน');
                 return;
             }
@@ -1238,13 +1239,13 @@
                                     
                                     const quantFormula = quantBlock.querySelector('.quant_formula').value.trim();
 
-                                    if (!quantName || !quantTooltips) {
+                                    if (!quantName ) {
                                         throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณหลักที่ ${quantIndex + 1}`);
                                     }
 
                                     const quantMain = {
                                         name: quantName,
-                                        tooltips: quantTooltips,
+                                        tooltips: quantTooltips || null,
                                         formula: quantFormula || 'D = A × C / B',
                                         quantity_sub_criterias: []
                                     };
@@ -1293,7 +1294,7 @@
                                     const qualMain = {
                                         name: qualName,
                                         ratio: parseInt(qualRatio),
-                                        tooltips: qualTooltips,
+                                        tooltips: qualTooltips || null,
                                         sequence: qualIndex + 1,
                                         quality_sub_criterias: []
                                     };

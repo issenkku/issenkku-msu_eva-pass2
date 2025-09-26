@@ -228,7 +228,7 @@ class ReportStructureController extends Controller
 
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
-            'report_datas.*.report_description' => 'required|nullable|string',
+            'report_datas.*.report_description' => 'nullable|string',
             'report_datas.*.assessment_type' => 'required|string', // ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
@@ -245,7 +245,7 @@ class ReportStructureController extends Controller
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
-            'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'required|nullable|string',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
@@ -256,7 +256,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'required|nullable|string',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',

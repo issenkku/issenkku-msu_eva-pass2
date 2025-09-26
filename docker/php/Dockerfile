@@ -97,8 +97,53 @@ RUN mkdir -p /var/log/nginx /var/lib/nginx/tmp /run/nginx /var/log/supervisor
 # Copy and modify nginx config for single container
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY start.sh /usr/local/bin/start.sh
+# Create supervisor config directly in Dockerfile
+RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'EOF'
+[supervisord]
+nodaemon=true
+user=root
+logfile=/var/log/supervisor/supervisord.log
+pidfile=/var/run/supervisord.pid
+loglevel=info
+
+[program:php-fpm]
+command=php-fpm --nodaemonize
+autostart=true
+autorestart=true
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+user=appuser
+
+[program:nginx]
+command=nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stderr_logfile=/dev/stderr
+stderr_logfile_maxbytes=0
+stdout_logfile=/dev/stdout
+stdout_logfile_maxbytes=0
+user=root
+EOF
+
+# Create startup script directly in Dockerfile
+RUN cat > /usr/local/bin/start.sh << 'EOF'
+#!/bin/sh
+
+echo "Starting Laravel application..."
+
+# Run Laravel setup commands
+echo "Running Laravel migrations and cache..."
+php artisan migrate --force || echo "Migration failed, continuing..."
+php artisan config:cache || echo "Config cache failed, continuing..."
+php artisan route:cache || echo "Route cache failed, continuing..."
+php artisan view:cache || echo "View cache failed, continuing..."
+
+echo "Starting supervisor..."
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+EOF
+
 RUN chmod +x /usr/local/bin/start.sh
 
 # Modify nginx config for Render (port 8000 and localhost php-fpm)
