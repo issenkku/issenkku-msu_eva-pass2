@@ -68,7 +68,7 @@ return new class extends Migration
         Schema::create('quality_main_criterias', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('ratio');
+            $table->decimal('ratio',5,2);
             $table->text('tooltips')->nullable();
             $table->integer('sequence');
             $table->foreignId('criteria_version_id')->constrained('criteria_versions')->onDelete('cascade');

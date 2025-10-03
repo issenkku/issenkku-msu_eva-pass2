@@ -50,7 +50,7 @@
                                     <option value="">-- เลือกประเภทการประเมิน --</option>
                                     <option value="กลุ่มวิชาการ">กลุ่มวิชาการ</option>
                                     <option value="กลุ่มสนับสนุน">กลุ่มสนับสนุน</option>
-                                    <option value="กลุ่มสนับสนุน">กลุ่มบริหาร</option>
+                                    <option value="กลุ่มบริหาร">กลุ่มบริหาร</option>
                                 </select>
                             </div>
                             <div>
@@ -644,19 +644,33 @@
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
             
-            // Destroy Summernote instances from cloned node and reinitialize
+            // Destroy Summernote instances from cloned node
             $(node).find('.richtext-editor').each(function() {
                 const $editor = $(this);
                 
-                // If Summernote is initialized, destroy it
-                if ($editor.hasClass('note-editor')) {
+                // Remove Summernote wrapper if it exists
+                if ($editor.parent().hasClass('note-editor')) {
+                    // Get the original textarea
+                    const content = $editor.summernote('code');
                     $editor.summernote('destroy');
+                    $editor.val(''); // Clear content after destroying
+                } else if ($editor.next().hasClass('note-editor')) {
+                    // Handle case where editor wrapper is a sibling
+                    $editor.next('.note-editor').remove();
+                    $editor.val('');
                 }
+                
+                // Remove any remaining note-editor wrappers
+                $(this).siblings('.note-editor').remove();
+                $(this).parent('.note-editor').children('textarea').unwrap();
                 
                 // Generate new unique ID for cloned editor
                 const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 this.id = newId;
                 this.value = ''; // Clear content
+                
+                // Remove any Summernote classes
+                $(this).removeClass('note-editor note-frame note-airframe');
             });
             
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);

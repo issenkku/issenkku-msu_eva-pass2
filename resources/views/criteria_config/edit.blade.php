@@ -38,7 +38,7 @@
                                     <option value="">-- เลือกประเภทการประเมิน --</option>
                                     <option value="กลุ่มวิชาการ">กลุ่มวิชาการ</option>
                                     <option value="กลุ่มสนับสนุน">กลุ่มสนับสนุน</option>
-                                    <option value="กลุ่มสนับสนุน">กลุ่มบริหาร</option>
+                                    <option value="กลุ่มบริหาร">กลุ่มบริหาร</option>
                                 </select>
                             </div>
                             <div>
@@ -721,7 +721,75 @@
 
         function handleAddEvaluation(categoryBlock) {
             const container = categoryBlock.querySelector('.evaluation_lists_container');
-            const newBlock = cloneAndClear('.evaluation_list_block');
+            
+            // Get the first evaluation block within THIS category as a template
+            const template = container.querySelector('.evaluation_list_block');
+            
+            if (!template) {
+                // Fallback: use the hidden template
+                const hiddenTemplate = document.querySelector('.category_block[style*="display: none"] .evaluation_list_block');
+                if (hiddenTemplate) {
+                    const newBlock = hiddenTemplate.cloneNode(true);
+                    
+                    // Clean up the cloned block
+                    $(newBlock).find('.richtext-editor').each(function() {
+                        $(this).next('.note-editor').remove();
+                        $(this).removeClass('note-editor note-frame note-editable');
+                        $(this).removeAttr('style');
+                        $(this).show();
+                        this.value = '';
+                        this.id = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    });
+                    
+                    newBlock.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
+                    newBlock.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+                    newBlock.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
+                    newBlock.querySelector('.quantity_main_criterias_container')?.classList.add('hidden');
+                    newBlock.querySelector('.quality_main_criterias_container')?.classList.add('hidden');
+                    
+                    container.appendChild(newBlock);
+                    updateSequences();
+                    newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                return;
+            }
+            
+            // Clone from existing evaluation block in this category
+            const newBlock = template.cloneNode(true);
+            
+            // Clean up the cloned block
+            $(newBlock).find('.richtext-editor').each(function() {
+                const $editor = $(this);
+                
+                // Destroy any existing Summernote
+                if ($editor.next('.note-editor').length > 0) {
+                    try {
+                        $editor.summernote('destroy');
+                    } catch(e) {}
+                }
+                
+                $editor.next('.note-editor').remove();
+                $editor.removeClass('note-editor note-frame note-editable');
+                $editor.removeAttr('style');
+                $editor.show();
+                this.value = '';
+                this.id = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            });
+            
+            // Clear all inputs
+            newBlock.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
+            newBlock.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+            newBlock.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
+            newBlock.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
+            
+            // Hide criteria containers
+            newBlock.querySelector('.quantity_main_criterias_container')?.classList.add('hidden');
+            newBlock.querySelector('.quality_main_criterias_container')?.classList.add('hidden');
+            
+            // Remove extra blocks (keep only first of each type)
+            newBlock.querySelectorAll('.quant_criteria_block:not(:first-child)').forEach(e => e.remove());
+            newBlock.querySelectorAll('.qual_criteria_block:not(:first-child)').forEach(e => e.remove());
+            
             container.appendChild(newBlock);
             updateSequences();
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1071,7 +1139,7 @@
                         const subBlockTemplate = document.querySelector('.qual_sub_criteria_block');
                         const subBlock = subBlockTemplate.cloneNode(true);
                         subBlock.querySelector('.qual_sub_name').value = subData.name || '';
-                        subBlock.querySelector('.num_score').value = subData.num_score || '';
+                        subBlock.querySelector('.num_score').value = subData.num_score ?? '';
                         
                         // Handle description with potential HTML content
                         const descTextarea = subBlock.querySelector('.qual_sub_description');

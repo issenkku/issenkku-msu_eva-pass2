@@ -255,7 +255,7 @@ class ReportStructureController extends Controller
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
-            'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|numeric|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
@@ -463,7 +463,7 @@ class ReportStructureController extends Controller
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
-            'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|numeric|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',

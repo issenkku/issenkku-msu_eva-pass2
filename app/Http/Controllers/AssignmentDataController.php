@@ -326,7 +326,7 @@ class AssignmentDataController extends Controller
             'evaluator_name' => $evaluator_name->name,
         ];
 
-        Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
+        \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
             $message->to($user->email, $user->name)
                 ->subject('แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน');
         });
