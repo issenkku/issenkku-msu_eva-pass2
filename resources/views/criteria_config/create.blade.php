@@ -35,8 +35,8 @@
                         <div>
                             <label for="report_description"
                                 class="block text-sm font-medium text-gray-700 mb-2">รายละเอียดเกณฑ์ <span
-                                    class="text-red-500">*</span></label>
-                            <textarea id="report_description" rows="4" required name="report_description"
+                                    class="text-red-500"></span></label>
+                            <textarea id="report_description" rows="4"  name="report_description"
                                 class="report_description border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
                                 placeholder="รายละเอียดเพิ่มเติมของเกณฑ์"></textarea>
                         </div>
@@ -50,6 +50,7 @@
                                     <option value="">-- เลือกประเภทการประเมิน --</option>
                                     <option value="กลุ่มวิชาการ">กลุ่มวิชาการ</option>
                                     <option value="กลุ่มสนับสนุน">กลุ่มสนับสนุน</option>
+                                    <option value="กลุ่มบริหาร">กลุ่มบริหาร</option>
                                 </select>
                             </div>
                             <div>
@@ -279,7 +280,7 @@
                                         <div class="mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
-                                                        class="text-red-500">*</span></label>
+                                                        class="text-red-500"></span></label>
                                                 <textarea name="quant_tooltips" rows="8" id="quant_tooltips_1"
                                                     class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="คำอธิบายเพิ่มเติม"></textarea>
@@ -326,14 +327,14 @@
                                                             placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน A
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)
                                                             <span class="text-red-500">*</span></label>
                                                         <input type="number" name="score_a"
                                                             class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนน B
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2">หน่วยภาระงานมาตรฐาน (B)
                                                             <span class="text-red-500">*</span></label>
                                                         <input type="number" name="score_b"
                                                             class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
@@ -429,7 +430,7 @@
                                         <div class="mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
-                                                        class="text-red-500">*</span></label>
+                                                        class="text-red-500"></span></label>
                                                 <textarea name="qual_tooltips" rows="8" id="qual_tooltips_1"
                                                     class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="คำอธิบายเพิ่มเติม"></textarea>
@@ -643,19 +644,33 @@
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
             
-            // Destroy Summernote instances from cloned node and reinitialize
+            // Destroy Summernote instances from cloned node
             $(node).find('.richtext-editor').each(function() {
                 const $editor = $(this);
                 
-                // If Summernote is initialized, destroy it
-                if ($editor.hasClass('note-editor')) {
+                // Remove Summernote wrapper if it exists
+                if ($editor.parent().hasClass('note-editor')) {
+                    // Get the original textarea
+                    const content = $editor.summernote('code');
                     $editor.summernote('destroy');
+                    $editor.val(''); // Clear content after destroying
+                } else if ($editor.next().hasClass('note-editor')) {
+                    // Handle case where editor wrapper is a sibling
+                    $editor.next('.note-editor').remove();
+                    $editor.val('');
                 }
+                
+                // Remove any remaining note-editor wrappers
+                $(this).siblings('.note-editor').remove();
+                $(this).parent('.note-editor').children('textarea').unwrap();
                 
                 // Generate new unique ID for cloned editor
                 const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 this.id = newId;
                 this.value = ''; // Clear content
+                
+                // Remove any Summernote classes
+                $(this).removeClass('note-editor note-frame note-airframe');
             });
             
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
@@ -792,7 +807,6 @@
             const assessmentType = document.getElementById('assessment_type').value.trim();
             let errorMsg = '';
             if (!reportTitle) errorMsg += 'กรุณากรอกชื่อเกณฑ์\n';
-            if (!reportDescription) errorMsg += 'กรุณากรอกรายละเอียดเกณฑ์\n';
             if (!assessmentType) errorMsg += 'กรุณาเลือกประเภทการประเมิน\n';
             if (errorMsg) {
                 showValidationErrorModal(errorMsg.replace(/\n/g, '<br>'));
@@ -1186,7 +1200,7 @@
             // ไม่ต้องตรวจสอบ version_name เพราะจะ generate อัตโนมัติ
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
-            if (!reportTitle || !reportDescription) {
+            if (!reportTitle) {
                 //alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
                 return;
             }
@@ -1213,7 +1227,7 @@
             const assessmentType = rd.querySelector('.assessment_type').value || null;
             finalData.report_datas.push({
                 report_title: reportTitle,
-                report_description: reportDescription,
+                report_description: reportDescription || null ,
                 assessment_type: assessmentType,
                 comment: rd.querySelector('.comment').value || null
             });
@@ -1271,7 +1285,7 @@
                                     ? $(tooltipsTextarea).summernote('code') 
                                     : tooltipsTextarea.value.trim();
                                 const quantFormula = qMain.querySelector('.quant_formula')?.value.trim() || '';
-                                if (!quantName || !quantTooltips) {
+                                if (!quantName) {
                                     // alert(
                                     //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                     // );
@@ -1281,7 +1295,7 @@
 
                                 let quantMain = {
                                     name: quantName,
-                                    tooltips: quantTooltips,
+                                    tooltips: quantTooltips || null,
                                     description: qMain.querySelector('.quant_description')?.value.trim() || '',
                                     sequence: Number(qMain.querySelector(
                                         '.quant_main_sequence').textContent),
@@ -1344,7 +1358,7 @@
                             let qualMain = {
                                 name: qualName,
                                 ratio: Number(qualRatio),
-                                tooltips: qualTooltips,
+                                tooltips: qualTooltips || null,
                                 sequence: Number(qMain.querySelector(
                                     '.qual_main_sequence').textContent),
                                 quality_sub_criterias: []

@@ -19,6 +19,8 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Spatie\Permission\Models\Role;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 
 class UserController extends Controller
 {
@@ -198,36 +200,119 @@ class UserController extends Controller
             ],
         ];
 
+        $options = [
+            ['สาขาวิชา', 'ตำแหน่ง', 'ประเภทบุคลากร', 'สถานะ', 'บทบาท'],
+            ['สำนักงานเลขานุการ', 'คณบดี', 'วิชาการ', 'active', 'admin'],
+            ['กลุ่มงานบริหาร', 'รองคณบดีฝ่ายบริหารและแผน', 'สนับสนุน', 'inactive', 'ผู้บริหาร'],
+            ['กลุ่มงานนโยบายแผนและคลัง', 'รองคณบดีฝ่ายวิชาการและนวัตกรรมการเรียนรู้', '', '', 'ผู้ประเมิน'],
+            ['กลุ่มงานวิชาการและพัฒนานิสิต', 'รองคณบดีฝ่ายวิจัยและประกันคุณภาพ', '', '', 'ผู้รับการประเมิน'],
+            ['ศูนย์บริการวิชาการ', 'รองคณบดีฝ่ายพัฒนานิสิตและบัณฑิตศึกษา', '', '', 'กรรมการ'],
+            ['สาธารณสุขศาสตรบัณฑิต', 'รองคณบดีฝ่ายเทคโนโลยีสารสนเทศและโครงสร้างพื้นฐาน', '', '', ''],
+            ['สาขาอนามัยสิ่งแวดล้อม', 'ผู้ช่วยคณบดีฝ่ายวิเทศสัมพันธ์', '', '', ''],
+            ['สาขาโภชนาการและการกำหนดอาหาร', 'ผู้ช่วยคณบดีฝ่ายกิจการพิเศษและภาพลักษณ์องค์กร', '', '', ''],
+            ['สาขาอาชีวอนามัยและความปลอดภัย', 'หัวหน้าสำนักงานเลขานุการ', '', '', ''],
+            ['สาธารณสุขศาสตรมหาบัณฑิต', 'หัวหน้ากลุ่มงานบริหาร', '', '', ''],
+            ['วิทยาศาสตรมหาบัณฑิต สาขาเทคโนโลยีทางสุขภาพและความปลอดภัย', 'หัวหน้ากลุ่มงานนโยบายแผนและคลัง', '', '', ''],
+            ['สาธารณสุขศาสตรดุษฎีบัณฑิต', 'หัวหน้ากลุ่มงานวิชาการและพัฒนานิสิต', '', '', ''],
+            ['ปรัชญาดุษฎีบัณฑิต สาขาเทคโนโลยีทางสุขภาพและความปลอดภัย', 'ผู้อำนวยการศูนย์บริการวิชาการ', '', '', ''],
+            ['','หัวหน้ากลุ่มงานบริการวิชาการ', '', '', ''],
+            ['', 'หัวหน้าสาขาอนามัยสิ่งแวดล้อม', '', '', ''],
+            ['', 'หัวหน้าสาขาโภชนาการและการกำหนดอาหาร', '', '', ''],
+            ['', 'หัวหน้าสาขาอาชีวอนามัยและความปลอดภัย', '', '', ''],
+            ['', 'หัวหน้าสาขาเทคโนโลยีทางสุขภาพและความปลอดภัย', '', '', ''],
+            ['', 'อาจารย์', '', '', ''],
+            ['', 'เจ้าหน้าที่', '', '', ''],
+        ];
+
         return Excel::download(
-            new class($sampleData, $headers) implements FromArray, WithHeadings, WithStyles
+            new class($sampleData, $headers, $options) implements WithMultipleSheets
             {
                 private $data;
-
                 private $headers;
+                private $options;
 
-                public function __construct($data, $headers)
+                public function __construct($data, $headers, $options)
                 {
                     $this->data = $data;
                     $this->headers = $headers;
+                    $this->options = $options;
                 }
 
-                public function array(): array
+                public function sheets(): array
                 {
-                    return $this->data;
-                }
+                    return [
+                        // Sheet 1: Template with sample users
+                        new class($this->data, $this->headers) implements FromArray, WithHeadings, WithStyles, WithColumnWidths  {
+                            private $data;
+                            private $headers;
 
-                public function headings(): array
-                {
-                    return array_values($this->headers);
-                }
+                            public function __construct($data, $headers)
+                            {
+                                $this->data = $data;
+                                $this->headers = $headers;
+                            }
 
-                public function styles(Worksheet $sheet)
-                {
-                    // Apply "TH Sarabun New" font to the entire sheet
-                    $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                            public function array(): array
+                            {
+                                return $this->data;
+                            }
 
-                    // Make the header row bold
-                    $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+                            public function headings(): array
+                            {
+                                return array_values($this->headers);
+                            }
+
+                            public function styles(Worksheet $sheet)
+                            {
+                                $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                                $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+                            }
+
+                            public function columnWidths(): array
+                            {
+                                return [
+                                    'B' => 25,
+                                    'C' => 12,
+                                    'D' => 30,
+                                    'E' => 25,
+                                    'G' => 22,
+                                    'H' => 15,
+                                    'I' => 25,
+                                ];
+                            }
+                        },
+
+                        // Sheet 2: Options list
+                        new class($this->options) implements FromArray, WithStyles, WithColumnWidths  {
+                            private $options;
+
+                            public function __construct($options)
+                            {
+                                $this->options = $options;
+                            }
+
+                            public function array(): array
+                            {
+                                return $this->options;
+                            }
+
+                            public function styles(Worksheet $sheet)
+                            {
+                                $sheet->setTitle('ตัวเลือก');
+                                $sheet->getStyle('A1:E100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                                $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+                            }
+
+                            public function columnWidths(): array
+                            {
+                                return [
+                                    'A' => 30,
+                                    'B' => 30,
+                                    'E' => 15,
+                                ];
+                            }
+                        },
+                    ];
                 }
             },
             'user_import_template.xlsx'

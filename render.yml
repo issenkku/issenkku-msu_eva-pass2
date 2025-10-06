@@ -1,0 +1,55 @@
+databases:
+  - name: laravel-db
+    databaseName: laravel_app
+    user: laravel_user
+    plan: free
+
+services:
+  - type: web
+    name: laravel-app
+    runtime: docker
+    repo: https://github.com/yourusername/your-repo.git # Replace with your repo
+    branch: main
+    dockerfilePath: ./docker/php/Dockerfile
+    numInstances: 1
+    plan: free
+    buildCommand: ""
+    startCommand: "/usr/local/bin/start.sh"
+    healthCheckPath: "/"
+    envVars:
+      - key: APP_NAME
+        value: LaravelApp
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://laravel-app.onrender.com # Replace with your actual URL
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: laravel-db
+          property: connectionString
+      - key: SESSION_DRIVER
+        value: file
+      - key: SESSION_LIFETIME
+        value: 120
+      - key: CACHE_DRIVER
+        value: file
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: hello@example.com
+      - key: MAIL_FROM_NAME
+        value: LaravelApp

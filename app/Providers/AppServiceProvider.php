@@ -6,6 +6,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\View;
+use Illuminate\Routing\UrlGenerator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(UrlGenerator $url): void
     {
         Paginator::useBootstrapFive();
 
@@ -28,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
             View::composer('*', function ($view) {
                 $view->with('skipVite', true);
             });
+        }
+
+        if (env('APP_ENV') == 'production') {
+            $url->forceScheme('https');
         }
     }
 }
