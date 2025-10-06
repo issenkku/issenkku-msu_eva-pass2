@@ -484,11 +484,11 @@
                                 <a class="nav-link text-white" href="/evaluator-dashboard">หน้าตรวจประเมิน</a>
                             </li>
                         @endif
-                        @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
+                        {{-- @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าตรวจประเมิน</a>
                             </li>
-                        @endif
+                        @endif --}}
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/director-dashboard">หน้าการรับรอง</a>
