@@ -12,7 +12,14 @@ class FileExportController extends Controller
 {
     public function exportDashboard(Request $request)
     {
-        $query = $this->filteredAssignmentsQuery($request);
+        $user = $request->user();
+
+        // Directors/Managers/Admins should export from the full dataset
+        if ($user && method_exists($user, 'hasAnyRole') && $user->hasAnyRole(['admin', 'ผู้บริหาร', 'กรรมการ'])) {
+            $query = $this->adminFilteredAssignmentsQuery($request);
+        } else {
+            $query = $this->filteredAssignmentsQuery($request);
+        }
 
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
@@ -90,6 +97,12 @@ class FileExportController extends Controller
         }
         if ($request->filled('end_time')) {
             $query->whereHas('assignmentData', fn ($q) => $q->where('end_time', '<=', $request->input('end_time')));
+        }
+
+        // Department filter (if provided)
+        if ($request->has('department_name') && $request->input('department_name') !== '') {
+            $department_name = $request->input('department_name');
+            $query->whereHas('evaluateeUser.department', fn ($q) => $q->whereRaw('LOWER(department_name) = ?', [strtolower($department_name)]));
         }
 
         return $query;

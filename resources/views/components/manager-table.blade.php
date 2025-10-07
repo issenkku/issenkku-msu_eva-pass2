@@ -272,7 +272,7 @@
                                         </a>
 
                                         @if($status === 'ประเมินเสร็จสิ้น')
-                                            <a href="{{ route('export.reports', ['id' => $report->id ?? 0]) }}"
+                                            <a href="{{ route('single.reports.export', ['id' => $report->id ?? 0]) }}"
                                             class="p-2 bg-green-400 hover:bg-green-500 text-white rounded-md shadow transition duration-200"
                                             title="ส่งออกรายงานผลการประเมินของ {{ $evaluatee->name ?? 'บุคคล' }}">
                                                 <i class="fas fa-file-export"></i>
