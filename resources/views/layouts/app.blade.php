@@ -5,7 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ระบบประเมินบุคลากร</title>
-    <link rel="icon" href="{{ asset('favicon-msu.png') }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('favicon-msu.png') }}?v=1" type="image/png" sizes="32x32">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-msu.png') }}?v=1">
+    <link rel="shortcut icon" href="{{ asset('favicon-msu.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('favicon-msu.png') }}?v=1">
     @vite(['resources/js/app.ts'])
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
