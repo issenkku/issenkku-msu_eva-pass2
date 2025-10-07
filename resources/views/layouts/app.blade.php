@@ -518,7 +518,7 @@
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
                                 <li><a class="dropdown-item" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a></li>
                                 <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a></li>
-                                <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li>
+                                {{-- <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li> --}}
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
