@@ -79,11 +79,25 @@ class UserController extends Controller
 
             // Start database transaction
             DB::beginTransaction();
-            $import = new UsersImport;
+            $import = new UsersImport();
             Excel::import($import, $request->file('import_file'));
             DB::commit();
 
-            return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
+            if (method_exists($import, 'stats')) {
+                $stats = $import->stats();
+                $total = ($stats['created'] ?? 0) + ($stats['updated'] ?? 0);
+                if ($total === 0) {
+                    return redirect()->route('users.index')
+                        ->with('warning', 'นำเข้าเสร็จแล้ว แต่ไม่มีรายการที่ถูกต้อง จึงไม่ได้เพิ่ม/อัปเดตข้อมูล')
+                        ->with('import_stats', $stats);
+                }
+
+                return redirect()->route('users.index')
+                    ->with('success', "นำเข้าสำเร็จ: เพิ่ม {$stats['created']} รายการ, อัปเดต {$stats['updated']} รายการ, ข้าม {$stats['skipped']} รายการ")
+                    ->with('import_stats', $stats);
+            }
+
+            return redirect()->route('users.index')->with('success', 'นำเข้าข้อมูลผู้ใช้สำเร็จ');
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             DB::rollBack();
             Log::error('Excel validation error', ['errors' => $e->errors()]);
