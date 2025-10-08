@@ -6,17 +6,16 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Inertia\Inertia;
-use Inertia\Response;
 
 class PasswordResetLinkController extends Controller
 {
     /**
      * Show the password reset link request page.
      */
-    public function create(Request $request): Response
+    public function create(Request $request)
     {
-        return Inertia::render('auth/ForgotPassword', [
+        // Serve a Blade fallback to avoid blank page when Vite/Inertia assets are unavailable
+        return view('user.management.forgotPassword', [
             'status' => $request->session()->get('status'),
         ]);
     }
@@ -36,6 +35,7 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return back()->with('status', __('ระบบได้ส่งลิงก์สำหรับรีเซ็ตรหัสผ่านเรียบร้อย'));
+        return back()->with('status', __('เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว'));
     }
 }
+
