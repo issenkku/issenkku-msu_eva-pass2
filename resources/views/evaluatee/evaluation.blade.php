@@ -268,6 +268,82 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!openModalBtn || !confirmationModal) {
         return;
     }
+
+    function validateForm(isSubmit = false) {
+        const errors = [];
+        
+        // Get all quantity inputs
+        const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_C]"]');
+        
+        quantityInputs.forEach(input => {
+            const value = input.value.trim();
+            if (value !== '') {
+                const numValue = parseFloat(value);
+                if (isNaN(numValue) || numValue < 0) {
+                    errors.push('คะแนนด้านปริมาณต้องเป็นตัวเลขที่ไม่ติดลบ');
+                }
+            }
+        });
+        
+        // Get all quality inputs
+        const qualityInputs = document.querySelectorAll('input[name^="quality_list"][name$="[score]"]');
+        
+        qualityInputs.forEach(input => {
+            const value = input.value.trim();
+            if (value !== '') {
+                const numValue = parseFloat(value);
+                if (isNaN(numValue) || numValue < 0) {
+                    errors.push('คะแนนด้านคุณภาพต้องเป็นตัวเลขที่ไม่ติดลบ');
+                }
+            }
+        });
+        
+        // Validate evidence links (if any)
+        const evidenceInputs = document.querySelectorAll('input[name^="evidence_list"][name$="[links][]"]');
+        evidenceInputs.forEach(input => {
+            const value = input.value.trim();
+            if (value !== '' && !isValidUrl(value)) {
+                errors.push('ลิงก์หลักฐานไม่ถูกต้อง กรุณาตรวจสอบ URL');
+            }
+        });
+        
+        return errors;
+    }
+
+    function showValidationErrors(errors) {
+        // Remove existing error alerts
+        const existingAlert = document.querySelector('.validation-error-alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        
+        if (errors.length === 0) return;
+        
+        // Create error alert
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'validation-error-alert bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+        errorDiv.setAttribute('role', 'alert');
+        
+        const errorList = document.createElement('ul');
+        errorList.className = 'list-disc list-inside';
+        
+        // Remove duplicates
+        const uniqueErrors = [...new Set(errors)];
+        
+        uniqueErrors.forEach(error => {
+            const li = document.createElement('li');
+            li.textContent = error;
+            errorList.appendChild(li);
+        });
+        
+        errorDiv.appendChild(errorList);
+        
+        // Insert after form opening tag
+        evaluationForm.insertBefore(errorDiv, evaluationForm.firstChild);
+        
+        // Scroll to error
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
     
     // ===== Modal Animation Functions =====
     function openModal(modal, content) {
@@ -299,7 +375,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== Event Listeners =====
     
     // เปิด confirmation modal
-    openModalBtn.addEventListener('click', () => {
+    evaluationForm.addEventListener('submit', function(e) {
+        const status = document.getElementById('formStatus').value;
+        
+        if (status === 'Draft') {
+            // For draft, just do basic validation
+            const errors = validateForm(false);
+            if (errors.length > 0) {
+                e.preventDefault();
+                showValidationErrors(errors);
+                hideLoading();
+            }
+        }
+    });
+    
+    openModalBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        const errors = validateForm(true);
+        
+        if (errors.length > 0) {
+            showValidationErrors(errors);
+            return;
+        }
+        
         openModal(confirmationModal, modalContent);
     });
 
@@ -328,6 +427,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // ส่งฟอร์มแบบปกติ
             evaluationForm.submit();
         }, 350);
+    });
+
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (!isNaN(value) && value < 0) {
+                this.setCustomValidity('คะแนนต้องไม่ติดลบ');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
     });
 });
 </script>

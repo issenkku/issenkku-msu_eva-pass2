@@ -53,6 +53,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/import', [UserController::class, 'import'])->name('import');
         Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
+        Route::post('/check-unique', [UserController::class, 'checkUnique'])->name('users.check-unique');
     });
 
     Route::group(['middleware' => ['auth']], function () {
@@ -182,8 +183,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
         // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
         Auth::logout();
-
-        return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 
         return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 
