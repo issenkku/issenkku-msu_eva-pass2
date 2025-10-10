@@ -62,7 +62,8 @@ class AssignmentDataController extends Controller
         });
 
         if ($validator->fails()) {
-            return redirect()->route('assignment-data.create')
+            return redirect()
+                ->route('assignment-data.create')
                 ->withErrors($validator)
                 ->withInput();
         }
@@ -117,13 +118,15 @@ class AssignmentDataController extends Controller
             return redirect()->route('assignment-data.index')->with('success', 'สร้าง Assignment สำเร็จแล้ว');
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Error storing assignment data', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'request_data' => $request->all(),
             ]);
 
-            return redirect()->route('assignment-data.create')
+            return redirect()
+                ->route('assignment-data.create')
                 ->withErrors(['store_error' => $e->getMessage()])
                 ->withInput();
         }
@@ -244,6 +247,7 @@ class AssignmentDataController extends Controller
             return redirect()->route('assignment-data.index')->with('success', 'แก้ไขรอบการประเมินเรียบร้อยแล้ว');
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Error updating assignment data', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),

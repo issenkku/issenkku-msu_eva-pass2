@@ -141,7 +141,9 @@
                                                             'จัดการผู้ใช้' => 'bg-green-100 text-green-800',
                                                             'การเข้าใช้งาน' => 'bg-blue-100 text-blue-800',
                                                             'การประเมิน' => 'bg-yellow-100 text-yellow-800',
-                                                            'จัดการรอบการประเมิน' => 'bg-orange-100 text-orange-800'
+                                                            'จัดการรอบการประเมิน' => 'bg-orange-100 text-orange-800',
+                                                            'จัดการตำแหน่งงาน' => 'bg-purple-100 text-purple-800',
+                                                            'จัดการหน่วยงาน' => 'bg-pink-100 text-pink-800',
                                                         ];
 
                                                         // Normalize key to lowercase to match your data

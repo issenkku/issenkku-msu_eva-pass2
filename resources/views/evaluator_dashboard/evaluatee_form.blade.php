@@ -6,7 +6,7 @@
         </script>
     @endif --}}
 
-    <form id="approve_eva" action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
+    <form action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -274,8 +274,7 @@
                     <h3>ความคิดเห็นเพิ่มเติม</h3>
                 </div>
                 <div class="card-body">
-                    <textarea name="comment" rows="4" class="score-input" placeholder="ระบุความคิดเห็นเพิ่มเติมที่นี่..."
-                        style="width: 100%; resize: vertical;">{{ old('comment', $assignment->report->comment ?? '') }}</textarea>
+                    <textarea id="summernote" name="comment" style="min-height: 150px;">{{ old('comment', $assignment->report->comment ?? '') }}</textarea>
                 </div>
             </div>
 
@@ -380,11 +379,15 @@
         }
 
         function confirmSubmit() {
-            // 1. ตรวจสอบคะแนนเหมือนเดิม
+            // เก็บ input ที่เป็นคะแนนทั้งหมด
             const scoreInputs = document.querySelectorAll('.score-input[type="number"]');
             let emptyFound = false;
+
+            // ตรวจสอบว่า input ตัวเลขช่องใดว่างหรือไม่
             scoreInputs.forEach(input => {
-                if (input.value === '' || input.value === null) {
+                // ตรวจเฉพาะช่องที่ไม่ได้ disabled และไม่ได้ hidden
+                if (!input.disabled && input.offsetParent !== null && (input.value === '' || input.value ===
+                        null)) {
                     emptyFound = true;
                 }
             });
@@ -906,6 +909,33 @@
 
         .is-invalid {
             border-color: #dc3545;
+        }
+
+        .secondary {
+            background-color: #6b7280;
+            color: #111827;
+        }
+
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+
+        .primary {
+            background-color: #2563eb;
+            color: #111827;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+        }
+
+        .warning {
+            background-color: #facc15;
+            color: #111827;
+        }
+
+        .btn-warning:hover {
+            background-color: #fbbf24;
         }
     </style>
 @endsection

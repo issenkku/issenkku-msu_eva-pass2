@@ -62,7 +62,7 @@ class EvaluationScoreController extends Controller
                 'quantity_list' => 'nullable|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
-                'quantity_list.*.description' => 'nullable|string|max:1000',
+                'quantity_list.*.description' => 'nullable|string',
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
@@ -97,7 +97,7 @@ class EvaluationScoreController extends Controller
                     $scoreC = $item['score_C'] ?? null;
                     $description = $item['description'] ?? null;
 
-                    if ($scoreC === null) {
+                    if ($scoreC === null && empty(trim($description ?? ''))) {
                         continue;
                     }
 

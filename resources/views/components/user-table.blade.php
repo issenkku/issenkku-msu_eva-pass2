@@ -12,6 +12,7 @@
     $typeClass = match ($employee['type']) {
         'สนับสนุน' => 'bg-green-200 text-green-800',
         'วิชาการ' => 'bg-yellow-200 text-yellow-800',
+        'บริหาร' => 'bg-blue-200 text-blue-800',
         default => '',
     };
 @endphp

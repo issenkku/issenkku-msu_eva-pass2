@@ -95,6 +95,7 @@
                                 <option value="" disabled selected hidden>--เลือกประเภทบุคลากร--</option>
                                 <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type ?? '') == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                                 <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type ?? '') == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
+                                <option value="บริหาร" {{ old('personnel_type', $user->personnel_type ?? '') == 'บริหาร' ? 'selected' : '' }}>บริหาร</option>
                             </select>
                             <div class="text-red-500 text-sm mt-1 hidden" id="personnel_typeError">กรุณาเลือกประเภทบุคลากร</div>
                         </div>

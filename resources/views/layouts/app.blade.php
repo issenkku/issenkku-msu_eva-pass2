@@ -5,7 +5,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ระบบประเมินบุคลากร</title>
-    <link rel="icon" href="{{ asset('favicon-msu.png') }}" type="image/png" sizes="32x32">
+    <link rel="icon" href="{{ asset('favicon-msu.png') }}?v=1" type="image/png" sizes="32x32">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-msu.png') }}?v=1">
+    <link rel="shortcut icon" href="{{ asset('favicon-msu.png') }}?v=1">
+    <link rel="apple-touch-icon" href="{{ asset('favicon-msu.png') }}?v=1">
     @vite(['resources/js/app.ts'])
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -484,6 +487,11 @@
                                 <a class="nav-link text-white" href="/evaluator-dashboard">หน้าตรวจประเมิน</a>
                             </li>
                         @endif
+                        {{-- @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
+                            <li class="nav-item">
+                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าตรวจประเมิน</a>
+                            </li>
+                        @endif --}}
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                             <li class="nav-item">
                                 <a class="nav-link text-white" href="/director-dashboard">หน้าการรับรอง</a>
@@ -513,7 +521,7 @@
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
                                 <li><a class="dropdown-item" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a></li>
                                 <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a></li>
-                                <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li>
+                                {{-- <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li> --}}
                             </ul>
                         </li>
                         <li class="nav-item dropdown">

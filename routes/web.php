@@ -185,8 +185,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
         return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 
-        return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
-
     })->name('home'); // ตั้งชื่อ route นี้ว่า 'home'
 
 });
