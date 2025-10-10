@@ -453,3 +453,126 @@ document.getElementById('phone').addEventListener('input', function (e) {
 </script>
 
 
+<!-- Safe overrides to prevent encoding-related JS errors and align form behavior -->
+<script>
+(function() {
+  function setModalTitle(modal, title) {
+    const modalTitle = modal.querySelector('h2');
+    if (modalTitle) modalTitle.textContent = title;
+  }
+
+  window.openCreateModal = function(button) {
+    const modal = document.getElementById('userModal');
+    const form = document.getElementById('userForm');
+
+    form.reset();
+
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+      roleSelect.value = '';
+    }
+
+    const action = button.getAttribute('data-action');
+    form.action = action || form.action;
+
+    document.getElementById('formMethod').value = 'POST';
+
+    const panel = document.getElementById('passwordPanel');
+    if (panel) panel.style.display = 'block';
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+      passwordInput.required = true;
+      passwordInput.placeholder = '';
+      passwordInput.value = '';
+    }
+
+    setModalTitle(modal, 'Create User');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  };
+
+  window.openEditModal = function(user) {
+    const modal = document.getElementById('userModal');
+    const form = document.getElementById('userForm');
+
+    form.action = `/users/${user.id}`;
+    document.getElementById('formMethod').value = 'PUT';
+
+    setModalTitle(modal, 'Edit User');
+
+    const textFields = ['name', 'employee_id', 'email', 'phone', 'bio'];
+    textFields.forEach(field => {
+      const el = document.getElementById(field);
+      if (el && user[field] !== undefined) el.value = user[field] || '';
+    });
+
+    const selects = [
+      { id: 'prefix', value: user.prefix },
+      { id: 'department_id', value: user.department_id },
+      { id: 'position_id', value: user.position_id },
+      { id: 'personnel_type', value: user.personnel_type },
+      { id: 'status', value: user.status }
+    ];
+    selects.forEach(s => {
+      const el = document.getElementById(s.id);
+      if (el && s.value !== undefined) {
+        el.value = s.value || '';
+        el.dispatchEvent(new Event('change'));
+      }
+    });
+
+    const panel = document.getElementById('passwordPanel');
+    if (panel) panel.style.display = 'none';
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+      passwordInput.required = false;
+      passwordInput.value = '';
+    }
+
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) {
+      if (user.roles && user.roles.length > 0) {
+        roleSelect.value = user.roles[0].name;
+        roleSelect.dispatchEvent(new Event('change'));
+      } else {
+        roleSelect.value = '';
+      }
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  };
+
+  window.closeModal = function() {
+    const modal = document.getElementById('userModal');
+    const form = document.getElementById('userForm');
+
+    setModalTitle(modal, 'Create User');
+    form.reset();
+
+    const passwordInput = document.getElementById('password');
+    if (passwordInput) {
+      passwordInput.required = true;
+      passwordInput.placeholder = '';
+    }
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Make role optional to match backend validation
+    const roleSelect = document.getElementById('role');
+    if (roleSelect) roleSelect.removeAttribute('required');
+
+    // Auto-open modal if server validation has errors
+    if ({{ $errors->any() ? 'true' : 'false' }}) {
+      const modal = document.getElementById('userModal');
+      if (modal) {
+        setModalTitle(modal, 'Create User');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+  });
+})();
+</script>

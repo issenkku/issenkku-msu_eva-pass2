@@ -13,19 +13,13 @@ use Spatie\Permission\Models\Role;
 
 class UsersImport implements ToCollection
 {
-    public int $created = 0;
-    public int $updated = 0;
-    public int $skipped = 0;
-    public array $messages = [];
-
     public function collection(Collection $rows)
     {
-        foreach ($rows as $index => $row) {
+        foreach ($rows->skip(1) as $index => $row) {
             try {
                 $rowArray = $row->toArray();
 
                 if ($this->isEmptyRow($rowArray)) {
-                    $this->skipped++;
                     continue;
                 }
 
@@ -48,7 +42,6 @@ class UsersImport implements ToCollection
 
                 // Validate required fields
                 if (! $this->validateRequiredFields($mappedData, $index)) {
-                    $this->skipped++;
                     continue;
                 }
 
@@ -102,11 +95,9 @@ class UsersImport implements ToCollection
                     $existingUser->update($userData);
                     $user = $existingUser;
                     Log::info('Updated user: '.$mappedData['employee_id']);
-                    $this->updated++;
                 } else {
                     $user = User::create($userData);
                     Log::info('Created user: '.$mappedData['employee_id']);
-                    $this->created++;
                 }
 
                 // Handle role assignment
@@ -122,21 +113,10 @@ class UsersImport implements ToCollection
                     'row_data' => $row->toArray(),
                     'error' => $e->getTraceAsString(),
                 ]);
-                $this->skipped++;
-                $this->messages[] = 'Row '.($index + 2).': '.$e->getMessage();
+
                 continue;
             }
         }
-    }
-
-    public function stats(): array
-    {
-        return [
-            'created' => $this->created,
-            'updated' => $this->updated,
-            'skipped' => $this->skipped,
-            'messages' => $this->messages,
-        ];
     }
 
     /**
@@ -162,7 +142,6 @@ class UsersImport implements ToCollection
                     'field_value' => $data[$field] ?? 'null',
                     'all_data' => $data,
                 ]);
-                $this->messages[] = 'Row '.($index + 2).": missing required '{$field}'";
 
                 return false;
             }
