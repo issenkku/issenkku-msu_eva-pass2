@@ -1162,7 +1162,7 @@ class ReportStructureRealSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'name' => '(3) คุณภาพสื่อการเรียนการสอน',
+                'name' => '(3) การประเมินผลและการวัดผล',
                 'sequence' => 3,
                 'num_score' => 1.20,
                 'description' => '<p>มีครบ 2 ข้อได้ 1.2
@@ -2463,7 +2463,7 @@ class ReportStructureRealSeeder extends Seeder
                 'name' => '2.1 ตำรา/ หนังสือ (1 วิชาใช้ได้ 2 ปีงบประมาณ)',
                 'sequence' => 1,
                 'num_score' => 0.40,
-                'description' => '<p style="<p>มี peer review 
+                'description' => '<p>มี peer review 
                                     ได้ 0.4
 </p><p>                                    ไม่มี peer review 
                                     ได้ 0.2
