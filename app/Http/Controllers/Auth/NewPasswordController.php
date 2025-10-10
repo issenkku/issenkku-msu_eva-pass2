@@ -19,9 +19,10 @@ class NewPasswordController extends Controller
     /**
      * Show the password reset page.
      */
-    public function create(Request $request): Response
+    public function create(Request $request)
     {
-        return Inertia::render('auth/ResetPassword', [
+        // Use a Blade fallback to avoid blank page when Vite/Inertia assets are unavailable
+        return view('user.management.resetPassword', [
             'email' => $request->email,
             'token' => $request->route('token'),
         ]);

@@ -369,13 +369,7 @@
                                     จัดการผู้ใช้
                                 </a>
                             </li>
-                            {{-- <li>
-                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('quality-scores.*') ? 'fw-bold' : '' }}"
-                                    href="{{ route('quality-scores.index') }}">
-                                    <i class="fas fa-star me-2 text-gray"></i>
-                                    คะแนนคุณภาพ
-                                </a>
-                            </li> --}}
+                     
                             <li>
                                 <a class="dropdown-item dropdown-item-custom" href="#">
                                     <i class="fas fa-tools me-2 text-gray"></i>

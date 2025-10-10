@@ -628,10 +628,10 @@
                         <i class="fas fa-tasks" style="width: 20px; margin-right: 10px;"></i>
                         จัดการรอบการประเมิน
                     </a>
-                    <a href="{{ route('quality-scores.index') }}" class="mobile-nav-item">
+                    {{-- <a href="{{ route('quality-scores.index') }}" class="mobile-nav-item">
                         <i class="fas fa-star" style="width: 20px; margin-right: 10px;"></i>
                         คะแนนคุณภาพ
-                    </a>
+                    </a> --}}
                     
                     <!-- Settings Dropdown for Mobile -->
                     <div class="mobile-dropdown" id="settingsDropdown">
