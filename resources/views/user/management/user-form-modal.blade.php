@@ -193,24 +193,22 @@
 </div>
 
 <script>
+// Replace the existing script section in your user modal
+
 function openCreateModal(button) {
     const modal = document.getElementById('userModal');
     const form = document.getElementById('userForm');
 
-    // Reset the form
     form.reset();
 
-    // Reset role dropdown
     const roleSelect = document.getElementById('role');
     if (roleSelect) {
         roleSelect.value = '';
     }
 
-    // Use route from data attribute
     const action = button.getAttribute('data-action');
     form.action = action;
 
-    // Set form method to POST
     document.getElementById('formMethod').value = "POST";
 
     document.getElementById('passwordPanel').style.display = 'block';
@@ -218,44 +216,43 @@ function openCreateModal(button) {
     passwordInput.required = true;
     passwordInput.placeholder = '';
 
-    // Reset modal title
     const modalTitle = modal.querySelector('h2');
     if (modalTitle) {
         modalTitle.textContent = 'เพิ่มเจ้าหน้าที่ใหม่';
     }
 
-    // Show the modal
+    // Clear current user ID
+    form.removeAttribute('data-user-id');
+
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
 function openEditModal(user) {
-    console.log('Opening edit modal with user data:', user); // Debug log
+    console.log('Opening edit modal with user data:', user);
     
     const modal = document.getElementById('userModal');
     const form = document.getElementById('userForm');
 
-    // Set form action to update route
     form.action = `/users/${user.id}`;
     document.getElementById('formMethod').value = "PUT";
 
-    // Update modal title
+    // Store current user ID for validation
+    form.setAttribute('data-user-id', user.id);
+
     const modalTitle = modal.querySelector('h2');
     if (modalTitle) {
         modalTitle.textContent = 'แก้ไขข้อมูลเจ้าหน้าที่';
     }
 
-    // Populate text inputs
     const textFields = ['name', 'employee_id', 'email', 'phone', 'bio'];
     textFields.forEach(field => {
         const element = document.getElementById(field);
         if (element && user[field] !== undefined) {
             element.value = user[field] || '';
-            console.log(`Set ${field} to:`, user[field]); // Debug log
         }
     });
 
-    // Populate select dropdowns
     const selectFields = [
         { id: 'prefix', value: user.prefix },
         { id: 'department_id', value: user.department_id },
@@ -268,9 +265,6 @@ function openEditModal(user) {
         const element = document.getElementById(field.id);
         if (element && field.value !== undefined) {
             element.value = field.value || '';
-            console.log(`Set ${field.id} to:`, field.value); // Debug log
-            
-            // Trigger change event in case there are dependent dropdowns
             element.dispatchEvent(new Event('change'));
         }
     });
@@ -289,7 +283,6 @@ function openEditModal(user) {
         roleSelect.value = '';
     }
 
-    // Show the modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
@@ -299,20 +292,21 @@ function closeModal() {
     const modalTitle = modal.querySelector('h2');
     const form = document.getElementById('userForm');
     
-    // Reset modal title
     if (modalTitle) {
         modalTitle.textContent = 'เพิ่มเจ้าหน้าที่ใหม่';
     }
     
-    // Reset form
     form.reset();
+    form.removeAttribute('data-user-id');
     
-    // Reset password requirement
     const passwordInput = document.getElementById('password');
     if (passwordInput) {
         passwordInput.required = true;
         passwordInput.placeholder = '';
     }
+    
+    // Clear all error messages
+    document.querySelectorAll('[id$="Error"]').forEach(err => err.classList.add('hidden'));
     
     modal.classList.add('hidden');
     modal.classList.remove('flex');
@@ -323,7 +317,7 @@ function openModal() {
     document.getElementById('userModal').classList.add('flex');
 }
 
-// อัปเดตแสดงบทบาทที่เลือกทันทีเมื่อเปลี่ยน dropdown
+// Role selection display
 const roleSelect = document.getElementById('role');
 const currentRoleDisplay = document.getElementById('currentRoleDisplay');
 if (roleSelect && currentRoleDisplay) {
@@ -342,6 +336,11 @@ function showError(id, message) {
         errorDiv.textContent = message;
         errorDiv.classList.remove('hidden');
     }
+    
+    const input = document.getElementById(id);
+    if (input) {
+        input.classList.add('border-red-500');
+    }
 }
 
 function hideError(id) {
@@ -349,14 +348,92 @@ function hideError(id) {
     if (errorDiv) {
         errorDiv.classList.add('hidden');
     }
+    
+    const input = document.getElementById(id);
+    if (input) {
+        input.classList.remove('border-red-500');
+    }
 }
+
+// Debounce function to prevent excessive API calls
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Check if value is unique via AJAX
+async function checkUnique(field, value) {
+    const form = document.getElementById('userForm');
+    const userId = form.getAttribute('data-user-id'); // Get current user ID when editing
+    
+    if (!value || value.trim() === '') {
+        return { unique: true };
+    }
+
+    try {
+        const response = await fetch('/users/check-unique', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                field: field,
+                value: value,
+                user_id: userId // Pass user ID to exclude from check when editing
+            })
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error checking uniqueness:', error);
+        return { unique: true }; // Fail gracefully
+    }
+}
+
+// Validate unique fields with debouncing
+const validateUniqueField = debounce(async (id, fieldName, label) => {
+    const input = document.getElementById(id);
+    const value = input.value.trim();
+
+    if (!value) {
+        hideError(id);
+        return;
+    }
+
+    // Show loading state
+    const errorDiv = document.getElementById(id + 'Error');
+    if (errorDiv) {
+        errorDiv.textContent = 'กำลังตรวจสอบ...';
+        errorDiv.classList.remove('hidden', 'text-red-500');
+        errorDiv.classList.add('text-blue-500');
+    }
+
+    const result = await checkUnique(fieldName, value);
+
+    if (!result.unique) {
+        errorDiv.classList.remove('text-blue-500');
+        errorDiv.classList.add('text-red-500');
+        showError(id, `${label}นี้ถูกใช้งานแล้ว`);
+    } else {
+        hideError(id);
+    }
+}, 500); // Wait 500ms after user stops typing
 
 function validateField(id, type = 'text') {
     const input = document.getElementById(id);
     if (!input) return;
 
     const eventType = (type === 'select') ? 'change' : 'input';
-    input.addEventListener(eventType, () => {
+    input.addEventListener(eventType, async () => {
         const value = input.value.trim();
 
         // General required check
@@ -372,15 +449,27 @@ function validateField(id, type = 'text') {
                 showError(id, 'รูปแบบอีเมลไม่ถูกต้อง');
                 return;
             }
+            // Check uniqueness
+            validateUniqueField(id, 'email', 'อีเมล');
+            return;
         }
 
-        // Phone validation: must be 10 digits, formatted
+        // Phone validation
         if (id === 'phone') {
             const digits = value.replace(/\D/g, '');
             if (digits.length !== 10) {
                 showError(id, 'กรุณากรอกเบอร์โทร 10 หลัก');
                 return;
             }
+            // Check uniqueness
+            validateUniqueField(id, 'phone', 'เบอร์โทร');
+            return;
+        }
+
+        // Employee ID uniqueness check
+        if (id === 'employee_id') {
+            validateUniqueField(id, 'employee_id', 'รหัสพนักงาน');
+            return;
         }
 
         // Password length check
@@ -389,7 +478,6 @@ function validateField(id, type = 'text') {
             return;
         }
 
-        // If all checks pass, hide any error
         hideError(id);
     });
 }
@@ -401,9 +489,12 @@ document.addEventListener('DOMContentLoaded', () => {
     requiredTextFields.forEach(id => validateField(id, 'text'));
     requiredSelectFields.forEach(id => validateField(id, 'select'));
 
-    document.getElementById('userForm').addEventListener('submit', function (e) {
+    document.getElementById('userForm').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent immediate submission
+        
         let hasError = false;
 
+        // Check all required fields
         [...requiredTextFields, ...requiredSelectFields].forEach(id => {
             const input = document.getElementById(id);
             if (input && !input.value.trim()) {
@@ -411,12 +502,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 hasError = true;
             }
 
-            // Extra checks for email/phone
+            // Email format check
             if (id === 'email' && input && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value)) {
                 showError(id, 'รูปแบบอีเมลไม่ถูกต้อง');
                 hasError = true;
             }
 
+            // Phone format check
             if (id === 'phone' && input) {
                 const digits = input.value.replace(/\D/g, '');
                 if (digits.length !== 10) {
@@ -424,23 +516,49 @@ document.addEventListener('DOMContentLoaded', () => {
                     hasError = true;
                 }
             }
-
         });
 
-        if (hasError) e.preventDefault(); // Block form submit
+        if (hasError) {
+            return; // Stop if basic validation fails
+        }
+
+        // Check uniqueness for all three fields
+        const employeeIdCheck = await checkUnique('employee_id', document.getElementById('employee_id').value);
+        const emailCheck = await checkUnique('email', document.getElementById('email').value);
+        const phoneCheck = await checkUnique('phone', document.getElementById('phone').value.replace(/\D/g, ''));
+
+        if (!employeeIdCheck.unique) {
+            showError('employee_id', 'รหัสพนักงานนี้ถูกใช้งานแล้ว');
+            hasError = true;
+        }
+
+        if (!emailCheck.unique) {
+            showError('email', 'อีเมลนี้ถูกใช้งานแล้ว');
+            hasError = true;
+        }
+
+        if (!phoneCheck.unique) {
+            showError('phone', 'เบอร์โทรนี้ถูกใช้งานแล้ว');
+            hasError = true;
+        }
+
+        if (hasError) {
+            return; // Stop submission if uniqueness check fails
+        }
+
+        // If all checks pass, submit the form
+        this.submit();
     });
 });
 
+// Phone number formatting
 document.getElementById('phone').addEventListener('input', function (e) {
-    // Remove all non-digit characters
     let digits = this.value.replace(/\D/g, '');
 
-    // Limit to max 10 digits
     if (digits.length > 10) {
         digits = digits.slice(0, 10);
     }
 
-    // Apply formatting: xxx-xxx-xxxx
     let formatted = digits;
     if (digits.length > 6) {
         formatted = `${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}`;
@@ -450,7 +568,6 @@ document.getElementById('phone').addEventListener('input', function (e) {
 
     this.value = formatted;
 });
-
 </script>
 
 

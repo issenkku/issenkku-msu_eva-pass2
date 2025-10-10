@@ -53,6 +53,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/import', [UserController::class, 'import'])->name('import');
         Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
+        Route::post('/check-unique', [UserController::class, 'checkUnique'])->name('users.check-unique');
     });
 
     Route::group(['middleware' => ['auth']], function () {

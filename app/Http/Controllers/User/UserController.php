@@ -69,6 +69,43 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
     }
 
+    // Add this method to your UserController
+
+    public function checkUnique(Request $request)
+    {
+        $field = $request->input('field');
+        $value = $request->input('value');
+        $userId = $request->input('user_id'); // Exclude current user when editing
+
+        // Validate the field name to prevent SQL injection
+        $allowedFields = ['employee_id', 'email', 'phone'];
+        
+        if (!in_array($field, $allowedFields)) {
+            return response()->json(['error' => 'Invalid field'], 400);
+        }
+
+        // Clean phone number for comparison (remove dashes)
+        if ($field === 'phone') {
+            $value = preg_replace('/\D/', '', $value);
+        }
+
+        // Build query
+        $query = User::where($field, $value);
+
+        // Exclude current user when editing
+        if ($userId) {
+            $query->where('id', '!=', $userId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'unique' => !$exists,
+            'field' => $field,
+            'message' => $exists ? 'ข้อมูลนี้ถูกใช้งานแล้ว' : 'ข้อมูลสามารถใช้ได้'
+        ]);
+    }
+
     public function import(Request $request)
     {
         try {
