@@ -33,7 +33,7 @@
                     <h3 class="text-purple-600 font-semibold mb-2">ข้อมูลส่วนบุคคล</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block">คำนำหน้า</label>
+                            <label class="block">คำนำหน้า <span style="color: #dc3545;">*</span></label>
                             <select name="prefix" id="prefix" class="w-full border rounded px-3 py-2" required>
                                 <option value="" disabled selected hidden>--เลือกคำนำหน้า--</option>
                                 <option value="นาย" {{ old('prefix', $user->prefix ?? '') == 'นาย' ? 'selected' : '' }}>นาย</option>
@@ -43,17 +43,17 @@
                             <div class="text-red-500 text-sm mt-1 hidden" id="prefixError">กรุณาเลือกคำนำหน้า</div>
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block">ชื่อ-นามสกุล</label>
+                            <label class="block">ชื่อ-นามสกุล <span style="color: #dc3545;">*</span></label>
                             <input type="text" name="name" id="name" value="{{ old('name', $user->name ?? '') }}" class="w-full border rounded px-3 py-2" 
                                 placeholder="กรุณากรอกชื่อ-นามสกุล"
                                 required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อ</div>
                         </div>
                         <div class="md:col-span-3">
-                            <label class="block">รหัสพนักงาน</label>
+                            <label class="block">รหัสพนักงาน <span style="color: #dc3545;">*</span></label>
                             <input type="text" name="employee_id" id="employee_id" value="{{ old('employee_id', $user->employee_id ?? '') }}" class="w-full border rounded px-3 py-2" 
                                 placeholder="กรุณากรอกรหัสพนักงาน"
-                                required />
+                                required pattern="[0-9]+" inputmode="numeric" />
                             <div class="text-red-500 text-sm mt-1 hidden" id="employee_idError">กรุณากรอกรหัสพนักงานให้ถูกต้อง</div>
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                     <h3 class="text-purple-600 font-semibold mb-2">ข้อมูลงาน</h3>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label>สาขาวิชา</label>
+                            <label>สาขาวิชา <span style="color: #dc3545;">*</span></label>
                             <select name="department_id" id="department_id" class="w-full border rounded px-3 py-2" required>
                                 <option value="" disabled selected hidden>--เลือกสาขาวิชา--</option>
                                 @foreach ($departments as $department)
@@ -77,7 +77,7 @@
                             <div class="text-red-500 text-sm mt-1 hidden" id="department_idError">กรุณาเลือกสาขาวิชา</div>
                         </div>
                         <div>
-                            <label>ตำแหน่ง</label>
+                            <label>ตำแหน่ง <span style="color: #dc3545;">*</span></label>
                             <select name="position_id" id="position_id" class="w-full border rounded px-3 py-2" required>
                                 <option value="" disabled selected hidden>--เลือกตำแหน่ง--</option>
                                 @foreach ($positions as $position) 
@@ -90,7 +90,7 @@
                             <div class="text-red-500 text-sm mt-1 hidden" id="position_idError">กรุณาเลือกตำแหน่ง</div>
                         </div>
                         <div>
-                            <label>ประเภทบุคลากร</label>
+                            <label>ประเภทบุคลากร <span style="color: #dc3545;">*</span></label>
                             <select name="personnel_type" id="personnel_type" class="w-full border rounded px-3 py-2" required>
                                 <option value="" disabled selected hidden>--เลือกประเภทบุคลากร--</option>
                                 <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type ?? '') == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
@@ -107,14 +107,14 @@
                     <h3 class="text-purple-600 font-semibold mb-2">ข้อมูลติดต่อ</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label>อีเมล</label>
+                            <label>อีเมล <span style="color: #dc3545;">*</span></label>
                             <input type="email" name="email" id="email" value="{{ old('email', $user->email ?? '') }}" class="w-full border rounded px-3 py-2" 
                                 placeholder="กรุณากรอกอีเมล"
                                 required />
                             <div class="text-red-500 text-sm mt-1 hidden" id="emailError">กรุณากรอกอีเมลให้ถูกต้อง</div>
                         </div>
                         <div>
-                            <label>เบอร์โทร</label>
+                            <label>เบอร์โทร <span style="color: #dc3545;">*</span></label>
                             <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="w-full border rounded px-3 py-2" 
                                 placeholder="กรุณากรอกเบอร์โทร"
                                 required />
@@ -133,7 +133,7 @@
 
                 <!-- รหัสผ่าน -->
                 <div id="passwordPanel">
-                    <h3 class="text-purple-600 font-semibold mb-2">รหัสผ่าน</h3>
+                    <h3 class="text-purple-600 font-semibold mb-2">รหัสผ่าน <span style="color: #dc3545;">*</span></h3>
                     <input type="password" name="password" id="password" class="w-full border rounded px-3 py-2 placeholder-gray-400" 
                         placeholder="กรุณากรอกรหัสผ่าน"
                         {{ isset($user) ? '' : 'required' }} />
@@ -143,14 +143,14 @@
                 <div>
                     <h3 class="text-purple-600 font-semibold mb-2">ตั้งค่าผู้ใช้งาน</h3>
                     <div class="mb-3">
-                        <label>สถานะ</label>
+                        <label>สถานะ <span style="color: #dc3545;">*</span></label>
                         <select name="status" id="status" class="w-full border rounded px-3 py-2" required>
                             <option value="active" {{ old('status', $user->status ?? '') == 'active' ? 'selected' : '' }}>active</option>
                             <option value="inactive" {{ old('status', $user->status ?? '') == 'inactive' ? 'selected' : '' }}>inactive</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label>บทบาท (Role)</label>
+                        <label>บทบาท (Role) <span style="color: #dc3545;">*</span></label>
                         <select name="role" id="role" class="w-full border rounded px-3 py-2" required>
                             <option value="" disabled selected hidden>--เลือกบทบาท--</option>
                             @foreach ($roles as $role)
@@ -468,6 +468,11 @@ function validateField(id, type = 'text') {
 
         // Employee ID uniqueness check
         if (id === 'employee_id') {
+            const digitsOnly = /^[0-9]+$/;
+            if (!digitsOnly.test(value)) {
+                showError(id, 'กรุณากรอกเฉพาะตัวเลขเท่านั้น');
+                return;
+            }
             validateUniqueField(id, 'employee_id', 'รหัสพนักงาน');
             return;
         }
