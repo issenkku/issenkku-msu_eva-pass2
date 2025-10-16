@@ -3,6 +3,24 @@
 @section('title', 'จัดการรอบการประเมิน')
 
 @section('content')
+@php
+        use Carbon\Carbon;
+
+        function formatThaiDate($date)
+        {
+            if (!$date) return '-';
+
+            Carbon::setLocale('th'); 
+            setlocale(LC_TIME, 'th_TH.UTF-8');
+
+            $thaiMonth = $date->translatedFormat('j F'); 
+            $buddhistYear = $date->year + 543;
+            $time = $date->format('H:i');
+
+            return "{$thaiMonth} {$buddhistYear}";
+        }
+    @endphp
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(session('success'))
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
@@ -49,10 +67,7 @@
                         <p class="text-gray-600 mt-1">ดูข้อมูลและจัดการรอบการประเมินทั้งหมด</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3">
-                        {{-- <button onclick="location.reload()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
-                            <i class="fas fa-sync-alt mr-2"></i>รีเฟรช
-                        </button> --}}
-                        <a href="{{ route('assignment-data.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center">
+                        <a href="{{ route('assignment-data.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center">
                             <i class="fas fa-plus mr-2"></i>สร้างรอบการประเมินใหม่
                         </a>
                     </div>
@@ -66,87 +81,109 @@
                 </div>
 
                 @if($assignmentData->count() > 0)
-                    <div class="relative overflow-x-auto">
-                        <table class="divide-y divide-gray-200 min-w-[900px] w-full">
-                            <thead class="bg-gray-50 ">
+                    <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[160px]">
                                         ระยะเวลาประเมิน
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[220px]">
                                         เกณฑ์การประเมิน
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        ตำแหน่งที่เกี่ยวข้อง
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[200px]">
+                                        ผู้ประเมิน
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[160px]">
+                                        ผู้รับการประเมิน
+                                    </th>
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[120px]">
                                         สถานะ
                                     </th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider min-w-[140px]">
                                         การดำเนินการ
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
+
+                            <tbody class="bg-white divide-y divide-gray-100">
                                 @foreach($assignmentData as $assignment)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-col">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ \Carbon\Carbon::parse($assignment->start_time)->format('d/m/Y') }} - 
-                                                {{ \Carbon\Carbon::parse($assignment->end_time)->format('d/m/Y') }}
-                                            </div>
-                                            <div class="text-sm text-gray-500">
-                                                {{ \Carbon\Carbon::parse($assignment->start_time)->diffInDays($assignment->end_time) + 1 }} วัน
-                                            </div>
+                                @php
+                                    $start = optional($assignment)->start_time ? Carbon::parse($assignment->start_time) : null;
+                                    $end = optional($assignment)->end_time ? Carbon::parse($assignment->end_time) : null;
+                                    $startFormatted = formatThaiDate($start);
+                                    $endFormatted = formatThaiDate($end);
+                                    $reportData = $assignment->assignments->first()?->report?->reportData;
+                                    $evaluateeCount = $assignment->assignments->count();
+                                    $now = now();
+                                    $startTime = \Carbon\Carbon::parse($assignment->start_time);
+                                    $endTime = \Carbon\Carbon::parse($assignment->end_time);
+                                @endphp
+
+                                <tr class="hover:bg-gray-50 transition-all">
+                                    <!-- ระยะเวลาประเมิน -->
+                                    <td class="px-4 py-3 align-top">
+                                        <div class="text-sm font-medium text-gray-900 break-words leading-snug">
+                                            {{ $startFormatted }} <br><span class="text-gray-400">–</span> {{ $endFormatted }}
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-0.5">
+                                            {{ \Carbon\Carbon::parse($assignment->start_time)->diffInDays($assignment->end_time) + 1 }} วัน
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">
-                                            @php
-                                                $reportData = $assignment->assignments->first()?->report?->reportData;
-                                            @endphp
+
+                                    <!-- เกณฑ์การประเมิน -->
+                                    <td class="px-4 py-3 align-top">
+                                        <div class="text-sm font-medium text-gray-800 max-w-[250px]">
                                             {{ $reportData?->report_title ?? '-' }}
                                         </div>
                                         @if($reportData?->report_description)
-                                        <div class="text-sm text-gray-500 mt-1">
-                                            {{ Str::limit($reportData->report_description, 50) }}
+                                        <div class="text-xs text-gray-500 mt-1 truncate max-w-[250px]">
+                                            {{ Str::limit($reportData->report_description, 60) }}
                                         </div>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="space-y-3">
-                                            @php
-                                                $evaluateePosition = $assignment->evaluateePosition;
-                                                $evaluatorPosition = $assignment->evaluatorPosition;
-                                            @endphp
-                                            
-                                            @if($evaluateePosition)
-                                            <div>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    <i class="fas fa-user-check mr-1"></i>
-                                                    ผู้รับการประเมิน: {{ $evaluateePosition->name }}
-                                                </span>
+
+                                    <!-- ผู้ประเมิน -->
+                                    <td class="px-4 py-3 align-top">
+                                        @if($assignment->evaluatorUser)
+                                        <div class="flex items-center space-x-2">
+                                            <div class="bg-blue-100 px-3 py-1.5 rounded-xl flex items-center">
+                                                <i class="fas fa-user-check text-blue-500 mr-2"></i>
+                                                <div>
+                                                    <div class="text-sm font-semibold text-blue-700 leading-tight">
+                                                        {{ $assignment->evaluatorUser->name }}
+                                                    </div>
+                                                    <div class="text-xs text-blue-600">
+                                                        {{ $assignment->evaluatorUser->position?->name ?? '-' }}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            @endif
-                                            
-                                            @if($evaluatorPosition)
-                                            <div>
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    <i class="fas fa-user-tie mr-1"></i>
-                                                    ผู้ประเมิน: {{ $evaluatorPosition->name }}
-                                                </span>
-                                            </div>
+                                        </div>
+                                        @else
+                                        <span class="text-sm text-gray-500">-</span>
+                                        @endif
+                                    </td>
+
+                                    <!-- ผู้รับการประเมิน -->
+                                    <td class="px-4 py-3 text-center align-top">
+                                        <div class="flex flex-col items-center justify-center gap-1 rounded-xl bg-green-100 px-3 py-1.5">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-green-800">
+                                                <i class="fas fa-users mr-1"></i>{{ $evaluateeCount }} คน
+                                            </span>
+
+                                            @if($evaluateeCount > 0)
+                                                <button 
+                                                    onclick="showEvaluatees({{ $assignment->id }})" 
+                                                    class="text-green-600 hover:text-green-800 text-xs underline mt-1"
+                                                >
+                                                    ดูรายละเอียด
+                                                </button>
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $now = now();
-                                            $startTime = \Carbon\Carbon::parse($assignment->start_time);
-                                            $endTime = \Carbon\Carbon::parse($assignment->end_time);
-                                        @endphp
-                                        
+
+                                    <!-- สถานะ -->
+                                    <td class="px-4 py-3 align-top whitespace-nowrap">
                                         @if($now->lt($startTime))
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                                 <i class="fas fa-clock mr-1"></i>รอเริ่มต้น
@@ -161,17 +198,17 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+
+                                    <!-- การดำเนินการ -->
+                                    <td class="px-4 py-3 align-top text-sm font-medium">
                                         <div class="flex items-center space-x-2">
-                                            <button onclick="editAssignment({{ $assignment->id }})" 
-                                                class="px-3 py-1 bg-yellow-500 text-white text-xs rounded-md hover:bg-yellow-600 transition-colors" 
-                                                title="แก้ไข">
-                                                แก้ไข
-                                            </button>
+                                            <a href="{{ route('assignment-data.edit', $assignment->id) }}" 
+                                                class="px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 shadow-sm transition-all flex items-center">
+                                                <i class="fas fa-edit mr-1"></i>แก้ไข
+                                            </a>
                                             <button onclick="deleteAssignment({{ $assignment->id }})" 
-                                                class="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600 transition-colors" 
-                                                title="ลบ">
-                                                ลบ
+                                                class="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow-sm transition-all flex items-center">
+                                                <i class="fas fa-trash mr-1"></i>ลบ
                                             </button>
                                         </div>
                                     </td>
@@ -202,34 +239,118 @@
                 @endif
             </div>
         </div>
+
+        <!-- Modal for showing evaluatees -->
+        <div id="evaluateesModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-users mr-2 text-blue-600"></i>รายชื่อผู้รับการประเมิน
+                    </h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="evaluateesContent" class="mt-4 max-h-96 overflow-y-auto">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
     </body>
 
     <script>
         $(document).ready(function() {
-            // Setup CSRF token for all AJAX requests
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                 }
             });
 
-            // Auto hide notifications after 5 seconds
             setTimeout(function() {
                 $('#successMessage, #errorMessage').fadeOut();
             }, 5000);
         });
 
-        function editAssignment(id) {
-            // Redirect to edit page
-            window.location.href = `/assignment-data/${id}/edit`;
+        function showEvaluatees(assignmentId) {
+            $('#evaluateesContent').html('<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i><p class="text-sm text-gray-500 mt-2">กำลังโหลดข้อมูล...</p></div>');
+            $('#evaluateesModal').removeClass('hidden');
+
+            $.ajax({
+                url: `/assignment-data/${assignmentId}`,
+                type: 'GET',
+                success: function(data) {
+                    let html = '<div class="space-y-2">';
+                    
+                    if (data.assignments && data.assignments.length > 0) {
+                        data.assignments.forEach((assignment, index) => {
+                            if (assignment.evaluatee_user) {
+                                const initial = assignment.evaluatee_user.name.charAt(0).toUpperCase();
+                                const colors = [
+                                    'bg-blue-100 text-blue-600',
+                                    'bg-green-100 text-green-600',
+                                    'bg-purple-100 text-purple-600',
+                                    'bg-pink-100 text-pink-600',
+                                    'bg-indigo-100 text-indigo-600'
+                                ];
+                                const color = colors[index % colors.length];
+                                
+                                html += `
+                                    <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                        <div class="flex-shrink-0 h-10 w-10">
+                                            <div class="h-10 w-10 rounded-full ${color} flex items-center justify-center">
+                                                <span class="font-semibold">${initial}</span>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                ${assignment.evaluatee_user.name}
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                ${assignment.evaluatee_user.email}
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                ผู้รับการประเมิน
+                                            </span>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                    } else {
+                        html += '<div class="text-center py-8"><i class="fas fa-user-slash text-4xl text-gray-300 mb-3"></i><p class="text-sm text-gray-500">ไม่พบข้อมูลผู้รับการประเมิน</p></div>';
+                    }
+                    
+                    html += '</div>';
+                    
+                    $('#evaluateesContent').html(html);
+                },
+                error: function(xhr) {
+                    console.error('Error loading evaluatees:', xhr);
+                    $('#evaluateesContent').html('<div class="text-center py-8"><i class="fas fa-exclamation-triangle text-4xl text-red-300 mb-3"></i><p class="text-sm text-red-500">เกิดข้อผิดพลาดในการโหลดข้อมูล</p></div>');
+                }
+            });
         }
 
+        function closeModal() {
+            $('#evaluateesModal').addClass('hidden');
+        }
+
+        // Close modal when clicking outside
+        $(document).on('click', '#evaluateesModal', function(e) {
+            if (e.target.id === 'evaluateesModal') {
+                closeModal();
+            }
+        });
+
         function deleteAssignment(id) {
-            if (confirm('คุณแน่ใจหรือไม่ที่ต้องการลบรอบการประเมินนี้? การดำเนินการนี้ไม่สามารถย้อนกลับได้')) {
-                // Show loading
-                const button = event.target;
+            if (confirm('คุณแน่ใจหรือไม่ที่ต้องการลบรอบการประเมินนี้?\n\nการดำเนินการนี้จะลบข้อมูลทั้งหมดที่เกี่ยวข้องและไม่สามารถย้อนกลับได้')) {
+                const button = event.target.closest('button');
                 const originalContent = button.innerHTML;
-                button.innerHTML = 'กำลังลบ...';
+                button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>กำลังลบ...';
                 button.disabled = true;
                 button.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -238,7 +359,6 @@
                     type: 'DELETE',
                     success: function(response) {
                         if (response.success) {
-                            // Show success message
                             const successHtml = `
                                 <div id="deleteSuccessMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
                                     <div class="flex items-center space-x-3">
@@ -251,12 +371,11 @@
                             `;
                             $('body').append(successHtml);
                             
-                            // Auto hide after 3 seconds
                             setTimeout(() => {
                                 $('#deleteSuccessMessage').fadeOut(() => {
                                     location.reload();
                                 });
-                            }, 2000);
+                            }, 1500);
                         } else {
                             alert('เกิดข้อผิดพลาด: ' + response.message);
                             button.innerHTML = originalContent;
@@ -272,6 +391,8 @@
                             errorMessage = xhr.responseJSON.message;
                         } else if (xhr.status === 419) {
                             errorMessage = 'CSRF Token หมดอายุ กรุณารีเฟรชหน้าเว็บ';
+                        } else if (xhr.status === 500) {
+                            errorMessage = 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์';
                         }
                         
                         alert(errorMessage);
@@ -289,17 +410,15 @@
             font-family: 'Sarabun', sans-serif;
         }
 
-        /* Custom pagination styles */
         .pagination {
             display: flex;
             justify-content: center;
             align-items: center;
-            space-x: 1rem;
+            gap: 0.5rem;
         }
 
         .pagination .page-link {
             padding: 0.5rem 0.75rem;
-            margin: 0 0.125rem;
             border: 1px solid #d1d5db;
             border-radius: 0.375rem;
             color: #374151;
@@ -321,26 +440,21 @@
         .pagination .page-item.disabled .page-link {
             color: #9ca3af;
             cursor: not-allowed;
+            opacity: 0.5;
         }
 
-        /* Table hover effects */
+        tbody tr {
+            transition: all 0.2s ease;
+        }
+
         tbody tr:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
-        /* Status badges animation */
-        .inline-flex {
-            transition: all 0.3s ease;
-        }
-
-        .inline-flex:hover {
-            transform: scale(1.05);
-        }
-
         /* Modal animation */
-        .fixed {
-            animation: fadeIn 0.3s ease-out;
+        #evaluateesModal {
+            animation: fadeIn 0.2s ease-out;
         }
 
         @keyframes fadeIn {
@@ -352,18 +466,63 @@
             }
         }
 
+        #evaluateesModal > div {
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Custom scrollbar for modal */
+        #evaluateesContent::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #evaluateesContent::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        #evaluateesContent::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        #evaluateesContent::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Status badge animation */
+        .inline-flex {
+            transition: all 0.3s ease;
+        }
+
+        .inline-flex:hover {
+            transform: scale(1.05);
+        }
+
         /* Button hover effects */
         .transition-colors {
             transition: color 0.3s ease, background-color 0.3s ease;
         }
 
-        /* Cards hover effect */
-        .bg-white {
-            transition: all 0.3s ease;
-        }
-
-        .bg-white:hover {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        /* Table responsive */
+        @media (max-width: 768px) {
+            .overflow-x-auto {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 800px;
+            }
         }
     </style>
 @endsection

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\QualityScore;
@@ -34,21 +35,35 @@ class EvaluatorController extends Controller
         $startDate = $request->input('start_time');
         $endDate = $request->input('end_time');
 
-        // Only get assignments where evaluatee is from the same department
-        $sameDepartmentAssignments = $user->assignmentsForDashboard()->get();
+        // Query assignment_datas where this user is the evaluator
+        $query = AssignmentData::where('evaluator_id', $user->id)
+            ->with([
+                'assignments.evaluateeUser.department',
+                'assignments.report.reportData',
+            ]);
 
-        $evaluations = $sameDepartmentAssignments->map(function ($assignment) use ($user) {
-            $assignment->evaluatorName = $user->name; // current user
-            $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
-            $assignment->sameDepartment = true; // Always true since we filtered at database level
+        // Apply date filters on assignment_datas table
+        if ($startDate) {
+            $query->where('start_time', '>=', $startDate);
+        }
 
-            // Optional: Add department names for display
-            $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->name ?? '-';
-            $assignment->evaluatorDepartment = $user->department?->name ?? '-';
+        if ($endDate) {
+            $query->where('end_time', '<=', $endDate);
+        }
 
-            return $assignment;
+        // Get all assignment_datas
+        $assignmentDatas = $query->get();
+
+        // Flatten to get all assignments with their assignment_data
+        $evaluations = $assignmentDatas->flatMap(function ($assignmentData) {
+            return $assignmentData->assignments->map(function ($assignment) use ($assignmentData) {
+                // Attach assignment_data to assignment for easy access
+                $assignment->assignmentData = $assignmentData;
+                return $assignment;
+            });
         });
 
+        // Apply search filter
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
@@ -60,7 +75,8 @@ class EvaluatorController extends Controller
             });
         }
 
-        $years = $evaluations->pluck('assignmentData.start_time')
+        // Get unique years from assignment_datas
+        $years = $assignmentDatas->pluck('start_time')
             ->filter()
             ->map(function ($dt) {
                 return Carbon::parse($dt)->year;
@@ -69,31 +85,15 @@ class EvaluatorController extends Controller
             ->sortDesc()
             ->values();
 
+        // Apply year filter
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
-
                 return $year == $request->input('year');
             });
         }
 
-        if ($startDate) {
-            $evaluations = $evaluations->filter(function ($assignment) use ($startDate) {
-                $assignmentStart = optional($assignment->assignmentData)->start_time;
-
-                return $assignmentStart && Carbon::parse($assignmentStart)->gte(Carbon::parse($startDate));
-            });
-        }
-
-        if ($endDate) {
-            $evaluations = $evaluations->filter(function ($assignment) use ($endDate) {
-                $assignmentEnd = optional($assignment->assignmentData)->end_time;
-
-                return $assignmentEnd && Carbon::parse($assignmentEnd)->lte(Carbon::parse($endDate));
-            });
-        }
-
-        // Count status for filtered assignments only (same department only)
+        // Count status for filtered assignments
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
             'รอการกรอกข้อมูล' => $this->countByStatus($evaluations, ['Assigned', 'Draft']),
@@ -108,13 +108,13 @@ class EvaluatorController extends Controller
 
         $totalEvaluations = $evaluations->count();
 
-        // dd($chartData);
-
+        // Count unique evaluatees
         $totalEvaluatees = $evaluations
-            ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
-            ->groupBy('evaluateeUser.id')
+            ->filter(fn ($assignment) => $assignment->evaluateeUser)
+            ->groupBy('evaluatee_id')
             ->count();
 
+        // Get reports for statistics
         $userReports = $evaluations->map(function ($assignment) {
             return $assignment->report;
         })->filter();
@@ -126,6 +126,7 @@ class EvaluatorController extends Controller
         $statusLabels = GraphDataService::getStatusLabels();
         $statusColors = GraphDataService::getStatusColors();
 
+        // Paginate evaluations
         $page = $request->input('page', 1);
         $perPage = 10;
         $paginatedEvaluations = new LengthAwarePaginator(
@@ -139,7 +140,7 @@ class EvaluatorController extends Controller
         return view('evaluator_dashboard.index', [
             'user' => $user,
             'statusCounts' => $statusCounts,
-            'evaluations' => $paginatedEvaluations, // Only same-department evaluations
+            'evaluations' => $paginatedEvaluations,
             'years' => $years,
             'averageScore' => $averageScore,
             'scatterData' => $scatterData,
@@ -151,12 +152,11 @@ class EvaluatorController extends Controller
         ]);
     }
 
+    // Helper method to count by status
     private function countByStatus($evaluations, $statuses)
     {
         return $evaluations->filter(function ($assignment) use ($statuses) {
-            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
-
-            return in_array($reportStatus, $statuses);
+            return in_array(optional($assignment->report)->status, $statuses);
         })->count();
     }
 

@@ -204,11 +204,7 @@
                             <td class="py-4 px-3 border-b text-gray-500">{{ $evaluateeName }}</td>
 
                             <td class="py-4 px-3 border-b text-gray-500">
-                                @foreach($evaluatorAssignment->getEvaluatorUsers() as $evaluator)
-                                    <span class="inline-block py-1 flex">
-                                        {{ $evaluator->name }}
-                                    </span>
-                                @endforeach
+                                {{ $assignmentData->evaluatorUser?->name ?? '-' }}
                             </td>
 
                             <td class="py-4 px-2 border-b text-center min-w-[180px]">

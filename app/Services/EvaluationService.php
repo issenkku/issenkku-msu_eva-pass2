@@ -14,8 +14,7 @@ class EvaluationService
     {
         return Reports::with([
             'reportData',
-            'assignments.assignmentData.evaluatorPosition',
-            'assignments.assignmentData.evaluateePosition',
+            'assignments.assignmentData.evaluatorUser',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
         ])->get();
@@ -35,9 +34,9 @@ class EvaluationService
             $assignment->evaluateeName       = $assignment->evaluateeUser?->name ?? '-';
             $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
             $assignment->evaluateePosition   = $assignment->evaluateeUser?->position?->name ?? '-';
-            $assignment->evaluatorPosition   = $assignment->assignmentData?->evaluatorPosition?->name ?? '-';
+            $assignment->evaluatorPosition   = $assignment->assignmentData->evaluatorUser?->position?->name ?? '-';
             $assignment->evaluateeAssignedPosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-            $assignment->setAttribute('evaluatorName', $assignment->getEvaluatorUsers()->pluck('name')->implode(', ') ?: '-');
+            $assignment->evaluatorName       = $assignment->assignmentData->evaluatorUser?->name ?? '-';;
             $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
             $assignment->endTime   = $assignment->assignmentData?->end_time ?? null;
 
@@ -59,7 +58,7 @@ class EvaluationService
             $searchTerm = strtolower($filters['search']);
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = strtolower($assignment->evaluateeUser?->name ?? '');
-                $evaluatorName = strtolower($assignment->getEvaluatorUsers()->pluck('name')->implode(' '));
+                $evaluatorName = strtolower($assignment->assignmentData->evaluatorUser?->name ?? '-');
                 $reportTitle   = strtolower($assignment->report?->reportData?->report_title ?? '');
 
                 return Str::contains($evaluateeName, $searchTerm)
@@ -107,8 +106,7 @@ class EvaluationService
             $query->where('evaluatee_id', $user->id);
         })->with([
             'reportData',
-            'assignments.assignmentData.evaluatorPosition',
-            'assignments.assignmentData.evaluateePosition',
+            'assignments.assignmentData',
         ])->get();
 
         return $this->mapAssignments($reports, $user, 'evaluatee');
@@ -117,11 +115,10 @@ class EvaluationService
     public function getUserAsEvaluator($user)
     {
         $reports = Reports::whereHas('assignments.assignmentData', function ($query) use ($user) {
-            $query->where('evaluator_position_id', $user->position_id);
+            $query->where('evaluator_id', $user->id);
         })->with([
             'reportData',
-            'assignments.assignmentData.evaluatorPosition',
-            'assignments.assignmentData.evaluateePosition',
+            'assignments.assignmentData',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
         ])->get();

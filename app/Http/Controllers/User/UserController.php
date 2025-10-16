@@ -404,6 +404,11 @@ class UserController extends Controller
 
         // ดึงข้อมูลพร้อม Pagination และส่งต่อ Query String ทั้งหมด
         $users = $query->latest()->paginate(10)->withQueryString();
+        $users->getCollection()->transform(function ($user) {
+            $array = $user->toArray();
+            $array['role_names'] = $user->roles->pluck('name')->toArray();
+            return $array;
+        });
 
         // ดึงข้อมูลสำหรับ Dropdown/Filter
         $departments = Departments::all();

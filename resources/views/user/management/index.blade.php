@@ -84,19 +84,20 @@
             <tbody>
                 @forelse ($users as $index => $user)
                     <x-user-table :index="$index + 1" :employee="[
-                        'id' => $user->id,
-                        'prefix' => $user->prefix,
-                        'name' => $user->name,
-                        'code' => $user->employee_id,
-                        'position' => optional($user->position)->name,
-                        'type' => $user->personnel_type,
-                        'contact' => $user->phone,
-                        'email' => $user->email,
-                        'bio' => $user->bio,
-                        'status' => $user->status,
-                        'position_id' => $user->position_id,
-                        'department_id' => $user->department_id,
-                        'role' => $user->getRoleNames()->first(),
+                        'id' => $user['id'],
+                        'prefix' => $user['prefix'],
+                        'name' => $user['name'],
+                        'code' => $user['employee_id'],
+                        'position' => isset($user['position']['name']) ? $user['position']['name'] : '',
+                        'type' => $user['personnel_type'],
+                        'contact' => $user['phone'],
+                        'email' => $user['email'],
+                        'bio' => $user['bio'],
+                        'status' => $user['status'],
+                        'position_id' => $user['position_id'],
+                        'department_id' => $user['department_id'],
+                        'role' => $user['role_names'][0] ?? '',
+                        'role_names' => $user['role_names'] ?? [],
                     ]" />
                 @empty
                     <tr>
