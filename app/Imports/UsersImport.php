@@ -13,6 +13,10 @@ use Spatie\Permission\Models\Role;
 
 class UsersImport implements ToCollection
 {
+    private int $created = 0;
+    private int $updated = 0;
+    private int $skipped = 0;
+
     public function collection(Collection $rows)
     {
         foreach ($rows->skip(1) as $index => $row) {
@@ -20,6 +24,7 @@ class UsersImport implements ToCollection
                 $rowArray = $row->toArray();
 
                 if ($this->isEmptyRow($rowArray)) {
+                    $this->skipped++;
                     continue;
                 }
 
@@ -65,6 +70,22 @@ class UsersImport implements ToCollection
                     $password = 'password123';
                 }
 
+                // Normalize and sanitize
+                $email = strtolower(trim($mappedData['email']));
+                $rawPhone = trim($mappedData['phone']);
+                $digits = preg_replace('/\D+/', '', $rawPhone);
+                // Format to 3-3-4 if 10 digits, else keep original
+                if (strlen($digits) === 10) {
+                    $phone = substr($digits, 0, 3) . '-' . substr($digits, 3, 3) . '-' . substr($digits, 6);
+                } else {
+                    $phone = $rawPhone;
+                }
+
+                $status = trim($mappedData['status'] ?? 'active');
+                if (!in_array(strtolower($status), ['active', 'inactive'])) {
+                    $status = 'active';
+                }
+
                 $userData = [
                     'prefix' => trim($mappedData['prefix']),
                     'name' => trim($mappedData['name']),
@@ -72,11 +93,11 @@ class UsersImport implements ToCollection
                     'personnel_type' => trim($mappedData['personnel_type']),
                     'department_id' => $department->id,
                     'employee_id' => trim($mappedData['employee_id']),
-                    'email' => trim($mappedData['email']),
-                    'phone' => trim($mappedData['phone']),
+                    'email' => $email,
+                    'phone' => $phone,
                     'password' => Hash::make($password),
                     'bio' => ! empty(trim($mappedData['bio'] ?? '')) ? trim($mappedData['bio']) : null,
-                    'status' => ! empty(trim($mappedData['status'] ?? '')) ? trim($mappedData['status']) : 'active',
+                    'status' => $status,
                 ];
 
                 // Only remove completely empty values, but keep null values for nullable fields
@@ -95,9 +116,11 @@ class UsersImport implements ToCollection
                     $existingUser->update($userData);
                     $user = $existingUser;
                     Log::info('Updated user: '.$mappedData['employee_id']);
+                    $this->updated++;
                 } else {
                     $user = User::create($userData);
                     Log::info('Created user: '.$mappedData['employee_id']);
+                    $this->created++;
                 }
 
                 // Handle role assignment
@@ -113,10 +136,20 @@ class UsersImport implements ToCollection
                     'row_data' => $row->toArray(),
                     'error' => $e->getTraceAsString(),
                 ]);
-
+                $this->skipped++;
                 continue;
             }
         }
+    }
+
+    // Optional import stats to show in UI
+    public function stats(): array
+    {
+        return [
+            'created' => $this->created,
+            'updated' => $this->updated,
+            'skipped' => $this->skipped,
+        ];
     }
 
     /**

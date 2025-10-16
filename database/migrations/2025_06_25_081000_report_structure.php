@@ -98,13 +98,22 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Ensure drops respect FK dependencies
+        Schema::disableForeignKeyConstraints();
+
+        // Child tables first
+        Schema::dropIfExists('formulas');
+        Schema::dropIfExists('quantity_sub_criterias');
+        Schema::dropIfExists('quality_sub_criterias');
+
+        // Then parents referenced by the above
+        Schema::dropIfExists('quantity_main_criterias');
+        Schema::dropIfExists('quality_main_criterias');
         Schema::dropIfExists('evaluation_lists');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('report_datas');
-        Schema::dropIfExists('quality_sub_criterias');
-        Schema::dropIfExists('quality_main_criterias');
-        Schema::dropIfExists('quantity_sub_criterias');
-        Schema::dropIfExists('quantity_main_criterias');
         Schema::dropIfExists('criteria_versions');
+
+        Schema::enableForeignKeyConstraints();
     }
 };
