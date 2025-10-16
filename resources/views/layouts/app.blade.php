@@ -553,6 +553,15 @@
                                 </li>
                             </ul>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white d-flex align-items-center" 
+                            href="{{ asset('downloads/handbook.pdf') }}" 
+                            download="คู่มือการใช้งานระบบประเมินบุคลากร.pdf"
+                            title="ดาวน์โหลดคู่มือการใช้งาน">
+                                <i class="fas fa-book me-2"></i>
+                                <span class="d-none d-xxl-inline">คู่มือ</span>
+                            </a>
+                        </li>
                         @endif
                     </ul>
                 </nav>
@@ -662,6 +671,13 @@
                 <a href="/profile" class="mobile-nav-item" style="padding: 10px 0; border: none;">
                     <i class="fas fa-user-edit" style="width: 20px; margin-right: 10px;"></i>
                     ตั้งค่าโปรไฟล์
+                </a>
+                <a href="{{ asset('downloads/handbook.pdf') }}"  class="mobile-nav-item" 
+                    style="padding: 10px 0; border: none;" 
+                    title="ดาวน์โหลดคู่มือการใช้งาน"
+                    download="คู่มือการใช้งานระบบประเมินบุคลากร.pdf">
+                    <i class="fas fa-book me-2" style="width: 20px; margin-right: 10px;"></i>
+                    คู่มือ
                 </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                     @csrf

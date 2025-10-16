@@ -137,7 +137,6 @@ class User extends Authenticatable implements CanResetPassword
         return $this->hasManyThrough(
             Assignments::class,        // Final model
             AssignmentData::class,     // Intermediate model
-            'evaluator_position_id',   // Foreign key on AssignmentData (points to Positions table)
             'assignment_data_id',      // Foreign key on Assignments (points to AssignmentData)
             'position_id',             // Local key on Users (points to Positions)
             'id'                       // Local key on AssignmentData
@@ -176,14 +175,16 @@ class User extends Authenticatable implements CanResetPassword
 
     public function assignmentsForDashboard()
     {
-        $query = $this->evaluatorAssignments()
+        // Get all assignment data where user is evaluator
+        $assignmentDataIds = $this->evaluatorAssignmentData()->pluck('id');
+        
+        // Return assignments query with necessary relationships
+        return Assignments::whereIn('assignment_data_id', $assignmentDataIds)
             ->with([
                 'evaluateeUser.department',
-                'assignmentData',
+                'assignmentData.evaluatorUser',
                 'report.reportData',
             ]);
-
-        return $query;
     }
 
     public function allAssignmentsForDashboard()

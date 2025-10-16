@@ -20,12 +20,23 @@
 <tr class="border-b">
     <td class="p-4 text-center">{{ $index }}</td>
     <td class="p-4">
-        {{ $employee['name'] }}
-        @if(!empty($employee['role']))
-            <div>
-                <span class="{{ $roleClass }} px-3 rounded-full text-xs">
-                    {{ $employee['role'] }}
-                </span>
+        {{ $employee['prefix'] }}{{ $employee['name'] }}
+        @if(!empty($employee['role_names']))
+            <div class="flex flex-wrap gap-1 mt-1">
+                @foreach($employee['role_names'] as $role)
+                    @php
+                        $roleClass = match ($role) {
+                            'admin' => 'bg-purple-200 text-purple-800',
+                            'ผู้บริหาร' => 'bg-yellow-200 text-yellow-800',
+                            'ผู้ประเมิน' => 'bg-green-200 text-green-800',
+                            'ผู้รับการประเมิน' => 'bg-blue-200 text-blue-800',
+                            default => 'bg-gray-200 text-gray-800',
+                        };
+                    @endphp
+                    <span class="{{ $roleClass }} px-3 py-1 rounded-full text-xs mb-1">
+                        {{ $role }}
+                    </span>
+                @endforeach
             </div>
         @endif
     </td>

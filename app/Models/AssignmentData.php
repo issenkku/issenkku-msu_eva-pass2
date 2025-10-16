@@ -15,15 +15,13 @@ class AssignmentData extends Model
     protected $table = 'assignment_datas';
 
     protected $fillable = [
-        'evaluator_position_id',
-        'evaluatee_position_id',
+        'evaluator_id',
         'start_time',
         'end_time',
     ];
 
     protected $casts = [
-        'evaluator_position_id' => 'integer',
-        'evaluatee_position_id' => 'integer',
+        'evaluator_id' => 'integer',
         'start_time' => 'date',
         'end_time' => 'date',
     ];
@@ -51,9 +49,7 @@ class AssignmentData extends Model
 
     public function evaluatorUser()
     {
-        // ต้องเข้าใจบริบทของฟังก์ชันนี้ก่อน - อาจต้องแก้ไขตรรกะทั้งหมด
-        return User::where('position_id', $this->evaluator_position_id)
-            ->first();
+        return $this->belongsTo(User::class, 'evaluator_id', 'id');
     }
 
     // ดึง user ที่เกี่ยวข้องกับ assignment data (เช่น evaluator หรือ evaluatee)

@@ -16,12 +16,11 @@ class ReportDataService
             'assignmentData',
             'evaluateeUser.department',
             'evaluateeUser.position',
-            'evaluatorUser',
             'report.reportData.criteriaVersion', // Optional but useful
         ])
         ->where('report_id', $reportId)
         ->whereHas('assignmentData', function ($q) use ($user) {
-            $q->where('evaluator_position_id', $user->position_id);
+            $q->where('evaluator_id', $user->id);
         })
         ->first();
     }
@@ -33,18 +32,18 @@ class ReportDataService
             'assignments.assignmentData',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
-            'assignments.evaluatorUser',
+            'assignments',
         ])->findOrFail($id);
 
         $assignment = $report->assignments;
-        $evaluators = $assignment ? $assignment->getEvaluatorUsers() : collect();
+        $evaluators = $assignment->assignmentData->evaluatorUser?->name ?? '-';
 
         // Add evaluatee info like in dashboard
         $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
         $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
         $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
-        $assignment->evaluatorName = $assignment->evaluatorUser?->name ?? '-';
-        $assignment->evaluatorPosition = $assignment->evaluatorUser?->position?->name ?? '-';
+        $assignment->evaluatorName = $assignment->$assignment->assignmentData->evaluatorUser?->name ?? '-';
+        $assignment->evaluatorPosition = $assignment->assignmentData->evaluatorUser?->position?->name ?? '-';
 
         $formatThai = function ($datetime) {
             if (! $datetime) {

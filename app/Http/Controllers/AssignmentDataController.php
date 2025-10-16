@@ -6,13 +6,10 @@ use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\ReportData;
 use App\Models\Reports;
-use App\Models\Setting\Departments;
-use App\Models\Setting\Positions;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
@@ -21,10 +18,9 @@ class AssignmentDataController extends Controller
     public function index()
     {
         $assignmentData = AssignmentData::with([
-            'assignments.evaluateeUser',
+            'assignments.evaluateeUser.position',
             'assignments.report.reportData',
-            'evaluatorPosition',
-            'evaluateePosition',
+            'evaluatorUser',
         ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -34,15 +30,10 @@ class AssignmentDataController extends Controller
 
     public function create()
     {
-        $departments = Departments::all();
         $report_data = ReportData::all();
         $users = User::all();
-        $positions = Positions::with('user')->get();
 
-        $evaluatees = $positions;
-        $evaluators = $positions;
-
-        return view('assignment-data.create', compact('report_data', 'departments', 'users', 'positions', 'evaluatees', 'evaluators'));
+        return view('assignment-data.create', compact('report_data', 'users'));
     }
 
     public function store(Request $request)
@@ -51,13 +42,14 @@ class AssignmentDataController extends Controller
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'report_data_id' => 'required|exists:report_datas,id',
-            'evaluatees' => 'required|exists:positions,id',
-            'evaluators' => 'required|exists:positions,id',
+            'evaluator_id' => 'required|exists:users,id',
+            'evaluatees' => 'required|array|min:1',
+            'evaluatees.*' => 'required|exists:users,id',
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            if ($request->evaluatees == $request->evaluators) {
-                $validator->errors()->add('evaluators', 'ตำแหน่งผู้ประเมินต้องไม่ตรงกับตำแหน่งผู้รับการประเมิน');
+            if (in_array($request->evaluator_id, $request->evaluatees ?? [])) {
+                $validator->errors()->add('evaluatees', 'ผู้ประเมินไม่สามารถเป็นผู้รับการประเมินได้');
             }
         });
 
@@ -71,33 +63,25 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
+            // Create assignment data
             $assignmentData = AssignmentData::create([
-                'evaluator_position_id' => $request->evaluators,
-                'evaluatee_position_id' => $request->evaluatees,
+                'evaluator_id' => $request->evaluator_id,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
-            // ดึงผู้ใช้จากตำแหน่งที่เลือก
-            $evaluateePosition = Positions::find($request->evaluatees);
-            $evaluatorPosition = Positions::find($request->evaluators);
+            $evaluator = User::find($request->evaluator_id);
+            
+            // Assign role to evaluator
+            $this->assignUserRole($evaluator, 'ผู้ประเมิน');
 
-            // ดึงผู้ใช้ทั้งหมดที่มีตำแหน่งนี้
-            $evaluateeUsers = $evaluateePosition->user;
-            $evaluatorUsers = $evaluatorPosition->user;
+            // Create assignments for each evaluatee
+            foreach ($request->evaluatees as $evaluateeId) {
+                $evaluatee = User::find($evaluateeId);
+                
+                // Assign role to evaluatee
+                $this->assignUserRole($evaluatee, 'ผู้รับการประเมิน');
 
-            if ($evaluateeUsers->isEmpty()) {
-                throw new \Exception('ไม่พบผู้ใช้ในตำแหน่งที่เลือก');
-            }
-
-            // กำหนดบทบาทให้ผู้ประเมิน
-            $this->assignUserRoles($evaluatorUsers, 'ผู้ประเมิน', null);
-
-            // กำหนดบทบาทให้ผู้รับการประเมิน
-            $this->assignUserRoles($evaluateeUsers, 'ผู้รับการประเมิน', null);
-
-            // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งนี้
-            foreach ($evaluateeUsers as $evaluateeUser) {
                 $report = Reports::create([
                     'report_data_id' => $request->report_data_id,
                     'status' => 'Assigned',
@@ -106,11 +90,11 @@ class AssignmentDataController extends Controller
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee_id' => $evaluateeUser->id,
+                    'evaluatee_id' => $evaluateeId,
                 ]);
 
-                // Send email notification for each user
-                $this->sendEvaluationCompletedMail($report->id);
+                // Send email notification
+                $this->sendEvaluationNotification($report->id, $evaluatee, $evaluator);
             }
 
             DB::commit();
@@ -137,8 +121,7 @@ class AssignmentDataController extends Controller
         $assignmentData->load([
             'assignments.evaluateeUser',
             'assignments.report',
-            'evaluatorPosition',
-            'evaluateePosition',
+            'evaluatorUser',
         ]);
 
         return response()->json($assignmentData);
@@ -146,29 +129,23 @@ class AssignmentDataController extends Controller
 
     public function edit(AssignmentData $assignmentData)
     {
-        $departments = Departments::all();
         $report_data = ReportData::all();
         $users = User::all();
-        $positions = Positions::with('user')->get();
-
-        $evaluatees = $positions;
-        $evaluators = $positions;
 
         $assignmentData->load([
             'assignments.evaluateeUser',
             'assignments.report.reportData',
-            'evaluatorPosition',
-            'evaluateePosition',
+            'evaluatorUser',
         ]);
+
+        // Get selected evaluatees
+        $selectedEvaluatees = $assignmentData->assignments->pluck('evaluatee_id')->toArray();
 
         return view('assignment-data.edit', compact(
             'assignmentData',
             'report_data',
-            'departments',
             'users',
-            'positions',
-            'evaluatees',
-            'evaluators'
+            'selectedEvaluatees'
         ));
     }
 
@@ -178,58 +155,48 @@ class AssignmentDataController extends Controller
             'start_time' => 'required|date',
             'end_time' => 'required|date|after_or_equal:start_time',
             'report_data_id' => 'required|exists:report_datas,id',
-            'evaluatees' => 'required|exists:positions,id',
-            'evaluators' => 'required|exists:positions,id',
+            'evaluator_id' => 'required|exists:users,id',
+            'evaluatees' => 'required|array|min:1',
+            'evaluatees.*' => 'required|exists:users,id',
         ]);
 
         $validator->after(function ($validator) use ($request) {
-            if ($request->evaluatees == $request->evaluators) {
-                $validator->errors()->add('evaluators', 'ตำแหน่งผู้ประเมินต้องไม่ตรงกับตำแหน่งผู้รับการประเมิน');
+            if (in_array($request->evaluator_id, $request->evaluatees ?? [])) {
+                $validator->errors()->add('evaluatees', 'ผู้ประเมินไม่สามารถเป็นผู้รับการประเมินได้');
             }
         });
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
         DB::beginTransaction();
 
         try {
             $assignmentData->update([
-                'evaluator_position_id' => $request->evaluators,
-                'evaluatee_position_id' => $request->evaluatees,
+                'evaluator_id' => $request->evaluator_id,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
 
+            // Delete old assignments and their reports
+            foreach ($assignmentData->assignments as $assignment) {
+                if ($assignment->report) {
+                    $assignment->report->delete();
+                }
+            }
             $assignmentData->assignments()->delete();
 
-            // ดึงผู้ใช้จากตำแหน่งที่เลือก
-            $evaluateePosition = Positions::find($request->evaluatees);
-            $evaluatorPosition = Positions::find($request->evaluators);
+            $evaluator = User::find($request->evaluator_id);
+            $this->assignUserRole($evaluator, 'ผู้ประเมิน');
 
-            // ดึงผู้ใช้ทั้งหมดที่มีตำแหน่งนี้
-            $evaluateeUsers = $evaluateePosition->user;
-            $evaluatorUsers = $evaluatorPosition->user;
+            // Create new assignments
+            foreach ($request->evaluatees as $evaluateeId) {
+                $evaluatee = User::find($evaluateeId);
+                $this->assignUserRole($evaluatee, 'ผู้รับการประเมิน');
 
-            if ($evaluateeUsers->isEmpty() || $evaluatorUsers->isEmpty()) {
-                throw new \Exception('ไม่พบผู้ใช้ในตำแหน่งที่เลือก');
-            }
-
-            // กำหนดบทบาทให้ผู้ประเมิน
-            $this->assignUserRoles($evaluatorUsers, 'ผู้ประเมิน', 'ผู้รับการประเมิน');
-
-            // กำหนดบทบาทให้ผู้รับการประเมิน
-            $this->assignUserRoles($evaluateeUsers, 'ผู้รับการประเมิน', 'ผู้ประเมิน');
-
-            // สร้าง Assignment สำหรับผู้ใช้ทุกคนในตำแหน่งผู้รับการประเมิน
-            // โดยใช้ผู้ประเมินคนแรกในตำแหน่งผู้ประเมิน
-            $evaluatorUser = $evaluatorUsers->first();
-
-            foreach ($evaluateeUsers as $evaluateeUser) {
                 $report = Reports::create([
                     'report_data_id' => $request->report_data_id,
                     'status' => 'Assigned',
@@ -238,8 +205,11 @@ class AssignmentDataController extends Controller
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
-                    'evaluatee_id' => $evaluateeUser->id,
+                    'evaluatee_id' => $evaluateeId,
                 ]);
+
+                // Send email notification
+                $this->sendEvaluationNotification($report->id, $evaluatee, $evaluator);
             }
 
             DB::commit();
@@ -251,7 +221,6 @@ class AssignmentDataController extends Controller
             Log::error('Error updating assignment data', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all(),
             ]);
 
             return redirect()->back()
@@ -265,21 +234,18 @@ class AssignmentDataController extends Controller
         try {
             DB::beginTransaction();
 
-            // ดึงข้อมูลผู้ใช้ที่เกี่ยวข้องก่อนลบ
-            $assignmentData->load(['evaluatorPosition.user', 'evaluateePosition.user']);
+            // Delete reports associated with assignments
+            foreach ($assignmentData->assignments as $assignment) {
+                if ($assignment->report) {
+                    $assignment->report->delete();
+                }
+            }
 
-            $evaluatorUsers = $assignmentData->evaluatorPosition->user ?? collect();
-            $evaluateeUsers = $assignmentData->evaluateePosition->user ?? collect();
-
-            // ลบ assignments ที่เกี่ยวข้องก่อน
+            // Delete assignments
             $assignmentData->assignments()->delete();
-
-            // ลบ assignment data
+            
+            // Delete assignment data
             $assignmentData->delete();
-
-            // หมายเหตุ: การคืนค่า roles จะต้องพิจารณาว่าผู้ใช้ยังมี assignments อื่นอยู่หรือไม่
-            // สำหรับความปลอดภัย ควรตรวจสอบก่อนลบ role
-            // ในที่นี้จะไม่ลบ role เนื่องจากผู้ใช้อาจมี assignments อื่นอยู่
 
             DB::commit();
 
@@ -301,107 +267,49 @@ class AssignmentDataController extends Controller
         }
     }
 
-    private function sendEvaluationCompletedMail($reportId)
+    private function sendEvaluationNotification($reportId, $evaluatee, $evaluator)
     {
         $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
-        if (! $report) {
-            return;
-        }
-
-        // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
-        $assignment = Assignments::where('report_id', $reportId)->first();
-        if (! $assignment) {
-            return;
-        }
-        $user = User::find($assignment->evaluatee_id);
-        if (! $user || ! $user->email) {
-            return;
-        }
-        $evaluator_name = User::find($assignment->evaluator);
-        if (! $evaluator_name || ! $evaluator_name->email) {
+        if (!$report || !$evaluatee->email) {
             return;
         }
 
         $mailData = [
-            'name' => $user->name,
+            'name' => $evaluatee->name,
             'report_title' => optional($report->reportData)->report_title,
             'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
             'status' => $report->status,
-            'evaluator_name' => $evaluator_name->name,
+            'evaluator_name' => $evaluator->name,
         ];
 
-        \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($user) {
-            $message->to($user->email, $user->name)
-                ->subject('แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน');
-        });
-    }
-
-    /**
-     * จัดการ roles สำหรับผู้ใช้อย่างปลอดภัย
-     *
-     * @param  mixed  $users
-     * @param  string  $newRole
-     * @param  string  $removeRole
-     */
-    private function assignUserRoles($users, $newRole, $removeRole = null)
-    {
-        $role = Role::where('name', $newRole)->first();
-
-        if (! $role) {
-            throw new \Exception("ไม่พบ role: {$newRole}");
-        }
-
-        // ตรวจสอบและแปลงเป็น collection ที่เหมาะสม
-        if ($users instanceof \Illuminate\Database\Eloquent\Relations\HasMany) {
-            // ถ้าเป็น HasMany relation ให้ get ข้อมูล
-            $users = $users->get();
-        } elseif ($users instanceof \Illuminate\Database\Eloquent\Builder) {
-            // ถ้าเป็น Query Builder ให้ get ข้อมูล
-            $users = $users->get();
-        }
-        // ถ้าเป็น Collection อยู่แล้ว ไม่ต้องทำอะไร
-
-        foreach ($users as $user) {
-            // ตรวจสอบว่า $user เป็น User model จริงหรือไม่
-            if (! ($user instanceof User)) {
-                continue;
-            }
-
-            try {
-                // ลบ role เก่าถ้าระบุ
-                if ($removeRole && $user->hasRole($removeRole)) {
-                    $user->removeRole($removeRole);
-                }
-
-                // เพิ่ม role ใหม่ถ้ายังไม่มี
-                if (! $user->hasRole($newRole)) {
-                    $user->assignRole($role);
-                }
-            } catch (\Exception $e) {
-                Log::warning("Failed to assign role {$newRole} to user {$user->id}: ".$e->getMessage());
-
-                continue;
-            }
-        }
-    }
-
-    /**
-     * ตรวจสอบว่าผู้ใช้ยังมี assignments อื่นอยู่หรือไม่
-     *
-     * @param  User  $user
-     * @param  int  $currentAssignmentDataId
-     * @return bool
-     */
-    private function hasOtherAssignments($user, $currentAssignmentDataId = null)
-    {
-        $query = Assignments::where('evaluatee_id', $user->id);
-
-        if ($currentAssignmentDataId) {
-            $query->whereHas('assignmentData', function ($q) use ($currentAssignmentDataId) {
-                $q->where('id', '!=', $currentAssignmentDataId);
+        try {
+            \Mail::send('emails.assignment_Notify', $mailData, function ($message) use ($evaluatee) {
+                $message->to($evaluatee->email, $evaluatee->name)
+                    ->subject('แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน');
             });
+        } catch (\Exception $e) {
+            Log::warning('Failed to send email notification', [
+                'evaluatee_id' => $evaluatee->id,
+                'report_id' => $reportId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function assignUserRole($user, $roleName)
+    {
+        if (!$user) {
+            throw new \Exception("ไม่พบผู้ใช้");
         }
 
-        return $query->exists();
+        $role = Role::where('name', $roleName)->first();
+
+        if (!$role) {
+            throw new \Exception("ไม่พบ role: {$roleName}");
+        }
+
+        if (!$user->hasRole($roleName)) {
+            $user->assignRole($role);
+        }
     }
 }

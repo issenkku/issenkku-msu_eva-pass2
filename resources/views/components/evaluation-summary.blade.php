@@ -196,11 +196,7 @@
                             </td>
 
                             <td class="p-4 border-b text-gray-500 min-w-[150px]">
-                                @foreach($assignment->evaluatorUsers as $evaluator)
-                                    <span class="inline-block px-2 py-1 flex">
-                                        {{ $evaluator->name }}
-                                    </span>
-                                @endforeach
+                                 {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
                             </td>
 
                             <td class="py-4 px-2 border-b text-center min-w-[180px]">
