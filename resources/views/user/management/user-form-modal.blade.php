@@ -600,6 +600,10 @@ document.getElementById('phone').addEventListener('input', function (e) {
 
     document.getElementById('formMethod').value = 'POST';
 
+    // Ensure uniqueness checks don't treat current record as different
+    // Clear any previously set user id when switching to create mode
+    form.removeAttribute('data-user-id');
+
     const panel = document.getElementById('passwordPanel');
     if (panel) panel.style.display = 'block';
     const passwordInput = document.getElementById('password');
@@ -620,6 +624,9 @@ document.getElementById('phone').addEventListener('input', function (e) {
 
     form.action = `/users/${user.id}`;
     document.getElementById('formMethod').value = 'PUT';
+
+    // Important: set current user id so unique checks ignore this record
+    form.setAttribute('data-user-id', user.id);
 
     setModalTitle(modal, 'Edit User');
 
@@ -672,6 +679,9 @@ document.getElementById('phone').addEventListener('input', function (e) {
 
     setModalTitle(modal, 'Create User');
     form.reset();
+
+    // Clear stored user id when closing
+    form.removeAttribute('data-user-id');
 
     const passwordInput = document.getElementById('password');
     if (passwordInput) {
