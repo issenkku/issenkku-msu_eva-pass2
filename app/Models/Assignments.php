@@ -35,25 +35,26 @@ class Assignments extends Model
 
     public function evaluatorUser()
     {
+        // Link evaluator via assignment_datas.evaluator_id -> users.id
         return $this->hasOneThrough(
-            User::class,              // Final model
-            AssignmentData::class,    // Intermediate
-            'id',                     // Local key on AssignmentData
-            'position_id',            // Foreign key on Users
-            'assignment_data_id',     // Local key on Assignments
-            'evaluator_position_id'   // Foreign key on AssignmentData
+            User::class,
+            AssignmentData::class,
+            'id',                // Join assignment_datas.id = assignments.assignment_data_id
+            'id',                // Join users.id = assignment_datas.evaluator_id
+            'assignment_data_id',
+            'evaluator_id'
         );
     }
 
     public function evaluatorUsers()
     {
         return $this->hasManyThrough(
-            User::class,            // Final model
-            AssignmentData::class,  // Intermediate
-            'id',                   // Local key on AssignmentData
-            'position_id',          // Foreign key on Users
-            'assignment_data_id',   // Local key on Assignments
-            'evaluator_position_id' // Foreign key on AssignmentData
+            User::class,
+            AssignmentData::class,
+            'id',                // assignment_datas.id = assignments.assignment_data_id
+            'id',                // users.id = assignment_datas.evaluator_id
+            'assignment_data_id',
+            'evaluator_id'
         );
     }
 

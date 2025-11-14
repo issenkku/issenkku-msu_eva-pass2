@@ -196,4 +196,10 @@ class User extends Authenticatable implements CanResetPassword
                 'report.reportData',
             ]);
     }
+
+    // AssignmentData rows where this user is the evaluator
+    public function evaluatorAssignmentData()
+    {
+        return $this->hasMany(AssignmentData::class, 'evaluator_id', 'id');
+    }
 }

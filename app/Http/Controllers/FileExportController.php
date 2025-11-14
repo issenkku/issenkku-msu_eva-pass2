@@ -126,9 +126,8 @@ class FileExportController extends Controller
                 $q->orWhereHas('report.reportData', fn ($q2) => $q2->whereRaw('LOWER(report_title) LIKE ?', ["%{$search}%"])
                 );
 
-                // Search evaluator names through assignmentData -> evaluator_position_id -> users
-                $q->orWhereHas('assignmentData.evaluatorPosition.user', fn ($q2) => $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"])
-                );
+                // Search evaluator names via assignmentData -> evaluatorUser
+                $q->orWhereHas('assignmentData.evaluatorUser', fn ($q2) => $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]));
             });
         }
 

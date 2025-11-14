@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Models\Role;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -117,7 +118,21 @@ class UserController extends Controller
             // Start database transaction
             DB::beginTransaction();
             $import = new UsersImport();
-            Excel::import($import, $request->file('import_file'));
+
+            // Load all worksheets to ensure we process the sheet that contains the data,
+            // even if it is not the first sheet in the workbook.
+            $uploaded = $request->file('import_file');
+            $filePath = $uploaded->getRealPath();
+
+            $spreadsheet = IOFactory::load($filePath);
+            foreach ($spreadsheet->getAllSheets() as $sheet) {
+                $rowsArray = $sheet->toArray(null, false, false, false);
+                $rowsCollection = collect($rowsArray)->map(function ($row) {
+                    return collect($row);
+                });
+                $import->processRows($rowsCollection);
+            }
+
             DB::commit();
 
             if (method_exists($import, 'stats')) {

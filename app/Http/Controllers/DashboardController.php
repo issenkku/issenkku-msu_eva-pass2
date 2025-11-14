@@ -307,9 +307,8 @@ class DashboardController extends Controller
 
         // Try to get evaluator user separately to avoid relationship issues
         $evaluatorUser = null;
-        if ($assignment->assignmentData && $assignment->assignmentData->evaluator_position_id) {
-            $evaluatorUser = User::where('position_id', $assignment->assignmentData->evaluator_position_id)
-                ->first();
+        if ($assignment->assignmentData && $assignment->assignmentData->evaluator_id) {
+            $evaluatorUser = User::find($assignment->assignmentData->evaluator_id);
         }
 
         $report = $assignment->report;

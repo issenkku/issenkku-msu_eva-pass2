@@ -19,6 +19,13 @@ class UsersImport implements ToCollection
 
     public function collection(Collection $rows)
     {
+        // Keep compatibility with Maatwebsite's ToCollection contract
+        $this->processRows($rows);
+    }
+
+    // Expose row processing so controllers can feed rows from any worksheet
+    public function processRows(Collection $rows): void
+    {
         foreach ($rows->skip(1) as $index => $row) {
             try {
                 $rowArray = $row->toArray();
