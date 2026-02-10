@@ -269,6 +269,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    function isValidUrl(value) {
+        try {
+            const url = new URL(value);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch (e) {
+            return false;
+        }
+    }
+
     function validateForm(isSubmit = false) {
         const errors = [];
         
