@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;
 use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
 use App\Models\WorkloadEntry;
+use App\Models\WorkloadForm;
+use App\Services\WorkloadFormulaEvaluator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -41,7 +43,13 @@ class WorkloadEntryController extends Controller
 
     public function store(StoreWorkloadEntryRequest $request)
     {
-        $entry = WorkloadEntry::create($request->validated());
+        $validated = $request->validated();
+        $form = WorkloadForm::with('fields')->findOrFail($validated['workload_form_id']);
+        $calculatedScore = app(WorkloadFormulaEvaluator::class)
+            ->evaluate($form->formula_logic, $form->fields, $validated['field_values']);
+
+        $validated['calculated_score'] = $calculatedScore;
+        $entry = WorkloadEntry::create($validated);
 
         return response()->json($entry, 201);
     }
@@ -50,7 +58,16 @@ class WorkloadEntryController extends Controller
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
-            $entry->update($request->validated());
+            $validated = $request->validated();
+            $workloadFormId = $validated['workload_form_id'] ?? $entry->workload_form_id;
+            $fieldValues = $validated['field_values'] ?? $entry->field_values ?? [];
+
+            $form = WorkloadForm::with('fields')->findOrFail($workloadFormId);
+            $calculatedScore = app(WorkloadFormulaEvaluator::class)
+                ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+
+            $validated['calculated_score'] = $calculatedScore;
+            $entry->update($validated);
 
             return response()->json($entry);
         } catch (ModelNotFoundException $e) {

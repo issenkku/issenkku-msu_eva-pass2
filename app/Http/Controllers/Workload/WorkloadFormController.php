@@ -10,15 +10,27 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class WorkloadFormController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        return response()->json(WorkloadForm::with('fields')->get());
+        $query = WorkloadForm::with(['fields', 'items']);
+
+        $quantitySubCriteriaId = $request->input('quantity_sub_criteria_id', $request->input('quant_sub_criteria_id'));
+        $quantitySubCriteriaItemId = $request->input('quantity_sub_criteria_item_id');
+
+        if (!is_null($quantitySubCriteriaId) && $quantitySubCriteriaId !== '') {
+            $query->where('quantity_sub_criteria_id', $quantitySubCriteriaId);
+        }
+        if (!is_null($quantitySubCriteriaItemId) && $quantitySubCriteriaItemId !== '') {
+            $query->where('quantity_sub_criteria_item_id', $quantitySubCriteriaItemId);
+        }
+
+        return response()->json($query->get());
     }
 
     public function show($id)
     {
         try {
-            return response()->json(WorkloadForm::with('fields')->findOrFail($id));
+            return response()->json(WorkloadForm::with(['fields', 'items'])->findOrFail($id));
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Workload form not found'], 404);
         }

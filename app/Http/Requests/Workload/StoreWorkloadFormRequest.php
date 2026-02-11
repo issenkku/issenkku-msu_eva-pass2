@@ -16,6 +16,7 @@ class StoreWorkloadFormRequest extends FormRequest
         return [
             'formula_logic' => ['required', 'string'],
             'quantity_sub_criteria_id' => ['required', 'integer', 'exists:quantity_sub_criterias,id'],
+            'quantity_sub_criteria_item_id' => ['nullable', 'integer', 'exists:quantity_sub_criteria_items,id'],
         ];
     }
 }

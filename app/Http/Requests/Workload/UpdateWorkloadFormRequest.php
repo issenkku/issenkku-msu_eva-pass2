@@ -16,6 +16,7 @@ class UpdateWorkloadFormRequest extends FormRequest
         return [
             'formula_logic' => ['sometimes', 'required', 'string'],
             'quantity_sub_criteria_id' => ['sometimes', 'required', 'integer', 'exists:quantity_sub_criterias,id'],
+            'quantity_sub_criteria_item_id' => ['sometimes', 'required', 'integer', 'exists:quantity_sub_criteria_items,id'],
         ];
     }
 }
