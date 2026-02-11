@@ -25,6 +25,12 @@ class QuantitySubCriteria extends Model
         'description',
     ];
 
+    public function groups()
+    {
+        return $this->hasMany(QuantitySubCriteriaGroup::class, 'quantity_sub_criteria_id')
+            ->orderBy('sequence');
+    }
+
     public function mainCriteria(): BelongsTo
     {
         return $this->belongsTo(QuantityMainCriteria::class, 'quantity_main_criteria_id');
