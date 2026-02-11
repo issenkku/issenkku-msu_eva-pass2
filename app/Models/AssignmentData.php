@@ -16,12 +16,14 @@ class AssignmentData extends Model
 
     protected $fillable = [
         'evaluator_id',
+        'evaluator_position_id',
         'start_time',
         'end_time',
     ];
 
     protected $casts = [
         'evaluator_id' => 'integer',
+        'evaluator_position_id' => 'integer',
         'start_time' => 'date',
         'end_time' => 'date',
     ];

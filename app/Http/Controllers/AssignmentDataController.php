@@ -63,14 +63,18 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
+            $evaluator = User::find($request->evaluator_id);
+            if (!$evaluator) {
+                throw new \Exception('Evaluator not found');
+            }
+
             // Create assignment data
             $assignmentData = AssignmentData::create([
                 'evaluator_id' => $request->evaluator_id,
+                'evaluator_position_id' => $evaluator->position_id,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
-
-            $evaluator = User::find($request->evaluator_id);
             
             // Assign role to evaluator
             $this->assignUserRole($evaluator, 'ผู้ประเมิน');
@@ -175,8 +179,14 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
+            $evaluator = User::find($request->evaluator_id);
+            if (!$evaluator) {
+                throw new \Exception('Evaluator not found');
+            }
+
             $assignmentData->update([
                 'evaluator_id' => $request->evaluator_id,
+                'evaluator_position_id' => $evaluator->position_id,
                 'start_time' => $request->start_time,
                 'end_time' => $request->end_time,
             ]);
@@ -189,7 +199,6 @@ class AssignmentDataController extends Controller
             }
             $assignmentData->assignments()->delete();
 
-            $evaluator = User::find($request->evaluator_id);
             $this->assignUserRole($evaluator, 'ผู้ประเมิน');
 
             // Create new assignments
