@@ -22,7 +22,7 @@
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
                  <span class="text-gray-700">
-                    {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
+                    {{ $assignment?->assignmentData?->evaluatorUser?->name ?? '-' }}
                  </span>
             </div>
             <div class="flex">

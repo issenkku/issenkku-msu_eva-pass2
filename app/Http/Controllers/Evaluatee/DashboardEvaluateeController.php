@@ -157,13 +157,13 @@ class DashboardEvaluateeController extends Controller
             'reportData.criteriaVersion.qualityMainCriterias.qualitySubCriterias.evaluationList',
             'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
             'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
-            'assignments.assignmentData',
+            'assignments.assignmentData.evaluatorUser',
         ])->findOrFail($id);
 
-        // Find the assignment for the current user
-        $assignment = $report->assignments->where('evaluatee_id', $user->id)->first();
+        // Single assignment per report (report_id is unique in assignments)
+        $assignment = $report->assignments;
 
-        if (! $assignment) {
+        if (! $assignment || $assignment->evaluatee_id !== $user->id) {
             abort(403, 'คุณไม่มีสิทธิ์เข้าถึงรายงานนี้');
         }
 
