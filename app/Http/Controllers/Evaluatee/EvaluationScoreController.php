@@ -39,16 +39,28 @@ class EvaluationScoreController extends Controller
                 return $statusCheck;
             }
 
-            // --- Flatten evidence_list to array of {evaluation_list_id, link} ---
+            // --- Flatten evidence_list to array of {evaluation_list_id, quality_main_criteria_id, link} ---
             $evidenceInput = $request->input('evidence_list', []);
             $evidenceFlat = [];
-            foreach ($evidenceInput as $evalListId => $item) {
+            foreach ($evidenceInput as $mainCriteriaId => $item) {
+                $qualityMainId = isset($item['quality_main_criteria_id'])
+                    ? (int) $item['quality_main_criteria_id']
+                    : (int) $mainCriteriaId;
+                $evaluationListId = isset($item['evaluation_list_id'])
+                    ? (int) $item['evaluation_list_id']
+                    : null;
+
+                if (! $evaluationListId) {
+                    continue;
+                }
+
                 if (isset($item['links']) && is_array($item['links'])) {
                     foreach ($item['links'] as $link) {
                         $link = trim($link);
                         if ($link !== '') {
                             $evidenceFlat[] = [
-                                'evaluation_list_id' => $evalListId,
+                                'evaluation_list_id' => $evaluationListId,
+                                'quality_main_criteria_id' => $qualityMainId,
                                 'link' => $link,
                             ];
                         }
@@ -70,6 +82,7 @@ class EvaluationScoreController extends Controller
 
                 'evidence_list_flat' => 'nullable|array',
                 'evidence_list_flat.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
+                'evidence_list_flat.*.quality_main_criteria_id' => 'required|integer|exists:quality_main_criterias,id',
                 'evidence_list_flat.*.link' => 'required|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
@@ -144,6 +157,7 @@ class EvaluationScoreController extends Controller
             foreach ($validated['evidence_list_flat'] ?? [] as $item) {
                 EvidenceAnswer::create([
                     'evaluation_list_id' => $item['evaluation_list_id'],
+                    'quality_main_criteria_id' => $item['quality_main_criteria_id'],
                     'report_id' => $reportId,
                     'link' => $item['link'],
                 ]);

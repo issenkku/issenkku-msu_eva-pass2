@@ -6,6 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreSubjectRequest extends FormRequest
 {
+    protected function getRedirectUrl()
+    {
+        $redirectTo = $this->input('redirect_to');
+        if ($redirectTo) {
+            return $redirectTo;
+        }
+
+        return parent::getRedirectUrl();
+    }
+
     public function authorize(): bool
     {
         return true;

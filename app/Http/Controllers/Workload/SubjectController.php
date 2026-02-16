@@ -7,12 +7,19 @@ use App\Http\Requests\Workload\StoreSubjectRequest;
 use App\Http\Requests\Workload\UpdateSubjectRequest;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Subject::all());
+        if ($request->expectsJson()) {
+            return response()->json(Subject::all());
+        }
+
+        $subjects = Subject::orderBy('code')->paginate(10);
+
+        return view('subjects.index', compact('subjects'));
     }
 
     public function show($id)
@@ -28,7 +35,18 @@ class SubjectController extends Controller
     {
         $subject = Subject::create($request->validated());
 
-        return response()->json($subject, 201);
+        if ($request->expectsJson()) {
+            return response()->json($subject, 201);
+        }
+
+        $redirectTo = $request->input('redirect_to')
+            ?? $request->query('redirect_to')
+            ?? $request->headers->get('referer');
+        if ($redirectTo) {
+            return redirect()->to($redirectTo)->with('success', 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว');
+        }
+
+        return redirect()->route('subjects.index')->with('success', 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว');
     }
 
     public function update(UpdateSubjectRequest $request, $id)
@@ -37,9 +55,31 @@ class SubjectController extends Controller
             $subject = Subject::findOrFail($id);
             $subject->update($request->validated());
 
-            return response()->json($subject);
+            if ($request->expectsJson()) {
+                return response()->json($subject);
+            }
+
+            $redirectTo = $request->input('redirect_to')
+                ?? $request->query('redirect_to')
+                ?? $request->headers->get('referer');
+            if ($redirectTo) {
+                return redirect()->to($redirectTo)->with('success', 'อัปเดตข้อมูลรายวิชาเรียบร้อยแล้ว');
+            }
+
+            return redirect()->route('subjects.index')->with('success', 'อัปเดตข้อมูลรายวิชาเรียบร้อยแล้ว');
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Subject not found'], 404);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Subject not found'], 404);
+            }
+
+            $redirectTo = $request->input('redirect_to')
+                ?? $request->query('redirect_to')
+                ?? $request->headers->get('referer');
+            if ($redirectTo) {
+                return redirect()->to($redirectTo)->with('error', 'ไม่พบรายวิชาที่ต้องการแก้ไข');
+            }
+
+            return redirect()->route('subjects.index')->with('error', 'ไม่พบรายวิชาที่ต้องการแก้ไข');
         }
     }
 
@@ -49,9 +89,31 @@ class SubjectController extends Controller
             $subject = Subject::findOrFail($id);
             $subject->delete();
 
-            return response()->json(['message' => 'Subject deleted successfully']);
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'Subject deleted successfully']);
+            }
+
+            $redirectTo = request()->input('redirect_to')
+                ?? request()->query('redirect_to')
+                ?? request()->headers->get('referer');
+            if ($redirectTo) {
+                return redirect()->to($redirectTo)->with('success', 'ลบข้อมูลรายวิชาเรียบร้อยแล้ว');
+            }
+
+            return redirect()->route('subjects.index')->with('success', 'ลบข้อมูลรายวิชาเรียบร้อยแล้ว');
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Subject not found'], 404);
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'Subject not found'], 404);
+            }
+
+            $redirectTo = request()->input('redirect_to')
+                ?? request()->query('redirect_to')
+                ?? request()->headers->get('referer');
+            if ($redirectTo) {
+                return redirect()->to($redirectTo)->with('error', 'ไม่พบรายวิชาที่ต้องการลบ');
+            }
+
+            return redirect()->route('subjects.index')->with('error', 'ไม่พบรายวิชาที่ต้องการลบ');
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Services;
 
@@ -42,6 +42,7 @@ class WorkloadFormulaEvaluator
         if ($trimmed === '') {
             return $trimmed;
         }
+        $trimmed = preg_replace('/(?<![A-Za-z0-9_])item_\\*(?![A-Za-z0-9_])/i', 'item_star', $trimmed);
         // If the formula contains a single "=" (not a comparison), use the left side.
         $hasComparison = str_contains($trimmed, '==') || str_contains($trimmed, '!=')
             || str_contains($trimmed, '>=') || str_contains($trimmed, '<=');
@@ -61,7 +62,12 @@ class WorkloadFormulaEvaluator
     {
         $values = [];
         foreach ($fieldValues as $key => $value) {
-            $values[strtolower((string) $key)] = $value;
+            $normalizedKey = strtolower((string) $key);
+            if ($normalizedKey === 'item_*') {
+                $values['item_star'] = $value;
+                continue;
+            }
+            $values[$normalizedKey] = $value;
         }
 
         $variables = [];
@@ -79,6 +85,13 @@ class WorkloadFormulaEvaluator
             $variables[$name] = [
                 'type' => $type,
                 'value' => $values[$name] ?? null,
+            ];
+        }
+
+        if (array_key_exists('item_star', $values) && !array_key_exists('item_star', $variables)) {
+            $variables['item_star'] = [
+                'type' => 'number',
+                'value' => $values['item_star'],
             ];
         }
 

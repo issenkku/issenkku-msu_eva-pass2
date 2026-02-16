@@ -66,13 +66,13 @@ class UpdateWorkloadEntryRequest extends FormRequest
                 continue;
             }
             if (!array_key_exists($name, $normalized)) {
-                if ($type !== 'text') {
+                if ($type !== 'text' && $type !== 'item') {
                     $validator->errors()->add('field_values', "กรุณากรอกค่าตัวแปร: {$name}");
                 }
                 continue;
             }
             $value = $normalized[$name];
-            if ($type === 'number') {
+            if ($type === 'number' || $type === 'item') {
                 if ($value === null || $value === '' || !is_numeric($value)) {
                     $validator->errors()->add('field_values', "ค่าตัวแปรต้องเป็นตัวเลข: {$name}");
                 }

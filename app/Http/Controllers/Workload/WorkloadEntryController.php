@@ -44,11 +44,13 @@ class WorkloadEntryController extends Controller
     public function store(StoreWorkloadEntryRequest $request)
     {
         $validated = $request->validated();
-        $form = WorkloadForm::with('fields')->findOrFail($validated['workload_form_id']);
+        $form = WorkloadForm::with(['fields', 'items'])->findOrFail($validated['workload_form_id']);
+        $fieldValues = $this->resolveItemFieldValues($form, (array) ($validated['field_values'] ?? []));
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
-            ->evaluate($form->formula_logic, $form->fields, $validated['field_values']);
+            ->evaluate($form->formula_logic, $form->fields, $fieldValues);
 
         $validated['calculated_score'] = $calculatedScore;
+        $validated['field_values'] = $fieldValues;
         $entry = WorkloadEntry::create($validated);
 
         return response()->json($entry, 201);
@@ -62,11 +64,13 @@ class WorkloadEntryController extends Controller
             $workloadFormId = $validated['workload_form_id'] ?? $entry->workload_form_id;
             $fieldValues = $validated['field_values'] ?? $entry->field_values ?? [];
 
-            $form = WorkloadForm::with('fields')->findOrFail($workloadFormId);
+            $form = WorkloadForm::with(['fields', 'items'])->findOrFail($workloadFormId);
+            $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
 
             $validated['calculated_score'] = $calculatedScore;
+            $validated['field_values'] = $fieldValues;
             $entry->update($validated);
 
             return response()->json($entry);
@@ -85,5 +89,50 @@ class WorkloadEntryController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Workload entry not found'], 404);
         }
+    }
+
+    private function resolveItemFieldValues(WorkloadForm $form, array $fieldValues): array
+    {
+        $normalized = [];
+        foreach ($fieldValues as $key => $value) {
+            $normalized[strtolower((string) $key)] = $value;
+        }
+
+        $itemScores = [];
+        foreach ($form->items ?? [] as $item) {
+            $sequence = (int) ($item->sequence ?? 0);
+            if ($sequence > 0) {
+                $itemScores[$sequence] = $item->score;
+            }
+        }
+
+        foreach ($form->fields as $field) {
+            $type = strtolower((string) ($field->field_type ?? 'number'));
+            if ($type !== 'item') {
+                continue;
+            }
+            $name = strtolower((string) $field->variable_name);
+            if ($name === '' || array_key_exists($name, $normalized)) {
+                continue;
+            }
+            if (preg_match('/^item_(\d+)$/i', $name, $matches)) {
+                $sequence = (int) $matches[1];
+                if (array_key_exists($sequence, $itemScores)) {
+                    $normalized[$name] = $itemScores[$sequence];
+                }
+            }
+        }
+
+        if (!array_key_exists('item_*', $normalized) && !array_key_exists('item_star', $normalized)) {
+            foreach ($normalized as $key => $value) {
+                if (preg_match('/^item_\d+$/', $key)) {
+                    $normalized['item_*'] = $value;
+                    $normalized['item_star'] = $value;
+                    break;
+                }
+            }
+        }
+
+        return $normalized;
     }
 }

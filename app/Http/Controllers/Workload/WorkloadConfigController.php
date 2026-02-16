@@ -116,7 +116,7 @@ class WorkloadConfigController extends Controller
             'groups.*.items.*.fields.*.field_type' => ['required', 'string', 'max:255'],
             'groups.*.items.*.form_items' => ['nullable', 'array'],
             'groups.*.items.*.form_items.*.label' => ['required', 'string', 'max:255'],
-            'groups.*.items.*.form_items.*.score' => ['nullable', 'numeric', 'min:0'],
+            'groups.*.items.*.form_items.*.score' => ['nullable', 'integer', 'min:0'],
             'groups.*.items.*.form_items.*.sequence' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -197,7 +197,9 @@ class WorkloadConfigController extends Controller
                     foreach ($itemBlock['form_items'] ?? [] as $entry) {
                         WorkloadFormItem::create([
                             'label' => $entry['label'],
-                            'score' => $entry['score'] ?? null,
+                            'score' => array_key_exists('score', $entry) && $entry['score'] !== null
+                                ? (int) $entry['score']
+                                : null,
                             'sequence' => $entry['sequence'],
                             'workload_form_id' => $form->id,
                         ]);
@@ -231,6 +233,8 @@ class WorkloadConfigController extends Controller
             'if', 'and', 'or', 'not', 'xor', 'xnor', 'nand', 'nor', 'true', 'false',
         ];
 
+        $formula = preg_replace('/(?<![A-Za-z0-9_])item_\\*(?![A-Za-z0-9_])/i', 'item_star', $formula);
+
         $variables = array_map(
             static fn ($field) => strtolower($field['variable_name'] ?? ''),
             $fields
@@ -248,6 +252,9 @@ class WorkloadConfigController extends Controller
                 continue;
             }
             if (in_array($token, $allowedFunctions, true)) {
+                continue;
+            }
+            if ($token === 'item_star') {
                 continue;
             }
             if (!in_array($token, $variables, true)) {

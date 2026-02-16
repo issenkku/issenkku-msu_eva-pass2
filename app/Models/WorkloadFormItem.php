@@ -16,6 +16,10 @@ class WorkloadFormItem extends Model
         'workload_form_id',
     ];
 
+    protected $casts = [
+        'score' => 'integer',
+    ];
+
     public function form()
     {
         return $this->belongsTo(WorkloadForm::class, 'workload_form_id');

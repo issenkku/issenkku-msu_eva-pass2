@@ -87,6 +87,14 @@ class ReportDataService
             return [$evalListId => $items->pluck('link')->filter()->values()->toArray()];
         });
 
+        $qualityEvidenceMap = EvidenceAnswer::where('report_id', $id)
+            ->whereNotNull('quality_main_criteria_id')
+            ->get()
+            ->groupBy('quality_main_criteria_id')
+            ->mapWithKeys(function ($items, $mainId) {
+                return [$mainId => $items->pluck('link')->filter()->values()->toArray()];
+            });
+
         $qualityData = DB::table('quality_scores')
             ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
             ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
@@ -146,6 +154,7 @@ class ReportDataService
             'quantityMainCriterias' => $quantityMainCriterias,
             'categoryItems' => $categoryItems,
             'evidenceMap' => $evidenceMap,
+            'qualityEvidenceMap' => $qualityEvidenceMap,
         ];
     }
 

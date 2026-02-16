@@ -16,6 +16,7 @@ class EvidenceAnswerResource extends JsonResource
     {
         return [
             'evaluation_list_id' => $this->evaluation_list_id,
+            'quality_main_criteria_id' => $this->quality_main_criteria_id,
             'report_id' => $this->report_id,
             'link' => $this->link,
             'created_at' => $this->created_at?->format('Y-m-d'),

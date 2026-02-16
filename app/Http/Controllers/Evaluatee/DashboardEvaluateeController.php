@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Models\WorkloadEntry;
+use App\Models\WorkloadForm;
 use App\Services\GraphDataService;
 use App\Services\ScoreService;
 use Illuminate\Http\Request;
@@ -206,6 +209,14 @@ class DashboardEvaluateeController extends Controller
             return [$evalListId => $items->pluck('link')->filter()->values()->toArray()];
         });
 
+        $qualityEvidenceMap = EvidenceAnswer::where('report_id', $id)
+            ->whereNotNull('quality_main_criteria_id')
+            ->get()
+            ->groupBy('quality_main_criteria_id')
+            ->mapWithKeys(function ($items, $mainId) {
+                return [$mainId => $items->pluck('link')->filter()->values()->toArray()];
+            });
+
         $qualityData = DB::table('quality_scores')
             ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
             ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
@@ -396,6 +407,66 @@ class DashboardEvaluateeController extends Controller
             }
         }
 
+        $quantitySubCriteriaIds = collect($categoryItems)
+            ->flatMap(function ($category) {
+                return collect($category['evaluation_lists'] ?? [])
+                    ->flatMap(function ($list) {
+                        return collect($list['quantity_items'] ?? [])
+                            ->flatMap(function ($main) {
+                                return collect($main['sub_criterias'] ?? [])->pluck('id');
+                            });
+                    });
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        $workloadMap = [];
+        if ($quantitySubCriteriaIds->isNotEmpty()) {
+            $subCriteriaModels = QuantitySubCriteria::with(['groups.items'])
+                ->whereIn('id', $quantitySubCriteriaIds)
+                ->get()
+                ->keyBy('id');
+
+            $workloadFormsBySubCriteria = WorkloadForm::with(['fields', 'items', 'subCriteriaItem.group'])
+                ->whereIn('quantity_sub_criteria_id', $quantitySubCriteriaIds)
+                ->get()
+                ->groupBy('quantity_sub_criteria_id');
+
+            $allFormIds = $workloadFormsBySubCriteria
+                ->flatten(1)
+                ->pluck('id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            $workloadEntriesByFormId = collect();
+            if ($allFormIds->isNotEmpty()) {
+                $workloadEntriesByFormId = WorkloadEntry::with(['subject'])
+                    ->where('report_id', $id)
+                    ->whereIn('workload_form_id', $allFormIds)
+                    ->orderByDesc('created_at')
+                    ->get()
+                    ->groupBy('workload_form_id');
+            }
+
+            $evidenceLinksByEntryId = EvidenceAnswer::where('report_id', $id)
+                ->whereNotNull('workload_entry_id')
+                ->orderByDesc('created_at')
+                ->get()
+                ->groupBy('workload_entry_id')
+                ->map(fn($answers) => $answers->pluck('link')->filter()->values());
+
+            foreach ($quantitySubCriteriaIds as $subCriteriaId) {
+                $workloadMap[$subCriteriaId] = [
+                    'subCriteria' => $subCriteriaModels->get($subCriteriaId),
+                    'workloadForms' => $workloadFormsBySubCriteria->get($subCriteriaId, collect()),
+                    'workloadEntriesByFormId' => $workloadEntriesByFormId,
+                    'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
+                ];
+            }
+        }
+
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('evaluation.show', ['id' => $id, 'readonly' => 1]);
         }
@@ -404,8 +475,9 @@ class DashboardEvaluateeController extends Controller
             'id', 'user', 'report', 'assignment', 'formatThai',
             'startTime', 'endTime', 'reportName',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
-            'quantityMainCriterias', 'categoryItems', 'evidenceMap',
-            'readonly', 'versionName', 'reportComment', 'reportDescription'
+            'quantityMainCriterias', 'categoryItems', 'evidenceMap', 'qualityEvidenceMap',
+            'readonly', 'versionName', 'reportComment', 'reportDescription',
+            'workloadMap'
         ));
     }
 }

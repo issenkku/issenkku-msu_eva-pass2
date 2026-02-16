@@ -15,7 +15,9 @@ class EvidenceAnswer extends Model
 
     protected $fillable = [
         'evaluation_list_id',
+        'quality_main_criteria_id',
         'report_id',
+        'workload_entry_id',
         'link',
     ];
 
@@ -32,5 +34,15 @@ class EvidenceAnswer extends Model
     public function report(): BelongsTo
     {
         return $this->belongsTo(Reports::class);
+    }
+
+    public function qualityMainCriteria(): BelongsTo
+    {
+        return $this->belongsTo(QualityMainCriteria::class, 'quality_main_criteria_id');
+    }
+
+    public function workloadEntry(): BelongsTo
+    {
+        return $this->belongsTo(WorkloadEntry::class, 'workload_entry_id');
     }
 }
