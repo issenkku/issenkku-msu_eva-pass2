@@ -1,7 +1,8 @@
 @props([
     'categoryItems' => [],
     'readonly' => false,
-    'evidenceMap' => [] 
+    'evidenceMap' => [],
+    'qualityEvidenceMap' => []
 ])
 
 <div class="space-y-8">
@@ -288,33 +289,34 @@
                                                 <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
                                                 <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
                                             </div>
+
+                                            <div class="mt-5 border-t border-gray-200 pt-4">
+                                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                                    </svg>
+                                                    หลักฐาน
+                                                </h3>
+                                                @if(!empty($qualityEvidenceMap[$mainCriteria['id']]))
+                                                    @foreach((array)$qualityEvidenceMap[$mainCriteria['id']] as $link)
+                                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
+                                                            <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                                                {{ $link }}
+                                                            </a>
+                                                        </div>
+                                                    @endforeach
+                                                @else
+                                                    <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                                        ไม่มีหลักฐานแนบ
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
                             @endif
 
-                            {{-- Evidence Section for Evaluation List --}}
-                            <div class="pt-6 border-t border-gray-200">
-                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                    </svg>
-                                    หลักฐาน
-                                </h3>
-                                @if(!empty($evidenceMap[$evaluationList['id']]))
-                                    @foreach((array)$evidenceMap[$evaluationList['id']] as $link)
-                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
-                                            <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                                                {{ $link }}
-                                            </a>
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                        ไม่มีหลักฐานแนบ
-                                    </div>
-                                @endif
-                            </div>
+                            @endif
                         </div>
                     </div>
                 @endforeach

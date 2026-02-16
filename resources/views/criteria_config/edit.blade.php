@@ -213,12 +213,21 @@
                                             <div class="quant_sub_criteria_block bg-gray-50 p-3 rounded-lg">
                                                 <div class="flex justify-between items-center mb-2">
                                                     <span class="text-sm font-medium text-gray-600">เกณฑ์ปริมาณย่อย</span>
-                                                    <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
+                                                    <div class="flex items-center gap-2">
+                                                        <a href="/workload-config" class="quant_sub_setting_btn text-blue-600 hover:text-blue-800 transition duration-200" title="ตั้งค่าเกณฑ์ย่อย">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-1.14 1.903-1.14 2.202 0a1.724 1.724 0 002.573 1.066c.99-.657 2.28.284 1.991 1.414a1.724 1.724 0 001.066 2.573c1.14.3 1.14 1.903 0 2.202a1.724 1.724 0 00-1.066 2.573c.657.99-.284 2.28-1.414 1.991a1.724 1.724 0 00-2.573 1.066c-.3 1.14-1.903 1.14-2.202 0a1.724 1.724 0 00-2.573-1.066c-.99.657-2.28-.284-1.991-1.414a1.724 1.724 0 00-1.066-2.573c-1.14-.3-1.14-1.903 0-2.202.52-.137.93-.547 1.066-1.066.289-1.13 1.001-2.071 1.991-1.414.94.625 2.073.065 2.573-1.066z" />
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            </svg>
+                                                        </a>
+                                                        <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
+                                                <input type="hidden" name="quant_sub_criteria_id" class="quant_sub_criteria_id" value="">
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
@@ -625,6 +634,19 @@
             });
         }
 
+        function updateQuantSubSettingLinks() {
+            const baseUrl = '/workload-config';
+            document.querySelectorAll('.quant_sub_criteria_block').forEach(block => {
+                const idInput = block.querySelector('.quant_sub_criteria_id');
+                const link = block.querySelector('.quant_sub_setting_btn');
+                if (!link) {
+                    return;
+                }
+                const idValue = idInput ? idInput.value.trim() : '';
+                link.setAttribute('href', idValue ? `${baseUrl}?quant_sub_criteria_id=${encodeURIComponent(idValue)}` : baseUrl);
+            });
+        }
+
         function updateSequences() {
             // Update category sequences
             document.querySelectorAll('.category_block:not([style*="display: none"])').forEach((catBlock, index) => {
@@ -665,6 +687,8 @@
                     block.querySelector('.qual_sub_sequence').textContent = index + 1;
                 });
             });
+
+            updateQuantSubSettingLinks();
         }
 
         // Category handlers
@@ -1100,6 +1124,10 @@
                         const subBlockTemplate = document.querySelector('.quant_sub_criteria_block');
                         const subBlock = subBlockTemplate.cloneNode(true);
                         subBlock.querySelector('.quant_sub_name').value = subData.name || '';
+                        const quantSubIdInput = subBlock.querySelector('.quant_sub_criteria_id');
+                        if (quantSubIdInput) {
+                            quantSubIdInput.value = subData.quantity_sub_criteria_id || subData.id || '';
+                        }
                         subBlock.querySelector('.score_a').value = subData.score_a || '';
                         subBlock.querySelector('.score_b').value = subData.score_b || '';
                         subContainer.appendChild(subBlock);

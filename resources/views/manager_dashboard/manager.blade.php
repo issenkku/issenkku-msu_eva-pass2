@@ -65,6 +65,7 @@
             :categoryItems="$categoryItems"
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
+            :qualityEvidenceMap="$qualityEvidenceMap"
         />
 
         <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">

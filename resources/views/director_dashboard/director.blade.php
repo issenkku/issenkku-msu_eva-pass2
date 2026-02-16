@@ -65,6 +65,7 @@
             :categoryItems="$categoryItems"
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
+            :qualityEvidenceMap="$qualityEvidenceMap"
         />
         
 

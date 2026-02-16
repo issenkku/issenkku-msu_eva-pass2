@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Evaluation - ระบบประเมิน')
 
@@ -55,7 +55,9 @@
             :categoryItems="$categoryItems"
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
+            :qualityEvidenceMap="$qualityEvidenceMap"
             :report="$report"
+            :workloadMap="$workloadMap"
         />
 
         <!-- summary score -->

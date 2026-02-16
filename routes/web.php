@@ -7,6 +7,9 @@ use App\Http\Controllers\Director\DirectorController;
 use App\Http\Controllers\Director\DirectorScoreController;
 use App\Http\Controllers\Evaluatee\DashboardEvaluateeController;
 use App\Http\Controllers\Evaluatee\EvaluationScoreController;
+use App\Http\Controllers\Evaluatee\EvaluationWorkloadController;
+use App\Http\Controllers\Evaluatee\EvaluateeWorkloadEntryController;
+use App\Http\Controllers\Workload\SubjectController;
 use App\Http\Controllers\EvaluatorController;
 use App\Http\Controllers\EvaluatorScoreController;
 use App\Http\Controllers\FileExportController;
@@ -108,6 +111,11 @@ Route::middleware(['auth:sanctum', 'role:ผู้รับการประเ
     Route::get('/evaluatee-dashboard', [DashboardEvaluateeController::class, 'index'])->name('evaluatee.dashboard');
     Route::get('/evaluation/{id}', [DashboardEvaluateeController::class, 'evaluation'])->name('evaluation.show');
     Route::post('/evaluation/{id}/scores', [EvaluationScoreController::class, 'storeEvaluationScores'])->name('evaluation_score.store');
+    Route::post('/evaluatee/workload-entries', [EvaluateeWorkloadEntryController::class, 'store'])->name('evaluatee.workload-entries.store');
+    Route::put('/evaluatee/workload-entries/{id}', [EvaluateeWorkloadEntryController::class, 'update'])->name('evaluatee.workload-entries.update');
+    Route::delete('/evaluatee/workload-entries/{id}', [EvaluateeWorkloadEntryController::class, 'destroy'])->name('evaluatee.workload-entries.destroy');
+    Route::get('/evaluation-workload', [EvaluationWorkloadController::class, 'index'])->name('evaluatee.workload');
+    Route::post('/evaluatee/subjects', [SubjectController::class, 'store'])->name('subjects.store.evaluatee');
 });
 
 Route::middleware(['auth:sanctum', 'role:กรรมการ'])->group(function () {
