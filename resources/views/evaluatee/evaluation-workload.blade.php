@@ -293,10 +293,10 @@
                                     <div class="workload-item-summary-left">
                                         <span class="workload-item-summary-title">{{ $item->name ?? '-' }}</span>
                                     </div>
-                                    <div class="workload-item-summary-right">
+                                    {{-- <div class="workload-item-summary-right">
                                         <span class="workload-item-summary-score">คะแนน {{ $itemTotalDisplay }}</span>
                                         <span class="workload-item-summary-icon"></span>
-                                    </div>
+                                    </div> --}}
                                 </summary>
                                 <div class="workload-subtable">
                                     <div class="workload-table-wrap">
@@ -629,7 +629,7 @@
                     <select class="workload-modal-select" name="subject_id">
                         <option value="">-- เลือกรายวิชา --</option>
                         @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}">
+                            <option value="{{ $subject->id }}" data-credits="{{ $subject->credits ?? '' }}">
                                 {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} ({{ $subject->credits ?? '-' }} หน่วยกิต)
                             </option>
                         @endforeach
@@ -1515,6 +1515,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
         updateSelectedItemField();
+        updateCreditsFromSubject();
     }
 
     function updateSelectedItemField() {
@@ -1540,6 +1541,60 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         hiddenItemField.setAttribute('name', 'field_values[' + variableName + ']');
         hiddenItemField.value = selected.dataset.score || '';
+    }
+
+    function getActiveCreditsInput() {
+        const formId = getActiveFormId();
+        let scope = null;
+        if (detailFieldsContainer && formId) {
+            scope = detailFieldsContainer.querySelector('.workload-form-fields[data-form-id="' + formId + '"]');
+        }
+        const container = scope || document;
+        const explicit = Array.from(container.querySelectorAll('input[name="field_values[credits]"]'));
+        const byName = Array.from(container.querySelectorAll('input[name^="field_values["]')).filter(function (input) {
+            return /credit/i.test(input.getAttribute('name'));
+        });
+        const byLabel = Array.from(container.querySelectorAll('.workload-modal-subfield')).map(function (field) {
+            const label = field.querySelector('.workload-modal-sub-label');
+            if (!label) {
+                return null;
+            }
+            const text = (label.textContent || '').trim();
+            if (!text.includes('หน่วยกิต')) {
+                return null;
+            }
+            return field.querySelector('input');
+        }).filter(Boolean);
+        const candidates = explicit.concat(byName, byLabel);
+        return candidates.find(function (input) {
+            return !input.disabled;
+        }) || candidates[0] || null;
+    }
+
+    function updateCreditsFromSubject() {
+        if (!subjectSelect) {
+            return;
+        }
+        const selected = subjectSelect.selectedOptions ? subjectSelect.selectedOptions[0] : null;
+        if (!selected) {
+            return;
+        }
+        const credits = selected.dataset ? selected.dataset.credits : '';
+        if (credits === undefined || credits === null || credits === '') {
+            return;
+        }
+        const creditsInput = getActiveCreditsInput();
+        if (!creditsInput) {
+            return;
+        }
+        const wasAuto = creditsInput.dataset ? creditsInput.dataset.autofill === 'true' : false;
+        const isEmpty = creditsInput.value === '' || creditsInput.value === '1';
+        if (isEmpty || wasAuto) {
+            creditsInput.value = credits;
+            if (creditsInput.dataset) {
+                creditsInput.dataset.autofill = 'true';
+            }
+        }
     }
 
     function setFormMode(mode, entryId) {
@@ -1719,6 +1774,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 setActiveGroup(selected.dataset.groupId, groupLabelInput ? groupLabelInput.value : '');
             }
             updateFormFields();
+        });
+    }
+
+    if (subjectSelect) {
+        subjectSelect.addEventListener('change', function () {
+            updateCreditsFromSubject();
+        });
+    }
+
+    if (detailFieldsContainer) {
+        detailFieldsContainer.addEventListener('input', function (event) {
+            const target = event.target;
+            if (!target || target.tagName !== 'INPUT') {
+                return;
+            }
+            const name = target.getAttribute('name') || '';
+            if (/credit/i.test(name) || (target.closest('.workload-modal-subfield')?.querySelector('.workload-modal-sub-label')?.textContent || '').includes('หน่วยกิต')) {
+                if (target.dataset) {
+                    target.dataset.autofill = 'false';
+                }
+            }
         });
     }
 

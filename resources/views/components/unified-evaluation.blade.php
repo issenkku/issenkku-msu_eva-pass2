@@ -228,6 +228,11 @@
                                                                                 class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                                             <label class="text-base text-gray-800 break-words">
                                                                                 {{ $subCriteria['name'] }}
+                                                                                @if(!empty($subCriteria['description']))
+                                                                                    <div class="text-sm text-gray-500 mt-1">
+                                                                                        {!! $subCriteria['description'] !!}
+                                                                                    </div>
+                                                                                @endif
                                                                             </label>
                                                                         @else
                                                                             <input type="checkbox" 
@@ -236,6 +241,11 @@
                                                                                 class="h-5 w-5 text-purple-600 border-gray-300 rounded mr-3">
                                                                             <span class="text-base text-gray-800 break-words">
                                                                                 {{ $subCriteria['name'] }}
+                                                                                @if(!empty($subCriteria['description']))
+                                                                                    <div class="text-sm text-gray-500 mt-1">
+                                                                                        {!! $subCriteria['description'] !!}
+                                                                                    </div>
+                                                                                @endif
                                                                             </span>
                                                                         @endif
                                                                     </div>
