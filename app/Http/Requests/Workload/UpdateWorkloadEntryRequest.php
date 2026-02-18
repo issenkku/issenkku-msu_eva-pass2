@@ -21,7 +21,7 @@ class UpdateWorkloadEntryRequest extends FormRequest
             'calculated_score' => ['nullable', 'numeric'],
             'report_id' => ['sometimes', 'required', 'integer', 'exists:reports,id'],
             'workload_form_id' => ['sometimes', 'required', 'integer', 'exists:workload_forms,id'],
-            'subject_id' => ['sometimes', 'required', 'integer', 'exists:subjects,id'],
+            'subject_id' => ['sometimes', 'nullable', 'integer', 'exists:subjects,id'],
         ];
     }
 

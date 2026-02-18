@@ -36,7 +36,7 @@ class StoreWorkloadEntryRequest extends FormRequest
             'report_id' => ['required', 'integer', 'exists:reports,id'],
             'workload_form_id' => ['required_without:workload_form_item_id', 'integer', 'exists:workload_forms,id'],
             'workload_form_item_id' => ['required_without:workload_form_id', 'integer', 'exists:workload_form_items,id'],
-            'subject_id' => ['required', 'integer', 'exists:subjects,id'],
+            'subject_id' => ['nullable', 'integer', 'exists:subjects,id'],
             'evidence_links' => ['nullable', 'array'],
             'evidence_links.*' => ['nullable', 'string'],
         ];

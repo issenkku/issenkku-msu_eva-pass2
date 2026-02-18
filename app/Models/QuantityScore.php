@@ -10,11 +10,9 @@ class QuantityScore extends Model
 {
     use HasFactory;
 
-    public $incrementing = false;
-
     protected $table = 'quantity_scores';
 
-    protected $primaryKey = ['quantity_sub_criteria_id', 'report_id'];
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'quantity_sub_criteria_id',

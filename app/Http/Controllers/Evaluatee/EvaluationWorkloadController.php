@@ -9,6 +9,7 @@ use App\Models\Subject;
 use App\Models\EvidenceAnswer;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
+use App\Models\QuantityScore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -88,5 +89,58 @@ class EvaluationWorkloadController extends Controller
             'subjects' => $subjects,
             'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
         ]);
+    }
+
+    public function storeWorkloadScore(Request $request)
+    {
+        $validated = $request->validate([
+            'report_id' => 'required|integer|exists:reports,id',
+            'quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
+        ]);
+
+        $reportId = (int) $validated['report_id'];
+        $quantitySubCriteriaId = (int) $validated['quantity_sub_criteria_id'];
+
+        $report = Reports::find($reportId);
+        if (! $report) {
+            return redirect()->back()->with('error', 'ไม่พบรายงานที่ต้องการบันทึก');
+        }
+
+        $formIds = WorkloadForm::where('quantity_sub_criteria_id', $quantitySubCriteriaId)
+            ->pluck('id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $scoreC = 0.0;
+        if ($formIds->isNotEmpty()) {
+            $entries = WorkloadEntry::where('report_id', $reportId)
+                ->whereIn('workload_form_id', $formIds)
+                ->get();
+            $scoreC = $entries->sum(function ($entry) {
+                return (float) ($entry->calculated_score ?? 0);
+            });
+        }
+
+        $subCriteria = QuantitySubCriteria::find($quantitySubCriteriaId);
+        $scoreD = null;
+        if ($subCriteria && (float) $subCriteria->score_b !== 0.0) {
+            $scoreD = ($subCriteria->score_a * $scoreC) / $subCriteria->score_b;
+        }
+
+        QuantityScore::updateOrCreate(
+            [
+                'quantity_sub_criteria_id' => $quantitySubCriteriaId,
+                'report_id' => $reportId,
+            ],
+            [
+                'score_C' => $scoreC,
+                'score_D' => $scoreD,
+            ]
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'บันทึกคะแนนภาระงานรวมเรียบร้อยแล้ว');
     }
 }
