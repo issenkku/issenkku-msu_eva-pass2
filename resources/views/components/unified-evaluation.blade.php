@@ -101,6 +101,17 @@
                                                             จัดการข้อมูล
                                                         </a>
                                                     </summary>
+                                                    @if(!$readonly)
+                                                        <input type="hidden"
+                                                            name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]"
+                                                            value="{{ $subCriteria['id'] }}">
+                                                        <input type="hidden"
+                                                            name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
+                                                            value="{{ $subCriteria['tor_compliant'] ?? '' }}">
+                                                        <input type="hidden"
+                                                            name="quantity_list[{{ $subCriteria['id'] }}][description]"
+                                                            value="{{ $subCriteria['score_description'] ?? '' }}">
+                                                    @endif
                                                     @php
                                                         $workloadData = $workloadMap[$subCriteria['id']] ?? null;
                                                         $workloadSubCriteria = $workloadData['subCriteria'] ?? null;

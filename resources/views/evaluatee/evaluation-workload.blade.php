@@ -264,29 +264,49 @@
                         @forelse($group->items as $item)
                             @php
                                 $itemForm = $workloadForms->firstWhere('quantity_sub_criteria_item_id', $item->id);
-                            $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
-                            $formFields = $itemForm?->fields
-                                ? $itemForm->fields->filter(function ($field) {
-                                    return strtolower((string) ($field->field_type ?? 'number')) !== 'item';
-                                })->values()
-                                : collect();
-                            $itemHasGroupField = $formFields->contains(function ($field) use ($isGroupField) {
-                                return $isGroupField($field);
-                            });
-                            $tableFields = $itemHasGroupField
-                                ? $fieldDefinitions
-                                : $fieldDefinitions->reject(function ($field) use ($isGroupField) {
+                                $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
+                                $formFields = $itemForm?->fields
+                                    ? $itemForm->fields->filter(function ($field) {
+                                        return strtolower((string) ($field->field_type ?? 'number')) !== 'item';
+                                    })->values()
+                                    : collect();
+                                $itemHasGroupField = $formFields->contains(function ($field) use ($isGroupField) {
                                     return $isGroupField($field);
-                                })->values();
-                        @endphp
-                            <div class="workload-subtable">
-                                <div class="workload-subtable-title">{{ $item->name ?? '-' }}</div>
-                                <div class="workload-table-wrap">
+                                });
+                                $tableFields = $itemHasGroupField
+                                    ? $fieldDefinitions
+                                    : $fieldDefinitions->reject(function ($field) use ($isGroupField) {
+                                        return $isGroupField($field);
+                                    })->values();
+                                $showLevelColumn = $itemEntries->contains(function ($entry) {
+                                    return !empty($entry?->subject_id);
+                                });
+                                $itemTotalScore = $itemEntries->sum(function ($entry) {
+                                    return (float) ($entry->calculated_score ?? 0);
+                                });
+                                $itemTotalDisplay = is_numeric($itemTotalScore)
+                                    ? number_format((float) $itemTotalScore, 0, '.', '')
+                                    : ($itemTotalScore ?? '-');
+                            @endphp
+                            <details class="workload-item-dropdown">
+                                <summary class="workload-item-summary">
+                                    <div class="workload-item-summary-left">
+                                        <span class="workload-item-summary-title">{{ $item->name ?? '-' }}</span>
+                                    </div>
+                                    <div class="workload-item-summary-right">
+                                        <span class="workload-item-summary-score">คะแนน {{ $itemTotalDisplay }}</span>
+                                        <span class="workload-item-summary-icon"></span>
+                                    </div>
+                                </summary>
+                                <div class="workload-subtable">
+                                    <div class="workload-table-wrap">
                                     <table class="workload-table">
                                         <thead>
                                             <tr>
                                                 <th>กิจกรรม/โครงการ/งาน</th>
-                                                <th>ระดับ</th>
+                                                @if($showLevelColumn)
+                                                    <th>ระดับ</th>
+                                                @endif
                                                 @forelse($tableFields as $field)
                                                     @php
                                                         $fieldLabel = $field->label ?? $field->variable_name;
@@ -387,12 +407,14 @@
                                                 @endphp
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
-                                                    <td>
-                                                        {{ $itemLabel ?? $item->description ?? '-' }}
-                                                        @if($itemScore !== null)
-                                                            <span class="workload-item-score">({{ $itemScore }})</span>
-                                                        @endif
-                                                    </td>
+                                                    @if($showLevelColumn)
+                                                        <td>
+                                                            {{ $itemLabel ?? $item->description ?? '-' }}
+                                                            @if($itemScore !== null)
+                                                                <span class="workload-item-score">({{ $itemScore }})</span>
+                                                            @endif
+                                                        </td>
+                                                    @endif
                                                     @forelse($tableFields as $field)
                                                         @php
                                                             $fieldKey = strtolower((string) $field->variable_name);
@@ -449,7 +471,9 @@
                                             @empty
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
-                                                    <td>{{ $item->description ?? '-' }}</td>
+                                                    @if($showLevelColumn)
+                                                        <td>{{ $item->description ?? '-' }}</td>
+                                                    @endif
                                                         @forelse($tableFields as $field)
                                                         <td>-</td>
                                                         @empty
@@ -482,15 +506,25 @@
                                     </table>
                                 </div>
                             </div>
+                            </details>
                         @empty
                             <div class="workload-subtable">
                                 <div class="workload-subtable-title">ไม่มีรายการภาระงาน</div>
                                 <div class="workload-table-wrap">
                                     <table class="workload-table">
                                         <thead>
+                                            @php
+                                                $showLevelColumn = false;
+                                                $tableColumnCount = 4 + $fieldColumnCount;
+                                            @endphp
                                             <tr>
                                                 <th>กิจกรรม/โครงการ/งาน</th>
-                                                <th>ระดับ</th>
+                                                @if($showLevelColumn)
+                                                    <th>ระดับ</th>
+                                                    @php
+                                                        $tableColumnCount = 5 + $fieldColumnCount;
+                                                    @endphp
+                                                @endif
                                                 @forelse($fieldDefinitions as $field)
                                                     <th>{{ $field->label ?? $field->variable_name }}</th>
                                                 @empty
@@ -566,10 +600,15 @@
             <i class="fas fa-arrow-left"></i>
             ย้อนกลับ
         </a>
-        <button type="submit" class="workload-save-btn">
-            <i class="fas fa-save"></i>
-            บันทึก
-        </button>
+        <form method="POST" action="{{ route('evaluatee.workload-score.store') }}">
+            @csrf
+            <input type="hidden" name="report_id" value="{{ $reportId }}">
+            <input type="hidden" name="quantity_sub_criteria_id" value="{{ $quantitySubCriteriaId }}">
+            <button type="submit" class="workload-save-btn">
+                <i class="fas fa-save"></i>
+                บันทึก
+            </button>
+        </form>
     </div>
 </div>
 
@@ -587,7 +626,7 @@
                 <input type="hidden" name="report_id" value="{{ $reportId }}">
                 <div class="workload-modal-section">
                     <label class="workload-modal-label">รายวิชา</label>
-                    <select class="workload-modal-select" name="subject_id" required>
+                    <select class="workload-modal-select" name="subject_id">
                         <option value="">-- เลือกรายวิชา --</option>
                         @foreach($subjects as $subject)
                             <option value="{{ $subject->id }}">
@@ -832,6 +871,76 @@
     
     .workload-subtable + .workload-subtable {
         margin-top: 18px;
+    }
+
+    .workload-item-dropdown {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f8fafc;
+        margin-bottom: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    .workload-item-dropdown:last-child {
+        margin-bottom: 0;
+    }
+
+    .workload-item-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 18px;
+        cursor: pointer;
+        list-style: none;
+        background: #eff6ff;
+    }
+
+    .workload-item-summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .workload-item-summary-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .workload-item-summary-right {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .workload-item-summary-score {
+        font-size: 12px;
+        font-weight: 700;
+        color: #0f766e;
+        background: #d1fae5;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .workload-item-summary-icon {
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid #475569;
+        border-bottom: 2px solid #475569;
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+    }
+
+    .workload-item-dropdown[open] .workload-item-summary-icon {
+        transform: rotate(-135deg);
+    }
+
+    .workload-item-dropdown .workload-subtable {
+        background: #ffffff;
+        border-top: 1px solid #e5e7eb;
+        border-radius: 0;
+        box-shadow: none;
+        margin: 0;
     }
 
     .workload-subtable-title {
@@ -1899,6 +2008,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
+
 
 
 

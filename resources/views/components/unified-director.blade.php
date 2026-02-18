@@ -29,9 +29,28 @@
                                 <h2 class="text-xl font-bold text-gray-800">
                                     {{ $evaluationList['name'] }}
                                 </h2>
-                                @if(isset($evaluationList['sum_score']))
-                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                        คะแนน {{ $evaluationList['sum_score'] }}
+                                @php
+                                    $listSelectedQualitySum = 0;
+                                    if (!empty($evaluationList['quality_items'])) {
+                                        foreach ($evaluationList['quality_items'] as $mainCriteria) {
+                                            foreach ($mainCriteria['sub_criterias'] as $subCriteria) {
+                                                $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                                                $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
+                                                if ($isSelected) {
+                                                    $listSelectedQualitySum += floatval($subCriteria['num_score'] ?? 0);
+                                                }
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @if(!empty($evaluationList['quality_items']))
+                                    @if(isset($evaluationList['sum_score']))
+                                        <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                            คะแนน {{ $evaluationList['sum_score'] }}
+                                        </span>
+                                    @endif
+                                    <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                        คะแนนที่ได้ {{ number_format($listSelectedQualitySum, 2) }}
                                     </span>
                                 @endif
                             </div>
@@ -198,125 +217,195 @@
                             @endif
 
                             {{-- Quality Section --}}
-                            @if(count($evaluationList['quality_items']) > 0)
-                                <div class="mb-8">
-                                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-                                        <h3 class="text-lg font-semibold text-purple-800 flex items-center">
-                                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                            </svg>
+@if(count($evaluationList['quality_items']) > 0)
+    <details class="group mb-8">
+        <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-purple-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
                                             ด้านคุณภาพ
-                                        </h3>
-                                    </div>
+                </h3>
+                <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                </svg>
+                <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </summary>
 
-                                    @foreach($evaluationList['quality_items'] as $mainCriteria)
-                                        {{-- Main Criteria Header --}}
-                                        <div class="mb-4 border-l-4 border-purple-400 pl-4 py-2 bg-purple-50">
-                                            <div class="flex items-center space-x-3">
-                                                <h4 class="text-base font-semibold text-gray-800">
-                                                    {{ $mainCriteria['name'] }}
-                                                </h4>
-                                                <span class="inline-block bg-purple-100 text-purple-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                                    สัดส่วน {{ $mainCriteria['ratio'] }} %
+        <div class="mt-6">
+            @foreach($evaluationList['quality_items'] as $mainCriteria)
+                <details class="group border border-gray-300 rounded-lg bg-white mb-6">
+                    <summary class="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden bg-purple-50">
+                        <div class="min-w-0 flex items-center gap-3 flex-wrap">
+                            <h4 class="text-base font-semibold text-gray-800">
+                                {{ $mainCriteria['name'] }}
+                            </h4>
+                        </div>
+                        <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                        </svg>
+                        <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </summary>
+
+                    <div class="px-4 py-4">
+                        @if(!empty($mainCriteria['tooltips']))
+                            <div class="text-sm text-gray-500 mb-3">{!! $mainCriteria['tooltips'] !!}</div>
+                        @endif
+
+                        {{-- Quality Sub Criteria --}}
+                        <div class="space-y-3 ml-2">
+                            @php
+                                $mainScoreSum = 0;
+                            @endphp
+                            @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
+                                @php
+                                    $hasScore = !empty($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                                    $shouldBeChecked = $hasScore || ($subCriteria['user_selected'] ?? false);
+                                    $selectedScore = $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '0.00');
+                                    $displayScore = $subCriteria['num_score'] ?? 0;
+                                      if ($shouldBeChecked) {
+                                        $selectedDisplayScore = $displayScore;
+                                    }
+                                    $mainScoreSum += floatval($selectedScore);
+                                @endphp
+
+                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                                    <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+                                        {{-- Checkbox and Label --}}
+                                        <div class="flex items-center flex-1 min-w-0">
+                                            @if(!$readonly)
+                                                <input type="checkbox" 
+                                                    name="quality_criteria[{{ $subCriteria['id'] }}]" 
+                                                    value="1"
+                                                    data-score="{{ $subCriteria['num_score'] ?? 0 }}"
+                                                    data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                    onchange="handleQualityCheckboxChange(this)"
+                                                    {{ $shouldBeChecked ? 'checked' : '' }}
+                                                    class="h-5 w-5 accent-purple-600 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
+                                                <label class="text-base text-gray-800 break-words">
+                                                    {{ $subCriteria['name'] }}
+                                                </label>
+                                            @else
+                                                <input type="checkbox" 
+                                                    {{ $shouldBeChecked ? 'checked' : '' }}
+                                                    disabled
+                                                    class="h-5 w-5 accent-purple-600 text-purple-600 border-gray-300 rounded mr-3 disabled:opacity-100">
+                                                <span class="text-base text-gray-800 break-words">
+                                                    {{ $subCriteria['name'] }}
                                                 </span>
-                                            </div>
-                                            @if(!empty($mainCriteria['tooltips']))
-                                                <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
                                             @endif
                                         </div>
-
-                                        {{-- Quality Sub Criteria --}}
-                                        <div class="space-y-3 ml-6 mb-6">
-                                            @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
-                                                @php
-                                                    $hasScore = !empty($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
-                                                    $shouldBeChecked = $hasScore || ($subCriteria['user_selected'] ?? false);
-                                                @endphp
-
-                                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                                    <div class="flex flex-col gap-2 p-3 border-b border-gray-100 lg:flex-row lg:items-center lg:justify-between">
-                                                        <!-- Name + Description + Badge -->
-                                                        <div class="flex flex-col gap-1 flex-1">
-                                                            <div class="flex flex-col gap-1 lg:flex-row lg:items-center lg:gap-3">
-                                                                <span class="text-base text-gray-800 font-medium">
-                                                                    {{ $subCriteria['name'] }}
-                                                                </span>
-                                                                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full w-max">
-                                                                    คะแนน {{ $subCriteria['num_score'] }}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        <!-- Input -->
-                                                        @if(!$readonly)
-                                                            <div class="w-full lg:w-1/4 mt-2 lg:mt-0">
-                                                                <input 
-                                                                    type="number" step="0.01" min="0" 
-                                                                    max="{{ $subCriteria['num_score'] }}"
-                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
-                                                                    value="{{ $subCriteria['score'] ?? '' }}"
-                                                                    class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500"
-                                                                    placeholder="ใส่คะแนน">
-                                                            </div>
-                                                        @else
-                                                            <div class="w-full lg:w-1/4 mt-2 lg:mt-0">
-                                                                <input 
-                                                                    type="number" step="0.01" min="0" 
-                                                                    max="{{ $subCriteria['num_score'] }}"
-                                                                    name="quality_list[{{ $subCriteria['id'] }}][score]" 
-                                                                    value="{{ $subCriteria['score'] ?? '' }}"
-                                                                    readonly
-                                                                    class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
-                                                                    placeholder="0">
-                                                            </div>
-                                                        @endif
-                                                    </div>
-                                                    @if(!empty($subCriteria['description']))
-                                                        <div class="text-sm text-gray-700 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400 mt-3">
-                                                            {!! $subCriteria['description'] !!}
-                                                        </div>
-                                                    @endif
-
-                                                    {{-- Hidden Score Input --}}
-                                                    @if(!$readonly)
-                                                        <input type="hidden" 
-                                                            name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
-                                                            value="{{ $subCriteria['id'] }}">
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                            <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
-                                                <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
+                                        {{-- Selected Score --}}
+                                        <div class="w-full md:w-60">
+                                            <div class="text-base text-gray-800 text-center">
+                                                คะแนนที่ได้ {{ number_format((float)$displayScore, 2) }}
                                             </div>
+                                        </div>
+                                        {{-- Hidden Score Input for edit mode --}}
+                                        @if(!$readonly)
+                                            <input type="hidden" 
+                                                name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
+                                                value="{{ $subCriteria['id'] }}">
+                                            <input type="hidden" 
+                                                name="quality_list[{{ $subCriteria['id'] }}][evaluation_list_id]" 
+                                                value="{{ $evaluationList['id'] }}">
+                                            <input type="hidden" 
+                                                id="quality-score-{{ $subCriteria['id'] }}"
+                                                name="quality_list[{{ $subCriteria['id'] }}][score]" 
+                                                value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}">
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                            @if($readonly)
+                                <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                <span class="text-lg font-semibold text-blue-700"> คะแนนที่ได้</span>
+                                                
+                                    <span class="text-lg font-semibold text-blue-900">   {{ number_format((float)($selectedDisplayScore ?? 0), 2) }}</span>
+                                </div>
+                            @endif
+                        </div>
 
-                                            <div class="mt-5 border-t border-gray-200 pt-4">
-                                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
-                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                                    </svg>
-                                                    หลักฐาน
-                                                </h3>
-                                                @if(!empty($qualityEvidenceMap[$mainCriteria['id']]))
-                                                    @foreach((array)$qualityEvidenceMap[$mainCriteria['id']] as $link)
-                                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
-                                                            <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
-                                                                {{ $link }}
-                                                            </a>
-                                                        </div>
-                                                    @endforeach
-                                                @else
-                                                    <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                                        ไม่มีหลักฐานแนบ
-                                                    </div>
-                                                @endif
-                                            </div>
+                        {{-- Evidence Section for Quality Main Criteria --}}
+                        <div class="mt-5 border-t border-gray-200 pt-4">
+                            @php
+                                $links = isset($qualityEvidenceMap[$mainCriteria['id']]) && is_array($qualityEvidenceMap[$mainCriteria['id']])
+                                    ? $qualityEvidenceMap[$mainCriteria['id']]
+                                    : (isset($qualityEvidenceMap[$mainCriteria['id']]) ? [$qualityEvidenceMap[$mainCriteria['id']]] : ['']);
+
+                                if (empty($links) || (count($links) === 1 && empty($links[0]))) {
+                                    $links = [''];
+                                }
+                            @endphp
+
+                            @if(!$readonly)
+                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    แนบลิงก์หลักฐาน
+                                </h3>
+                                <div id="evidence-links-quality-{{ $mainCriteria['id'] }}">
+                                    @foreach($links as $idx => $link)
+                                        <div class="flex items-center mb-2 evidence-link-row">
+                                            <input type="url"
+                                                name="evidence_list[{{ $mainCriteria['id'] }}][links][]"
+                                                value="{{ $link }}"
+                                                class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
+                                                placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
+                                            @if($idx > 0 || count($links) > 1)
+                                                <button type="button" class="ml-2 px-2 py-1 bg-red-100 text-red-700 rounded remove-evidence-link" title="ลบลิงก์">
+                                                    &times;
+                                                </button>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
+                                <button type="button"
+                                    class="mt-2 px-4 py-2 bg-blue-100 text-blue-700 rounded add-evidence-link"
+                                    data-quality-main="{{ $mainCriteria['id'] }}">
+                                    + เพิ่มลิงก์หลักฐาน
+                                </button>
+                                <input type="hidden"
+                                    name="evidence_list[{{ $mainCriteria['id'] }}][evaluation_list_id]"
+                                    value="{{ $evaluationList['id'] }}">
+                                <input type="hidden"
+                                    name="evidence_list[{{ $mainCriteria['id'] }}][quality_main_criteria_id]"
+                                    value="{{ $mainCriteria['id'] }}">
+                            @else
+                                <h3 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                                    หลักฐาน
+                                </h3>
+                                @if(!empty($qualityEvidenceMap[$mainCriteria['id']]))
+                                    @foreach((array)$qualityEvidenceMap[$mainCriteria['id']] as $link)
+                                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-2">
+                                            <a href="{{ $link }}" target="_blank" class="text-blue-600 hover:underline break-all">
+                                                {{ $link }}
+                                            </a>
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="text-gray-500 mt-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                        ไม่มีหลักฐานแนบ
+                                    </div>
+                                @endif
                             @endif
-
-                            @endif
+                        </div>
+                    </div>
+                </details>
+            @endforeach
+        </div>
+    </details>
+@endif
                         </div>
                     </div>
                 @endforeach
@@ -372,9 +461,15 @@
                         $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
                     }
                 }
-                // Quality
+                // Quality: sum num_score only for selected items
                 foreach($evalList['quality_items'] as $mainCriteria) {
-                    $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
+                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                        $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                        $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
+                        if ($isSelected) {
+                            $totalQualityScore += floatval($subCriteria['num_score'] ?? 0);
+                        }
+                    }
                 }
             }
         }
@@ -405,6 +500,24 @@
         </div>
     </div>
 </div>
+
+<style>
+    details > summary .chevron-up {
+        display: inline-block !important;
+    }
+
+    details > summary .chevron-down {
+        display: none !important;
+    }
+
+    details[open] > summary .chevron-up {
+        display: none !important;
+    }
+
+    details[open] > summary .chevron-down {
+        display: inline-block !important;
+    }
+</style>
 
 {{-- JavaScript for Quality Checkbox Handling --}}
 <script>

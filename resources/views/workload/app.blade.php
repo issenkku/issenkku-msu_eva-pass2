@@ -211,11 +211,19 @@
             </div>
 
                 <div class="page-actions">
-                    <button class="btn btn-outline-secondary" type="button">ย้อนกลับ</button>
-                    <button class="btn btn-outline-primary" type="button">รีเซ็ตค่า</button>
+                    <a class="btn btn-outline-secondary" href="http://127.0.0.1:8000/criteria-config/1/edit">ย้อนกลับ</a>
+                    <button class="btn btn-outline-primary" type="button" id="workload-reset">รีเซ็ตค่า</button>
                     <button class="btn btn-primary" type="button" id="workload-save">บันทึกการตั้งค่า</button>
                 </div>
             </section>
+        </div>
+    </div>
+
+    <div class="workload-toast" id="workload-toast" aria-live="polite" aria-atomic="true">
+        <div class="workload-toast-content">
+            <span class="workload-toast-icon" aria-hidden="true">✓</span>
+            <span class="workload-toast-text" id="workload-toast-text"></span>
+            <button class="workload-toast-close" type="button" aria-label="Close">×</button>
         </div>
     </div>
 @endsection
@@ -271,6 +279,54 @@
             display: grid;
             gap: 8px;
             margin-top: 16px;
+        }
+
+        .workload-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            background: #16a34a;
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            max-width: 360px;
+            width: calc(100% - 40px);
+        }
+
+        .workload-toast.is-visible {
+            transform: translateX(0);
+        }
+
+        .workload-toast.is-danger {
+            background: #dc2626;
+        }
+
+        .workload-toast-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .workload-toast-icon {
+            font-weight: 700;
+        }
+
+        .workload-toast-text {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .workload-toast-close {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: 1.1rem;
+            line-height: 1;
+            cursor: pointer;
         }
 
         .nav-item2 {
@@ -710,6 +766,7 @@
             const sectionBadge = document.getElementById('workload-section-badge');
             const sectionTitle = document.getElementById('workload-section-title');
             const saveButton = document.getElementById('workload-save');
+            const resetButton = document.getElementById('workload-reset');
             const mainCard = document.querySelector('.workload-card');
             const mainContainer = document.querySelector('.workload-card-list');
             const pageActions = document.querySelector('.page-actions');
@@ -898,10 +955,12 @@
                     }
 
                     const valueText = 'item_star';
+                    const valueLabel = 'ค่าภารงาน';
                     const chip = document.createElement('button');
                     chip.className = 'chip';
                     chip.type = 'button';
-                    chip.textContent = valueText;
+                    chip.textContent = valueLabel;
+                    chip.dataset.value = valueText;
                     chip.addEventListener('click', () => {
                         if (formulaText) {
                             insertToken(formulaText, valueText);
@@ -1403,6 +1462,57 @@
                     // Ignore load errors for now.
                 });
 
+            const toastEl = document.getElementById('workload-toast');
+            const toastTextEl = document.getElementById('workload-toast-text');
+
+            const showWorkloadToast = (message, type = 'success') => {
+                if (!toastEl || !toastTextEl) {
+                    return;
+                }
+                toastTextEl.textContent = message;
+                toastEl.classList.remove('is-danger');
+                if (type === 'danger') {
+                    toastEl.classList.add('is-danger');
+                }
+                toastEl.classList.add('is-visible');
+                clearTimeout(showWorkloadToast._timer);
+                showWorkloadToast._timer = setTimeout(() => {
+                    toastEl.classList.remove('is-visible');
+                }, 4000);
+            };
+
+            if (toastEl) {
+                const closeBtn = toastEl.querySelector('.workload-toast-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => {
+                        toastEl.classList.remove('is-visible');
+                    });
+                }
+            }
+
+            if (resetButton) {
+                resetButton.addEventListener('click', () => {
+                    if (!mainContainer) {
+                        return;
+                    }
+                    const cards = mainContainer.querySelectorAll('.workload-card');
+                    if (!cards.length) {
+                        return;
+                    }
+                    cards.forEach((card, index) => {
+                        if (index === 0) {
+                            sanitizeClonedMainCard(card, true);
+                            initMainCard(card);
+                            updateSubSequences(card);
+                        } else {
+                            card.remove();
+                        }
+                    });
+                    updateMainSequences();
+                    showWorkloadToast('รีเซ็ตค่าเรียบร้อย');
+                });
+            }
+
             if (saveButton) {
                 saveButton.addEventListener('click', () => {
                     const groups = [];
@@ -1485,17 +1595,23 @@
                         })
                         .then((data) => {
                             if (!data || data.success === false) {
-                                alert(data && data.message ? data.message : 'บันทึกไม่สำเร็จ');
+                                showWorkloadToast(
+                                    data && data.message ? data.message : 'บันทึกไม่สำเร็จ',
+                                    'danger'
+                                );
                                 return;
                             }
-                            alert('บันทึกสำเร็จ');
+                            showWorkloadToast('บันทึกสำเร็จ');
                         })
                         .catch((error) => {
                             if (error && error.errors && error.errors.formula_logic) {
-                                alert(error.errors.formula_logic.join('\n'));
+                                showWorkloadToast(error.errors.formula_logic.join('\n'), 'danger');
                                 return;
                             }
-                            alert(error && error.message ? error.message : 'บันทึกไม่สำเร็จ');
+                            showWorkloadToast(
+                                error && error.message ? error.message : 'บันทึกไม่สำเร็จ',
+                                'danger'
+                            );
                         });
                 });
             }
