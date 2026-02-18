@@ -213,22 +213,14 @@
                                             <div class="quant_sub_criteria_block bg-gray-50 p-3 rounded-lg">
                                                 <div class="flex justify-between items-center mb-2">
                                                     <span class="text-sm font-medium text-gray-600">เกณฑ์ปริมาณย่อย</span>
-                                                    <div class="flex items-center gap-2">
-                                                        <a href="/workload-config" class="quant_sub_setting_btn text-blue-600 hover:text-blue-800 transition duration-200" title="ตั้งค่าเกณฑ์ย่อย">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-1.14 1.903-1.14 2.202 0a1.724 1.724 0 002.573 1.066c.99-.657 2.28.284 1.991 1.414a1.724 1.724 0 001.066 2.573c1.14.3 1.14 1.903 0 2.202a1.724 1.724 0 00-1.066 2.573c.657.99-.284 2.28-1.414 1.991a1.724 1.724 0 00-2.573 1.066c-.3 1.14-1.903 1.14-2.202 0a1.724 1.724 0 00-2.573-1.066c-.99.657-2.28-.284-1.991-1.414a1.724 1.724 0 00-1.066-2.573c-1.14-.3-1.14-1.903 0-2.202.52-.137.93-.547 1.066-1.066.289-1.13 1.001-2.071 1.991-1.414.94.625 2.073.065 2.573-1.066z" />
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                            </svg>
-                                                        </a>
-                                                        <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
+                                                    <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                                 <input type="hidden" name="quant_sub_criteria_id" class="quant_sub_criteria_id" value="">
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:items-end">
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
                                                         <span name="quant_sub_sequence" class="quant_sub_sequence text-gray-700 font-medium text-lg">1</span>
@@ -242,8 +234,15 @@
                                                         <input type="number" name="score_a" class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">หน่วยภาระงานมาตรฐาน (B) <span class="text-red-500">*</span></label>
+                                                        <label class="block text-sm font-medium text-gray-600 mb-2 whitespace-nowrap">หน่วยภาระงานมาตรฐาน (B)&nbsp;<span class="text-red-500">*</span></label>
                                                         <input type="number" name="score_b" class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน B">
+                                                    </div>
+                                                    <div class="flex flex-col items-start sm:items-end">
+                                                        <span class="block text-sm font-medium text-gray-600 mb-2 opacity-0 select-none">spacer</span>
+                                                        <a href="/workload-config" class="quant_sub_setting_btn inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200" title="ตั้งค่าเกณฑ์ย่อย">
+                                                          
+                                                            <span class="text-sm font-semibold">ตั้งค่าภาระงาน</span>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1020,10 +1019,51 @@
             // Clear any previously populated blocks to prevent duplication
             categoriesContainer.querySelectorAll('.category_block:not([style*="display: none"])').forEach(b => b.remove());
 
-            // Populate categories
+            // Populate categories (dedupe to avoid duplicate blocks)
             if (data.categories && data.categories.length > 0) {
-                data.categories.forEach(categoryData => {
-                    const categoryBlock = createCategoryFromData(categoryData);
+                const uniqueCategories = dedupeByKey(
+                    data.categories,
+                    c => String(c.categorie_id || c.id || `${c.sequence}|${c.main_categories}|${c.sub_categories}`)
+                );
+
+                uniqueCategories.forEach(categoryData => {
+                    const evalLists = dedupeByKey(
+                        categoryData.evaluation_lists || [],
+                        e => String(e.evaluation_id || e.id || `${e.sequence}|${e.name}`)
+                    ).map(e => {
+                        const quantityMain = dedupeByKey(
+                            e.quantity_main_criterias || [],
+                            q => String(q.quantity_main_criteria_id || q.id || q.name)
+                        ).map(q => ({
+                            ...q,
+                            quantity_sub_criterias: dedupeByKey(
+                                q.quantity_sub_criterias || [],
+                                s => String(s.quantity_sub_criteria_id || s.id || `${s.sequence}|${s.name}`)
+                            ),
+                        }));
+
+                        const qualityMain = dedupeByKey(
+                            e.quality_main_criterias || [],
+                            q => String(q.quality_main_criteria_id || q.id || `${q.sequence}|${q.name}`)
+                        ).map(q => ({
+                            ...q,
+                            quality_sub_criterias: dedupeByKey(
+                                q.quality_sub_criterias || [],
+                                s => String(s.quality_sub_criteria_id || s.id || `${s.sequence}|${s.name}`)
+                            ),
+                        }));
+
+                        return {
+                            ...e,
+                            quantity_main_criterias: quantityMain,
+                            quality_main_criterias: qualityMain,
+                        };
+                    });
+
+                    const categoryBlock = createCategoryFromData({
+                        ...categoryData,
+                        evaluation_lists: evalLists,
+                    });
                     categoriesContainer.appendChild(categoryBlock);
                 });
             } else {
@@ -1098,8 +1138,7 @@
         }
 
         function populateQuantityCriteria(container, quantityData) {
-            const quantTemplate = container.querySelector('.quant_criteria_block');
-            if(quantTemplate) quantTemplate.remove();
+            container.querySelectorAll('.quant_criteria_block').forEach(block => block.remove());
 
             quantityData.forEach(quantMain => {
                 const template = document.querySelector('.quant_criteria_block');
@@ -1116,8 +1155,7 @@
                 }
 
                 const subContainer = newBlock.querySelector('.quant_sub_criteria_container');
-                const subTemplate = subContainer.querySelector('.quant_sub_criteria_block');
-                if(subTemplate) subTemplate.remove();
+                subContainer.querySelectorAll('.quant_sub_criteria_block').forEach(block => block.remove());
 
                 if (quantMain.quantity_sub_criterias && quantMain.quantity_sub_criterias.length > 0) {
                     quantMain.quantity_sub_criterias.forEach(subData => {
@@ -1144,8 +1182,7 @@
         }
 
         function populateQualityCriteria(container, qualityData) {
-            const qualTemplate = container.querySelector('.qual_criteria_block');
-            if(qualTemplate) qualTemplate.remove();
+            container.querySelectorAll('.qual_criteria_block').forEach(block => block.remove());
 
             qualityData.forEach(qualMain => {
                 const template = document.querySelector('.qual_criteria_block');
@@ -1159,8 +1196,7 @@
                 tooltipsTextarea.value = qualMain.tooltips || '';
 
                 const subContainer = newBlock.querySelector('.qual_sub_criterias_container');
-                const subTemplate = subContainer.querySelector('.qual_sub_criteria_block');
-                if(subTemplate) subTemplate.remove();
+                subContainer.querySelectorAll('.qual_sub_criteria_block').forEach(block => block.remove());
 
                 if (qualMain.quality_sub_criterias && qualMain.quality_sub_criterias.length > 0) {
                     qualMain.quality_sub_criterias.forEach(subData => {
@@ -1200,6 +1236,17 @@
 
         function showError(message) {
             alert(message);
+        }
+
+        function dedupeByKey(items, keyFn) {
+            const map = new Map();
+            (items || []).forEach(item => {
+                const key = keyFn(item);
+                if (!map.has(key)) {
+                    map.set(key, item);
+                }
+            });
+            return Array.from(map.values());
         }
 
         // Form submission with full data structure

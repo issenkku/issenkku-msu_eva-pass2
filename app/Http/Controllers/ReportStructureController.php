@@ -477,108 +477,201 @@ class ReportStructureController extends Controller
 
         try {
             DB::transaction(function () use ($version, $validated) {
-                // 1. Delete all related data in correct order (children first)
-
-                // Delete formulas first (if they reference quantity main criterias)
-                DB::table('formulas')
-                    ->whereIn('quantity_main_criteria_id', function ($query) use ($version) {
-                        $query->select('id')
-                            ->from('quantity_main_criterias')
-                            ->where('criteria_version_id', $version->id);
-                    })
-                    ->delete();
-
-                // Delete sub criterias
-                DB::table('quantity_sub_criterias')
-                    ->whereIn('evaluation_list_id', function ($query) use ($version) {
-                        $query->select('id')
-                            ->from('evaluation_lists')
-                            ->where('criteria_version_id', $version->id);
-                    })
-                    ->delete();
-
-                DB::table('quality_sub_criterias')
-                    ->whereIn('evaluation_list_id', function ($query) use ($version) {
-                        $query->select('id')
-                            ->from('evaluation_lists')
-                            ->where('criteria_version_id', $version->id);
-                    })
-                    ->delete();
-
-                // Delete main criterias
-                $version->quantityMainCriterias()->delete();
-                $version->qualityMainCriterias()->delete();
-
-                // Delete evaluation lists
-                $version->evaluationLists()->delete();
-
-                // Delete categories and report datas
-                $version->categories()->delete();
-                $version->reportDatas()->delete();
-
-                // 2. Update Criteria Version
+                // 1. Update Criteria Version
                 $version->update([
                     'version_name' => $validated['version_name'],
                     'created_by' => $validated['created_by'],
                 ]);
 
-                // 3. Re-create Report Datas
+                $keptReportDataIds = [];
+                $keptCategoryIds = [];
+                $keptEvaluationIds = [];
+                $keptQuantMainIds = [];
+                $keptQuantSubIds = [];
+                $keptQualMainIds = [];
+                $keptQualSubIds = [];
+
+                // 2. Update/Create Report Datas
                 foreach ($validated['report_datas'] as $reportDatum) {
-                    ReportData::create([
-                        'criteria_version_id' => $version->id,
-                        'report_title' => $reportDatum['report_title'],
-                        'report_description' => $reportDatum['report_description'],
-                        'assessment_type' => $reportDatum['assessment_type'],
-                        'comment' => $reportDatum['comment'] ?? null,
-                    ]);
+                    $reportDataId = $reportDatum['report_data_id'] ?? null;
+                    $reportData = null;
+
+                    if (! empty($reportDataId)) {
+                        $reportData = $version->reportDatas()->where('id', $reportDataId)->first();
+                    } elseif ($version->reportDatas()->count() > 0) {
+                        $reportData = $version->reportDatas()->first();
+                    }
+
+                    if ($reportData) {
+                        $reportData->update([
+                            'report_title' => $reportDatum['report_title'],
+                            'report_description' => $reportDatum['report_description'],
+                            'assessment_type' => $reportDatum['assessment_type'],
+                            'comment' => $reportDatum['comment'] ?? null,
+                        ]);
+                    } else {
+                        $reportData = ReportData::create([
+                            'criteria_version_id' => $version->id,
+                            'report_title' => $reportDatum['report_title'],
+                            'report_description' => $reportDatum['report_description'],
+                            'assessment_type' => $reportDatum['assessment_type'],
+                            'comment' => $reportDatum['comment'] ?? null,
+                        ]);
+                    }
+
+                    $keptReportDataIds[] = $reportData->id;
                 }
 
-                // 4. Re-create Categories and children
+                // 3. Update/Create Categories and children
                 foreach ($validated['categories'] as $categoryData) {
-                    $category = Category::create([
-                        'criteria_version_id' => $version->id,
-                        'main_categories' => $categoryData['main_categories'],
-                        'sub_categories' => $categoryData['sub_categories'],
-                        'sequence' => $categoryData['sequence'],
-                    ]);
+                    $categoryId = $categoryData['categorie_id'] ?? null;
+                    $category = null;
+
+                    if (! empty($categoryId)) {
+                        $category = $version->categories()->where('id', $categoryId)->first();
+                    } elseif (! empty($categoryData['sequence'])) {
+                        $category = $version->categories()
+                            ->where('sequence', $categoryData['sequence'])
+                            ->first();
+                    }
+
+                    if ($category) {
+                        $category->update([
+                            'main_categories' => $categoryData['main_categories'],
+                            'sub_categories' => $categoryData['sub_categories'],
+                            'sequence' => $categoryData['sequence'],
+                        ]);
+                    } else {
+                        $category = Category::create([
+                            'criteria_version_id' => $version->id,
+                            'main_categories' => $categoryData['main_categories'],
+                            'sub_categories' => $categoryData['sub_categories'],
+                            'sequence' => $categoryData['sequence'],
+                        ]);
+                    }
+
+                    $keptCategoryIds[] = $category->id;
 
                     if (! empty($categoryData['evaluation_lists'])) {
                         foreach ($categoryData['evaluation_lists'] as $evalListData) {
-                            $evaluationList = EvaluationList::create([
-                                'categorie_id' => $category->id,
-                                'criteria_version_id' => $version->id,
-                                'name' => $evalListData['name'],
-                                'sum_score' => $evalListData['sum_score'],
-                                'sequence' => $evalListData['sequence'],
-                                'annotation' => $evalListData['annotation'] ?? null,
-                            ]);
+                            $evaluationId = $evalListData['evaluation_id'] ?? null;
+                            $evaluationList = null;
+
+                            if (! empty($evaluationId)) {
+                                $evaluationList = $version->evaluationLists()->where('id', $evaluationId)->first();
+                            } elseif (! empty($evalListData['sequence'])) {
+                                $evaluationList = $version->evaluationLists()
+                                    ->where('categorie_id', $category->id)
+                                    ->where('sequence', $evalListData['sequence'])
+                                    ->first();
+                            }
+
+                            if ($evaluationList) {
+                                $evaluationList->update([
+                                    'categorie_id' => $category->id,
+                                    'name' => $evalListData['name'],
+                                    'sum_score' => $evalListData['sum_score'],
+                                    'sequence' => $evalListData['sequence'],
+                                    'annotation' => $evalListData['annotation'] ?? null,
+                                ]);
+                            } else {
+                                $evaluationList = EvaluationList::create([
+                                    'categorie_id' => $category->id,
+                                    'criteria_version_id' => $version->id,
+                                    'name' => $evalListData['name'],
+                                    'sum_score' => $evalListData['sum_score'],
+                                    'sequence' => $evalListData['sequence'],
+                                    'annotation' => $evalListData['annotation'] ?? null,
+                                ]);
+                            }
+
+                            $keptEvaluationIds[] = $evaluationList->id;
 
                             if (! empty($evalListData['quantity_main_criterias'])) {
                                 foreach ($evalListData['quantity_main_criterias'] as $qMain) {
-                                    $quantityMainCriteria = QuantityMainCriteria::create([
-                                        'criteria_version_id' => $version->id,
-                                        'name' => $qMain['name'],
-                                        'tooltips' => $qMain['tooltips'],
-                                    ]);
+                                    $qMainId = $qMain['quantity_main_criteria_id'] ?? null;
+                                    $quantityMainCriteria = null;
+
+                                    if (! empty($qMainId)) {
+                                        $quantityMainCriteria = $version->quantityMainCriterias()->where('id', $qMainId)->first();
+                                    } elseif (! empty($qMain['name'])) {
+                                        $quantityMainCriteria = $version->quantityMainCriterias()
+                                            ->where('name', $qMain['name'])
+                                            ->first();
+                                    }
+
+                                    if ($quantityMainCriteria) {
+                                        $quantityMainCriteria->update([
+                                            'name' => $qMain['name'],
+                                            'tooltips' => $qMain['tooltips'],
+                                        ]);
+                                    } else {
+                                        $quantityMainCriteria = QuantityMainCriteria::create([
+                                            'criteria_version_id' => $version->id,
+                                            'name' => $qMain['name'],
+                                            'tooltips' => $qMain['tooltips'],
+                                        ]);
+                                    }
+
+                                    $keptQuantMainIds[] = $quantityMainCriteria->id;
 
                                     if (! empty($qMain['formula'])) {
+                                        DB::table('formulas')
+                                            ->where('quantity_main_criteria_id', $quantityMainCriteria->id)
+                                            ->delete();
+
                                         \App\Models\Formula::create([
                                             'condition' => $qMain['formula'],
                                             'quantity_main_criteria_id' => $quantityMainCriteria->id,
                                         ]);
+                                    } else {
+                                        DB::table('formulas')
+                                            ->where('quantity_main_criteria_id', $quantityMainCriteria->id)
+                                            ->delete();
                                     }
 
                                     if (! empty($qMain['quantity_sub_criterias'])) {
                                         foreach ($qMain['quantity_sub_criterias'] as $qSub) {
-                                            QuantitySubCriteria::create([
-                                                'criteria_version_id' => $version->id,
+                                            $qSubId = $qSub['quantity_sub_criteria_id'] ?? null;
+                                            $quantitySubCriteria = null;
+
+                                        if (! empty($qSubId)) {
+                                            $quantitySubCriteria = QuantitySubCriteria::where('id', $qSubId)
+                                                ->where('criteria_version_id', $version->id)
+                                                ->first();
+                                        }
+
+                                        if (! $quantitySubCriteria) {
+                                            $quantitySubCriteria = QuantitySubCriteria::where('criteria_version_id', $version->id)
+                                                ->where('evaluation_list_id', $evaluationList->id)
+                                                ->where('quantity_main_criteria_id', $quantityMainCriteria->id)
+                                                ->where('name', $qSub['name'])
+                                                ->where('sequence', $qSub['sequence'])
+                                                ->first();
+                                        }
+
+                                        if ($quantitySubCriteria) {
+                                            $quantitySubCriteria->update([
                                                 'quantity_main_criteria_id' => $quantityMainCriteria->id,
                                                 'evaluation_list_id' => $evaluationList->id,
                                                 'name' => $qSub['name'],
-                                                'sequence' => $qSub['sequence'],
-                                                'score_a' => $qSub['score_a'],
-                                                'score_b' => $qSub['score_b'],
-                                            ]);
+                                                    'sequence' => $qSub['sequence'],
+                                                    'score_a' => $qSub['score_a'],
+                                                    'score_b' => $qSub['score_b'],
+                                                ]);
+                                            } else {
+                                                $quantitySubCriteria = QuantitySubCriteria::create([
+                                                    'criteria_version_id' => $version->id,
+                                                    'quantity_main_criteria_id' => $quantityMainCriteria->id,
+                                                    'evaluation_list_id' => $evaluationList->id,
+                                                    'name' => $qSub['name'],
+                                                    'sequence' => $qSub['sequence'],
+                                                    'score_a' => $qSub['score_a'],
+                                                    'score_b' => $qSub['score_b'],
+                                                ]);
+                                            }
+
+                                            $keptQuantSubIds[] = $quantitySubCriteria->id;
                                         }
                                     }
                                 }
@@ -586,24 +679,78 @@ class ReportStructureController extends Controller
 
                             if (! empty($evalListData['quality_main_criterias'])) {
                                 foreach ($evalListData['quality_main_criterias'] as $qlMain) {
-                                    $qualityMainCriteria = QualityMainCriteria::create([
-                                        'criteria_version_id' => $version->id,
-                                        'name' => $qlMain['name'],
-                                        'ratio' => $qlMain['ratio'],
-                                        'tooltips' => $qlMain['tooltips'],
-                                        'sequence' => $qlMain['sequence'],
-                                    ]);
+                                    $qlMainId = $qlMain['quality_main_criteria_id'] ?? null;
+                                    $qualityMainCriteria = null;
+
+                                    if (! empty($qlMainId)) {
+                                        $qualityMainCriteria = $version->qualityMainCriterias()->where('id', $qlMainId)->first();
+                                    } elseif (! empty($qlMain['sequence'])) {
+                                        $qualityMainCriteria = $version->qualityMainCriterias()
+                                            ->where('sequence', $qlMain['sequence'])
+                                            ->first();
+                                    }
+
+                                    if ($qualityMainCriteria) {
+                                        $qualityMainCriteria->update([
+                                            'name' => $qlMain['name'],
+                                            'ratio' => $qlMain['ratio'],
+                                            'tooltips' => $qlMain['tooltips'],
+                                            'sequence' => $qlMain['sequence'],
+                                        ]);
+                                    } else {
+                                        $qualityMainCriteria = QualityMainCriteria::create([
+                                            'criteria_version_id' => $version->id,
+                                            'name' => $qlMain['name'],
+                                            'ratio' => $qlMain['ratio'],
+                                            'tooltips' => $qlMain['tooltips'],
+                                            'sequence' => $qlMain['sequence'],
+                                        ]);
+                                    }
+
+                                    $keptQualMainIds[] = $qualityMainCriteria->id;
+
                                     if (! empty($qlMain['quality_sub_criterias'])) {
                                         foreach ($qlMain['quality_sub_criterias'] as $qlSub) {
-                                            QualitySubCriteria::create([
+                                            $qlSubId = $qlSub['quality_sub_criteria_id'] ?? null;
+                                            $qualitySubCriteria = null;
+
+                                        if (! empty($qlSubId)) {
+                                            $qualitySubCriteria = QualitySubCriteria::where('id', $qlSubId)
+                                                ->where('criteria_version_id', $version->id)
+                                                ->first();
+                                        }
+
+                                        if (! $qualitySubCriteria) {
+                                            $qualitySubCriteria = QualitySubCriteria::where('criteria_version_id', $version->id)
+                                                ->where('evaluation_list_id', $evaluationList->id)
+                                                ->where('quality_main_criteria_id', $qualityMainCriteria->id)
+                                                ->where('name', $qlSub['name'])
+                                                ->where('sequence', $qlSub['sequence'])
+                                                ->first();
+                                        }
+
+                                        if ($qualitySubCriteria) {
+                                            $qualitySubCriteria->update([
                                                 'quality_main_criteria_id' => $qualityMainCriteria->id,
-                                                'criteria_version_id' => $version->id,
                                                 'evaluation_list_id' => $evaluationList->id,
                                                 'name' => $qlSub['name'],
-                                                'sequence' => $qlSub['sequence'],
-                                                'num_score' => $qlSub['num_score'],
-                                                'description' => $qlSub['description'] ?? null,
-                                            ]);
+                                                    'sequence' => $qlSub['sequence'],
+                                                    'num_score' => $qlSub['num_score'],
+                                                    'description' => $qlSub['description'] ?? null,
+                                                ]);
+                                            } else {
+                                                $qualitySubCriteria = QualitySubCriteria::create([
+                                                    'quality_main_criteria_id' => $qualityMainCriteria->id,
+                                                    'criteria_version_id' => $version->id,
+                                                    'evaluation_list_id' => $evaluationList->id,
+                                                    'name' => $qlSub['name'],
+                                                    'sequence' => $qlSub['sequence'],
+                                                    'num_score' => $qlSub['num_score'],
+                                                    'description' => $qlSub['description'] ?? null,
+                                                ]);
+                                            }
+
+                                            $keptQualSubIds[] = $qualitySubCriteria->id;
                                         }
                                     }
                                 }
@@ -611,6 +758,120 @@ class ReportStructureController extends Controller
                         }
                     }
                 }
+
+                // 4. Protect quantity sub criteria that are referenced by workload_forms
+                $protectedQuantSubIds = DB::table('workload_forms')
+                    ->whereNotNull('quantity_sub_criteria_id')
+                    ->pluck('quantity_sub_criteria_id')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                $protectedQuantMainIds = [];
+                $protectedEvaluationIds = [];
+                $protectedCategoryIds = [];
+
+                if (! empty($protectedQuantSubIds)) {
+                    $protectedQuantMainIds = QuantitySubCriteria::whereIn('id', $protectedQuantSubIds)
+                        ->pluck('quantity_main_criteria_id')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+
+                    $protectedEvaluationIds = QuantitySubCriteria::whereIn('id', $protectedQuantSubIds)
+                        ->pluck('evaluation_list_id')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+
+                    $protectedCategoryIds = EvaluationList::whereIn('id', $protectedEvaluationIds)
+                        ->pluck('categorie_id')
+                        ->filter()
+                        ->unique()
+                        ->values()
+                        ->all();
+                }
+
+                // 5. Delete removed children (never delete protected quantity sub criterias)
+                QuantitySubCriteria::where('criteria_version_id', $version->id)
+                    ->when(! empty($keptQuantSubIds), function ($query) use ($keptQuantSubIds) {
+                        $query->whereNotIn('id', $keptQuantSubIds);
+                    })
+                    ->when(! empty($protectedQuantSubIds), function ($query) use ($protectedQuantSubIds) {
+                        $query->whereNotIn('id', $protectedQuantSubIds);
+                    })
+                    ->when(empty($keptQuantSubIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                QualitySubCriteria::where('criteria_version_id', $version->id)
+                    ->when(! empty($keptQualSubIds), function ($query) use ($keptQualSubIds) {
+                        $query->whereNotIn('id', $keptQualSubIds);
+                    })
+                    ->when(empty($keptQualSubIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                // 6. Delete removed main criterias (skip those that have protected subs)
+                $version->quantityMainCriterias()
+                    ->when(! empty($keptQuantMainIds), function ($query) use ($keptQuantMainIds) {
+                        $query->whereNotIn('id', $keptQuantMainIds);
+                    })
+                    ->when(! empty($protectedQuantMainIds), function ($query) use ($protectedQuantMainIds) {
+                        $query->whereNotIn('id', $protectedQuantMainIds);
+                    })
+                    ->when(empty($keptQuantMainIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                $version->qualityMainCriterias()
+                    ->when(! empty($keptQualMainIds), function ($query) use ($keptQualMainIds) {
+                        $query->whereNotIn('id', $keptQualMainIds);
+                    })
+                    ->when(empty($keptQualMainIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                // 7. Delete removed evaluation lists, categories, report datas
+                $version->evaluationLists()
+                    ->when(! empty($keptEvaluationIds), function ($query) use ($keptEvaluationIds) {
+                        $query->whereNotIn('id', $keptEvaluationIds);
+                    })
+                    ->when(! empty($protectedEvaluationIds), function ($query) use ($protectedEvaluationIds) {
+                        $query->whereNotIn('id', $protectedEvaluationIds);
+                    })
+                    ->when(empty($keptEvaluationIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                $version->categories()
+                    ->when(! empty($keptCategoryIds), function ($query) use ($keptCategoryIds) {
+                        $query->whereNotIn('id', $keptCategoryIds);
+                    })
+                    ->when(! empty($protectedCategoryIds), function ($query) use ($protectedCategoryIds) {
+                        $query->whereNotIn('id', $protectedCategoryIds);
+                    })
+                    ->when(empty($keptCategoryIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                $version->reportDatas()
+                    ->when(! empty($keptReportDataIds), function ($query) use ($keptReportDataIds) {
+                        $query->whereNotIn('id', $keptReportDataIds);
+                    })
+                    ->when(empty($keptReportDataIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
             });
 
             return response()->json([
