@@ -5,6 +5,20 @@
     'qualityEvidenceMap' => []
 ])
 
+@php
+    $qualityMaxScore = 0;
+    foreach ($categoryItems as $category) {
+        foreach ($category['evaluation_lists'] as $evalList) {
+            if (!empty($evalList['quality_items'])) {
+                $qualityMaxScore += floatval($evalList['sum_score'] ?? 0);
+            }
+        }
+    }
+@endphp
+
+<input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
+<input type="hidden" id="quality-readonly" value="{{ $readonly ? 1 : 0 }}">
+
 <div class="space-y-8">
     @foreach($categoryItems as $category)
         {{-- Category Container --}}
@@ -37,10 +51,16 @@
                                                 $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
                                                 $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
                                                 if ($isSelected) {
-                                                    $listSelectedQualitySum += floatval($subCriteria['num_score'] ?? 0);
+                                                    $listSelectedQualitySum += $hasScore
+                                                        ? floatval($subCriteria['score'])
+                                                        : floatval($subCriteria['num_score'] ?? 0);
                                                 }
                                             }
                                         }
+                                    }
+                                    $listMaxScore = floatval($evaluationList['sum_score'] ?? 0);
+                                    if ($listMaxScore > 0 && $listSelectedQualitySum > $listMaxScore) {
+                                        $listSelectedQualitySum = $listMaxScore;
                                     }
                                 @endphp
                                 @if(!empty($evaluationList['quality_items']))
@@ -318,7 +338,9 @@
                                             <input type="hidden" 
                                                 id="quality-score-{{ $subCriteria['id'] }}"
                                                 name="quality_list[{{ $subCriteria['id'] }}][score]" 
-                                                value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}">
+                                                value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}"
+                                                data-evaluation-list-id="{{ $evaluationList['id'] }}"
+                                                data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}">
                                         @endif
                                     </div>
                                 </div>
@@ -461,17 +483,29 @@
                         $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
                     }
                 }
-                // Quality: sum num_score only for selected items
+
+                // Quality: sum selected sub-criteria per list, then cap by list max
+                $evaluationListQualityTotal = 0;
                 foreach($evalList['quality_items'] as $mainCriteria) {
                     foreach($mainCriteria['sub_criterias'] as $subCriteria) {
                         $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
                         $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
                         if ($isSelected) {
-                            $totalQualityScore += floatval($subCriteria['num_score'] ?? 0);
+                            $evaluationListQualityTotal += $hasScore
+                                ? floatval($subCriteria['score'])
+                                : floatval($subCriteria['num_score'] ?? 0);
                         }
                     }
                 }
+                $listMaxScore = floatval($evalList['sum_score'] ?? 0);
+                if ($listMaxScore > 0 && $evaluationListQualityTotal > $listMaxScore) {
+                    $evaluationListQualityTotal = $listMaxScore;
+                }
+                $totalQualityScore += $evaluationListQualityTotal;
             }
+        }
+        if ($qualityMaxScore > 0 && $totalQualityScore > $qualityMaxScore) {
+            $totalQualityScore = $qualityMaxScore;
         }
         $totalScore = $totalQuantityScore + $totalQualityScore;
     @endphp
@@ -490,13 +524,13 @@
             </div>
             <div class="flex justify-between items-center">
                 <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
             </div>
         </div>
 
         <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-            <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+            <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
         </div>
     </div>
 </div>
@@ -535,6 +569,12 @@ function calculateScoreD(input) {
 }
 
 function recalculateSummaryScores() {
+    const readonlyInput = document.getElementById('quality-readonly');
+    const isReadonly = readonlyInput && readonlyInput.value === '1';
+    if (isReadonly) {
+        return;
+    }
+
     // Quantity: sum all score_D inputs
     let quantitySum = 0;
     document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]').forEach(input => {
@@ -542,17 +582,41 @@ function recalculateSummaryScores() {
         if (!isNaN(val)) quantitySum += val;
     });
 
-    // Quality: sum all quality score inputs
-    let qualitySum = 0;
+    // Quality: sum selected sub-criteria scores, capped per evaluation list
+    const listTotals = {};
     document.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
-        let val = parseFloat(input.value);
-        if (!isNaN(val)) qualitySum += val;
+        const val = parseFloat(input.value);
+        if (isNaN(val)) return;
+
+        const listId = input.dataset.evaluationListId || 'unknown';
+        const listMax = parseFloat(input.dataset.listMax);
+
+        if (!listTotals[listId]) {
+            listTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
+        }
+        listTotals[listId].sum += val;
     });
 
+    let qualitySum = 0;
+    Object.values(listTotals).forEach(({ sum, max }) => {
+        let cappedSum = sum;
+        if (max > 0 && cappedSum > max) cappedSum = max;
+        qualitySum += cappedSum;
+    });
+
+    const qualityMaxInput = document.getElementById('quality-max-score');
+    const qualityMax = qualityMaxInput ? parseFloat(qualityMaxInput.value) : 0;
+    if (!isNaN(qualityMax) && qualityMax > 0 && qualitySum > qualityMax) {
+        qualitySum = qualityMax;
+    }
+
     // Update the summary fields
-    document.getElementById('quantity-summary').textContent = quantitySum.toFixed(2);
-    document.getElementById('quality-summary').textContent = qualitySum.toFixed(2);
-    document.getElementById('total-summary').textContent = (quantitySum + qualitySum).toFixed(2);
+    const quantityEl = document.getElementById('quantity-summary');
+    const qualityEl = document.getElementById('quality-summary');
+    const totalEl = document.getElementById('total-summary');
+    if (quantityEl) quantityEl.textContent = quantitySum.toFixed(2);
+    if (qualityEl) qualityEl.textContent = qualitySum.toFixed(2);
+    if (totalEl) totalEl.textContent = (quantitySum + qualitySum).toFixed(2);
 }
 
 // Listen for changes on all relevant inputs
@@ -582,6 +646,8 @@ function handleQualityCheckboxChange(checkbox) {
             scoreInput.value = '';
         }
     }
+
+    recalculateSummaryScores();
 }
 
 // Initialize checkbox states on page load

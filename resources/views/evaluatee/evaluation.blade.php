@@ -73,11 +73,37 @@
                             $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
                         }
                     }
-                    // Quality
+
+                    // Quality: sum selected sub-criteria per list, then cap by list max
+                    $evaluationListQualityTotal = 0;
                     foreach($evalList['quality_items'] as $mainCriteria) {
-                        $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
+                        foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                            $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                            $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
+                            if ($isSelected) {
+                                $evaluationListQualityTotal += $hasScore
+                                    ? floatval($subCriteria['score'])
+                                    : floatval($subCriteria['num_score'] ?? 0);
+                            }
+                        }
+                    }
+                    $listMaxScore = floatval($evalList['sum_score'] ?? 0);
+                    if ($listMaxScore > 0 && $evaluationListQualityTotal > $listMaxScore) {
+                        $evaluationListQualityTotal = $listMaxScore;
+                    }
+                    $totalQualityScore += $evaluationListQualityTotal;
+                }
+            }
+            $maxQualityScore = 0;
+            foreach ($categoryItems as $category) {
+                foreach ($category['evaluation_lists'] as $evalList) {
+                    if (!empty($evalList['quality_items'])) {
+                        $maxQualityScore += floatval($evalList['sum_score'] ?? 0);
                     }
                 }
+            }
+            if ($maxQualityScore > 0 && $totalQualityScore > $maxQualityScore) {
+                $totalQualityScore = $maxQualityScore;
             }
             $totalScore = $totalQuantityScore + $totalQualityScore;
         @endphp

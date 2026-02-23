@@ -71,11 +71,37 @@
                             $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
                         }
                     }
-                    // Quality
+
+                    // Quality: sum selected sub-criteria per list, then cap by list max
+                    $evaluationListQualityTotal = 0;
                     foreach($evalList['quality_items'] as $mainCriteria) {
-                        $totalQualityScore += floatval($mainCriteria['main_calculated_score'] ?? 0);
+                        foreach($mainCriteria['sub_criterias'] as $subCriteria) {
+                            $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                            $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
+                            if ($isSelected) {
+                                $evaluationListQualityTotal += $hasScore
+                                    ? (float) $subCriteria['score']
+                                    : (float) ($subCriteria['num_score'] ?? 0);
+                            }
+                        }
+                    }
+                    $listMaxScore = floatval($evalList['sum_score'] ?? 0);
+                    if ($listMaxScore > 0 && $evaluationListQualityTotal > $listMaxScore) {
+                        $evaluationListQualityTotal = $listMaxScore;
+                    }
+                    $totalQualityScore += $evaluationListQualityTotal;
+                }
+            }
+            $maxQualityScore = 0;
+            foreach ($categoryItems as $category) {
+                foreach ($category['evaluation_lists'] as $evalList) {
+                    if (!empty($evalList['quality_items'])) {
+                        $maxQualityScore += floatval($evalList['sum_score'] ?? 0);
                     }
                 }
+            }
+            if ($maxQualityScore > 0 && $totalQualityScore > $maxQualityScore) {
+                $totalQualityScore = $maxQualityScore;
             }
             $totalScore = $totalQuantityScore + $totalQualityScore;
         @endphp
@@ -95,13 +121,13 @@
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                    <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                          <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
                 </div>
             </div>
 
             <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-                <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+                               <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
             </div>
         </div>
 
@@ -135,6 +161,7 @@
         </div> 
 
         <input type="hidden" name="status" id="formStatus" value="submitted">
+        <input type="hidden" id="is-readonly" value="{{ $readonly ? 1 : 0 }}">
 
         @if($readonly)
             </fieldset>
@@ -335,3 +362,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+

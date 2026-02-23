@@ -151,7 +151,7 @@
                                         <div class="mt-3">
                                             <label class="form-label">สร้างการคำนวณ</label>
 
-                                            <textarea class="form-control formula-text workload-formula-text" rows="4" id="workload-formula-text">(ระดับ(ปริญญาตรี(ปกติ)) * จำนวนนิสิต * หน่วยกิต) / ผู้สอน = ภาระงาน</textarea>
+                                            <textarea class="form-control formula-text workload-formula-text" rows="4" id="workload-formula-text"></textarea>
                                         </div>
 
                                         <div class="formula-toolbar">
