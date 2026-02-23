@@ -3,7 +3,8 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Models\QualityScore;
+use App\Services\ScoreService;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -50,42 +51,9 @@ class SingleReportExport implements WithMultipleSheets
             return [];
         }
 
-        // Get quality data for calculations
-        $qualityData = DB::table('quality_scores')
-            ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-            ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-            ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-            ->where('quality_scores.report_id', $report->id)
-            ->selectRaw('
-                quality_sub_criterias.evaluation_list_id,
-                quality_main_criterias.id as main_id,
-                quality_main_criterias.ratio,
-                evaluation_lists.sum_score,
-                SUM(quality_scores.score) as total_score,
-                SUM(quality_sub_criterias.num_score) as total_max_score
-            ')
-            ->groupBy(
-                'quality_sub_criterias.evaluation_list_id',
-                'quality_main_criterias.id',
-                'quality_main_criterias.ratio',
-                'evaluation_lists.sum_score'
-            )
-            ->get();
-
-        $arrScoreEva = [];
-        foreach ($qualityData as $row) {
-            $maxSum = (float) $row->total_max_score;
-            $accSum = (float) $row->total_score;
-            $ratio = (float) $row->ratio;
-            $sumScoreEva = (float) $row->sum_score;
-
-            if ($maxSum > 0) {
-                $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                $key = $row->evaluation_list_id.'_'.$row->main_id;
-                $arrScoreEva[$key] = $calculatedScore;
-            }
-        }
+        $qualityScores = QualityScore::where('report_id', $report->id)
+            ->get()
+            ->keyBy('quality_sub_criteria_id');
 
         $categories = $report->reportData->criteriaVersion->categories()
             ->with(['evaluationLists' => function ($query) {
@@ -161,14 +129,25 @@ class SingleReportExport implements WithMultipleSheets
                         $mainCriteria = $subCriterias->first()->mainCriteria;
 
                         if ($mainCriteria) {
-                            $arrScoreEvaKey = $list->id.'_'.$mainCriteriaId;
-                            $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
+                            $mainCalculatedScore = 0;
+                            $subItems = [];
+                            foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
+                                $score = $qualityScores[$subCriteria->id]?->score ?? 0;
+                                $mainCalculatedScore += (float) $score;
+                                $subItems[] = [
+                                    'id' => $subCriteria->id,
+                                    'name' => $subCriteria->name,
+                                    'sequence' => $subCriteria->sequence,
+                                    'num_score' => $subCriteria->num_score,
+                                    'score' => $score,
+                                ];
+                            }
 
                             $evaluationListData['quality_items'][] = [
                                 'id' => $mainCriteria->id,
                                 'name' => $mainCriteria->name,
-                                'ratio' => $mainCriteria->ratio,
                                 'main_calculated_score' => round($mainCalculatedScore, 2),
+                                'sub_criterias' => $subItems,
                             ];
                         }
                     }
@@ -205,43 +184,7 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
         // Calculate scores (same as your original logic)
         $quantityScore = $report?->quantityScores?->sum('score_D') ?? 0;
 
-        $qualityData = $report
-            ? DB::table('quality_scores')
-                ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                ->where('quality_scores.report_id', $report->id)
-                ->selectRaw('
-                    quality_sub_criterias.evaluation_list_id,
-                    quality_main_criterias.id as main_id,
-                    quality_main_criterias.ratio,
-                    evaluation_lists.sum_score,
-                    SUM(quality_scores.score) as total_score,
-                    SUM(quality_sub_criterias.num_score) as total_max_score
-                ')
-                ->groupBy(
-                    'quality_sub_criterias.evaluation_list_id',
-                    'quality_main_criterias.id',
-                    'quality_main_criterias.ratio',
-                    'evaluation_lists.sum_score'
-                )
-                ->get()
-            : collect();
-
-        $arrScoreEva = [];
-        foreach ($qualityData as $row) {
-            $maxSum = (float) $row->total_max_score;
-            $accSum = (float) $row->total_score;
-            $ratio = (float) $row->ratio;
-            $sumScoreEva = (float) $row->sum_score;
-
-            if ($maxSum > 0) {
-                $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                $arrScoreEva[$row->evaluation_list_id.'_'.$row->main_id] = $calculatedScore;
-            }
-        }
-        $qualityScore = round(array_sum($arrScoreEva), 2);
+        $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
         $totalScore = $quantityScore + $qualityScore;
 
         // Format dates
@@ -351,9 +294,19 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 }
             }
 
+            $qualityListScore = 0;
             foreach ($evaluationList['quality_items'] as $qualityMain) {
-                $totalListScore += (float) $qualityMain['main_calculated_score'];
+                $subTotal = 0;
+                foreach ($qualityMain['sub_criterias'] ?? [] as $sub) {
+                    $subTotal += (float) ($sub['score'] ?? 0);
+                }
+                $qualityListScore += $subTotal;
             }
+            $listMax = (float) ($evaluationList['sum_score'] ?? 0);
+            if ($listMax > 0 && $qualityListScore > $listMax) {
+                $qualityListScore = $listMax;
+            }
+            $totalListScore += $qualityListScore;
 
             $data[] = ['หัวข้อ: '.$evaluationList['name'], $totalListScore];
 
@@ -377,7 +330,11 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
 
             // Add quality main criteria (only main, no sub)
             foreach ($evaluationList['quality_items'] as $qualityMain) {
-                $data[] = [$qualityMain['name'], $qualityMain['main_calculated_score']];
+                $mainScore = 0;
+                foreach ($qualityMain['sub_criterias'] ?? [] as $sub) {
+                    $mainScore += (float) ($sub['score'] ?? 0);
+                }
+                $data[] = [$qualityMain['name'], $mainScore];
                 $mainCounter++;
             }
 

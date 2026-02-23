@@ -14,7 +14,7 @@ class UpdateWorkloadFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'formula_logic' => ['sometimes', 'required', 'string'],
+            'formula_logic' => ['sometimes', 'nullable', 'string'],
             'quantity_sub_criteria_id' => ['sometimes', 'required', 'integer', 'exists:quantity_sub_criterias,id'],
             'quantity_sub_criteria_item_id' => ['sometimes', 'required', 'integer', 'exists:quantity_sub_criteria_items,id'],
         ];

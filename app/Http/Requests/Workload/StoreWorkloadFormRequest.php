@@ -14,7 +14,7 @@ class StoreWorkloadFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'formula_logic' => ['required', 'string'],
+            'formula_logic' => ['nullable', 'string'],
             'quantity_sub_criteria_id' => ['required', 'integer', 'exists:quantity_sub_criterias,id'],
             'quantity_sub_criteria_item_id' => ['nullable', 'integer', 'exists:quantity_sub_criteria_items,id'],
         ];

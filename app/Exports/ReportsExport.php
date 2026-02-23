@@ -3,7 +3,7 @@
 namespace App\Exports;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Services\ScoreService;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -37,46 +37,8 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             // 2️⃣ Quantity score
             $quantityScore = $report?->quantityScores?->sum('score_D') ?? 0;
 
-            // 3️⃣ Quality score calculation using arrScoreEva logic
-            $qualityData = $report
-                ? DB::table('quality_scores')
-                    ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-                    ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-                    ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-                    ->where('quality_scores.report_id', $report->id)
-                    ->selectRaw('
-                        quality_sub_criterias.evaluation_list_id,
-                        quality_main_criterias.id as main_id,
-                        quality_main_criterias.ratio,
-                        evaluation_lists.sum_score,
-                        SUM(quality_scores.score) as total_score,
-                        SUM(quality_sub_criterias.num_score) as total_max_score
-                    ')
-                    ->groupBy(
-                        'quality_sub_criterias.evaluation_list_id',
-                        'quality_main_criterias.id',
-                        'quality_main_criterias.ratio',
-                        'evaluation_lists.sum_score'
-                    )
-                    ->get()
-                : collect();
-
-            $arrScoreEva = [];
-            foreach ($qualityData as $row) {
-                $maxSum = (float) $row->total_max_score;
-                $accSum = (float) $row->total_score;
-                $ratio = (float) $row->ratio;
-                $sumScoreEva = (float) $row->sum_score;
-
-                if ($maxSum > 0) {
-                    $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                    $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                    $key = $row->evaluation_list_id.'_'.$row->main_id;
-                    $arrScoreEva[$key] = $calculatedScore;
-                }
-            }
-
-            $qualityScore = round(array_sum($arrScoreEva), 2);
+            // 3️⃣ Quality score (raw sum with caps)
+            $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
 
             // 4️⃣ Total score
             $totalScore = $quantityScore + $qualityScore;
@@ -183,3 +145,5 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
         ];
     }
 }
+
+

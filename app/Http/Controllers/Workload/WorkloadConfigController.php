@@ -109,7 +109,7 @@ class WorkloadConfigController extends Controller
             'groups.*.items.*.id' => ['nullable', 'integer'],
             'groups.*.items.*.item_name' => ['required', 'string', 'max:255'],
             'groups.*.items.*.sequence' => ['required', 'integer', 'min:1'],
-            'groups.*.items.*.formula_logic' => ['required', 'string'],
+            'groups.*.items.*.formula_logic' => ['nullable', 'string'],
             'groups.*.items.*.fields' => ['nullable', 'array'],
             'groups.*.items.*.fields.*.label' => ['required', 'string', 'max:255'],
             'groups.*.items.*.fields.*.variable_name' => ['required', 'string', 'max:255'],
@@ -146,7 +146,10 @@ class WorkloadConfigController extends Controller
                 $payloadItemIds = [];
                 foreach ($group['items'] as $itemBlock) {
                     $fields = $itemBlock['fields'] ?? [];
-                    $this->validateFormulaLogic($itemBlock['formula_logic'], $fields);
+                    $formulaLogic = trim((string) ($itemBlock['formula_logic'] ?? ''));
+                    if ($formulaLogic !== '') {
+                        $this->validateFormulaLogic($formulaLogic, $fields);
+                    }
 
                     if (!empty($itemBlock['id'])) {
                         $currentItem = QuantitySubCriteriaItem::findOrFail($itemBlock['id']);
@@ -172,13 +175,13 @@ class WorkloadConfigController extends Controller
                     $form = WorkloadForm::firstOrCreate(
                         ['quantity_sub_criteria_item_id' => $currentItem->id],
                         [
-                            'formula_logic' => $itemBlock['formula_logic'],
+                            'formula_logic' => $formulaLogic,
                             'quantity_sub_criteria_id' => $subCriteria->id,
                         ]
                     );
 
                     $form->update([
-                        'formula_logic' => $itemBlock['formula_logic'],
+                        'formula_logic' => $formulaLogic,
                         'quantity_sub_criteria_id' => $subCriteria->id,
                     ]);
 
