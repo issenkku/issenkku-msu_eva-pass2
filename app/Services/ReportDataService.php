@@ -42,7 +42,7 @@ class ReportDataService
         $assignment->evaluateeName = $assignment->evaluateeUser?->name ?? '-';
         $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
         $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
-        $assignment->evaluatorName = $assignment->$assignment->assignmentData->evaluatorUser?->name ?? '-';
+        $assignment->evaluatorName = $assignment->assignmentData->evaluatorUser?->name ?? '-';
         $assignment->evaluatorPosition = $assignment->assignmentData->evaluatorUser?->position?->name ?? '-';
 
         $formatThai = function ($datetime) {
@@ -95,47 +95,8 @@ class ReportDataService
                 return [$mainId => $items->pluck('link')->filter()->values()->toArray()];
             });
 
-        $qualityData = DB::table('quality_scores')
-            ->join('quality_sub_criterias', 'quality_scores.quality_sub_criteria_id', '=', 'quality_sub_criterias.id')
-            ->join('quality_main_criterias', 'quality_sub_criterias.quality_main_criteria_id', '=', 'quality_main_criterias.id')
-            ->join('evaluation_lists', 'quality_sub_criterias.evaluation_list_id', '=', 'evaluation_lists.id')
-            ->where('quality_scores.report_id', $id)
-            ->selectRaw('
-                quality_sub_criterias.evaluation_list_id,
-                quality_main_criterias.id as main_id,
-                quality_main_criterias.ratio,
-                evaluation_lists.sum_score,
-                SUM(quality_scores.score) as total_score,
-                SUM(quality_sub_criterias.num_score) as total_max_score
-            ')
-            ->groupBy(
-                'quality_sub_criterias.evaluation_list_id',
-                'quality_main_criterias.id',
-                'quality_main_criterias.ratio',
-                'evaluation_lists.sum_score'
-            )
-            ->get();
-
-        // Build arrScoreEva lookup array
-        $arrScoreEva = [];
-        foreach ($qualityData as $row) {
-            $maxSum = (float) $row->total_max_score;
-            $accSum = (float) $row->total_score;
-            $ratio = (float) $row->ratio;
-            $sumScoreEva = (float) $row->sum_score;
-
-            if ($maxSum > 0) {
-                $scoreRatioMain = $ratio * ($accSum / $maxSum);
-                $calculatedScore = ($scoreRatioMain / 100) * $sumScoreEva;
-                
-                // Store with composite key for lookup
-                $key = $row->evaluation_list_id . '_' . $row->main_id;
-                $arrScoreEva[$key] = $calculatedScore;
-            }
-        }
-
         // Process categories and their evaluation lists
-        $categoryItems = $this->processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap, $arrScoreEva);
+        $categoryItems = $this->processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap);
 
         return [
             'report' => $report,
@@ -158,7 +119,7 @@ class ReportDataService
         ];
     }
 
-    private function processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap, $arrScoreEva)
+    private function processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap)
     {
         $categoryItems = [];
 
@@ -197,7 +158,7 @@ class ReportDataService
                     $evaluationListData['quantity_items'] = $this->processQuantityItems($list, $quantityScores, $evidenceMap);
                     
                     // Process quality items
-                    $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $evidenceMap, $arrScoreEva);
+                    $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $evidenceMap);
 
                     $categoryData['evaluation_lists'][] = $evaluationListData;
                 }
@@ -259,19 +220,22 @@ class ReportDataService
         return $quantityItems;
     }
 
-    private function processQualityItems($list, $qualityScores, $evidenceMap, $arrScoreEva)
+    private function processQualityItems($list, $qualityScores, $evidenceMap)
     {
         $qualityItems = [];
 
         if ($list->qualitySubCriterias && $list->qualitySubCriterias->count() > 0) {
             $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
+            $scoreMaps = $this->buildQualityMainScoreMaps($list, $qualityScores);
+            $mainScoreRaw = $scoreMaps['raw'];
+            $mainScoreScaled = $scoreMaps['scaled'];
 
             foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
                 $mainCriteria = $subCriterias->first()->mainCriteria;
 
                 if ($mainCriteria) {
-                    $arrScoreEvaKey = $list->id . '_' . $mainCriteriaId;
-                    $mainCalculatedScore = $arrScoreEva[$arrScoreEvaKey] ?? 0;
+                    $mainCalculatedScore = $mainScoreScaled[$mainCriteriaId] ?? 0;
+                    $mainRawScore = $mainScoreRaw[$mainCriteriaId] ?? 0;
 
                     $mainCriteriaData = [
                         'id' => $mainCriteria->id,
@@ -282,17 +246,6 @@ class ReportDataService
                         'sub_criterias' => [],
                     ];
 
-                    // Calculate totals for sub-criteria distribution
-                    $totalScore = 0;
-                    $totalMaxScore = 0;
-                    foreach ($subCriterias as $subCriteria) {
-                        $qualityScore = $qualityScores[$subCriteria->id] ?? null;
-                        if ($qualityScore && $qualityScore->score !== null && $qualityScore->score !== '') {
-                            $totalScore += (float) $qualityScore->score;
-                        }
-                        $totalMaxScore += (float) $subCriteria->num_score;
-                    }
-
                     foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                         $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                         $evidenceLinks = $evidenceMap[$list->id] ?? [];
@@ -301,8 +254,8 @@ class ReportDataService
                         $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
                         $calculatedScore = null;
-                        if ($hasScore && $totalMaxScore > 0) {
-                            $subRatio = $subCriteria->num_score / $totalMaxScore;
+                        if ($hasScore && $mainRawScore > 0) {
+                            $subRatio = (float) $qualityScore->score / $mainRawScore;
                             $calculatedScore = round($mainCalculatedScore * $subRatio, 2);
                         }
 
@@ -325,5 +278,41 @@ class ReportDataService
         }
 
         return $qualityItems;
+    }
+
+    private function buildQualityMainScoreMaps($list, $qualityScores)
+    {
+        $rawScores = [];
+        $scaledScores = [];
+
+        $qualityMainGroups = $list->qualitySubCriterias->groupBy('quality_main_criteria_id');
+        $listTotal = 0.0;
+
+        foreach ($qualityMainGroups as $mainCriteriaId => $subCriterias) {
+            $mainTotal = 0.0;
+            foreach ($subCriterias as $subCriteria) {
+                $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                if ($qualityScore && $qualityScore->score !== null && $qualityScore->score !== '') {
+                    $mainTotal += (float) $qualityScore->score;
+                }
+            }
+            $rawScores[$mainCriteriaId] = $mainTotal;
+            $listTotal += $mainTotal;
+        }
+
+        $listMax = (float) ($list->sum_score ?? 0);
+        $scale = 1.0;
+        if ($listMax > 0 && $listTotal > 0 && $listTotal > $listMax) {
+            $scale = $listMax / $listTotal;
+        }
+
+        foreach ($rawScores as $mainId => $mainTotal) {
+            $scaledScores[$mainId] = round($mainTotal * $scale, 2);
+        }
+
+        return [
+            'raw' => $rawScores,
+            'scaled' => $scaledScores,
+        ];
     }
 }

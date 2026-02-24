@@ -83,7 +83,7 @@ class EvaluatorScoreController extends Controller
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
-                'quality_list.*.score' => 'nullable|numeric',
+                'quality_list.*.score' => 'nullable|numeric|min:0',
 
                 'status' => 'required|string|in:Director_assigned,Pending,Evaluator_draft,Submitted',
                 'comment' => 'nullable|string',
@@ -130,22 +130,79 @@ class EvaluatorScoreController extends Controller
             // ✅ Quality loop with check
             $newQualityScores = [];
             if (isset($validated['quality_list'])) {
-                foreach ($validated['quality_list'] as $item) {
+                $qualityItems = $validated['quality_list'];
+                $qualitySubIds = collect($qualityItems)
+                    ->map(function ($item) {
+                        return is_array($item['quality_sub_criteria_id'])
+                            ? (int) $item['quality_sub_criteria_id'][0]
+                            : (int) $item['quality_sub_criteria_id'];
+                    })
+                    ->unique()
+                    ->values();
+
+                $subCriteriaMap = \App\Models\QualitySubCriteria::whereIn('id', $qualitySubIds)
+                    ->get(['id', 'num_score', 'evaluation_list_id'])
+                    ->keyBy('id');
+
+                $listIds = $subCriteriaMap->pluck('evaluation_list_id')->filter()->unique()->values();
+                $listMaxMap = \App\Models\EvaluationList::whereIn('id', $listIds)
+                    ->get(['id', 'sum_score'])
+                    ->keyBy('id');
+
+                $tempScores = [];
+                $listTotals = [];
+
+                foreach ($qualityItems as $item) {
                     $score = $item['score'] ?? null;
                     if ($score === null) {
                         continue;
                     }
 
                     $subCriteriaId = is_array($item['quality_sub_criteria_id'])
-                        ? $item['quality_sub_criteria_id'][0]
+                        ? (int) $item['quality_sub_criteria_id'][0]
                         : (int) $item['quality_sub_criteria_id'];
+
+                    $subCriteria = $subCriteriaMap->get($subCriteriaId);
+                    if (! $subCriteria) {
+                        continue;
+                    }
+
+                    $scoreValue = max(0, (float) $score);
+                    if ($subCriteria->num_score !== null) {
+                        $scoreValue = min($scoreValue, (float) $subCriteria->num_score);
+                    }
+
+                    $listId = (int) $subCriteria->evaluation_list_id;
+                    $tempScores[$subCriteriaId] = [
+                        'score' => $scoreValue,
+                        'list_id' => $listId,
+                    ];
+                    $listTotals[$listId] = ($listTotals[$listId] ?? 0) + $scoreValue;
+                }
+
+                $listScales = [];
+                foreach ($listTotals as $listId => $sum) {
+                    $listMax = (float) ($listMaxMap->get($listId)?->sum_score ?? 0);
+                    $scale = 1.0;
+                    if ($listMax > 0 && $sum > $listMax) {
+                        $scale = $listMax / $sum;
+                    }
+                    $listScales[$listId] = $scale;
+                }
+
+                foreach ($tempScores as $subCriteriaId => $data) {
+                    $scale = $listScales[$data['list_id']] ?? 1.0;
+                    $finalScore = round($data['score'] * $scale, 2);
 
                     QualityScore::create([
                         'quality_sub_criteria_id' => $subCriteriaId,
                         'report_id' => $reportId,
-                        'score' => $score,
+                        'score' => $finalScore,
                     ]);
-                    $newQualityScores[] = compact('subCriteriaId', 'score');
+                    $newQualityScores[] = [
+                        'subCriteriaId' => $subCriteriaId,
+                        'score' => $finalScore,
+                    ];
                 }
             }
 
