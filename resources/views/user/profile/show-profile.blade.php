@@ -1,68 +1,73 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
-<div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
-    <h2 class="text-2xl font-semibold mb-6">User Profile</h2>
+<div class="max-w-5xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 px-6 py-5 border-b border-gray-200">
+            <h2 class="text-2xl font-semibold text-gray-800">User Profile</h2>
+        </div>
+        <div class="p-6">
+            <!-- Profile Photo and Name Section -->
+            <div class="flex flex-col md:flex-row md:items-center mb-6 gap-6">
+                <div class="flex-shrink-0">
+                    <img src="{{ $user->profile_photo_url }}" 
+                         alt="Profile Photo"
+                         class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-purple-100">
+                </div>
+                <div class="flex-grow">
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $user->prefix }} {{ $user->name }}</h3>
+                    <p class="text-lg text-gray-600">{{ $user->email }}</p>
+                    <p class="text-sm text-gray-500 mt-1">{{ optional($user->position)->name ?? '-' }} | {{ optional($user->department)->department_name ?? '-' }}</p>
+                </div>
+            </div>
 
-    <!-- Profile Photo and Name Section -->
-    <div class="flex items-center mb-6 gap-6">
-        <div class="flex-shrink-0">
-            <img src="{{ $user->profile_photo_url }}" 
-                 alt="Profile Photo"
-                 class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg">
-        </div>
-        <div class="flex-grow">
-            <h3 class="text-2xl font-bold text-gray-800">{{ $user->prefix }} {{ $user->name }}</h3>
-            <p class="text-lg text-gray-600">{{ $user->email }}</p>
-            <p class="text-sm text-gray-500 mt-1">{{ $user->position->name ?? '-' }} | {{ $user->department->department_name ?? '-' }}</p>
-        </div>
-    </div>
+            <!-- User Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">รหัสพนักงาน:</strong>
+                    <p class="text-gray-700 mt-1">{{ $user->employee_id ?? '-' }}</p>
+                </div>
 
-    <!-- User Info -->
-    <div class="grid grid-cols-2 gap-6">
-        <div>
-            <strong>รหัสพนักงาน:</strong>
-            <p class="text-gray-700">{{ $user->employee_id ?? '-' }}</p>
-        </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">เบอร์โทร:</strong>
+                    <p class="text-gray-700 mt-1">
+                        {{ $user->phone ? preg_replace('/(\d{3})(\d{3})(\d{4})/', '$1-$2-$3', $user->phone) : '-' }}
+                    </p>
+                </div>
 
-        <div>
-            <strong>เบอร์โทร:</strong>
-            <p class="text-gray-700">
-                {{ $user->phone ? preg_replace('/(\d{3})(\d{3})(\d{4})/', '$1-$2-$3', $user->phone) : '-' }}
-            </p>
-        </div>
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">ประเภทบุคลากร:</strong>
+                    <p class="text-gray-700 mt-1">{{ $user->personnel_type ?? '-' }}</p>
+                </div>
+                
+                <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">บทบาท:</strong>
+                    <p class="text-gray-700 mt-1">
+                        {{ $user->roles->pluck('name')->join(', ') ?: '-' }}
+                    </p>
+                </div>
 
-        <div>
-            <strong>ประเภทบุคลากร:</strong>
-            <p class="text-gray-700">{{ $user->personnel_type ?? '-' }}</p>
-        </div>
-        
-        <div>
-            <strong>บทบาท:</strong>
-            <p class="text-gray-700">
-                {{ $user->roles->pluck('name')->join(', ') ?: '-' }}
-            </p>
-        </div>
+                <div class="md:col-span-2 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">ประวัติการศึกษา:</strong>
+                    <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->bio ?? '-' }}</p>
+                </div>
 
-        <div class="col-span-2">
-            <strong>ประวัติการศึกษา:</strong>
-            <p class="text-gray-700 whitespace-pre-line">{{ $user->bio ?? '-' }}</p>
-        </div>
+                @if($user->portfolio)
+                <div class="md:col-span-2 bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <strong class="text-gray-800">ผลงาน:</strong>
+                    <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->portfolio }}</p>
+                </div>
+                @endif
+            </div>
 
-        @if($user->portfolio)
-        <div class="col-span-2">
-            <strong>ผลงาน:</strong>
-            <p class="text-gray-700 whitespace-pre-line">{{ $user->portfolio }}</p>
+            <div class="mt-8 flex justify-end">
+                <x-button 
+                    type="warning"
+                    text="แก้ไขข้อมูล"
+                    icon="fas fa-edit"
+                    href="{{ route('profile.edit') }}" />
+            </div>
         </div>
-        @endif
-    </div>
-
-    <div class="mt-6">
-        <x-button 
-            type="warning"
-            text="แก้ไขข้อมูล"
-            icon="fas fa-edit"
-            href="{{ route('profile.edit') }}" />
     </div>
 </div>
 @endsection

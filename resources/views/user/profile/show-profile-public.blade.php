@@ -16,7 +16,7 @@
         <div class="flex-grow">
             <h3 class="text-2xl font-bold text-gray-800">{{ $user->prefix }} {{ $user->name }}</h3>
             <p class="text-lg text-gray-600">{{ $user->email }}</p>
-            <p class="text-sm text-gray-500 mt-1">{{ $user->position->name ?? '-' }} | {{ $user->department->department_name ?? '-' }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ optional($user->position)->name ?? '-' }} | {{ optional($user->department)->department_name ?? '-' }}</p>
         </div>
     </div>
 
@@ -24,12 +24,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ตำแหน่ง:</strong>
-            <p class="text-gray-700 mt-1">{{ $user->position->name ?? '-' }}</p>
+            <p class="text-gray-700 mt-1">{{ optional($user->position)->name ?? '-' }}</p>
         </div>
 
         <div class="bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">สาขาวิชา:</strong>
-            <p class="text-gray-700 mt-1">{{ $user->department->department_name ?? '-' }}</p>
+            <p class="text-gray-700 mt-1">{{ optional($user->department)->department_name ?? '-' }}</p>
         </div>
 
         <div class="col-span-full bg-gray-50 p-4 rounded-lg">

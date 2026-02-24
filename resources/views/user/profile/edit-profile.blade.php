@@ -176,7 +176,7 @@
         </div>
 
         <!-- Password Change Section -->
-        <div class="mt-8 pt-6 border-t border-gray-200">
+        {{-- <div class="mt-8 pt-6 border-t border-gray-200">
             <h3 class="text-lg font-medium text-gray-900 mb-4">เปลี่ยนรหัสผ่าน (กรอกเฉพาะกรณีต้องการเปลี่ยนรหัส)</h3>
             <div class="grid grid-cols-2 gap-6">
                 <div>
@@ -202,12 +202,12 @@
                            class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2">
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Action Buttons -->
         <div class="mt-6 flex items-center gap-3">
             <x-button 
-                type= defualt 
+                type="default" 
                 text="ย้อนกลับ" 
                 icon="fas fa-arrow-left"
                 href="{{ route('profile.show') }}" /> 
