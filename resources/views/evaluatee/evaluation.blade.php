@@ -159,7 +159,7 @@
             </div>
         @endif
 
-        <input type="hidden" name="status" id="formStatus" value="submitted">
+        <input type="hidden" name="status" id="formStatus" value="Draft">
 
         @if($readonly)
             </fieldset>

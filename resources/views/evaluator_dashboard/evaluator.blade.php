@@ -160,7 +160,7 @@
             @endif
         </div> 
 
-        <input type="hidden" name="status" id="formStatus" value="submitted">
+        <input type="hidden" name="status" id="formStatus" value="Evaluator_draft">
         <input type="hidden" id="is-readonly" value="{{ $readonly ? 1 : 0 }}">
 
         @if($readonly)

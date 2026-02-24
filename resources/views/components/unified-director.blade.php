@@ -322,11 +322,11 @@
                                             @endif
                                         </div>
                                         {{-- Selected Score --}}
-                                        <div class="w-full md:w-60">
+                                        {{-- <div class="w-full md:w-60">
                                             <div class="text-base text-gray-800 text-center">
                                                 คะแนนที่ได้ {{ number_format((float)$displayScore, 2) }}
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         {{-- Hidden Score Input for edit mode --}}
                                         @if(!$readonly)
                                             <input type="hidden" 
