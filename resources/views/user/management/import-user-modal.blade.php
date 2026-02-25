@@ -1,10 +1,14 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\user\management\import-user-modal.blade.php --}}
 <!-- Import User Modal - resources/views/user/management/import-user-modal.blade.php -->
 
 <!-- Modal Background -->
+{{-- บล็อกเนื้อหา --}}
 <div id="importUserModal" class="fixed z-[9999] inset-0 bg-black bg-opacity-50 hidden items-center justify-center overflow-y-auto">
     <!-- Modal Box -->
+    {{-- บล็อกเนื้อหา --}}
     <div class="bg-white rounded-xl w-full max-w-4xl mx-4 p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
         <!-- Header -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex justify-between items-center border-b pb-4 mb-6">
             <div>
                 <h2 class="text-xl font-semibold text-purple-700">นำเข้าข้อมูลเจ้าหน้าที่</h2>
@@ -14,6 +18,7 @@
         </div>
 
         <!-- Form -->
+        {{-- ฟอร์ม --}}
         <form id="importForm" action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">
@@ -149,7 +154,9 @@
 
 <!-- Success/Error Messages Display -->
 @if(session('success'))
+{{--  --}}
 <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center space-x-3">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -165,7 +172,9 @@
 @endif
 
 @if(session('warning'))
+{{--  --}}
 <div id="warningMessage" class="fixed top-4 right-4 bg-yellow-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center space-x-3">
         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -181,7 +190,9 @@
 @endif
 
 @if(session('error'))
+{{--  --}}
 <div id="errorMessage" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300 max-w-md">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-start space-x-3">
         <svg class="h-6 w-6 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>

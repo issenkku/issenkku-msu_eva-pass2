@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\dashboard\index.blade.php --}}
 
 @section('content')
     <style>
@@ -115,7 +116,9 @@
         }
     @endphp
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="min-h-screen py-8 bg-gray-50">
+        {{-- บล็อกเนื้อหา --}}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-row justify-between">
                 <!-- Header -->
@@ -136,6 +139,7 @@
             <!-- Filter Inputs -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fadeIn">
                 <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
+                {{-- ฟอร์ม --}}
                 <form id="filterForm" method="get" class="space-y-1">
                     <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
                         <div>
@@ -278,6 +282,7 @@
                 
 
                 <div class="overflow-x-auto">
+                    {{-- ตารางข้อมูล --}}
                     <table id="userParticipant" class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>

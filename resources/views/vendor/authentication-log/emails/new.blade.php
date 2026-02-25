@@ -1,4 +1,4 @@
-{{-- @component('mail::message')
+﻿{{-- @component('mail::message')
 # @lang('Hello!')
 
 @lang('Your :app account logged in from a new device.', ['app' => config('app.name')])

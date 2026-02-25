@@ -1,8 +1,12 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\criteria_config\assign.blade.php --}}
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="py-12">
+    {{-- บล็อกเนื้อหา --}}
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        {{-- ฟอร์ม --}}
         <form action="#" method="POST">
             @csrf
             <!-- ======================================= -->

@@ -1,4 +1,4 @@
-@props([
+﻿@props([
     'categoryItems' => [],
     'readonly' => false,
     'evidenceMap' => [],
@@ -18,6 +18,7 @@
 
 <input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
 
+{{-- บล็อกเนื้อหา --}}
 <div class="space-y-8">
     @foreach($categoryItems as $category)
         {{-- Category Container --}}
@@ -492,6 +493,7 @@
         }
     @endphp
     @if($hasAnnotations)
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div class="flex items-start">
                 <div class="flex-shrink-0">

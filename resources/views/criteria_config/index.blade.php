@@ -1,8 +1,11 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\criteria_config\index.blade.php --}}
 <!-- resources/views/criteria/index.blade.php -->
 @extends('layouts.app')
 
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="py-12">
+        {{-- บล็อกเนื้อหา --}}
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Page Header -->
             <div class="flex justify-between items-center mb-6">

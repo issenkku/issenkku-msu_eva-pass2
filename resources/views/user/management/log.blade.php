@@ -1,12 +1,15 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\user\management\log.blade.php --}}
 
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <x-header 
             title="บันทึกประวัติการเข้าใช้งาน" 
             text="ระบบบันทึกประวัติการเข้าใช้งานของผู้ใช้"
             icon="fas fa-history" />
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -16,6 +19,7 @@
                         </h5>
                     </div>
                     <div class="card-body p-4">
+                        {{-- ฟอร์ม --}}
                         <form method="GET" action="{{ route('user.management.log') }}" class="row g-3">
                             <!-- Search Input -->
                             <div class="col-md-4">
@@ -88,6 +92,7 @@
         </div>
 
         <!-- Activity Log Table -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card shadow-sm border-0" style="border-radius: 15px;">
@@ -102,6 +107,7 @@
                     <div class="card-body p-0">
                         @if($activities->count() > 0)
                             <div class="table-responsive">
+                                {{-- ตารางข้อมูล --}}
                                 <table class="table table-hover mb-0">
                                     <thead class="bg-light">
                                         <tr>
@@ -214,6 +220,7 @@
         </div>
     </div>
     @foreach($activities as $activity)
+        {{--  --}}
         <div class="modal fade" id="activityModal{{ $activity->id }}" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">

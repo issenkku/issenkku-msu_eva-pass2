@@ -1,13 +1,17 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\user\role-management\index.blade.php --}}
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="p-6">
     <h1 class="text-2xl font-bold mb-4">การจัดการบทบาทและสิทธิ์</h1>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="mb-4 flex justify-between">
         <button onclick="openCreateModal()" class="bg-purple-600 text-white px-4 py-2 rounded">เพิ่มบทบาท</button>
     </div>
 
+    {{-- ตารางข้อมูล --}}
     <table class="w-full bg-white shadow rounded">
         <thead>
             <tr class="bg-gray-100 text-left">
@@ -31,6 +35,7 @@
                         <a href="{{ route('roles.edit', $role) }}"
                            class="bg-indigo-500 text-white px-3 py-1 rounded">แก้ไข</a>
 
+                        {{-- ฟอร์ม --}}
                         <form method="POST" action="{{ route('roles.destroy', $role) }}" class="inline-block"
                               onsubmit="return confirm('ลบบทบาทนี้ใช่หรือไม่?')">
                             @csrf
@@ -45,9 +50,12 @@
 </div>
 
 <!-- Optional: Keep Create Modal -->
+{{-- บล็อกเนื้อหา --}}
 <div id="roleModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    {{-- บล็อกเนื้อหา --}}
     <div class="bg-white p-6 rounded-lg w-full max-w-xl">
         <h2 id="modalTitle" class="text-lg font-semibold mb-4">เพิ่มบทบาท</h2>
+        {{-- ฟอร์ม --}}
         <form method="POST" id="roleForm">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">

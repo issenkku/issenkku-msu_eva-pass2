@@ -1,15 +1,18 @@
-@props([
+﻿@props([
     'qualityItems' => [],
     'title' => 'ด้านคุณภาพ',
     'readonly' => false,
     'evidenceMap' => [] 
 ])
 
+{{-- บล็อกเนื้อหา --}}
 <div class="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+    {{-- บล็อกเนื้อหา --}}
     <div class="bg-purple-100 px-6 py-4">
         <h2 class="text-lg font-semibold text-gray-800">{{ $title }}</h2>
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="p-4 space-y-6">
         @php 
             // Group items by evaluation list

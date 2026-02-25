@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\delete-warning-modal.blade.php --}}
 @props([
     'text',
     'formAction' => '#',
@@ -5,8 +6,11 @@
 ])
 
 <!-- Delete Confirmation Modal -->
+{{--  --}}
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    {{--  --}}
     <div class="modal-dialog modal-dialog-centered">
+        {{--  --}}
         <div class="modal-content mt-6 bg-white border border-red-200 rounded-xl shadow-2xl max-w-md w-full p-8 text-center">
             <div class="modal-body delete-modal-body text-center">
                 <div class="mx-auto mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-red-100">
@@ -19,6 +23,7 @@
                 <button type="button" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>ยกเลิก
                 </button>
+                {{-- ฟอร์ม --}}
                 <form id="deleteForm" method="POST" style="display: inline;">
                     @csrf
                     @method('DELETE')

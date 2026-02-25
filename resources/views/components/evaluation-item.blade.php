@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\evaluation-item.blade.php --}}
 @props(['evaluation'])
 
 @php
@@ -17,16 +18,20 @@
     $statusClass = $statusStyles[$evaluation['status']] ?? 'bg-gray-100 text-gray-800';
 @endphp
 
+{{-- บล็อกเนื้อหา --}}
 <div class="flex items-center justify-between p-4 bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center gap-3">
         <i class="{{ $iconClass }}"></i>
         <span class="font-medium text-gray-800">{{ $evaluation['title'] }}</span>
     </div>
     
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center gap-4">
         <span class="px-3 py-1 rounded-full text-sm {{ $statusClass }}">
             {{ $evaluation['status'] }}
         </span>
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center gap-1 text-sm text-gray-500">
             <i class="fas fa-clock"></i>
             {{ $evaluation['last_update'] }}

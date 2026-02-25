@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\user\management\resetPassword.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -12,7 +13,9 @@
     @vite([])
 </head>
 <body class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    {{-- บล็อกเนื้อหา --}}
     <div class="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex justify-center mb-4">
             <img src="/favicon-msu.png" alt="MSU Logo" class="h-24 w-24 object-contain" />
         </div>
@@ -25,6 +28,7 @@
             </div>
         @endif
 
+        {{-- ฟอร์ม --}}
         <form method="POST" action="{{ route('password.store') }}" class="space-y-5">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
@@ -53,6 +57,7 @@
             </button>
         </form>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="mt-6 text-center">
             <a href="{{ route('login') }}" class="text-sm text-blue-600 hover:underline">กลับไปหน้าเข้าสู่ระบบ</a>
         </div>

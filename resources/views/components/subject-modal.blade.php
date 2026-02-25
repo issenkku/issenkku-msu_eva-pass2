@@ -1,5 +1,8 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\subject-modal.blade.php --}}
 <div class="modal fade" id="subjectModal" tabindex="-1" aria-labelledby="subjectModalLabel" aria-hidden="true">
+    {{--  --}}
     <div class="modal-dialog modal-lg subject-modal-dialog">
+        {{--  --}}
         <div class="modal-content modal-content-custom">
             <div class="modal-header modal-header-custom">
                 <h5 class="modal-title" id="subjectModalLabel">
@@ -8,6 +11,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body modal-body-custom">
+                {{-- ฟอร์ม --}}
                 <form id="subjectForm" method="POST" action="{{ request()->routeIs('evaluatee.workload') ? route('subjects.store.evaluatee') : route('subjects.store') }}">
                     @csrf
                     <input type="hidden" name="_method" id="form_method" value="POST">

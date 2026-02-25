@@ -1,7 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\quality-scores\show.blade.php --}}
 @section('title', 'แสดงคะแนนคุณภาพ')
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
+        {{-- บล็อกเนื้อหา --}}
         <div class="row">
             <div class="col-md-12">
                 <div class="card">

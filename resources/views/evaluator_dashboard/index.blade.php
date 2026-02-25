@@ -1,20 +1,26 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\evaluator_dashboard\index.blade.php --}}
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="max-w-8xl mx-auto space-y-6">
     <!-- Profile Card at Top -->
     <x-profile-card 
         :user="$user"
         title="ข้อมูลผู้ประเมิน"/>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class=" py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
+        {{-- บล็อกเนื้อหา --}}
         <div class="mb-4">
             <h2 class="text-2xl font-semibold text-gray-800">สรุปผลการประเมิน</h2>
             <p class="text-gray-600">ภาพรวมของผลการประเมินทั้งหมด</p>
         </div>
         
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white rounded-xl shadow-md p-6 mb-8 animate-fadeIn border border-gray-200">
             <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
+            {{-- ฟอร์ม --}}
             <form id="filterForm" method="get" class="space-y-1">
                 <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
                     <div>
@@ -37,6 +43,7 @@
             </form>
         </div>
         
+        {{--  --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <x-summary-score
                 title="จำนวนผู้เข้ารับการประเมิน"
@@ -55,6 +62,7 @@
             />
         </div>
 
+        {{--  --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <x-bar-chart 
                 chart-id="statusChart"
@@ -82,7 +90,9 @@
 </div>
 
 @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

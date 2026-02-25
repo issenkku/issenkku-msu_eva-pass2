@@ -1,5 +1,7 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\evaluation-header.blade.php --}}
 @props(['title', 'period', 'deadline', 'daysLeft', 'evaluationId'])
 
+{{-- บล็อกเนื้อหา --}}
 <div class="p-6 rounded-xl shadow-md border relative hover:shadow-lg transition duration-200"
      style="background: linear-gradient(180deg, #faf1ffff 0%, #efe6ffff 100%); border-color: #f3e8ff;">
     
@@ -27,6 +29,7 @@
         @endif
     </p>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="mt-4">
         <a href="{{ route('evaluation.show', $evaluationId) }}"
            class="inline-flex items-center gap-2 px-5 py-2 rounded-full font-medium shadow transition text-white"

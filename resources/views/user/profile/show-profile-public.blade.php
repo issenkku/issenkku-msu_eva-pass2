@@ -10,11 +10,13 @@
 
     {{-- รูปโปรไฟล์ + ข้อมูลพื้นฐาน --}}
     <div class="flex items-center mb-6 gap-6">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex-shrink-0">
             <img src="{{ $user->profile_photo_url }}" 
                  alt="Profile Photo"
                  class="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-lg">
         </div>
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex-grow">
             <h3 class="text-2xl font-bold text-gray-800">{{ $user->prefix }} {{ $user->name }}</h3>
             <p class="text-lg text-gray-600">{{ $user->email }}</p>
@@ -24,16 +26,19 @@
 
     {{-- ตารางข้อมูลผู้ใช้ --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ตำแหน่ง:</strong>
             <p class="text-gray-700 mt-1">{{ optional($user->position)->name ?? '-' }}</p>
         </div>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">สาขาวิชา:</strong>
             <p class="text-gray-700 mt-1">{{ optional($user->department)->department_name ?? '-' }}</p>
         </div>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="col-span-full bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ประวัติการศึกษา:</strong>
             <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->bio ?? 'ไม่ระบุข้อมูล' }}</p>
@@ -41,6 +46,7 @@
 
         {{-- ส่วนผลงาน (แสดงเมื่อมีข้อมูล) --}}
         @if($user->portfolio)
+        {{-- บล็อกเนื้อหา --}}
         <div class="col-span-full bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ผลงาน:</strong>
             <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->portfolio }}</p>

@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\user\management\loginForm.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

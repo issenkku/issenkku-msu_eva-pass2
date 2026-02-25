@@ -1,13 +1,16 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="py-12 bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen">
+        {{-- บล็อกเนื้อหา --}}
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-10">
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-3">แก้ไขเกณฑ์การประเมิน</h1>
                 <p class="text-gray-600 text-lg">กรุณาแก้ไขข้อมูลเกณฑ์การประเมินตามที่ต้องการ</p>
             </div>
 
+            {{-- ฟอร์ม --}}
             <form id="editForm" action="{{ route('report-structure.update', ['id' => $id ?? '']) }}" method="POST" class="space-y-8" novalidate>
                 @csrf
                 @method('PUT')
@@ -385,7 +388,9 @@
     </div>
 
     <!-- Loading Overlay -->
+    {{-- บล็อกเนื้อหา --}}
     <div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-6 rounded-lg shadow-xl text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p class="text-gray-700 text-lg">กำลังโหลดข้อมูล กรุณารอสักครู่...</p>
@@ -393,7 +398,9 @@
     </div>
 
     <!-- Success Modal -->
+    {{-- บล็อกเนื้อหา --}}
     <div id="success_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
             <div class="text-center">
                 <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">

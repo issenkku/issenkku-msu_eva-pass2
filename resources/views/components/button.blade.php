@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\button.blade.php --}}
 @props([
     'type' => 'primary', // style
     'text',

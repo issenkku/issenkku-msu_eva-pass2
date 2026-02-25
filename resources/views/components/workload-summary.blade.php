@@ -6,6 +6,7 @@
 ])
 
 @if (!$subCriteria)
+    {{-- บล็อกเนื้อหา --}}
     <div class="text-sm text-gray-500">ไม่พบข้อมูลภาระงาน</div>
 @else
     @forelse ($subCriteria->groups ?? [] as $group)
@@ -47,6 +48,7 @@
             };
         @endphp
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="mb-6">
             <div class="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <div class="flex items-center gap-3">
@@ -82,6 +84,7 @@
                         <span>{{ $item->name ?? '-' }}</span>
                     </div> --}}
                     <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        {{-- ตารางข้อมูล --}}
                         <table class="min-w-full text-sm">
                             <thead class="bg-slate-200 text-slate-800">
                                 <tr>
@@ -217,6 +220,7 @@
             @endforelse
         </div>
     @empty
+        {{-- บล็อกเนื้อหา --}}
         <div class="text-sm text-gray-500">ไม่พบกลุ่มภาระงาน</div>
     @endforelse
 @endif

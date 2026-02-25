@@ -1,7 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\assignment-data\create.blade.php --}}
 @section('content')
     @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -17,6 +20,7 @@
     @endif
     
     @if ($errors->any())
+        {{--  --}}
         <div class="alert alert-danger">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
@@ -27,7 +31,9 @@
     @endif
 
     <body class="bg-gray-50 min-h-screen py-8">
+        {{-- บล็อกเนื้อหา --}}
         <div class="py-12 max-w-6xl mx-auto px-4">
+            {{-- ฟอร์ม --}}
             <form id="evaluation-form" action="{{ route('assignment-data.store') }}" method="POST">
                 @csrf
                 
@@ -578,7 +584,9 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden z-50">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center justify-center h-full">
             <div class="text-center text-white">
                 <!-- Spinner -->

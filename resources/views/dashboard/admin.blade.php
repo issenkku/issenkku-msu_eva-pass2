@@ -1,10 +1,12 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Evaluation - ระบบประเมิน')
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="max-w-4xl mx-auto space-y-6">
     <!-- Header -->
+    {{--  --}}
     <div class="page-header">
         <h1>แบบประเมินผลงาน</h1>
         <p class="version">เวอร์ชัน: {{ $versionName }}</p>
@@ -37,6 +39,7 @@
         :assessmentType="$assessmentType"
     />
 
+    {{-- ฟอร์ม --}}
     <form id="evaluationForm" method="POST" action="{{ route('director_score.store', $report->id) }}">
         @csrf
 
@@ -69,6 +72,7 @@
         />
         
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">
             <h3 class="text-lg font-semibold text-purple-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,6 +108,7 @@
             </fieldset>
         @endif
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex justify-center gap-4 mt-8">
             <x-button 
                 type= defualt 

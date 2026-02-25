@@ -1,17 +1,22 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\user\management\user-form-modal.blade.php --}}
 <!-- Modal Trigger Button (optional) -->
 <!-- <x-button text="เพิ่มเจ้าหน้าที่ใหม่" onclick="openModal()" /> -->
 
 <!-- Modal Background -->
+{{-- บล็อกเนื้อหา --}}
 <div id="userModal" class="fixed z-[9999] inset-0 bg-black bg-opacity-50 hidden items-baseline justify-center z-50 overflow-y-auto">
     <!-- Modal Box -->
+    {{-- บล็อกเนื้อหา --}}
     <div class="top-10 bg-white rounded-xl w-full max-w-3xl p-6 relative max-h-[90vh] overflow-y-auto">
         <!-- Header -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex justify-between items-center border-b pb-3">
             <h2 class="text-lg font-semibold text-purple-700">เพิ่มเจ้าหน้าที่ใหม่</h2>
             <button onclick="closeModal()" class="text-gray-500 hover:text-red-500">&times;</button>
         </div>
 
         <!-- Form -->
+        {{-- ฟอร์ม --}}
         <form id="userForm" action="{{ route('users.store') }}" method="POST">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">

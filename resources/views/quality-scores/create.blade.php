@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\quality-scores\create.blade.php --}}
 @section('title', 'เพิ่มคะแนนคุณภาพ')
 
 @push('styles')
@@ -328,8 +329,10 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <!-- Header -->
+        {{--  --}}
         <div class="card">
             <div class="card-header">
                 <h4><i class="fas fa-plus me-2"></i>เพิ่มคะแนนคุณภาพ (หลายเกณฑ์)</h4>
@@ -349,11 +352,13 @@
         @endif
 
         <!-- Form Container -->
+        {{--  --}}
         <div class="form-container">
             <div class="form-header">
                 <h4><i class="fas fa-edit me-2"></i>ฟอร์มเพิ่มคะแนนคุณภาพ (หลายเกณฑ์)</h4>
             </div>
 
+            {{-- ฟอร์ม --}}
             <form method="POST" action="{{ route('quality-scores.store') }}" id="qualityScoreForm">
                 @csrf
                 <div class="form-body">

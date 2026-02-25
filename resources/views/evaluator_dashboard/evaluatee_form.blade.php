@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('content')
     {{-- @if (session('success'))
         <script>
@@ -6,10 +6,12 @@
         </script>
     @endif --}}
 
+    {{-- ฟอร์ม --}}
     <form action="{{ route('evaluator.evaluatee.update', $assignment->report_id) }}" method="POST">
         @csrf
         @method('PUT')
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="container">
             <!-- Header -->
             <div class="page-header">
@@ -110,6 +112,7 @@
                                     <span class="criteria-subtitle">ข้อมูลจากจำนวนชั่วโมงการสอนจริงในแต่ละภาคการศึกษา</span>
                                 </div>
                                 <div class="table-container">
+                                    {{-- ตารางข้อมูล --}}
                                     <table class="evaluation-table">
                                         <thead>
                                             <tr>
@@ -171,6 +174,7 @@
                                         <span class="criteria-subtitle">{{$listcard->annotation}}</span>
                                     </div>
                                     <div class="table-container">
+                                        {{-- ตารางข้อมูล --}}
                                         <table class="evaluation-table">
                                             <thead>
                                                 <tr>
@@ -294,13 +298,16 @@
             </div>
     </form>
 
+    {{-- ฟอร์ม --}}
     <form id="reject-form" action="{{ route('evaluator.reject', $assignment->report_id) }}" method="POST"
         style="display:inline;">
         @csrf
         @method('PUT')
     </form>
 
+    {{-- บล็อกเนื้อหา --}}
     <div id="submitConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        {{-- บล็อกเนื้อหา --}}
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
             <div class="mt-3 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
@@ -326,7 +333,9 @@
         </div>
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div id="rejectConfirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-60 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        {{-- บล็อกเนื้อหา --}}
         <div class="relative p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
             <div class="mt-3 text-center">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
@@ -353,7 +362,9 @@
     </div>
 
     <!-- Loading Overlay -->
+    {{-- บล็อกเนื้อหา --}}
     <div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-8 rounded-lg shadow-xl text-center max-w-sm mx-4">
             <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-6"></div>
             <h3 class="text-xl font-semibold text-gray-800 mb-2">กำลังส่งข้อมูล</h3>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'จัดการข้อมูลแผนก')
 @section('content')
     <style>
@@ -321,6 +321,7 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <x-header 
             title="จัดการข้อมูลแผนก" 
@@ -328,6 +329,7 @@
             icon="fas fa-building" />
 
         <!-- Add Button -->
+        {{--  --}}
         <div class="d-flex justify-content-end mb-3">
             <x-button 
                 type="primary" 
@@ -338,6 +340,7 @@
         </div>
 
         <!-- Table Container -->
+        {{--  --}}
         <div class="table-container">
             <div class="table-header">
                 <h4><i class="fas fa-table me-2"></i>ข้อมูลแผนกและคณะ</h4>
@@ -345,6 +348,7 @@
 
             <div class="table-responsive">
                 @if (isset($departments) && $departments->count() > 0)
+                    {{-- ตารางข้อมูล --}}
                     <table class="table table-custom">
                         <thead>
                             <tr>
@@ -399,7 +403,9 @@
     </div>
 
     <!-- Modal -->
+    {{--  --}}
     <div class="modal fade" id="departmentModal" tabindex="-1" aria-labelledby="departmentModalLabel" aria-hidden="true">
+        {{--  --}}
         <div class="modal-dialog modal-lg">
             <div class="modal-content modal-content-custom">
                 <div class="modal-header modal-header-custom">
@@ -409,6 +415,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body modal-body-custom">
+                    {{-- ฟอร์ม --}}
                     <form id="departmentForm" method="POST">
                         @csrf
                         <input type="hidden" name="_method" id="form_method" value="POST">
@@ -449,7 +456,9 @@
         entityUrl="/departments" />
 
     @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

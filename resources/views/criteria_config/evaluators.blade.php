@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\criteria_config\evaluators.blade.php --}}
 @section('content')
     <style>
         body {
@@ -63,6 +64,7 @@
             pointer-events: none;
         }
     </style>
+    {{-- บล็อกเนื้อหา --}}
     <div class="py-12">
 
         <body class="bg-gray-50 min-h-screen py-8">
@@ -85,6 +87,7 @@
                     </div>
                     <h2 class="text-xl font-semibold text-gray-800 mb-4">กำหนดผู้ประเมิน / ผู้รับการประเมิน</h2>
 
+                    {{-- ฟอร์ม --}}
                     <form id="evaluation-form" action="#" method="POST">
                         <!-- CSRF Token -->
                         <input type="hidden" name="_token" value="csrf-token-here">

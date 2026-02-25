@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\user\management\index.blade.php --}}
 
 @php
     $personnelTypes = [
@@ -9,6 +10,7 @@
 @endphp
 
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <x-header 
             title="จัดการข้อมูลเจ้าหน้าที่" 
@@ -16,8 +18,10 @@
             icon="fas fa-users" />
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
         <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ $users->total() }} คน)</h2>
+        {{-- บล็อกเนื้อหา --}}
         <div class="d-flex gap-2 align-items-center flex-wrap">
             <x-button 
                 type="secondary" 
@@ -37,7 +41,9 @@
         @include('user.management.import-user-modal')
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex flex-wrap gap-4 mb-4 justify-between">
+        {{-- ฟอร์ม --}}
         <form method="GET" class="flex flex-wrap gap-4 mb-4 items-end">
             <div class="flex items-center gap-2">
                 <x-button 
@@ -68,7 +74,9 @@
         /> <!-- <<<< เรียกใช้งาน Component -->
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="overflow-x-auto">
+        {{-- ตารางข้อมูล --}}
         <table class="min-w-full bg-white rounded-lg shadow">
             <thead class="bg-gray-100 text-gray-700">
                 <tr>
@@ -112,8 +120,10 @@
         </table>
     </div>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex justify-between items-center mt-4">
         <span>แสดง {{ $users->firstItem() }} - {{ $users->lastItem() }} จาก {{ $users->total() }} รายการ</span>
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex gap-2 items-center">
             {{ $users->links() }}
         </div>

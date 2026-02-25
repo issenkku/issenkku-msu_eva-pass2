@@ -1,4 +1,5 @@
 ﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\subjects\index.blade.php --}}
 @section('title', 'จัดการข้อมูลรายวิชา')
 @section('content')
     <style>
@@ -348,6 +349,7 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <!-- Page Header -->
         <x-header 
@@ -356,6 +358,7 @@
             icon="fas fa-book" />
 
         <!-- Add Button -->
+        {{--  --}}
         <div class="d-flex justify-content-end mb-3">
             <x-button 
                 type="primary" 
@@ -366,6 +369,7 @@
         </div>
 
         <!-- Table Container -->
+        {{--  --}}
         <div class="table-container">
             <div class="table-header">
                 <h4><i class="fas fa-table me-2"></i>ข้อมูลรายวิชา</h4>
@@ -373,6 +377,7 @@
 
             <div class="table-responsive">
                 @if (isset($subjects) && $subjects->count() > 0)
+                    {{-- ตารางข้อมูล --}}
                     <table class="table table-custom">
                         <thead>
                             <tr>
@@ -440,7 +445,9 @@
         entityUrl="/subjects" />
 
     @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

@@ -1,9 +1,11 @@
-{{-- File: resources/views/components/scatter-chart-component.blade.php --}}
+﻿{{-- File: resources/views/components/scatter-chart-component.blade.php --}}
 
 <div class="bg-white rounded-xl shadow-md p-6 animate-fadeIn">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
         @if($showDownload)
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex space-x-2">
             <button 
                 id="download{{ $chartId }}Btn" 
@@ -20,6 +22,7 @@
         </div>
         @endif
     </div>
+    {{-- บล็อกเนื้อหา --}}
     <div class="{{ $height }}">
         <canvas id="{{ $chartId }}"></canvas>
     </div>

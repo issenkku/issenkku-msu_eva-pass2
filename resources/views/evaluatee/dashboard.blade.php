@@ -1,8 +1,10 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\evaluatee\dashboard.blade.php --}}
 
 @section('title', 'Dashboard - ระบบประเมิน')
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="max-w-8xl mx-auto space-y-6">
     <!-- Profile Card at Top -->
     <x-profile-card 
@@ -10,9 +12,11 @@
         title="ข้อมูลผู้รับการประเมิน"/>
     
     <!-- Evaluation Header -->
+    {{-- บล็อกเนื้อหา --}}
     <div class="mx-5 px-10 pb-6 pt-6 rounded-2xl shadow-md border"
         style="background: linear-gradient(135deg, #f5f3ff 0%, #fff 50%, #fdf2f8 100%); border-color: #ede9fe;">
         
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-2xl font-extrabold text-purple-700 tracking-wide flex items-center gap-2">
                 <i class="fas fa-bell text-fuchsia-500"></i>
@@ -20,6 +24,7 @@
             </h3>
         </div>
 
+        {{--  --}}
         <div class="grid grid-cols-1 gap-6">
             @forelse($unfinishedAssignments as $assignment)
                 <x-evaluation-header
@@ -39,7 +44,9 @@
         </div>
     </div>
     
+    {{--  --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pr-10 pl-10">
+        {{--  --}}
         <div class="grid grid-cols-1 md:grid-rows-2 gap-2">
             <x-summary-score
                 title="คะแนนสูงสุด"
@@ -75,7 +82,9 @@
 </div>
 
 @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

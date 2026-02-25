@@ -1,4 +1,4 @@
-@props([
+﻿@props([
     'categoryItems' => [],
     'readonly' => false,
     'evidenceMap' => [],
@@ -19,6 +19,7 @@
 <input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
 <input type="hidden" id="quality-readonly" value="{{ $readonly ? 1 : 0 }}">
 
+{{-- บล็อกเนื้อหา --}}
 <div class="space-y-8">
     @foreach($categoryItems as $category)
         {{-- Category Container --}}
@@ -256,6 +257,7 @@
             </div>
         </summary>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="mt-6">
             @foreach($evaluationList['quality_items'] as $mainCriteria)
                 <details class="group border border-gray-300 rounded-lg bg-white mb-6">
@@ -449,6 +451,7 @@
         }
     @endphp
     @if($hasAnnotations)
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -509,6 +512,7 @@
         }
         $totalScore = $totalQuantityScore + $totalQualityScore;
     @endphp
+    {{-- บล็อกเนื้อหา --}}
     <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
         <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
             <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -517,6 +521,7 @@
             สรุปคะแนนรวม
         </h3>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="space-y-3 text-blue-800">
             <div class="flex justify-between items-center">
                 <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
@@ -528,6 +533,7 @@
             </div>
         </div>
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
             <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>

@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\assignment-data\index.blade.php --}}
 
 @section('title', 'จัดการรอบการประเมิน')
 
@@ -23,7 +24,9 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -39,7 +42,9 @@
     @endif
 
     @if(session('error'))
+    {{--  --}}
     <div id="errorMessage" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
@@ -55,6 +60,7 @@
     @endif
 
     <body class="bg-gray-50 min-h-screen py-8">
+        {{-- บล็อกเนื้อหา --}}
         <div class="py-12 max-w-7xl mx-auto px-4">
             <!-- Header Section -->
             <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
@@ -82,6 +88,7 @@
 
                 @if($assignmentData->count() > 0)
                     <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+                        {{-- ตารางข้อมูล --}}
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -241,6 +248,7 @@
         </div>
 
         <!-- Modal for showing evaluatees -->
+        {{-- บล็อกเนื้อหา --}}
         <div id="evaluateesModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
             <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
                 <div class="flex justify-between items-center mb-4 pb-3 border-b">

@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\emails\assignment_Notify.blade.php --}}
 <div style="font-family: Tahoma, Arial, sans-serif; font-size: 16px; color: #222;">
     <h2>แจ้งเตือน: คุณได้รับการมอบหมายจัดทำแบบประเมิน</h2>
     <p>เรียนคุณ {{ $name }},</p>

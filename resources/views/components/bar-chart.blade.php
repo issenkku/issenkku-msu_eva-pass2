@@ -1,7 +1,10 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\bar-chart.blade.php --}}
 <div class="bg-white rounded-xl shadow-md p-6 animate-fadeIn" style="animation-delay: 0.4s;">
+    {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center justify-between mb-6">
         <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>
         @if($downloadable)
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex space-x-2">
             <button id="{{ $chartId }}_downloadBtn" class="text-gray-400 hover:text-gray-600 transition-colors" title="ดาวน์โหลดกราฟ">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -11,6 +14,7 @@
         </div>
         @endif
     </div>
+    {{-- บล็อกเนื้อหา --}}
     <div class="h-80" style="height: {{ $height }}">
         <canvas id="{{ $chartId }}"></canvas>
     </div>

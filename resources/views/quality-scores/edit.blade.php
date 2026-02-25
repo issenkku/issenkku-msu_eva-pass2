@@ -1,4 +1,5 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\quality-scores\edit.blade.php --}}
 @section('title', 'แก้ไขคะแนนคุณภาพ')
 @section('content')
     <style>
@@ -166,8 +167,10 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <!-- Header -->
+        {{--  --}}
         <div class="card">
             <div class="card-header">
                 <h4><i class="fas fa-edit me-2"></i>แก้ไขคะแนนคุณภาพ</h4>
@@ -187,6 +190,7 @@
         @endif
 
         <!-- ข้อมูลปัจจุบัน -->
+        {{--  --}}
         <div class="info-card">
             <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>ข้อมูลปัจจุบัน</h5>
             <div class="info-item">
@@ -212,11 +216,13 @@
         </div>
 
         <!-- Form Container -->
+        {{--  --}}
         <div class="form-container">
             <div class="form-header">
                 <h4><i class="fas fa-edit me-2"></i>ฟอร์มแก้ไขคะแนนคุณภาพ</h4>
             </div>
 
+            {{-- ฟอร์ม --}}
             <form method="POST" action="{{ route('admin.quality-scores.update', $qualityScore->id) }}" id="qualityScoreForm">
                 @csrf
                 @method('PUT')

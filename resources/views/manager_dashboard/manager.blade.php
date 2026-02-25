@@ -1,10 +1,12 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Evaluation - ระบบประเมิน')
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="max-w-4xl mx-auto space-y-6">
     <!-- Header -->
+    {{--  --}}
     <div class="page-header">
         <h1>แบบประเมินผลงาน</h1>
         <p class="version">เวอร์ชัน: {{ $versionName }}</p>
@@ -37,6 +39,7 @@
         :assessmentType="$assessmentType"
     />
 
+    {{-- ฟอร์ม --}}
     <form id="evaluationForm" method="POST" action="{{ route('manager_score.store', $report->id) }}">
         @csrf
 
@@ -68,6 +71,7 @@
             :qualityEvidenceMap="$qualityEvidenceMap"
         />
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-purple-50 border border-blue-200 rounded-lg p-6 mt-8">
             <h3 class="text-lg font-semibold text-purple-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,6 +107,7 @@
             </fieldset>
         @endif
 
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex justify-center gap-4 mt-8">
             @if(auth()->user()->hasRole('admin'))
             <x-button 
@@ -137,17 +142,23 @@
 </div>
 
 <!-- Loading Overlay -->
+{{-- บล็อกเนื้อหา --}}
 <div id="loading_overlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+    {{-- บล็อกเนื้อหา --}}
     <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+        {{-- บล็อกเนื้อหา --}}
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
         <p class="text-gray-700 text-lg">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
     </div>
 </div>
 
 <!-- Confirmation Modal -->
+{{-- บล็อกเนื้อหา --}}
 <div id="confirmationModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50 transition-opacity duration-300">
+    {{--  --}}
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8 text-center transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
         <!-- Icon -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-5">
             <svg class="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9.049c.534-2.203 2.51-3.79 4.772-3.79s4.238 1.587 4.772 3.79M8.228 9.049L6.5 10.5m1.728-1.451L9.5 6.5m6.228 2.549L17.5 10.5m-1.728-1.451L14.5 6.5M12 21a9 9 0 110-18 9 9 0 010 18z"></path>
@@ -158,6 +169,7 @@
         <h3 class="text-xl font-bold text-gray-800">ยืนยันการส่งแบบประเมิน</h3>
         
         <!-- Description -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="mt-2 mb-6">
             <p class="text-sm text-gray-500 px-4">
                 เมื่อส่งแล้วจะไม่สามารถกลับมาแก้ไขได้อีก<br>คุณต้องการดำเนินการต่อหรือไม่?
@@ -165,6 +177,7 @@
         </div>
 
         <!-- Buttons -->
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex flex-col space-y-3">
             <button id="confirmSubmitBtn" class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-200">
                 ยืนยัน
@@ -177,8 +190,11 @@
 </div>
 
 <!-- Success Modal -->
+{{-- บล็อกเนื้อหา --}}
 <div id="success_modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+    {{--  --}}
     <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full transform transition-all duration-300 scale-95 opacity-0" id="success-modal-content">
+        {{-- บล็อกเนื้อหา --}}
         <div class="text-center">
             <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">

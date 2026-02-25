@@ -1,8 +1,9 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'ภาระงานด้านงานสอน')
 
 @section('content')
+{{-- บล็อกเนื้อหา --}}
 <div class="max-w-6xl mx-auto space-y-6">
 
 
@@ -24,6 +25,7 @@
                 </div>
 
                 <div class="workload-table-wrap" style="margin-top: 16px;">
+                    {{-- ตารางข้อมูล --}}
                     <table class="workload-table">
                         <thead>
                             <tr>
@@ -49,6 +51,7 @@
                 </div>
 
                 <div class="workload-table-wrap" style="margin-top: 16px;">
+                    {{-- ตารางข้อมูล --}}
                     <table class="workload-table">
                         <thead>
                             <tr>
@@ -84,6 +87,7 @@
                 </div>
 
                 <div class="workload-table-wrap" style="margin-top: 16px;">
+                    {{-- ตารางข้อมูล --}}
                     <table class="workload-table">
                         <thead>
                             <tr>
@@ -109,6 +113,7 @@
                 </div>
 
                 <div class="workload-table-wrap" style="margin-top: 16px;">
+                    {{-- ตารางข้อมูล --}}
                     <table class="workload-table">
                         <thead>
                             <tr>
@@ -143,6 +148,7 @@
                 </div>
 
                 <div class="workload-table-wrap" style="margin-top: 16px;">
+                    {{-- ตารางข้อมูล --}}
                     <table class="workload-table">
                         <thead>
                             <tr>
@@ -174,13 +180,16 @@
         </section>
     @endif --}}
 
+    {{--  --}}
     <div class="workload-page-header">
         <h1 class="workload-page-title">  {{ $quantitySubCriteria->name ?? '-' }}</h1>
         <p class="workload-page-subtitle">กรอกข้อมูลภาระงานและตรวจสอบผลรวม</p>
     </div>
 
     @if(session('success'))
+    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -197,6 +206,7 @@
 
     @if(isset($quantitySubCriteria) && $quantitySubCriteria)
         @forelse($quantitySubCriteria->groups as $group)
+            {{-- ส่วนย่อยของหน้า --}}
             <section class="workload-panel">
                 <div class="workload-panel-header">
                     <h2>{{ $group->name ?? '' }}</h2>
@@ -300,6 +310,7 @@
                                 </summary>
                                 <div class="workload-subtable">
                                     <div class="workload-table-wrap">
+                                    {{-- ตารางข้อมูล --}}
                                     <table class="workload-table">
                                         <thead>
                                             <tr>
@@ -511,6 +522,7 @@
                             <div class="workload-subtable">
                                 <div class="workload-subtable-title">ไม่มีรายการภาระงาน</div>
                                 <div class="workload-table-wrap">
+                                    {{-- ตารางข้อมูล --}}
                                     <table class="workload-table">
                                         <thead>
                                             @php
@@ -564,6 +576,7 @@
                 </div>
             </section>
         @empty
+            {{-- ส่วนย่อยของหน้า --}}
             <section class="workload-panel">
                 <div class="workload-panel-header">
                     <h2>ไม่พบกลุ่มภาระงาน</h2>
@@ -576,10 +589,13 @@
     @endif
 
 
+    {{-- ส่วนย่อยของหน้า --}}
     <section class="workload-panel">
+        {{--  --}}
         <div class="workload-panel-header">
             <h2>รวมภาระงาน</h2>
         </div>
+        {{--  --}}
         <div class="workload-panel-body">
             <div class="workload-summary-card">
                 <div>
@@ -595,11 +611,13 @@
         </div>
     </section>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="workload-actions">
         <a href="{{ route('evaluation.show', $reportId) }}" class="workload-back-btn">
             <i class="fas fa-arrow-left"></i>
             ย้อนกลับ
         </a>
+        {{-- ฟอร์ม --}}
         <form method="POST" action="{{ route('evaluatee.workload-score.store') }}">
             @csrf
             <input type="hidden" name="report_id" value="{{ $reportId }}">
@@ -612,9 +630,13 @@
     </div>
 </div>
 
+{{--  --}}
 <div class="modal fade" id="workloadAddModal" tabindex="-1" aria-labelledby="workloadAddModalLabel" aria-hidden="true" data-bs-focus="false">
+    {{--  --}}
     <div class="modal-dialog modal-dialog-centered modal-lg">
+        {{--  --}}
         <div class="modal-content workload-modal-content">
+            {{-- ฟอร์ม --}}
             <form method="POST" id="workloadEntryForm" action="{{ route('evaluatee.workload-entries.store') }}" data-store-url="{{ route('evaluatee.workload-entries.store') }}" data-update-url="{{ route('evaluatee.workload-entries.update', '__id__') }}">
                 @csrf
                 <input type="hidden" id="workloadFormMethod" name="_method" value="">

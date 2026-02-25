@@ -1,4 +1,4 @@
-@props([
+﻿@props([
     'categoryItems' => [],
     'readonly' => false,
     'evidenceMap' => [],
@@ -7,6 +7,7 @@
     'workloadMap' => []
 ])
 
+{{-- บล็อกเนื้อหา --}}
 <div class="space-y-8">
     @foreach($categoryItems as $category)
         {{-- Category Container --}}
@@ -274,6 +275,7 @@
                                                             </div>
                                                         @endforeach
                                                         @if($readonly)
+    {{-- บล็อกเนื้อหา --}}
     <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                                                 <span class="text-lg font-semibold text-blue-700">คะแนนที่ได้</span>
                                                                 <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
@@ -376,6 +378,7 @@
         }
     @endphp
     @if($hasAnnotations)
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div class="flex items-start">
                 <div class="flex-shrink-0">

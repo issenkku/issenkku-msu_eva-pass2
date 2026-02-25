@@ -13,6 +13,7 @@
         {{-- <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 px-6 py-5 border-b border-gray-200">
             <h2 class="text-2xl font-semibold text-gray-800">User Profile</h2>
         </div> --}}
+        {{-- บล็อกเนื้อหา --}}
         <div class="p-6">
             {{-- รูปโปรไฟล์ + ข้อมูลพื้นฐาน --}}
             <div class="flex flex-col md:flex-row md:items-center mb-6 gap-6">

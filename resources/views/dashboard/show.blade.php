@@ -1,13 +1,16 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="container">
         <!-- Header -->
+        {{--  --}}
         <div class="page-header">
             <h1>แบบประเมินผลงาน</h1>
             <p class="version">เวอร์ชัน: {{ $assignment['version_name'] }}</p>
         </div>
 
         <!-- Report Information -->
+        {{--  --}}
         <div class="info-card">
             <div class="card-header">
                 <h3>ข้อมูลเกณฑ์ประเมิน</h3>
@@ -35,6 +38,7 @@
         </div>
 
         <!-- Personal Information -->
+        {{--  --}}
         <div class="info-card">
             <div class="card-header">
                 <h3>ข้อมูลผู้รับการประเมิน</h3>
@@ -58,6 +62,7 @@
         </div>
 
         <!-- Categories Title -->
+        {{--  --}}
         <div class="section-divider">
             <h2>หมวดหมู่เกณฑ์ประเมิน</h2>
         </div>
@@ -98,6 +103,7 @@
                             <span class="criteria-subtitle">ข้อมูลจากจำนวนชั่วโมงการสอนจริงในแต่ละภาคการศึกษา</span>
                         </div>
                         <div class="table-container">
+                            {{-- ตารางข้อมูล --}}
                             <table class="evaluation-table">
                                 <thead>
                                     <tr>
@@ -160,6 +166,7 @@
                                 <span class="criteria-subtitle">{{$listcard->annotation}}</span>
                             </div>
                             <div class="table-container">
+                                {{-- ตารางข้อมูล --}}
                                 <table class="evaluation-table">
                                     <thead>
                                         <tr>
@@ -243,6 +250,7 @@
             </div>
         @endforeach
         <!-- Additional Comment Section -->
+        {{--  --}}
         <div class="info-card">
             <div class="card-header" style="background-color: #fef9c3;">
                 <h3 style="color: #92400e;">ความคิดเห็นเพิ่มเติมจากผู้ประเมิน</h3>
@@ -255,6 +263,7 @@
         </div>
 
         <!-- Back Button -->
+        {{--  --}}
         <div class="action-section">
             <button type="button" class="btn-back" onclick="window.location='{{ route('dashboard') }}'"> <i
                     class="fas fa-arrow-left"></i>

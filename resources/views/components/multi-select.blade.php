@@ -1,3 +1,4 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\multi-select.blade.php --}}
 @props([
     'name',
     'label',
@@ -15,6 +16,7 @@
     [x-cloak] { display: none !important; }
 </style>
 
+{{-- บล็อกเนื้อหา --}}
 <div class="relative w-full" x-data="{ open: false }" @click.outside="open = false">
     <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $label }}</label>
 
@@ -26,6 +28,7 @@
         <span class="block truncate">
             {{ count($selectedLabels) ? implode(', ', $selectedLabels) : $placeholder }}
         </span>
+        {{-- บล็อกเนื้อหา --}}
         <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center">
             <svg class="h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20" fill="currentColor">
@@ -43,6 +46,7 @@
         x-transition
         x-cloak
     >
+        {{-- บล็อกเนื้อหา --}}
         <div class="p-2 space-y-1">
             @foreach ($options as $key => $option)
                 <label class="flex items-center space-x-2 text-sm text-gray-700">

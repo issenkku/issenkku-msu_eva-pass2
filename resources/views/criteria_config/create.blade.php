@@ -1,13 +1,17 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views\criteria_config\create.blade.php --}}
 
 @section('content')
+    {{-- บล็อกเนื้อหา --}}
     <div class="py-12 bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen">
+        {{-- บล็อกเนื้อหา --}}
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="mb-10">
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-3">สร้างเกณฑ์การประเมินใหม่</h1>
                 <p class="text-gray-600 text-lg">กรุณากรอกข้อมูลเกณฑ์การประเมินให้ครบถ้วนเพื่อสร้างเกณฑ์ที่สมบูรณ์</p>
             </div>
 
+            {{-- ฟอร์ม --}}
             <form id="jsonForm" action="{{ route('report-structure.store') }}" method="POST" class="space-y-8" novalidate>
                 @csrf
 
@@ -545,6 +549,7 @@
     <!-- Loading Overlay -->
     <div id="loading_overlay"
         class="fixed inset-0  bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-6 rounded-lg shadow-xl text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p class="text-gray-700 text-lg">กำลังส่งข้อมูล กรุณารอสักครู่...</p>
@@ -553,6 +558,7 @@
     <!-- Confirmation Modal -->
     <div id="confirm_modal"
         class="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
             <div class="text-center">
                 <div class="bg-blue-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">
@@ -577,6 +583,7 @@
     <!-- Success Modal -->
     <div id="success_modal"
         class="fixed inset-0 bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 hidden">
+        {{-- บล็อกเนื้อหา --}}
         <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
             <div class="text-center">
                 <div class="bg-green-100 rounded-full p-4 mx-auto w-20 h-20 flex items-center justify-center mb-6">

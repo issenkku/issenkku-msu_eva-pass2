@@ -6,6 +6,7 @@
     {{-- ส่วนหัว + สวิตช์โปรไฟล์สาธารณะ --}}
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-semibold">แก้ไขข้อมูลโปรไฟล์</h2>
+        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-2">
                 <input type="checkbox" id="enable-public-profile" 

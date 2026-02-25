@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'จัดการคะแนนคุณภาพ')
 @section('content')
     <style>
@@ -329,8 +329,10 @@
         }
     </style>
 
+    {{-- บล็อกเนื้อหา --}}
     <div class="container-fluid">
         <!-- Header -->
+        {{--  --}}
         <div class="card">
             <div class="card-header">
                 <h4><i class="fas fa-star me-2"></i>จัดการคะแนนคุณภาพ</h4>
@@ -339,6 +341,7 @@
         </div>
 
         <!-- Add Button -->
+        {{--  --}}
         <div class="d-flex justify-content-end mb-3">
             <a href="{{ route('quality-scores.create') }}" class="btn-primary">
                 <i class="fas fa-plus me-2"></i>เพิ่มคะแนนคุณภาพ
@@ -359,6 +362,7 @@
         @endif
 
         <!-- Table Container -->
+        {{--  --}}
         <div class="table-container">
             <div class="table-header">
                 <h4><i class="fas fa-table me-2"></i>รายงานการประเมินคุณภาพ</h4>
@@ -376,6 +380,7 @@
                             </div>
                             
                             @if($reportData->criteriaVersion && $reportData->criteriaVersion->qualityMainCriterias->count() > 0)
+                                {{-- ตารางข้อมูล --}}
                                 <table class="table table-custom">
                                     <thead>
                                         <tr>
@@ -449,6 +454,7 @@
             </div>
 
             <div class="table-responsive">
+                {{-- ตารางข้อมูล --}}
                 <table class="table table-custom">
                     <thead>
                         <tr>
@@ -499,6 +505,7 @@
                                         <a href="{{ route('quality-scores.edit', $score->id) }}" class="btn-action btn-edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+                                        {{-- ฟอร์ม --}}
                                         <form method="POST" action="{{ route('quality-scores.destroy', $score->id) }}" 
                                               style="display: inline-block;" 
                                               onsubmit="return confirm('คุณแน่ใจหรือไม่ที่จะลบคะแนนนี้?')">

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('content')
     <style>
         .form-container {
@@ -183,7 +183,9 @@
         }
     </style>
 
+    {{--  --}}
     <div class="form-container">
+        {{-- บล็อกเนื้อหา --}}
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-8 col-md-10">
@@ -201,6 +203,7 @@
                                 </div>
                             @endif
 
+                            {{-- ฟอร์ม --}}
                             <form action="{{ route('settings.store') }}" method="POST">
                                 @csrf
                                 @if(isset($settings) && $setting)

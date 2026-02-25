@@ -1,11 +1,14 @@
+﻿{{-- ไฟล์มุมมอง: resources/views\components\search-bar.blade.php --}}
 <!-- resources/views/components/search-bar.blade.php -->
  @props([
     'placeholder'
 ])
 
+{{-- ฟอร์ม --}}
 <form action="{{ url()->current() }}" method="GET" class="flex items-center space-x-2">
     
     <!-- Search Input -->
+    {{-- บล็อกเนื้อหา --}}
     <div class="relative">
         <input 
             type="text" 
@@ -14,6 +17,7 @@
             value="{{ request('search') }}"
             class="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
         >
+        {{-- บล็อกเนื้อหา --}}
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
