@@ -1,9 +1,11 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'ตั้งค่าเกณฑ์ด้านปริมาณ')
 
 @section('content')
+    {{-- หน้าตั้งค่าเกณฑ์ด้านปริมาณ --}}
     <div class="workload-page">
+        {{-- ส่วนหัวหน้า --}}
         <div class="page-header">
             <div>
                 <h1 class="page-title">ตั้งค่าเกณฑ์ด้านปริมาณ</h1>
@@ -11,7 +13,9 @@
             </div>
         </div>
 
+        {{-- พื้นที่หลัก: เมนูซ้าย + เนื้อหาขวา --}}
         <div class="workload-grid">
+            {{-- เมนูรายการหลัก --}}
             <aside class="workload-nav">
                 <div class="nav-title">ด้านปริมาณผลงาน</div>
                 <div class="nav-list" id="workload-nav-list">
@@ -21,13 +25,16 @@
                 </div>
             </aside>
 
+            {{-- เนื้อหาการตั้งค่า --}}
             <section class="workload-content">
                 <div class="section-heading">
                     <span class="section-badge" id="workload-section-badge">1</span>
                     <h2 class="section-title" id="workload-section-title"></h2>
                 </div>
 
+                {{-- รายการการ์ดหลัก (หมวดหลัก) --}}
                 <div class="workload-card-list">
+                    {{-- การ์ดแม่แบบของหมวดหลัก --}}
                     <div class="card workload-card">
                         <div class="card-body">
                         <div class="card-head">
@@ -47,6 +54,7 @@
                             </div>
                         </div>
 
+                        {{-- กำหนดข้อมูลหมวดหลัก --}}
                         <div class="main-criteria-block mt-4">
                             <div class="main-criteria-labels">
                                 <div class="form-label">ลำดับ</div>
@@ -60,6 +68,7 @@
                             </div>
                         </div>
 
+                        {{-- กลุ่มหมวดย่อย (รายการย่อยหลายรายการ) --}}
                         <div class="sub-block mt-4">
                             <div class="sub-header">
                                 <div class="sub-title">
@@ -68,6 +77,7 @@
                                 </div>
                             </div>
 
+                            {{-- การ์ดแม่แบบของหมวดย่อย --}}
                             <div class="sub-card workload-sub-card">
                                 <div class="sub-card-head">
                                     <div class="sub-card-title">รายการประเมิน</div>
@@ -84,6 +94,7 @@
                                     </div>
                                 </div>
 
+                                {{-- กำหนดข้อมูลหมวดย่อย --}}
                                 <div class="sub-criteria-block mt-3">
                                     <div class="sub-criteria-labels">
                                         <div class="form-label">ลำดับ</div>
@@ -97,6 +108,7 @@
                                     </div>
                                 </div>
 
+                                {{-- ตารางรายการภาระงาน + คะแนน --}}
                                 <div class="subitem-table mt-4">
                                     <div class="subitem-header">
                                         <div>ค่าภาระงาน</div>
@@ -118,6 +130,7 @@
                                     </div>
                                 </div>
 
+                                {{-- ส่วนกำหนดสูตรการคำนวณ --}}
                                 <div class="formula-block mt-4">
                                     <div class="sub-title">
                                         <span class="sub-icon">🧮</span>
@@ -154,6 +167,7 @@
                                             <textarea class="form-control formula-text workload-formula-text" rows="4" id="workload-formula-text"></textarea>
                                         </div>
 
+                                        {{-- แถบเครื่องมือช่วยเขียนสูตร --}}
                                         <div class="formula-toolbar">
                                             <div class="toolbar-group">
                                                 <div class="toolbar-label">เครื่องหมาย</div>
@@ -210,6 +224,7 @@
                 </div>
             </div>
 
+                {{-- ปุ่มคำสั่งของหน้า --}}
                 <div class="page-actions">
                     <a class="btn btn-outline-secondary" href="http://127.0.0.1:8000/criteria-config/1/edit">ย้อนกลับ</a>
                     <button class="btn btn-outline-primary" type="button" id="workload-reset">รีเซ็ตค่า</button>
@@ -219,6 +234,7 @@
         </div>
     </div>
 
+    {{-- Toast แจ้งผลการทำงาน --}}
     <div class="workload-toast" id="workload-toast" aria-live="polite" aria-atomic="true">
         <div class="workload-toast-content">
             <span class="workload-toast-icon" aria-hidden="true">✓</span>
@@ -229,6 +245,7 @@
 @endsection
 
 @push('scripts')
+    {{-- สไตล์เฉพาะหน้า --}}
     <style>
         .workload-page {
             padding: 20px 24px 40px;
@@ -768,9 +785,11 @@
             const saveButton = document.getElementById('workload-save');
             const resetButton = document.getElementById('workload-reset');
             const mainCard = document.querySelector('.workload-card');
+            // อ้างอิง DOM หลักที่ใช้บ่อย
             const mainContainer = document.querySelector('.workload-card-list');
             const pageActions = document.querySelector('.page-actions');
 
+            // ฟังก์ชันย่อย: renderNav
             const renderNav = (items, activeId) => {
                 if (!navList) {
                     return;
@@ -808,6 +827,7 @@
                 }
             };
 
+            // ฟังก์ชันย่อย: insertToken
             const insertToken = (textarea, token) => {
                 if (!textarea) {
                     return;
@@ -822,6 +842,7 @@
                 textarea.focus();
             };
 
+            // ฟังก์ชันย่อย: toggleCollapsed
             const toggleCollapsed = (card, collapsed) => {
                 if (!card) {
                     return;
@@ -833,6 +854,7 @@
                 }
             };
 
+            // ฟังก์ชันย่อย: bindCardActions
             const bindCardActions = (card, actionsSelector, options = {}) => {
                 if (!card) {
                     return;
@@ -869,6 +891,7 @@
                 }
             };
 
+            // ฟังก์ชันย่อย: ensurePageActionsPosition
             const ensurePageActionsPosition = () => {
                 if (!mainContainer || !pageActions) {
                     return;
@@ -885,6 +908,8 @@
                 }
             };
 
+            // อัปเดตลำดับของหมวดหลักทั้งหมด
+            // ฟังก์ชันย่อย: updateMainSequences
             const updateMainSequences = () => {
                 const cards = mainContainer
                     ? mainContainer.querySelectorAll('.workload-card')
@@ -902,6 +927,7 @@
                 ensurePageActionsPosition();
             };
 
+            // ฟังก์ชันย่อย: updateSubSequences
             const updateSubSequences = (scope) => {
                 const root = scope || document;
                 root.querySelectorAll('.workload-sub-card').forEach((card, index) => {
@@ -916,6 +942,7 @@
                 });
             };
 
+            // ฟังก์ชันย่อย: initSubCard
             const initSubCard = (card) => {
                 if (card.dataset.initialized === 'true') {
                     return;
@@ -937,6 +964,7 @@
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
 
+                // ฟังก์ชันย่อย: syncVariableChips
                 const syncVariableChips = () => {
                     if (!variableChips) {
                         return;
@@ -969,6 +997,7 @@
                     variableChips.appendChild(chip);
                 };
 
+                // ฟังก์ชันย่อย: addFormulaItem
                 const addFormulaItem = (label, variableName, fieldType) => {
                     if (!formulaList) {
                         return;
@@ -1009,6 +1038,7 @@
                     syncVariableChips();
                 };
 
+                // ฟังก์ชันย่อย: updateItemSequence
                 const updateItemSequence = (scope) => {
                     scope.querySelectorAll('.workload-item-row').forEach((row, index) => {
                         const label = row.querySelector('.subitem-label');
@@ -1019,6 +1049,7 @@
                     syncVariableChips();
                 };
 
+                // ฟังก์ชันย่อย: getNextItemSequence
                 const getNextItemSequence = () => {
                     const existingSequences = new Set();
                     if (formulaList) {
@@ -1043,6 +1074,7 @@
                     return existingSequences.size + 1;
                 };
 
+                // ฟังก์ชันย่อย: getNextVariableIndex
                 const getNextVariableIndex = (prefix) => {
                     let maxIndex = 0;
                     if (!formulaList) {
@@ -1063,6 +1095,7 @@
                     return maxIndex + 1;
                 };
 
+                // ฟังก์ชันย่อย: attachItemRowHandlers
                 const attachItemRowHandlers = (row) => {
                     const removeBtn = row.querySelector('.workload-item-remove');
                     if (removeBtn) {
@@ -1151,6 +1184,7 @@
                 card.dataset.initialized = 'true';
             };
 
+            // ฟังก์ชันย่อย: sanitizeClonedSubCard
             const sanitizeClonedSubCard = (card, resetInit = false) => {
                 card.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
                 if (resetInit) {
@@ -1179,6 +1213,7 @@
                 }
             };
 
+            // ฟังก์ชันย่อย: sanitizeClonedMainCard
             const sanitizeClonedMainCard = (card, resetInit = false) => {
                 if (!card) {
                     return;
@@ -1204,6 +1239,7 @@
                 });
             };
 
+            // ฟังก์ชันย่อย: addMainCard
             const addMainCard = () => {
                 if (!mainContainer) {
                     return;
@@ -1222,6 +1258,8 @@
                 updateSubSequences(clone);
             };
 
+            // ผูกพฤติกรรมให้การ์ดหมวดหลัก
+            // ฟังก์ชันย่อย: initMainCard
             const initMainCard = (card) => {
                 if (!card) {
                     return;
@@ -1289,6 +1327,8 @@
                 updateSubSequences(mainCard);
             }
 
+            // เติมข้อมูลหมวดย่อยและรายการภาระงานจาก API
+            // ฟังก์ชันย่อย: populateItems
             const populateItems = (card, items) => {
                 const subBlock = card ? card.querySelector('.sub-block') : null;
                 const subFooter = card ? card.querySelector('.sub-footer') : null;
@@ -1376,6 +1416,8 @@
                 updateSubSequences(card);
             };
 
+            // เติมข้อมูลหมวดหลักจาก API
+            // ฟังก์ชันย่อย: populateGroups
             const populateGroups = (groups) => {
                 if (!mainContainer || !Array.isArray(groups)) {
                     return;
@@ -1421,6 +1463,7 @@
                 updateMainSequences();
             };
 
+            // โหลดข้อมูลหัวข้อ/เมนูซ้าย
             fetch(`/workload-quantity-sub-criterias?quant_sub_criteria_id=${encodeURIComponent(quantSubCriteriaId)}`, {
                     headers: {
                         'Accept': 'application/json',
@@ -1445,6 +1488,7 @@
                     // Ignore load errors for now.
                 });
 
+            // โหลดโครงสร้างหมวดหลักและหมวดย่อย
             fetch(`/workload-sub-blocks?quant_sub_criteria_id=${encodeURIComponent(quantSubCriteriaId)}`, {
                     headers: {
                         'Accept': 'application/json',
@@ -1465,6 +1509,8 @@
             const toastEl = document.getElementById('workload-toast');
             const toastTextEl = document.getElementById('workload-toast-text');
 
+            // แสดง toast แจ้งสถานะการทำงาน
+            // ฟังก์ชันย่อย: showWorkloadToast
             const showWorkloadToast = (message, type = 'success') => {
                 if (!toastEl || !toastTextEl) {
                     return;
@@ -1490,6 +1536,7 @@
                 }
             }
 
+            // ปุ่มรีเซ็ตค่า
             if (resetButton) {
                 resetButton.addEventListener('click', () => {
                     if (!mainContainer) {
@@ -1513,6 +1560,7 @@
                 });
             }
 
+            // ปุ่มบันทึกข้อมูล
             if (saveButton) {
                 saveButton.addEventListener('click', () => {
                     const groups = [];
