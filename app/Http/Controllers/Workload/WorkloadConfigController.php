@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Workload\WorkloadConfigController.php
+ */
 
 namespace App\Http\Controllers\Workload;
 
@@ -15,11 +18,27 @@ use Illuminate\Validation\ValidationException;
 
 class WorkloadConfigController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า workload.app
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า workload.app
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index()
     {
         return view('workload.app');
     }
 
+    /**
+     * เมธอด: quantitySubCriteriaNav
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function quantitySubCriteriaNav(Request $request)
     {
         $request->validate([
@@ -45,6 +64,14 @@ class WorkloadConfigController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: subBlocks
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function subBlocks(Request $request)
     {
         $request->validate([
@@ -97,6 +124,14 @@ class WorkloadConfigController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: save
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantitySubCriteriaGroup, QuantitySubCriteriaItem, WorkloadFormField, WorkloadFormItem อัปเดตข้อมูล ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function save(Request $request)
     {
         $validated = $request->validate([

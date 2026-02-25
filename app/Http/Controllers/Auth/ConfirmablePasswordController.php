@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\ConfirmablePasswordController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -13,7 +16,12 @@ use Inertia\Response;
 class ConfirmablePasswordController extends Controller
 {
     /**
-     * Show the confirm password page.
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า auth/ConfirmPassword
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า auth/ConfirmPassword
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function show(): Response
     {
@@ -21,7 +29,12 @@ class ConfirmablePasswordController extends Controller
     }
 
     /**
-     * Confirm the user's password.
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ และเปลี่ยนเส้นทางไปที่ route dashboard
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route dashboard
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request): RedirectResponse
     {

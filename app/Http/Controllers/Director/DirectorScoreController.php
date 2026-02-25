@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Director\DirectorScoreController.php
+ */
 
 namespace App\Http\Controllers\Director;
 
@@ -18,6 +21,14 @@ class DirectorScoreController extends Controller
 
     protected $reportDataService;
 
+    /**
+     * เมธอด: __construct
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล ReportDataService
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -34,6 +45,15 @@ class DirectorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
+    /**
+     * เมธอด: director
+     * จุดประสงค์: แสดงหน้า director_dashboard.director และเปลี่ยนเส้นทางไปที่ route director.show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: หน้า director_dashboard.director
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function director(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -59,6 +79,15 @@ class DirectorScoreController extends Controller
         ]));
     }
 
+    /**
+     * เมธอด: storeDirectorScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function storeDirectorScores(Request $request, $reportId)
     {
         try {

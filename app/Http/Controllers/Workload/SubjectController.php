@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Workload\SubjectController.php
+ */
 
 namespace App\Http\Controllers\Workload;
 
@@ -11,6 +14,14 @@ use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า subjects.index ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า subjects.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         if ($request->expectsJson()) {
@@ -22,6 +33,14 @@ class SubjectController extends Controller
         return view('subjects.index', compact('subjects'));
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         try {
@@ -31,6 +50,14 @@ class SubjectController extends Controller
         }
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: บันทึกข้อมูล Subject ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param StoreSubjectRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(StoreSubjectRequest $request)
     {
         $subject = Subject::create($request->validated());
@@ -49,6 +76,15 @@ class SubjectController extends Controller
         return redirect()->route('subjects.index')->with('success', 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว');
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param UpdateSubjectRequest $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(UpdateSubjectRequest $request, $id)
     {
         try {
@@ -83,6 +119,14 @@ class SubjectController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         try {

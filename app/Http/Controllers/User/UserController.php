@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\User\UserController.php
+ */
 
 namespace App\Http\Controllers\User;
 
@@ -26,6 +29,14 @@ use Maatwebsite\Excel\Concerns\WithColumnWidths;
 class UserController extends Controller
 {
     // create page to add use
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล User และเปลี่ยนเส้นทางไปที่ route users.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route users.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -72,6 +83,14 @@ class UserController extends Controller
 
     // Add this method to your UserController
 
+    /**
+     * เมธอด: checkUnique
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function checkUnique(Request $request)
     {
         $field = $request->input('field');
@@ -107,6 +126,14 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: import
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล UsersImport และเปลี่ยนเส้นทางไปที่ route users.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route users.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function import(Request $request)
     {
         try {
@@ -175,6 +202,14 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * เมธอด: downloadTemplate
+     * จุดประสงค์: ส่งไฟล์สำหรับดาวน์โหลด
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ไฟล์ดาวน์โหลด
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function downloadTemplate()
     {
         $headers = [
@@ -297,6 +332,16 @@ class UserController extends Controller
                 private $headers;
                 private $options;
 
+                /**
+                 * เมธอด: __construct
+                 * จุดประสงค์: ประมวลผลคำขอ
+                 * อินพุต: พารามิเตอร์ $data, พารามิเตอร์ $headers, พารามิเตอร์ $options
+                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                 * @param mixed $data ค่าที่รับเข้ามา
+                 * @param mixed $headers ค่าที่รับเข้ามา
+                 * @param mixed $options ค่าที่รับเข้ามา
+                 * @return mixed ผลลัพธ์ของการทำงาน
+                 */
                 public function __construct($data, $headers, $options)
                 {
                     $this->data = $data;
@@ -304,6 +349,14 @@ class UserController extends Controller
                     $this->options = $options;
                 }
 
+                /**
+                 * เมธอด: sheets
+                 * จุดประสงค์: ประมวลผลคำขอ
+                 * อินพุต: ไม่มี
+                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                 * @param void ไม่มีพารามิเตอร์
+                 * @return mixed ผลลัพธ์ของการทำงาน
+                 */
                 public function sheets(): array
                 {
                     return [
@@ -312,28 +365,69 @@ class UserController extends Controller
                             private $data;
                             private $headers;
 
+                            /**
+                             * เมธอด: __construct
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: พารามิเตอร์ $data, พารามิเตอร์ $headers
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param mixed $data ค่าที่รับเข้ามา
+                             * @param mixed $headers ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function __construct($data, $headers)
                             {
                                 $this->data = $data;
                                 $this->headers = $headers;
                             }
 
+                            /**
+                             * เมธอด: array
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function array(): array
                             {
                                 return $this->data;
                             }
 
+                            /**
+                             * เมธอด: headings
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function headings(): array
                             {
                                 return array_values($this->headers);
                             }
 
+                            /**
+                             * เมธอด: styles
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล Worksheet
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param Worksheet $sheet ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function styles(Worksheet $sheet)
                             {
                                 $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
                                 $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
                             }
 
+                            /**
+                             * เมธอด: columnWidths
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function columnWidths(): array
                             {
                                 return [
@@ -352,16 +446,40 @@ class UserController extends Controller
                         new class($this->options) implements FromArray, WithStyles, WithColumnWidths  {
                             private $options;
 
+                            /**
+                             * เมธอด: __construct
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: พารามิเตอร์ $options
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param mixed $options ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function __construct($options)
                             {
                                 $this->options = $options;
                             }
 
+                            /**
+                             * เมธอด: array
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function array(): array
                             {
                                 return $this->options;
                             }
 
+                            /**
+                             * เมธอด: styles
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล Worksheet
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param Worksheet $sheet ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function styles(Worksheet $sheet)
                             {
                                 $sheet->setTitle('ตัวเลือก');
@@ -369,6 +487,14 @@ class UserController extends Controller
                                 $sheet->getStyle('A1:E1')->getFont()->setBold(true);
                             }
 
+                            /**
+                             * เมธอด: columnWidths
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function columnWidths(): array
                             {
                                 return [
@@ -385,6 +511,14 @@ class UserController extends Controller
         );
     }
 
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า user.management.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า user.management.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         // เริ่มต้น Query Builder พร้อมกับ Eager Loading ที่จำเป็น
@@ -434,6 +568,15 @@ class UserController extends Controller
         return view('user.management.index', compact('users', 'departments', 'positions', 'roles', 'user'));
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล และเปลี่ยนเส้นทางไปที่ route users.index
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล User
+     * เอาต์พุต: Redirect ไปที่ route users.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param User $user ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, User $user): RedirectResponse
     {
         $rules = [
@@ -485,6 +628,14 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route users.index
+     * อินพุต: โมเดล User
+     * เอาต์พุต: Redirect ไปที่ route users.index
+     * @param User $user ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy(User $user)
     {
         $user->delete();

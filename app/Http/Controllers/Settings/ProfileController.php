@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Settings\ProfileController.php
+ */
 
 namespace App\Http\Controllers\Settings;
 
@@ -17,7 +20,12 @@ use Illuminate\Support\Facades\Storage;
 class ProfileController extends Controller
 {
     /**
-     * Show the user's profile settings page.
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า user.profile.show-profile
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า user.profile.show-profile
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function show(Request $request)
     {
@@ -27,7 +35,12 @@ class ProfileController extends Controller
     }
 
     /**
-     * Show public profile page for any user.
+     * เมธอด: showPublic
+     * จุดประสงค์: แสดงหน้า user.profile.show-profile-public
+     * อินพุต: ตัวระบุ ($uuid)
+     * เอาต์พุต: หน้า user.profile.show-profile-public
+     * @param mixed $uuid ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function showPublic($uuid)
     {
@@ -40,6 +53,14 @@ class ProfileController extends Controller
         return view('user.profile.show-profile-public', compact('user'));
     }
 
+    /**
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า user.profile.edit-profile
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า user.profile.edit-profile
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function edit()
     {
         $user = auth()->user();
@@ -50,7 +71,12 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * เมธอด: update
+     * จุดประสงค์: บันทึกข้อมูล ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route profile.show
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route profile.show
+     * @param ProfileUpdateRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -102,7 +128,12 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's profile.
+     * เมธอด: destroy
+     * จุดประสงค์: ดำเนินการออกจากระบบ ตรวจสอบข้อมูลจากคำขอ ลบข้อมูล
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -122,6 +153,14 @@ class ProfileController extends Controller
         return redirect('/');
     }
 
+    /**
+     * เมธอด: sendPasswordResetLink
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ และย้อนกลับหน้าก่อน
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ย้อนกลับหน้าก่อน
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function sendPasswordResetLink(Request $request)
     {
         $request->validate([

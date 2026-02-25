@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\EmailVerificationNotificationController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -9,7 +12,12 @@ use Illuminate\Http\Request;
 class EmailVerificationNotificationController extends Controller
 {
     /**
-     * Send a new email verification notification.
+     * เมธอด: store
+     * จุดประสงค์: และเปลี่ยนเส้นทางไปที่ route dashboard
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route dashboard
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request): RedirectResponse
     {

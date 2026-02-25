@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Manager\ManagerScoreController.php
+ */
 
 namespace App\Http\Controllers\Manager;
 
@@ -19,6 +22,14 @@ class ManagerScoreController extends Controller
 
     protected $reportDataService;
 
+    /**
+     * เมธอด: __construct
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล ReportDataService
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -35,6 +46,15 @@ class ManagerScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
+    /**
+     * เมธอด: manager
+     * จุดประสงค์: แสดงหน้า manager_dashboard.manager และเปลี่ยนเส้นทางไปที่ route manager.show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: หน้า manager_dashboard.manager
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function manager(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -61,6 +81,15 @@ class ManagerScoreController extends Controller
         ]));
     }
 
+    /**
+     * เมธอด: storeManagerScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function storeManagerScores(Request $request, $reportId)
     {
         try {

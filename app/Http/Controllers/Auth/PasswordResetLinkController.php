@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\PasswordResetLinkController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -10,7 +13,12 @@ use Illuminate\Support\Facades\Password;
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Show the password reset link request page.
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า user.management.forgotPassword
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า user.management.forgotPassword
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create(Request $request)
     {
@@ -21,9 +29,12 @@ class PasswordResetLinkController extends Controller
     }
 
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ และย้อนกลับหน้าก่อน
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ย้อนกลับหน้าก่อน
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request): RedirectResponse
     {

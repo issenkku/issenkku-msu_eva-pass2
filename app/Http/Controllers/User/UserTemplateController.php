@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\User\UserTemplateController.php
+ */
 
 namespace App\Http\Controllers\User;
 
@@ -15,6 +18,14 @@ use Spatie\Permission\Models\Role;
 
 class UserTemplateController extends Controller
 {
+    /**
+     * เมธอด: download
+     * จุดประสงค์: ส่งไฟล์สำหรับดาวน์โหลด
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ไฟล์ดาวน์โหลด
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function download(): BinaryFileResponse
     {
         $headers = [
@@ -65,6 +76,16 @@ class UserTemplateController extends Controller
                 private array $headers;
                 private array $options;
 
+                /**
+                 * เมธอด: __construct
+                 * จุดประสงค์: ประมวลผลคำขอ
+                 * อินพุต: โมเดล array
+                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                 * @param array $data ค่าที่รับเข้ามา
+                 * @param array $headers ค่าที่รับเข้ามา
+                 * @param array $options ค่าที่รับเข้ามา
+                 * @return mixed ผลลัพธ์ของการทำงาน
+                 */
                 public function __construct(array $data, array $headers, array $options)
                 {
                     $this->data = $data;
@@ -72,6 +93,14 @@ class UserTemplateController extends Controller
                     $this->options = $options;
                 }
 
+                /**
+                 * เมธอด: sheets
+                 * จุดประสงค์: ประมวลผลคำขอ
+                 * อินพุต: ไม่มี
+                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                 * @param void ไม่มีพารามิเตอร์
+                 * @return mixed ผลลัพธ์ของการทำงาน
+                 */
                 public function sheets(): array
                 {
                     return [
@@ -80,28 +109,69 @@ class UserTemplateController extends Controller
                             private array $data;
                             private array $headers;
 
+                            /**
+                             * เมธอด: __construct
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล array
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param array $data ค่าที่รับเข้ามา
+                             * @param array $headers ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function __construct(array $data, array $headers)
                             {
                                 $this->data = $data;
                                 $this->headers = $headers;
                             }
 
+                            /**
+                             * เมธอด: array
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function array(): array
                             {
                                 return $this->data;
                             }
 
+                            /**
+                             * เมธอด: headings
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function headings(): array
                             {
                                 return array_values($this->headers);
                             }
 
+                            /**
+                             * เมธอด: styles
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล Worksheet
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param Worksheet $sheet ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function styles(Worksheet $sheet)
                             {
                                 $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
                                 $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
                             }
 
+                            /**
+                             * เมธอด: columnWidths
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function columnWidths(): array
                             {
                                 return [
@@ -120,16 +190,40 @@ class UserTemplateController extends Controller
                         new class($this->options) implements FromArray, WithStyles, WithColumnWidths {
                             private array $options;
 
+                            /**
+                             * เมธอด: __construct
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล array
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param array $options ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function __construct(array $options)
                             {
                                 $this->options = $options;
                             }
 
+                            /**
+                             * เมธอด: array
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function array(): array
                             {
                                 return $this->options;
                             }
 
+                            /**
+                             * เมธอด: styles
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: โมเดล Worksheet
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param Worksheet $sheet ค่าที่รับเข้ามา
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function styles(Worksheet $sheet)
                             {
                                 // Sanitize sheet title: Excel forbids \\ / * ? : [ ] and length > 31
@@ -145,6 +239,14 @@ class UserTemplateController extends Controller
                                 $sheet->getStyle('A1:E1')->getFont()->setBold(true);
                             }
 
+                            /**
+                             * เมธอด: columnWidths
+                             * จุดประสงค์: ประมวลผลคำขอ
+                             * อินพุต: ไม่มี
+                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+                             * @param void ไม่มีพารามิเตอร์
+                             * @return mixed ผลลัพธ์ของการทำงาน
+                             */
                             public function columnWidths(): array
                             {
                                 return [

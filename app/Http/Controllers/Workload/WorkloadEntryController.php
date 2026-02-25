@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Workload\WorkloadEntryController.php
+ */
 
 namespace App\Http\Controllers\Workload;
 
@@ -13,6 +16,14 @@ use Illuminate\Http\Request;
 
 class WorkloadEntryController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         $query = WorkloadEntry::query();
@@ -32,6 +43,14 @@ class WorkloadEntryController extends Controller
         return response()->json($query->get());
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         try {
@@ -41,6 +60,14 @@ class WorkloadEntryController extends Controller
         }
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: บันทึกข้อมูล WorkloadEntry ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param StoreWorkloadEntryRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(StoreWorkloadEntryRequest $request)
     {
         $validated = $request->validated();
@@ -56,6 +83,15 @@ class WorkloadEntryController extends Controller
         return response()->json($entry, 201);
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param UpdateWorkloadEntryRequest $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(UpdateWorkloadEntryRequest $request, $id)
     {
         try {
@@ -79,6 +115,14 @@ class WorkloadEntryController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         try {

@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\User\ActivityLogController.php
+ */
 
 namespace App\Http\Controllers\User;
 
@@ -9,6 +12,14 @@ use Carbon\Carbon;
 
 class ActivityLogController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า user.management.log
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า user.management.log
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         $query = Activity::with('causer')->latest();
@@ -77,6 +88,14 @@ class ActivityLogController extends Controller
         return view('user.management.log', compact('activities', 'logNames'));
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า user.management.log-detail
+     * อินพุต: โมเดล Activity
+     * เอาต์พุต: หน้า user.management.log-detail
+     * @param Activity $activity ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show(Activity $activity)
     {
         return view('user.management.log-detail', compact('activity'));

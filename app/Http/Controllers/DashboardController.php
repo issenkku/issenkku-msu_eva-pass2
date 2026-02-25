@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\DashboardController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -25,6 +28,14 @@ class DashboardController extends Controller
 
     protected $reportDataService;
 
+    /**
+     * เมธอด: __construct
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล ReportDataService
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -49,6 +60,15 @@ class DashboardController extends Controller
         })->count();
     }
 
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า dashboard.index บันทึกข้อมูล LengthAwarePaginator
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล EvaluationService
+     * เอาต์พุต: หน้า dashboard.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param EvaluationService $evaluationService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request, EvaluationService $evaluationService)
     {
         // Get filter parameters
@@ -135,6 +155,15 @@ class DashboardController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: admin
+     * จุดประสงค์: แสดงหน้า dashboard.admin และเปลี่ยนเส้นทางไปที่ route admin.show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: หน้า dashboard.admin
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function admin(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -216,6 +245,14 @@ class DashboardController extends Controller
         return 'All Periods';
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า dashboard.show
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: หน้า dashboard.show
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         $userId = Auth::id();

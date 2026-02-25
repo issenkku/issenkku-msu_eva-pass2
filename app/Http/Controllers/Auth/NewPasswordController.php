@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\NewPasswordController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -17,7 +20,12 @@ use Inertia\Response;
 class NewPasswordController extends Controller
 {
     /**
-     * Show the password reset page.
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า user.management.resetPassword
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า user.management.resetPassword
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create(Request $request)
     {
@@ -29,9 +37,12 @@ class NewPasswordController extends Controller
     }
 
     /**
-     * Handle an incoming new password request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล PasswordReset
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request): RedirectResponse
     {

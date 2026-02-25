@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\EvaluateeWorkloadEntryController.php
+ */
 
 namespace App\Http\Controllers\Evaluatee;
 
@@ -16,6 +19,14 @@ use Illuminate\Http\RedirectResponse;
 
 class EvaluateeWorkloadEntryController extends Controller
 {
+    /**
+     * เมธอด: store
+     * จุดประสงค์: บันทึกข้อมูล WorkloadEntry, EvidenceAnswer
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param StoreWorkloadEntryRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(StoreWorkloadEntryRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -68,6 +79,15 @@ class EvaluateeWorkloadEntryController extends Controller
             ->with('success', 'บันทึกภาระงานเรียบร้อยแล้ว');
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: บันทึกข้อมูล EvidenceAnswer อัปเดตข้อมูล ลบข้อมูล
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param UpdateWorkloadEntryRequest $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(UpdateWorkloadEntryRequest $request, $id): RedirectResponse
     {
         try {
@@ -126,6 +146,14 @@ class EvaluateeWorkloadEntryController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id): RedirectResponse
     {
         try {

@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\EvaluationScoreController.php
+ */
 
 namespace App\Http\Controllers\Evaluatee;
 
@@ -28,6 +31,15 @@ class EvaluationScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
+    /**
+     * เมธอด: storeEvaluationScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore, EvidenceAnswer ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function storeEvaluationScores(Request $request, $reportId)
     {
         try {

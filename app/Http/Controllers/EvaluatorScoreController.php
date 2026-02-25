@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\EvaluatorScoreController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -18,6 +21,14 @@ class EvaluatorScoreController extends Controller
 
     protected $reportDataService;
 
+    /**
+     * เมธอด: __construct
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล ReportDataService
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -34,6 +45,16 @@ class EvaluatorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
+    /**
+     * เมธอด: evaluator
+     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluator และเปลี่ยนเส้นทางไปที่ route evaluator.evaluator.show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id), โมเดล ReportDataService
+     * เอาต์พุต: หน้า evaluator_dashboard.evaluator
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function evaluator(Request $request, $id, ReportDataService $reportDataService)
     {
         $user = $request->user()->load('position', 'department');
@@ -65,6 +86,15 @@ class EvaluatorScoreController extends Controller
 
     
 
+    /**
+     * เมธอด: storeEvaluatorScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function storeEvaluatorScores(Request $request, $reportId)
     {
         try {

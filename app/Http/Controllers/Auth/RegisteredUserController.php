@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\RegisteredUserController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -16,7 +19,12 @@ use Inertia\Response;
 class RegisteredUserController extends Controller
 {
     /**
-     * Show the registration page.
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า auth/Register
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า auth/Register
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create(): Response
     {
@@ -24,9 +32,12 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * เมธอด: store
+     * จุดประสงค์: ดำเนินการเข้าสู่ระบบ/ยืนยันตัวตน ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล User, Registered
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request): RedirectResponse
     {

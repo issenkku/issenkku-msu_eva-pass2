@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\EvaluatorController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -22,7 +25,12 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class EvaluatorController extends Controller
 {
     /**
-     * Display evaluator dashboard - หน้าหลักของผู้ประเมิน
+     * เมธอด: dashboard
+     * จุดประสงค์: แสดงหน้า evaluator_dashboard.index บันทึกข้อมูล LengthAwarePaginator
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า evaluator_dashboard.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function dashboard(Request $request)
     {
@@ -160,6 +168,15 @@ class EvaluatorController extends Controller
         })->count();
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluatee_show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($assignmentId)
+     * เอาต์พุต: หน้า evaluator_dashboard.evaluatee_show
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $assignmentId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show(Request $request, $assignmentId)
     {
         $userId = Auth::id();
@@ -356,6 +373,15 @@ class EvaluatorController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluatee_form
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: หน้า evaluator_dashboard.evaluatee_form
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function edit(Request $request, $id)
     {
         $userId = Auth::id() ?? 2;
@@ -461,6 +487,15 @@ class EvaluatorController extends Controller
         return view('evaluator_dashboard.evaluatee_form', compact('assignment', 'categories'));
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route evaluator.index
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: Redirect ไปที่ route evaluator.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, $id)
     {
         Log::info('Update evaluation scores for report ID: '.$id);
@@ -499,6 +534,14 @@ class EvaluatorController extends Controller
         return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
     }
 
+    /**
+     * เมธอด: reject
+     * จุดประสงค์: บันทึกข้อมูล และเปลี่ยนเส้นทางไปที่ route evaluator.index
+     * อินพุต: ตัวระบุ ($reportId)
+     * เอาต์พุต: Redirect ไปที่ route evaluator.index
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function reject($reportId)
     {
         $report = Reports::findOrFail($reportId);

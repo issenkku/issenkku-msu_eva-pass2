@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\AuthenticatedSessionController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -14,7 +17,12 @@ use Inertia\Response;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Show the login page.
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า auth/Login
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า auth/Login
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create(Request $request): Response
     {
@@ -25,7 +33,12 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * เมธอด: store
+     * จุดประสงค์: ดำเนินการเข้าสู่ระบบ/ยืนยันตัวตน และเปลี่ยนเส้นทางไปที่ route dashboard
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route dashboard
+     * @param LoginRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -37,7 +50,12 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Destroy an authenticated session.
+     * เมธอด: destroy
+     * จุดประสงค์: ดำเนินการออกจากระบบ
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function destroy(Request $request): RedirectResponse
     {

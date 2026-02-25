@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Setting\PositionsController.php
+ */
 
 namespace App\Http\Controllers\Setting;
 
@@ -9,7 +12,12 @@ use Illuminate\Http\Request;
 class PositionsController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า positions.index
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า positions.index
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function index()
     {
@@ -20,6 +28,14 @@ class PositionsController extends Controller
         // return view('index', ['positions' => $positions]);
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล Positions และเปลี่ยนเส้นทางไปที่ route positions.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route positions.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -45,7 +61,13 @@ class PositionsController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route positions.index
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: Redirect ไปที่ route positions.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function update(Request $request, $id)
     {
@@ -75,7 +97,12 @@ class PositionsController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route positions.index
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: Redirect ไปที่ route positions.index
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function destroy($id)
     {

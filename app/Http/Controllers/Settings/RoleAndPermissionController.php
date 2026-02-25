@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Settings\RoleAndPermissionController.php
+ */
 
 namespace App\Http\Controllers\Settings;
 
@@ -10,6 +13,14 @@ use Spatie\Permission\Models\Role;
 
 class RoleAndPermissionController extends Controller
 {
+    /**
+     * เมธอด: setupRolesAndPermissions
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function setupRolesAndPermissions()
     {
         $permissions = [
@@ -46,6 +57,14 @@ class RoleAndPermissionController extends Controller
         $manager = Role::firstOrCreate(['name' => 'ผู้บริหาร']);
     }
 
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า user.role-management.index
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า user.role-management.index
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index()
     {
         $roles = Role::with('permissions')->get();
@@ -54,6 +73,14 @@ class RoleAndPermissionController extends Controller
         return view('user.role-management.index', compact('roles', 'permissions'));
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล Role และเปลี่ยนเส้นทางไปที่ route roles.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route roles.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -67,6 +94,14 @@ class RoleAndPermissionController extends Controller
         return redirect()->route('roles.index')->with('success', 'Role created.');
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า roles.show
+     * อินพุต: โมเดล Role
+     * เอาต์พุต: หน้า roles.show
+     * @param Role $role ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show(Role $role)
     {
         return view('roles.show', compact('role'));
@@ -85,6 +120,14 @@ class RoleAndPermissionController extends Controller
     //     return back()->with('success', 'Role assigned to user.');
     // }
 
+    /**
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า user.role-management.edit-role
+     * อินพุต: โมเดล Role
+     * เอาต์พุต: หน้า user.role-management.edit-role
+     * @param Role $role ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function edit(Role $role)
     {
         $permissions = Permission::all();
@@ -96,6 +139,15 @@ class RoleAndPermissionController extends Controller
         return view('user.role-management.edit-role', compact('role', 'permissions', 'rolePermissions', 'users', 'assignedUsers'));
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route roles.index
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล Role
+     * เอาต์พุต: Redirect ไปที่ route roles.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param Role $role ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, Role $role)
     {
         $request->validate([
@@ -130,6 +182,14 @@ class RoleAndPermissionController extends Controller
         return redirect()->route('roles.index')->with('success', 'Role updated.');
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route roles.index
+     * อินพุต: โมเดล Role
+     * เอาต์พุต: Redirect ไปที่ route roles.index
+     * @param Role $role ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy(Role $role)
     {
         $role->delete();

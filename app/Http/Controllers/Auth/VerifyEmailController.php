@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\VerifyEmailController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -9,6 +12,14 @@ use Illuminate\Http\RedirectResponse;
 
 class VerifyEmailController extends Controller
 {
+    /**
+     * เมธอด: __invoke
+     * จุดประสงค์: บันทึกข้อมูล Verified และเปลี่ยนเส้นทางไปที่ route dashboard
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route dashboard
+     * @param EmailVerificationRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         if ($request->user()->hasVerifiedEmail()) {

@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\AssignmentDataController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -15,6 +18,14 @@ use Spatie\Permission\Models\Role;
 
 class AssignmentDataController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า assignment-data.index
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า assignment-data.index
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index()
     {
         $assignmentData = AssignmentData::with([
@@ -28,6 +39,14 @@ class AssignmentDataController extends Controller
         return view('assignment-data.index', compact('assignmentData'));
     }
 
+    /**
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า assignment-data.create
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า assignment-data.create
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function create()
     {
         $report_data = ReportData::all();
@@ -36,6 +55,14 @@ class AssignmentDataController extends Controller
         return view('assignment-data.create', compact('report_data', 'users'));
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: บันทึกข้อมูล AssignmentData, Reports, Assignments และเปลี่ยนเส้นทางไปที่ route assignment-data.create
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route assignment-data.create
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -120,6 +147,14 @@ class AssignmentDataController extends Controller
         }
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: โมเดล AssignmentData
+     * เอาต์พุต: ข้อมูล JSON
+     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show(AssignmentData $assignmentData)
     {
         $assignmentData->load([
@@ -131,6 +166,14 @@ class AssignmentDataController extends Controller
         return response()->json($assignmentData);
     }
 
+    /**
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า assignment-data.edit
+     * อินพุต: โมเดล AssignmentData
+     * เอาต์พุต: หน้า assignment-data.edit
+     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function edit(AssignmentData $assignmentData)
     {
         $report_data = ReportData::all();
@@ -153,6 +196,15 @@ class AssignmentDataController extends Controller
         ));
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: บันทึกข้อมูล Reports, Assignments อัปเดตข้อมูล ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route assignment-data.index
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล AssignmentData
+     * เอาต์พุต: Redirect ไปที่ route assignment-data.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, AssignmentData $assignmentData)
     {
         $validator = Validator::make($request->all(), [
@@ -238,6 +290,14 @@ class AssignmentDataController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: โมเดล AssignmentData
+     * เอาต์พุต: ข้อมูล JSON
+     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy(AssignmentData $assignmentData)
     {
         try {

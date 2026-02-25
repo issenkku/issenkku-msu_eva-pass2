@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\DashboardEvaluateeController.php
+ */
 
 namespace App\Http\Controllers\Evaluatee;
 
@@ -19,6 +22,14 @@ use Illuminate\Support\Collection;
 
 class DashboardEvaluateeController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า evaluatee.dashboard บันทึกข้อมูล LengthAwarePaginator
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า evaluatee.dashboard
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         $user = $request->user()->load([
@@ -148,6 +159,15 @@ class DashboardEvaluateeController extends Controller
         })->count();
     }
 
+    /**
+     * เมธอด: evaluation
+     * จุดประสงค์: แสดงหน้า evaluatee.evaluation และเปลี่ยนเส้นทางไปที่ route evaluation.show
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: หน้า evaluatee.evaluation
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function evaluation(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');

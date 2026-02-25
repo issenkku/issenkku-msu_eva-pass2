@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -22,6 +25,14 @@ class ReportController extends Controller
     protected $allowedEditStatuses = ['ASSIGNED', 'DRAFT'];
 
     // GET /reports
+    /**
+     * เมธอด: index
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index()
     {
         $reports = Reports::all();
@@ -29,6 +40,14 @@ class ReportController extends Controller
         return ReportSummaryResource::collection($reports);
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: บันทึกข้อมูล ReportResource ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         try {
@@ -40,6 +59,14 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล Reports, ReportResource ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         try {
@@ -69,6 +96,15 @@ class ReportController extends Controller
     }
 
     // PUT /reports/{id}
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล ReportResource อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, $id)
     {
         try {
@@ -101,6 +137,14 @@ class ReportController extends Controller
     }
 
     // DELETE /reports/{id}
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         try {
@@ -128,6 +172,15 @@ class ReportController extends Controller
     }
 
     // POST /reports/{reportId}/quantity-scores
+    /**
+     * เมธอด: addQuantityScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function addQuantityScores(Request $request, $reportId)
     {
         try {
@@ -173,6 +226,15 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * เมธอด: updateQuantityScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function updateQuantityScores(Request $request, $reportId)
     {
         try {
@@ -227,6 +289,15 @@ class ReportController extends Controller
     }
 
     // POST /reports/{reportId}/quality-scores
+    /**
+     * เมธอด: addQualityScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QualityScore ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function addQualityScores(Request $request, $reportId)
     {
         try {
@@ -260,6 +331,15 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * เมธอด: updateQualityScores
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function updateQualityScores(Request $request, $reportId)
     {
         try {
@@ -313,6 +393,15 @@ class ReportController extends Controller
     }
 
     // POST /reports/{reportId}/evidence-answers
+    /**
+     * เมธอด: addEvidenceAnswers
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล EvidenceAnswer ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function addEvidenceAnswers(Request $request, $reportId)
     {
         try {
@@ -346,6 +435,15 @@ class ReportController extends Controller
         }
     }
 
+    /**
+     * เมธอด: updateEvidenceAnswers
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $reportId ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function updateEvidenceAnswers(Request $request, $reportId)
     {
         try {

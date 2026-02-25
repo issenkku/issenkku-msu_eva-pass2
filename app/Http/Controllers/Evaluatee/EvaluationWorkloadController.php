@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\EvaluationWorkloadController.php
+ */
 
 namespace App\Http\Controllers\Evaluatee;
 
@@ -15,6 +18,14 @@ use Illuminate\Support\Collection;
 
 class EvaluationWorkloadController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า evaluatee.evaluation-workload
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า evaluatee.evaluation-workload
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         $reportId = $request->query('report_id');
@@ -91,6 +102,14 @@ class EvaluationWorkloadController extends Controller
         ]);
     }
 
+    /**
+     * เมธอด: storeWorkloadScore
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function storeWorkloadScore(Request $request)
     {
         $validated = $request->validate([

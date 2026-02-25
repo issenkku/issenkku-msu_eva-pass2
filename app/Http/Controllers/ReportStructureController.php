@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportStructureController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -19,6 +22,14 @@ use Illuminate\Validation\ValidationException;
 class ReportStructureController extends Controller
 {
     // Get all criteria versions
+    /**
+     * เมธอด: index
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ข้อมูล JSON
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index()
     {
         $criteriaVersions = CriteriaVersion::with(['createdByUser', 'reportDatas'])->get();
@@ -40,6 +51,14 @@ class ReportStructureController extends Controller
         return response()->json(['data' => $result]);
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         try {
@@ -220,6 +239,14 @@ class ReportStructureController extends Controller
     }
 
     // Create new (POST)
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล CriteriaVersion, ReportData, Category, EvaluationList, QuantityMainCriteria, Formula, QuantitySubCriteria, QualityMainCriteria, QualitySubCriteria ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -428,6 +455,15 @@ class ReportStructureController extends Controller
 
     // Update (PUT/PATCH)
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล ReportData, Category, EvaluationList, QuantityMainCriteria, Formula, QuantitySubCriteria, QualityMainCriteria, QualitySubCriteria, CriteriaVersionResource อัปเดตข้อมูล ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -899,6 +935,14 @@ class ReportStructureController extends Controller
     }
 
     // Delete (DELETE)
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);

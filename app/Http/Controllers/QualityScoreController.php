@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\QualityScoreController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -13,7 +16,12 @@ use Inertia\Inertia;
 class QualityScoreController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Index
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า Admin/QualityScores/Index
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function index()
     {
@@ -28,7 +36,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Create
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า Admin/QualityScores/Create
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create()
     {
@@ -48,7 +61,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request)
     {
@@ -103,7 +121,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Show
+     * อินพุต: โมเดล QualityScore
+     * เอาต์พุต: หน้า Admin/QualityScores/Show
+     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function show(QualityScore $qualityScore)
     {
@@ -118,7 +141,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Edit
+     * อินพุต: โมเดล QualityScore
+     * เอาต์พุต: หน้า Admin/QualityScores/Edit
+     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function edit(QualityScore $qualityScore)
     {
@@ -144,7 +172,13 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล QualityScore
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function update(Request $request, QualityScore $qualityScore)
     {
@@ -166,7 +200,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: โมเดล QualityScore
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function destroy(QualityScore $qualityScore)
     {
@@ -177,7 +216,12 @@ class QualityScoreController extends Controller
     }
 
     /**
-     * Get quality sub criterias by evaluation list
+     * เมธอด: getQualitySubCriterias
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function getQualitySubCriterias(Request $request)
     {

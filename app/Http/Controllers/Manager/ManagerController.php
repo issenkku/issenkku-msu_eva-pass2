@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Manager\ManagerController.php
+ */
 
 namespace App\Http\Controllers\Manager;
 
@@ -24,6 +27,15 @@ class ManagerController extends Controller
         })->count();
     }
 
+    /**
+     * เมธอด: dashboard
+     * จุดประสงค์: แสดงหน้า manager_dashboard.index บันทึกข้อมูล LengthAwarePaginator
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล EvaluationService
+     * เอาต์พุต: หน้า manager_dashboard.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param EvaluationService $evaluationService ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function dashboard(Request $request, EvaluationService $evaluationService)
     {
         // Load user with comprehensive relationships based on actual schema

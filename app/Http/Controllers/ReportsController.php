@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportsController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -8,7 +11,12 @@ use Illuminate\Http\Request;
 class ReportsController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * เมธอด: index
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function index()
     {
@@ -16,7 +24,12 @@ class ReportsController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * เมธอด: create
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ไม่มี
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function create()
     {
@@ -24,7 +37,12 @@ class ReportsController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * เมธอด: store
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function store(Request $request)
     {
@@ -32,7 +50,12 @@ class ReportsController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * เมธอด: show
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล Reports
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Reports $reports ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function show(Reports $reports)
     {
@@ -40,7 +63,12 @@ class ReportsController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * เมธอด: edit
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล Reports
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Reports $reports ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function edit(Reports $reports)
     {
@@ -48,7 +76,13 @@ class ReportsController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * เมธอด: update
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: ข้อมูลจากคำขอ, โมเดล Reports
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param Reports $reports ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function update(Request $request, Reports $reports)
     {
@@ -56,7 +90,12 @@ class ReportsController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * เมธอด: destroy
+     * จุดประสงค์: ประมวลผลคำขอ
+     * อินพุต: โมเดล Reports
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Reports $reports ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
      */
     public function destroy(Reports $reports)
     {

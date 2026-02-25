@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\AuthController.php
+ */
 
 namespace App\Http\Controllers\Auth;
 
@@ -13,11 +16,27 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    /**
+     * เมธอด: showLoginForm
+     * จุดประสงค์: แสดงหน้า user.management.loginForm
+     * อินพุต: ไม่มี
+     * เอาต์พุต: หน้า user.management.loginForm
+     * @param void ไม่มีพารามิเตอร์
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function showLoginForm()
     {
         return view('user.management.loginForm'); // Blade view for login form
     }
 
+    /**
+     * เมธอด: login
+     * จุดประสงค์: ดำเนินการเข้าสู่ระบบ/ยืนยันตัวตน ตรวจสอบข้อมูลจากคำขอ ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function login(Request $request)
     {
 
@@ -83,6 +102,14 @@ class AuthController extends Controller
         return response()->json(['redirect' => $redirect]);
     }
 
+    /**
+     * เมธอด: logout
+     * จุดประสงค์: ดำเนินการออกจากระบบ
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function logout(Request $request)
     {
         activity()
@@ -101,6 +128,14 @@ class AuthController extends Controller
         return redirect('/login')->with('success', 'ออกจากระบบสำเร็จ');
     }
 
+    /**
+     * เมธอด: user
+     * จุดประสงค์: แสดงหน้า auth.profile
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า auth.profile
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function user(Request $request)
     {
         return view('auth.profile', ['user' => $request->user()]);

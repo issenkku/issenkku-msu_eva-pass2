@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\QualityScoresController.php
+ */
 
 namespace App\Http\Controllers;
 
@@ -12,6 +15,14 @@ use Illuminate\Support\Facades\Log;
 
 class QualityScoresController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: แสดงหน้า quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(Request $request)
     {
         // ดึงข้อมูลรายงานที่มีโครงสร้างเกณฑ์
@@ -41,6 +52,14 @@ class QualityScoresController extends Controller
         return view('quality-scores.index', compact('reportDatas', 'qualityScores', 'filterCriteria'));
     }
 
+    /**
+     * เมธอด: create
+     * จุดประสงค์: แสดงหน้า quality-scores.create
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: หน้า quality-scores.create
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function create(Request $request)
     {
         // ดึงข้อมูล report_datas ทั้งหมด
@@ -71,6 +90,14 @@ class QualityScoresController extends Controller
         return view('quality-scores.create', compact('reportDatas', 'qualitySubCriterias', 'users', 'selectedCriteria', 'selectedReport'));
     }
 
+    /**
+     * เมธอด: getCriteriaByReport
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function getCriteriaByReport(Request $request)
     {
         $reportId = $request->get('report_id');
@@ -102,6 +129,14 @@ class QualityScoresController extends Controller
         return response()->json(['criterias' => $criterias]);
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล Reports, QualityScore อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(Request $request)
     {
         // Log เมื่อเริ่มต้นการบันทึกข้อมูล
@@ -319,6 +354,14 @@ class QualityScoresController extends Controller
         }
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: แสดงหน้า quality-scores.show
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: หน้า quality-scores.show
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         $qualityScore = QualityScore::with(['qualitySubCriteria.qualityMainCriteria', 'user'])
@@ -327,6 +370,14 @@ class QualityScoresController extends Controller
         return view('quality-scores.show', compact('qualityScore'));
     }
 
+    /**
+     * เมธอด: edit
+     * จุดประสงค์: แสดงหน้า quality-scores.edit
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: หน้า quality-scores.edit
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function edit($id)
     {
         $qualityScore = QualityScore::with(['qualitySubCriteria', 'user'])
@@ -341,6 +392,15 @@ class QualityScoresController extends Controller
         return view('quality-scores.edit', compact('qualityScore', 'qualitySubCriterias', 'users'));
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(Request $request, $id)
     {
         $qualityScore = QualityScore::findOrFail($id);
@@ -381,6 +441,14 @@ class QualityScoresController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         try {
@@ -396,6 +464,14 @@ class QualityScoresController extends Controller
         }
     }
 
+    /**
+     * เมธอด: bulkDestroy
+     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
+     * @param Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function bulkDestroy(Request $request)
     {
         $request->validate([

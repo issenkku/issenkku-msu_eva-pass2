@@ -1,4 +1,7 @@
-<?php
+﻿<?php
+/**
+ * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Workload\WorkloadFormController.php
+ */
 
 namespace App\Http\Controllers\Workload;
 
@@ -10,6 +13,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class WorkloadFormController extends Controller
 {
+    /**
+     * เมธอด: index
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param \Illuminate\Http\Request $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function index(\Illuminate\Http\Request $request)
     {
         $query = WorkloadForm::with(['fields', 'items']);
@@ -27,6 +38,14 @@ class WorkloadFormController extends Controller
         return response()->json($query->get());
     }
 
+    /**
+     * เมธอด: show
+     * จุดประสงค์: ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function show($id)
     {
         try {
@@ -36,6 +55,14 @@ class WorkloadFormController extends Controller
         }
     }
 
+    /**
+     * เมธอด: store
+     * จุดประสงค์: บันทึกข้อมูล WorkloadForm ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ
+     * เอาต์พุต: ข้อมูล JSON
+     * @param StoreWorkloadFormRequest $request ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function store(StoreWorkloadFormRequest $request)
     {
         $form = WorkloadForm::create($request->validated());
@@ -43,6 +70,15 @@ class WorkloadFormController extends Controller
         return response()->json($form, 201);
     }
 
+    /**
+     * เมธอด: update
+     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param UpdateWorkloadFormRequest $request ค่าที่รับเข้ามา
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function update(UpdateWorkloadFormRequest $request, $id)
     {
         try {
@@ -55,6 +91,14 @@ class WorkloadFormController extends Controller
         }
     }
 
+    /**
+     * เมธอด: destroy
+     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
+     * อินพุต: ตัวระบุ ($id)
+     * เอาต์พุต: ข้อมูล JSON
+     * @param mixed $id ค่าที่รับเข้ามา
+     * @return mixed ผลลัพธ์ของการทำงาน
+     */
     public function destroy($id)
     {
         try {
