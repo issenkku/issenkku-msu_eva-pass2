@@ -1,7 +1,9 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
+{{-- หน้าแก้ไขโปรไฟล์ --}}
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
+    {{-- ส่วนหัว + สวิตช์โปรไฟล์สาธารณะ --}}
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-semibold">แก้ไขข้อมูลโปรไฟล์</h2>
         <div class="flex items-center gap-3">
@@ -22,14 +24,15 @@
         </div>
     </div>
 
+    {{-- ฟอร์มอัปเดตโปรไฟล์ --}}
     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PATCH')
         
-        <!-- Hidden field for public profile setting -->
+        {{-- ฟิลด์ซ่อนสำหรับสถานะโปรไฟล์สาธารณะ --}}
         <input type="hidden" name="is_public_profile_enabled" id="is_public_profile_enabled" value="{{ $user->is_public_profile_enabled ? '1' : '0' }}">
 
-        <!-- Profile Photo Section -->
+        {{-- อัปโหลดรูปโปรไฟล์ --}}
         <div class="mb-8 flex items-center gap-6">
             <div class="flex-shrink-0">
                 <img id="preview-photo" 
@@ -51,6 +54,7 @@
             </div>
         </div>
 
+        {{-- ฟิลด์ข้อมูลระบุตัวตนเบื้องต้น --}}
         <div class="flex items-center mb-6 gap-4">
             <div class="w-40">
                 <label for="prefix" class="block text-sm font-medium text-gray-700 mb-1">คำนำหน้า</label>
@@ -74,6 +78,7 @@
                 @enderror
             </div>
         </div>
+        {{-- ฟิลด์ข้อมูลติดต่อ --}}
         <div class="mb-2">
             <label for="email" class="block text-sm font-medium text-gray-700">อีเมล</label>
             <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}"
@@ -83,7 +88,7 @@
             @enderror
         </div>
 
-        <!-- User Info -->
+        {{-- ฟิลด์ข้อมูลผู้ใช้ (ส่วนใหญ่แก้ไม่ได้) --}}
         <div class="grid grid-cols-2 gap-6">
             <div>
                 <label for="employee_id" class="block text-sm font-medium text-gray-700 mb-1">รหัสพนักงาน</label>
@@ -204,7 +209,7 @@
             </div>
         </div> --}}
 
-        <!-- Action Buttons -->
+        {{-- ปุ่มคำสั่ง --}}
         <div class="mt-6 flex items-center gap-3">
             <x-button 
                 type="default" 
@@ -221,6 +226,7 @@
 </div>
 
 <script>
+{{-- สคริปต์ช่วยฝั่งผู้ใช้ --}}
 // Preview photo when selected
 document.getElementById('profile_photo').addEventListener('change', function(e) {
     const file = e.target.files[0];

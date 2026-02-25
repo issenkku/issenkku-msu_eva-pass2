@@ -1,12 +1,14 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
+{{-- หน้าดูโปรไฟล์สาธารณะ --}}
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow">
+    {{-- ชื่อหัวข้อหน้า --}}
     <div class="flex items-center justify-between mb-6">
         <h2 class="text-2xl font-semibold">โปรไฟล์บุคลากร</h2>
     </div>
 
-    <!-- Profile Photo and Name Section -->
+    {{-- รูปโปรไฟล์ + ข้อมูลพื้นฐาน --}}
     <div class="flex items-center mb-6 gap-6">
         <div class="flex-shrink-0">
             <img src="{{ $user->profile_photo_url }}" 
@@ -20,7 +22,7 @@
         </div>
     </div>
 
-    <!-- User Info -->
+    {{-- ตารางข้อมูลผู้ใช้ --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ตำแหน่ง:</strong>
@@ -37,6 +39,7 @@
             <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->bio ?? 'ไม่ระบุข้อมูล' }}</p>
         </div>
 
+        {{-- ส่วนผลงาน (แสดงเมื่อมีข้อมูล) --}}
         @if($user->portfolio)
         <div class="col-span-full bg-gray-50 p-4 rounded-lg">
             <strong class="text-gray-800">ผลงาน:</strong>
@@ -47,6 +50,7 @@
 </div>
 
 <style>
+{{-- สไตล์สำหรับการพิมพ์ --}}
 /* เพิ่มสไตล์สำหรับการพิมพ์ */
 @media print {
     .no-print {
@@ -66,6 +70,7 @@
 </style>
 
 <script>
+{{-- ฟังก์ชันช่วยสำหรับการพิมพ์ --}}
 // เพิ่มความสามารถในการพิมพ์
 function printProfile() {
     window.print();
