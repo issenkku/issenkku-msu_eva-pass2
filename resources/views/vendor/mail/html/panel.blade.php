@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\panel.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\panel.blade.php --}}
 <table class="panel" width="100%" cellpadding="0" cellspacing="0" role="presentation">
 <tr>
 <td class="panel-content">

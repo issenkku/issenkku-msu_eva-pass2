@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\evaluation-item.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\evaluation-item.blade.php --}}
 @props(['evaluation'])
 
 @php

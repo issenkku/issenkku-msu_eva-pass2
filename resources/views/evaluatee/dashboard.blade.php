@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\evaluatee\dashboard.blade.php --}}
 
 @section('title', 'Dashboard - ระบบประเมิน')

@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\footer.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\footer.blade.php --}}
 <tr>
 <td>
 {{-- ตารางข้อมูล --}}

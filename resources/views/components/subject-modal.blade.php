@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\subject-modal.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\subject-modal.blade.php --}}
 <div class="modal fade" id="subjectModal" tabindex="-1" aria-labelledby="subjectModalLabel" aria-hidden="true">
     {{--  --}}
     <div class="modal-dialog modal-lg subject-modal-dialog">

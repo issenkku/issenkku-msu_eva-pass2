@@ -1,4 +1,4 @@
-﻿@props([
+@props([
     'categoryItems' => [],
     'readonly' => false,
     'evidenceMap' => [],

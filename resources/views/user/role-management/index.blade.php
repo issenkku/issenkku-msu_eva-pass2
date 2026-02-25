@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\user\role-management\index.blade.php --}}
 
 @section('content')

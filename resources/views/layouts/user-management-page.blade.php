@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\layouts\user-management-page.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\layouts\user-management-page.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

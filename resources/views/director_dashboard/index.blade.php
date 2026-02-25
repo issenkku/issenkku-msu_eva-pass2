@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\director_dashboard\index.blade.php --}}
 
 @section('content')

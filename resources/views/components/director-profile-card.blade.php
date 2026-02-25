@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\director-profile-card.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\director-profile-card.blade.php --}}
 @props([
     'startTimeFormatted' => '-',
     'endTimeFormatted' => '-',

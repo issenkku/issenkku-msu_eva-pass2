@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\criteria_config\evaluators.blade.php --}}
 @section('content')
     <style>

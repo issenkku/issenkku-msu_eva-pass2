@@ -1,4 +1,4 @@
-﻿{{-- @component('mail::message')
+{{-- @component('mail::message')
 # @lang('Hello!')
 
 @lang('There has been a failed login attempt to your :app account.', ['app' => config('app.name')])

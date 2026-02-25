@@ -1,4 +1,4 @@
-﻿@props(['route', 'userId' => null, 'label' => 'ส่งออกเป็น Excel'])
+@props(['route', 'userId' => null, 'label' => 'ส่งออกเป็น Excel'])
 
 {{-- ฟอร์ม --}}
 <form method="GET" action="{{ $route }}">

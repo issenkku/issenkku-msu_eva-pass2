@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\user\management\user-form-modal.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\user\management\user-form-modal.blade.php --}}
 <!-- Modal Trigger Button (optional) -->
 <!-- <x-button text="เพิ่มเจ้าหน้าที่ใหม่" onclick="openModal()" /> -->
 

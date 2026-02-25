@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\layouts\dashboard.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\layouts\dashboard.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

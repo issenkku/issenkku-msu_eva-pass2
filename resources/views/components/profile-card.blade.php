@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\profile-card.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\profile-card.blade.php --}}
 @props(['user','title'])
 
 {{-- บล็อกเนื้อหา --}}

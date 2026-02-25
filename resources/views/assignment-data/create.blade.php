@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\assignment-data\create.blade.php --}}
 @section('content')
     @if(session('success'))

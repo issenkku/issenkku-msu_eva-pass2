@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\header.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\header.blade.php --}}
 @props(['url'])
 <tr>
 <td class="header">

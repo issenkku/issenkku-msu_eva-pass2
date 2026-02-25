@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\assignment-data\index.blade.php --}}
 
 @section('title', 'จัดการรอบการประเมิน')

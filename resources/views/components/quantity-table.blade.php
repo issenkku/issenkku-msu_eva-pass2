@@ -1,4 +1,4 @@
-﻿@props([
+@props([
     'evaluationItems' => [],
     'title' => 'ด้านปริมาณ',
     'readonly' => false,

@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\evaluate-report-card.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\evaluate-report-card.blade.php --}}
 @props([
     'reportName' => 'ไม่พบชื่อรายงาน',
     'reportDescription' => '-',

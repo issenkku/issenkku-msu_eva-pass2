@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\bar-chart.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\bar-chart.blade.php --}}
 <div class="bg-white rounded-xl shadow-md p-6 animate-fadeIn" style="animation-delay: 0.4s;">
     {{-- บล็อกเนื้อหา --}}
     <div class="flex items-center justify-between mb-6">

@@ -1,4 +1,4 @@
-﻿{{-- File: resources/views/components/scatter-chart-component.blade.php --}}
+{{-- File: resources/views/components/scatter-chart-component.blade.php --}}
 
 <div class="bg-white rounded-xl shadow-md p-6 animate-fadeIn">
     {{-- บล็อกเนื้อหา --}}

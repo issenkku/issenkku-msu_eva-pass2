@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\emails\evaluation_completed.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\emails\evaluation_completed.blade.php --}}
 <div style="font-family: Tahoma, Arial, sans-serif; font-size: 16px; color: #222;">
     <h2>แจ้งเตือน: ผลการประเมินของคุณเสร็จสมบูรณ์</h2>
     <p>เรียนคุณ {{ $name }},</p>

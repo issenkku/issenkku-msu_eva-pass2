@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'ตั้งค่าเกณฑ์ด้านปริมาณ')
 

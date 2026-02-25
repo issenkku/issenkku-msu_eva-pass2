@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\director-table.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\director-table.blade.php --}}
 @props(['evaluations', 'statusCounts', 'years'])
 
 @php

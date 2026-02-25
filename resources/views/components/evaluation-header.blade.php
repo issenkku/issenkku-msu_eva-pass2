@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\evaluation-header.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\evaluation-header.blade.php --}}
 @props(['title', 'period', 'deadline', 'daysLeft', 'evaluationId'])
 
 {{-- บล็อกเนื้อหา --}}

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\quality-scores\create.blade.php --}}
 @section('title', 'เพิ่มคะแนนคุณภาพ')
 

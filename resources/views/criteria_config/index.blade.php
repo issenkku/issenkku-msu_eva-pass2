@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\criteria_config\index.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\criteria_config\index.blade.php --}}
 <!-- resources/views/criteria/index.blade.php -->
 @extends('layouts.app')
 

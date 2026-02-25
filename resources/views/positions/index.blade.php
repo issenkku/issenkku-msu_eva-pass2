@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'จัดการข้อมูลตำแหน่ง')
 @section('content')
     <style>

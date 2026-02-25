@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\components\user-table.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\components\user-table.blade.php --}}
 @props(['index', 'employee'])
 
 @php

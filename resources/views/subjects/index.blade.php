@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 {{-- ไฟล์มุมมอง: resources/views\subjects\index.blade.php --}}
 @section('title', 'จัดการข้อมูลรายวิชา')
 @section('content')

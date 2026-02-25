@@ -1,4 +1,4 @@
-﻿@props([
+@props([
     'subCriteria' => null,
     'workloadForms' => collect(),
     'workloadEntriesByFormId' => collect(),

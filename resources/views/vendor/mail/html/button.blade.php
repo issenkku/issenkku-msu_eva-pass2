@@ -1,4 +1,4 @@
-﻿{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\button.blade.php --}}
+{{-- ไฟล์มุมมอง: resources/views\vendor\mail\html\button.blade.php --}}
 @props([
     'url',
     'color' => 'primary',
