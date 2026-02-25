@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Controller.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 abstract class Controller
 {

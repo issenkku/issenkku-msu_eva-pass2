@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Settings\PasswordController.php
- */
+<?php
 
 namespace App\Http\Controllers\Settings;
+
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;

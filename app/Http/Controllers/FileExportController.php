@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\FileExportController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Exports\ReportsExport;
 use App\Exports\SingleReportExport;

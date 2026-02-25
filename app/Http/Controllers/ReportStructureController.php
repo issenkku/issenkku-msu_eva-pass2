@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportStructureController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\Category;

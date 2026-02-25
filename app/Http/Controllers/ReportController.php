@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Http\Resources\EvidenceAnswerResource;
 use App\Http\Resources\QualityScoreResource;

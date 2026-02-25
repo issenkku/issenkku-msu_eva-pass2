@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\RegisteredUserController.php
- */
+<?php
 
 namespace App\Http\Controllers\Auth;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\User;

@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Setting\PositionsController.php
- */
+<?php
 
 namespace App\Http\Controllers\Setting;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting\Positions;

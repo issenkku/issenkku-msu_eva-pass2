@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\EvaluateeWorkloadEntryController.php
- */
+<?php
 
 namespace App\Http\Controllers\Evaluatee;
+
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;

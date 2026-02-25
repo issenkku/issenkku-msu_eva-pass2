@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Settings\RoleAndPermissionController.php
- */
+<?php
 
 namespace App\Http\Controllers\Settings;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\User;

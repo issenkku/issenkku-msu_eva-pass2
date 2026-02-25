@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\ReportsController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Models\Reports;
 use Illuminate\Http\Request;

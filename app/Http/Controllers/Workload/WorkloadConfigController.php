@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Workload\WorkloadConfigController.php
- */
+<?php
 
 namespace App\Http\Controllers\Workload;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\WorkloadForm;

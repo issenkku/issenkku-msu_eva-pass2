@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Evaluatee\EvaluationScoreController.php
- */
+<?php
 
 namespace App\Http\Controllers\Evaluatee;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\EvidenceAnswer;

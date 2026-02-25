@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\QualityScoreController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Models\QualityScore;
 use App\Models\QualitySubCriteria;

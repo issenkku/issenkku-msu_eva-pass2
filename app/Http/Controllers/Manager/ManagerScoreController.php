@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Manager\ManagerScoreController.php
- */
+<?php
 
 namespace App\Http\Controllers\Manager;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\EvidenceAnswer;

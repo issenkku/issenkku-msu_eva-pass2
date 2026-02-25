@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Manager\ManagerController.php
- */
+<?php
 
 namespace App\Http\Controllers\Manager;
+
 
 use App\Http\Controllers\Controller;
 use App\Models\Reports;

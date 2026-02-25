@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\AssignmentDataController.php
- */
+<?php
 
 namespace App\Http\Controllers;
+
 
 use App\Models\AssignmentData;
 use App\Models\Assignments;

@@ -1,9 +1,7 @@
-﻿<?php
-/**
- * ไฟล์คอนโทรลเลอร์: app/Http/Controllers\Auth\AuthenticatedSessionController.php
- */
+<?php
 
 namespace App\Http\Controllers\Auth;
+
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
