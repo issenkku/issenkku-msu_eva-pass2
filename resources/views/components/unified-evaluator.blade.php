@@ -108,11 +108,11 @@
                                             <div class="ml-6 mb-6">
                                                 <div class="p-4 bg-green-50 rounded-xl shadow-sm">
                                                     <h4 class="text-lg font-semibold text-green-700 mb-3 flex items-center">
-                                                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
+                                                        {{-- <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
                                                             viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
-                                                        </svg>
+                                                        </svg> --}}
                                                         สูตรการคำนวณ 
                                                     </h4>
 

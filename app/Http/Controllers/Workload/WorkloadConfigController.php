@@ -56,6 +56,7 @@ class WorkloadConfigController extends Controller
                 'sequence' => $active->sequence,
                 'evaluation_list_id' => $active->evaluation_list_id,
                 'quantity_main_criteria_id' => $active->quantity_main_criteria_id,
+                'criteria_version_id' => $active->criteria_version_id,
                 'main_criteria_name' => optional($active->mainCriteria)->name,
             ],
             'items' => $items,

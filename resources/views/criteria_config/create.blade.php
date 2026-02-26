@@ -315,7 +315,9 @@
                                                         </svg>
                                                     </button>
                                                 </div>
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                                <input type="hidden" name="quant_sub_criteria_id"
+                                                    class="quant_sub_criteria_id" value="">
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:items-end">
                                                     <div>
                                                         <label
                                                             class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
@@ -343,6 +345,14 @@
                                                         <input type="number" name="score_b"
                                                             class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนน B">
+                                                    </div>
+                                                    <div class="flex flex-col items-start sm:items-end">
+                                                        <span
+                                                            class="block text-sm font-medium text-gray-600 mb-2 opacity-0 select-none">spacer</span>
+                                                        <a href="/workload-config" class="quant_sub_setting_btn inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200" title="ตั้งค่าเกณฑ์ย่อย">
+                                                          
+                                                            <span class="text-sm font-semibold">ตั้งค่าภาระงาน</span>
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -735,6 +745,20 @@
         function updateQuantSubSequence(container) {
             container.querySelectorAll('.quant_sub_criteria_block').forEach((block, idx) => {
                 block.querySelector('.quant_sub_sequence').textContent = idx + 1;
+            });
+            updateQuantSubSettingLinks();
+        }
+
+        function updateQuantSubSettingLinks() {
+            const baseUrl = '/workload-config';
+            document.querySelectorAll('.quant_sub_criteria_block').forEach(block => {
+                const idInput = block.querySelector('.quant_sub_criteria_id');
+                const link = block.querySelector('.quant_sub_setting_btn');
+                if (!link) {
+                    return;
+                }
+                const idValue = idInput ? idInput.value.trim() : '';
+                link.setAttribute('href', idValue ? `${baseUrl}?quant_sub_criteria_id=${encodeURIComponent(idValue)}` : baseUrl);
             });
         }
 

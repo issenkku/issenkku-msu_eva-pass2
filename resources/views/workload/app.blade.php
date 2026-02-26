@@ -226,7 +226,7 @@
 
                 {{-- ปุ่มคำสั่งของหน้า --}}
                 <div class="page-actions">
-                    <a class="btn btn-outline-secondary" href="http://127.0.0.1:8000/criteria-config/1/edit">ย้อนกลับ</a>
+                    <a class="btn btn-outline-secondary" id="workload-back-link" href="/criteria-config/{{ request()->query('quant_sub_criteria_id') }}/edit">ย้อนกลับ</a>
                     <button class="btn btn-outline-primary" type="button" id="workload-reset">รีเซ็ตค่า</button>
                     <button class="btn btn-primary" type="button" id="workload-save">บันทึกการตั้งค่า</button>
                 </div>
@@ -775,7 +775,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const quantSubCriteriaId = params.get('quant_sub_criteria_id');
+            const backLink = document.getElementById('workload-back-link');
 
+            const updateBackLink = (id) => {
+                if (!backLink || !id) {
+                    return;
+                }
+                backLink.href = `/criteria-config/${encodeURIComponent(id)}/edit`;
+            };
             if (!quantSubCriteriaId) {
                 return;
             }
@@ -826,6 +833,7 @@
                         sectionBadge.textContent = items[activeIndex].sequence || (activeIndex + 1);
                     }
                 }
+                updateBackLink(activeId);
             };
 
             // ฟังก์ชันย่อย: insertToken
@@ -1479,6 +1487,9 @@
                     }
 
                     renderNav(data.items || [], data.active.id);
+                    if (data.active) {
+                        updateBackLink(data.active.criteria_version_id || data.active.id);
+                    }
 
                     const mainTitle = data.active.main_criteria_name || data.active.name || '';
                     if (sectionTitle && !sectionTitle.textContent && mainTitle) {
