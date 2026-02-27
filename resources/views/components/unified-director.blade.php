@@ -300,7 +300,7 @@
                                 <div class="p-4 bg-white border border-gray-200 rounded-lg">
                                     <div class="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
                                         {{-- Checkbox and Label --}}
-                                        <div class="flex items-center flex-1 min-w-0">
+                                        <div class="flex items-start flex-1 min-w-0">
                                             @if(!$readonly)
                                                 <input type="checkbox" 
                                                     name="quality_criteria[{{ $subCriteria['id'] }}]" 
@@ -310,17 +310,31 @@
                                                     onchange="handleQualityCheckboxChange(this)"
                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
-                                                <label class="text-base text-gray-800 break-words">
-                                                    {{ $subCriteria['name'] }}
-                                                </label>
+                                                <div class="min-w-0">
+                                                    <label class="text-base text-gray-800 break-words">
+                                                        {{ $subCriteria['name'] }}
+                                                    </label>
+                                                    @if(!empty($subCriteria['description']))
+                                                        <div class="text-sm text-gray-500 mt-1 break-words">
+                                                            {!! $subCriteria['description'] !!}
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @else
                                                 <input type="checkbox" 
                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                     disabled
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 border-gray-300 rounded mr-3 disabled:opacity-100">
-                                                <span class="text-base text-gray-800 break-words">
-                                                    {{ $subCriteria['name'] }}
-                                                </span>
+                                                <div class="min-w-0">
+                                                    <span class="text-base text-gray-800 break-words">
+                                                        {{ $subCriteria['name'] }}
+                                                    </span>
+                                                    @if(!empty($subCriteria['description']))
+                                                        <div class="text-sm text-gray-500 mt-1 break-words">
+                                                            {!! $subCriteria['description'] !!}
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </div>
                                         {{-- Selected Score --}}
@@ -348,11 +362,11 @@
                                 </div>
                             @endforeach
                             @if($readonly)
-                                <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                {{-- <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                                                 <span class="text-lg font-semibold text-blue-700"> คะแนนที่ได้</span>
                                                 
                                     <span class="text-lg font-semibold text-blue-900">   {{ number_format((float)($selectedDisplayScore ?? 0), 2) }}</span>
-                                </div>
+                                </div> --}}
                             @endif
                         </div>
 
