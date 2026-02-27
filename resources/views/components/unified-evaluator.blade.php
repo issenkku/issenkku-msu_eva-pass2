@@ -17,6 +17,7 @@
 @endphp
 
 <input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
+<input type="hidden" id="quality-readonly" value="{{ $readonly ? 1 : 0 }}">
 
 {{-- บล็อกเนื้อหา --}}
 <div class="space-y-8">
@@ -514,8 +515,7 @@
             </div>
         </div>
     @endif
-</div>
-
+ 
 <style>
     details > summary .chevron-up {
         display: inline-block !important;
@@ -550,17 +550,23 @@ function calculateScoreD(input) {
 }
 
 function recalculateSummaryScores() {
-    const readonlyFlag = document.getElementById('is-readonly');
-    if (readonlyFlag && readonlyFlag.value === '1') {
+    const readonlyInput = document.getElementById('quality-readonly');
+    if (readonlyInput && readonlyInput.value === '1') {
         return;
     }
 
-    // Quantity: sum all score_D inputs
+    // Quantity: sum all score_D inputs (fallback to base if none)
     let quantitySum = 0;
-    document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]').forEach(input => {
-        let val = parseFloat(input.value);
-        if (!isNaN(val)) quantitySum += val;
-    });
+    const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]');
+    if (quantityInputs.length > 0) {
+        quantityInputs.forEach(input => {
+            let val = parseFloat(input.value);
+            if (!isNaN(val)) quantitySum += val;
+        });
+    } else {
+        const baseInput = document.getElementById('quantity-base-score');
+        quantitySum = baseInput ? parseFloat(baseInput.value) || 0 : 0;
+    }
 
     // Quality: sum selected sub-criteria scores, capped per evaluation list
     const listTotals = {};
@@ -641,5 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 
 
