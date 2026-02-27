@@ -236,9 +236,11 @@ function openImportModal(button) {
     resetFileUpload();
 
     // Use route from data attribute
-    const action = button.getAttribute('data-action');
-    if (action) {
-        form.action = action;
+    if (button && button.getAttribute) {
+        const action = button.getAttribute('data-action');
+        if (action) {
+            form.action = action;
+        }
     }
 
     // Set form method to POST
@@ -427,3 +429,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+@if(session('import_errors'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    openImportModal();
+});
+</script>
+@endif

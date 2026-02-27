@@ -163,15 +163,17 @@ class UserController extends Controller
             if (method_exists($import, 'stats')) {
                 $stats = $import->stats();
                 $total = ($stats['created'] ?? 0) + ($stats['updated'] ?? 0);
-                if ($total === 0) {
-                    return redirect()->route('users.index')
-                        ->with('warning', 'นำเข้าเสร็จแล้ว แต่ไม่มีรายการที่ถูกต้อง จึงไม่ได้เพิ่ม/อัปเดตข้อมูล')
-                        ->with('import_stats', $stats);
+                $importErrors = method_exists($import, 'errors') ? $import->errors() : [];
+                $redirect = redirect()->route('users.index')->with('import_stats', $stats);
+                if (!empty($importErrors)) {
+                    $redirect->with('import_errors', $importErrors);
                 }
 
-                return redirect()->route('users.index')
-                    ->with('success', "นำเข้าสำเร็จ: เพิ่ม {$stats['created']} รายการ, อัปเดต {$stats['updated']} รายการ, ข้าม {$stats['skipped']} รายการ")
-                    ->with('import_stats', $stats);
+                if ($total === 0) {
+                    return $redirect->with('warning', 'นำเข้าเสร็จแล้ว แต่ไม่มี?รายการที่ถูกต้อง จึงไม่ได้เพิ่ม/อัปเดตข้อมูล');
+                }
+
+                return $redirect->with('success', "นำเข้าสำเร็จ: เพิ่ม {$stats['created']} รายการ, อัปเดต {$stats['updated']} รายการ, ข้าม {$stats['skipped']} รายการ");
             }
 
             return redirect()->route('users.index')->with('success', 'นำเข้าข้อมูลผู้ใช้สำเร็จ');

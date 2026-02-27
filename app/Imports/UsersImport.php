@@ -6,6 +6,7 @@ use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -16,6 +17,7 @@ class UsersImport implements ToCollection
     private int $created = 0;
     private int $updated = 0;
     private int $skipped = 0;
+    private array $errors = [];
 
     public function collection(Collection $rows)
     {
@@ -139,6 +141,14 @@ class UsersImport implements ToCollection
                 }
 
             } catch (\Exception $e) {
+                $duplicateMessage = $this->buildDuplicateMessage($e, $mappedData ?? [], $index + 2);
+                if ($duplicateMessage !== null) {
+                    $this->errors[] = [
+                        'row' => $index + 2,
+                        'error' => $duplicateMessage,
+                    ];
+                }
+
                 Log::error('Error processing row '.($index + 2).': '.$e->getMessage(), [
                     'row_data' => $row->toArray(),
                     'error' => $e->getTraceAsString(),
@@ -157,6 +167,11 @@ class UsersImport implements ToCollection
             'updated' => $this->updated,
             'skipped' => $this->skipped,
         ];
+    }
+
+    public function errors(): array
+    {
+        return $this->errors;
     }
 
     /**
@@ -188,5 +203,41 @@ class UsersImport implements ToCollection
         }
 
         return true;
+    }
+
+    private function buildDuplicateMessage(\Exception $e, array $mappedData, int $rowNumber): ?string
+    {
+        if (!($e instanceof QueryException)) {
+            return null;
+        }
+
+        $errorInfo = $e->errorInfo;
+        $mysqlErrorCode = $errorInfo[1] ?? null;
+        if ($mysqlErrorCode !== 1062) {
+            return null;
+        }
+
+        $message = $e->getMessage();
+        $field = null;
+        if (str_contains($message, 'users_email_unique')) {
+            $field = 'email';
+        } elseif (str_contains($message, 'users_phone_unique')) {
+            $field = 'phone';
+        } elseif (str_contains($message, 'users_employee_id_unique')) {
+            $field = 'employee_id';
+        }
+
+        if ($field === null) {
+            return 'ข้อมูลซ้ำกับรายการที่มีอยู่แล้ว';
+        }
+
+        $value = $mappedData[$field] ?? null;
+        $employeeId = $mappedData['employee_id'] ?? null;
+
+        if (!empty($employeeId)) {
+            return "ข้อมูลซ้ำ: {$field} ({$value}) สำหรับรหัสพนักงาน {$employeeId}";
+        }
+
+        return "ข้อมูลซ้ำ: {$field} ({$value})";
     }
 }
