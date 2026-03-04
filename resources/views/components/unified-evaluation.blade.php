@@ -74,12 +74,12 @@
                                     @if (isset($evaluationList['sum_score']))
                                         <span
                                             class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                            เธเธฐเนเธเธ {{ $evaluationList['sum_score'] }}
+                                            คะแนน{{ $evaluationList['sum_score'] }}
                                         </span>
                                     @endif
                                     <span
                                         class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                        เธเธฐเนเธเธเธ—เธตเนเนเธ”เน
+                                        คะแนนที่ได้
                                         {{ number_format($listSelectedQualitySum, 2) }}
                                     </span>
                                 @endif
@@ -344,12 +344,12 @@
                                                                     </div>
                                                                     {{-- Score (readonly, only when completed) --}}
                                                                     @if ($readonly && isset($report->status) && $report->status === 'Completed')
-                                                                        <div class="w-full md:w-60">
+                                                                        {{-- <div class="w-full md:w-60">
                                                                             <div
                                                                                 class="text-base text-gray-800 p-2 rounded border text-center">
                                                                                 {{ $subCriteria['score'] ?: '0.00' }}
                                                                             </div>
-                                                                        </div>
+                                                                        </div> --}}
                                                                     @endif
                                                                     {{-- Hidden Score Input for edit mode --}}
                                                                     @if (!$readonly)
