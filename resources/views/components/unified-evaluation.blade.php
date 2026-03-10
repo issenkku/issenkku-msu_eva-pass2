@@ -77,11 +77,18 @@
                                             คะแนน{{ $evaluationList['sum_score'] }}
                                         </span>
                                     @endif
-                                    <span
-                                        class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                        คะแนนที่ได้
-                                        {{ number_format($listSelectedQualitySum, 2) }}
-                                    </span>
+                                    @php
+                                        $showSelectedQualitySum =
+                                            $readonly ||
+                                            (isset($report->status) && $report->status === 'Completed');
+                                    @endphp
+                                    @if ($showSelectedQualitySum)
+                                        <span
+                                            class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                            คะแนนที่ได้
+                                            {{ number_format($listSelectedQualitySum, 2) }}
+                                        </span>
+                                    @endif
                                 @endif
                             </div>
                             @if (!empty($evaluationList['annotation']))

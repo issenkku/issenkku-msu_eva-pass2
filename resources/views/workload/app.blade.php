@@ -892,6 +892,12 @@
                         event.preventDefault();
                         event.stopPropagation();
                         event.stopImmediatePropagation();
+                        if (options.confirm !== false) {
+                            const message = options.confirmMessage || 'ยืนยันการลบรายการนี้หรือไม่?';
+                            if (!window.confirm(message)) {
+                                return;
+                            }
+                        }
                         const target = options.closestSelector
                             ? deleteBtn.closest(options.closestSelector)
                             : card;
@@ -1109,6 +1115,10 @@
                     const removeBtn = row.querySelector('.workload-item-remove');
                     if (removeBtn) {
                         removeBtn.addEventListener('click', () => {
+                            const message = 'ยืนยันการลบรายการนี้หรือไม่?';
+                            if (!window.confirm(message)) {
+                                return;
+                            }
                             row.remove();
                             updateItemSequence(card);
                         });

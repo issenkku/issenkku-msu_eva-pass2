@@ -7,7 +7,7 @@
 <div class="max-w-6xl mx-auto space-y-6">
 
 
-    {{-- @if(isset($quantitySubCriteria) && $quantitySubCriteria)
+    @if(false)
         <section class="workload-panel">
             <div class="workload-panel-header">
                 <div class="workload-summary-value">
@@ -178,7 +178,7 @@
                 </div>
             </div>
         </section>
-    @endif --}}
+    @endif
 
     {{--  --}}
     <div class="workload-page-header">
