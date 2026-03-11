@@ -83,6 +83,32 @@ class WorkloadConfigController extends Controller
             ->orderBy('sequence')
             ->get();
 
+        if ($groups->isEmpty()) {
+            $defaultGroupName = optional($active->mainCriteria)->name ?: $active->name;
+
+            return response()->json([
+                'groups' => [
+                    [
+                        'group' => [
+                            'id' => null,
+                            'name' => $defaultGroupName,
+                            'sequence' => 1,
+                        ],
+                        'items' => [
+                            [
+                                'item' => [
+                                    'id' => null,
+                                    'name' => $active->name,
+                                    'sequence' => 1,
+                                ],
+                                'form' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ]);
+        }
+
         $blocks = $groups->map(function ($group) {
             $items = QuantitySubCriteriaItem::where('quantity_sub_criteria_group_id', $group->id)
                 ->orderBy('sequence')

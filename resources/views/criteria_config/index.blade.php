@@ -128,6 +128,12 @@
                     <p class="text-sm text-gray-600 mb-4">สร้างโดย: <span class="font-semibold">${creatorName}</span></p>
                     <div class="flex space-x-2 items-center justify-center">
                         <x-button 
+                            type="secondary"
+                            text="คัดลอก"
+                            buttonType="button"
+                            icon="fas fa-copy"
+                            onclick="copyCriteriaVersion(${item.id}, this)" />
+                        <x-button 
                             type="warning"
                             text="แก้ไข"
                             icon="fas fa-edit"
@@ -144,7 +150,101 @@
             });
         }
 
-        // Delete function
+
+        const authUserId = {{ Auth::id() ?? 1 }};
+
+        function buildCopyPayload(sourceData, id) {
+            if (!sourceData) return null;
+
+            return {
+                version_name: 'AUTO',
+                source_version_id: id,
+                created_by: authUserId,
+                report_datas: (sourceData.report_datas || []).map((rd) => ({
+                    report_title: rd.report_title || '',
+                    report_description: rd.report_description || null,
+                    assessment_type: rd.assessment_type || 'quantity',
+                    comment: rd.comment || null,
+                })),
+                categories: (sourceData.categories || []).map((cat) => ({
+                    main_categories: cat.main_categories || '',
+                    sub_categories: cat.sub_categories || '',
+                    sequence: cat.sequence ?? 1,
+                    evaluation_lists: (cat.evaluation_lists || []).map((ev) => ({
+                        name: ev.name || '',
+                        sum_score: ev.sum_score ?? 0,
+                        sequence: ev.sequence ?? 1,
+                        annotation: ev.annotation || null,
+                        quantity_main_criterias: (ev.quantity_main_criterias || []).map((qm) => ({
+                            name: qm.name || '',
+                            tooltips: qm.tooltips || null,
+                            formula: (Array.isArray(qm.formulas) && qm.formulas.length > 0)
+                                ? (qm.formulas[0].condition || '')
+                                : (qm.formula || ''),
+                            quantity_sub_criterias: (qm.quantity_sub_criterias || []).map((qs) => ({
+                                name: qs.name || '',
+                                sequence: qs.sequence ?? 1,
+                                score_a: qs.score_a ?? 0,
+                                score_b: qs.score_b ?? 0,
+                            })),
+                        })),
+                        quality_main_criterias: (ev.quality_main_criterias || []).map((ql) => ({
+                            name: ql.name || '',
+                            ratio: ql.ratio ?? 1,
+                            tooltips: ql.tooltips || null,
+                            sequence: ql.sequence ?? 1,
+                            quality_sub_criterias: (ql.quality_sub_criterias || []).map((qs) => ({
+                                name: qs.name || '',
+                                sequence: qs.sequence ?? 1,
+                                num_score: qs.num_score ?? 0,
+                                description: qs.description || null,
+                            })),
+                        })),
+                    })),
+                })),
+            };
+        }
+
+        function copyCriteriaVersion(id, btn) {
+            if (!id) return;
+            if (btn) btn.disabled = true;
+
+            fetch(`/report-version/${id}`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                credentials: 'same-origin'
+            })
+            .then(res => res.ok ? res.json() : res.json().then(err => { throw new Error(err.message || '��Ŵ��������������'); }))
+            .then(res => {
+                const payload = buildCopyPayload(res.data, id);
+                if (!payload) throw new Error('ข้อมูลต้นทางไม่ถูกต้อง');
+
+                return fetch('/report-version', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload)
+                });
+            })
+            .then(res => res.ok ? res.json() : res.json().then(err => { throw new Error(err.message || 'เกิดข้อผิดพลาดในการคัดลอก'); }))
+            .then(() => {
+                showAlert('คัดลอกเวอร์ชันสำเร็จ', 'success');
+                setTimeout(() => { window.location.reload(); }, 1200);
+            })
+            .catch(err => {
+                console.error('Copy error:', err.message || err);
+                showAlert('เกิดข้อผิดพลาดในการคัดลอก: ' + (err.message || err), 'error');
+                if (btn) btn.disabled = false;
+            });
+        }        // Delete function
         // Modal state
         let deleteModal = null;
         let deleteTargetId = null;
@@ -236,3 +336,6 @@
         </div>
     </div>
 @endsection
+
+
+

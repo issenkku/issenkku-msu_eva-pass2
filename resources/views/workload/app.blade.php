@@ -187,7 +187,7 @@
                                                     <button class="chip" type="button">!=</button>
                                                 </div>
                                             </div>
-                                            <div class="toolbar-group">
+                                            {{-- <div class="toolbar-group">
                                                 <div class="toolbar-label">คำสั่ง</div>
                                                 <div class="toolbar-buttons">
                                                     <button class="chip" type="button">AND</button>
@@ -198,7 +198,7 @@
                                                     <button class="chip" type="button">NAND</button>
                                                     <button class="chip" type="button">NOT</button>
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                             <div class="toolbar-group">
                                                 <div class="toolbar-label">ตัวแปร</div>
                                                 <div class="toolbar-buttons workload-variable-chips" id="workload-variable-chips">

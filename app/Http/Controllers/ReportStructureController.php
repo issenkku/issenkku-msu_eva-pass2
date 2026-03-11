@@ -11,7 +11,12 @@ use App\Models\QualityMainCriteria;
 use App\Models\QualitySubCriteria;
 use App\Models\QuantityMainCriteria;
 use App\Models\QuantitySubCriteria;
+use App\Models\QuantitySubCriteriaGroup;
+use App\Models\QuantitySubCriteriaItem;
 use App\Models\ReportData;
+use App\Models\WorkloadForm;
+use App\Models\WorkloadFormField;
+use App\Models\WorkloadFormItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -249,6 +254,7 @@ class ReportStructureController extends Controller
     {
         $validated = $request->validate([
             'version_name' => 'sometimes|string|max:255', // เปลี่ยนจาก required เป็น sometimes
+            'source_version_id' => 'nullable|integer|exists:criteria_versions,id',
             'created_by' => 'required|integer|exists:users,id',
 
             'report_datas' => 'required|array',
@@ -416,6 +422,13 @@ class ReportStructureController extends Controller
                     }
                 }
 
+                
+                if (! empty($validated['source_version_id'])) {
+                    $this->copyWorkloadFromSource(
+                        (int) $validated['source_version_id'],
+                        (int) $version->id
+                    );
+                }
                 return $version;
             });
 
@@ -964,4 +977,140 @@ class ReportStructureController extends Controller
 
         return response()->json(null, 204);
     }
+    private function copyWorkloadFromSource(int $sourceVersionId, int $newVersionId): void
+    {
+        if ($sourceVersionId === $newVersionId) {
+            return;
+        }
+
+        $sourceRows = DB::table('quantity_sub_criterias as qs')
+            ->join('evaluation_lists as el', 'qs.evaluation_list_id', '=', 'el.id')
+            ->join('categories as c', 'el.categorie_id', '=', 'c.id')
+            ->join('quantity_main_criterias as qm', 'qs.quantity_main_criteria_id', '=', 'qm.id')
+            ->where('qs.criteria_version_id', $sourceVersionId)
+            ->select([
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'el.sequence as eval_sequence',
+                'c.sequence as category_sequence',
+                'qm.name as main_name',
+            ])
+            ->get();
+
+        if ($sourceRows->isEmpty()) {
+            return;
+        }
+
+        $newRows = DB::table('quantity_sub_criterias as qs')
+            ->join('evaluation_lists as el', 'qs.evaluation_list_id', '=', 'el.id')
+            ->join('categories as c', 'el.categorie_id', '=', 'c.id')
+            ->join('quantity_main_criterias as qm', 'qs.quantity_main_criteria_id', '=', 'qm.id')
+            ->where('qs.criteria_version_id', $newVersionId)
+            ->select([
+                'qs.id as sub_id',
+                'qs.name as sub_name',
+                'qs.sequence as sub_sequence',
+                'el.sequence as eval_sequence',
+                'c.sequence as category_sequence',
+                'qm.name as main_name',
+            ])
+            ->get();
+
+        $makeKey = function ($row) {
+            return trim((string) $row->category_sequence).'|'.
+                trim((string) $row->eval_sequence).'|'.
+                trim((string) $row->main_name).'|'.
+                trim((string) $row->sub_sequence).'|'.
+                trim((string) $row->sub_name);
+        };
+
+        $newMap = [];
+        foreach ($newRows as $row) {
+            $newMap[$makeKey($row)] = (int) $row->sub_id;
+        }
+
+        foreach ($sourceRows as $row) {
+            $key = $makeKey($row);
+            if (! isset($newMap[$key])) {
+                continue;
+            }
+
+            $oldSubId = (int) $row->sub_id;
+            $newSubId = (int) $newMap[$key];
+            $newSub = QuantitySubCriteria::find($newSubId);
+            if (! $newSub) {
+                continue;
+            }
+
+            $groups = QuantitySubCriteriaGroup::where('quantity_sub_criteria_id', $oldSubId)
+                ->orderBy('sequence')
+                ->get();
+
+            foreach ($groups as $group) {
+                $newGroup = QuantitySubCriteriaGroup::create([
+                    'name' => $group->name,
+                    'sequence' => $group->sequence,
+                    'quantity_sub_criteria_id' => $newSubId,
+                    'criteria_version_id' => $newVersionId,
+                    'evaluation_list_id' => $newSub->evaluation_list_id,
+                ]);
+
+                $items = QuantitySubCriteriaItem::where('quantity_sub_criteria_group_id', $group->id)
+                    ->orderBy('sequence')
+                    ->get();
+
+                foreach ($items as $item) {
+                    $newItem = QuantitySubCriteriaItem::create([
+                        'name' => $item->name,
+                        'sequence' => $item->sequence,
+                        'score_a' => $item->score_a,
+                        'score_b' => $item->score_b,
+                        'description' => $item->description,
+                        'quantity_sub_criteria_group_id' => $newGroup->id,
+                        'criteria_version_id' => $newVersionId,
+                        'evaluation_list_id' => $newSub->evaluation_list_id,
+                    ]);
+
+                    $oldForm = WorkloadForm::with(['fields', 'items'])
+                        ->where('quantity_sub_criteria_item_id', $item->id)
+                        ->first();
+
+                    if (! $oldForm) {
+                        continue;
+                    }
+
+                    $newForm = WorkloadForm::create([
+                        'formula_logic' => $oldForm->formula_logic,
+                        'quantity_sub_criteria_id' => $newSubId,
+                        'quantity_sub_criteria_item_id' => $newItem->id,
+                    ]);
+
+                    foreach ($oldForm->fields as $field) {
+                        WorkloadFormField::create([
+                            'label' => $field->label,
+                            'variable_name' => $field->variable_name,
+                            'field_type' => $field->field_type,
+                            'workload_form_id' => $newForm->id,
+                        ]);
+                    }
+
+                    foreach ($oldForm->items as $formItem) {
+                        WorkloadFormItem::create([
+                            'label' => $formItem->label,
+                            'score' => $formItem->score,
+                            'sequence' => $formItem->sequence,
+                            'workload_form_id' => $newForm->id,
+                        ]);
+                    }
+                }
+            }
+        }
+    }
 }
+
+
+
+
+
+
