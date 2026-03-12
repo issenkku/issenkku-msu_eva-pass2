@@ -9,7 +9,9 @@ services:
     image: myorg/laravel-app:prod
     container_name: laravel_app
     restart: always
-    env_file: .env
+    env_file: ${APP_ENV_FILE:-.env.production}
+    environment:
+      RUN_MIGRATIONS_ON_BOOT: ${RUN_MIGRATIONS_ON_BOOT:-false}
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html   # app code (read-only)
@@ -42,7 +44,7 @@ services:
     image: mysql:8.0
     container_name: laravel_mysql
     restart: always
-    env_file: .env
+    env_file: ${APP_ENV_FILE:-.env.production}
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-laravel}
       MYSQL_USER: ${DB_USERNAME:-laravel}
@@ -66,7 +68,7 @@ services:
     image: myorg/laravel-worker:prod
     container_name: laravel_worker
     restart: always
-    env_file: .env
+    env_file: ${APP_ENV_FILE:-.env.production}
     working_dir: /var/www/html
     volumes:
       - ./:/var/www/html:ro
