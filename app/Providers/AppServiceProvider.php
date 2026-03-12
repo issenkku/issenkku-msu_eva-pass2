@@ -31,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
             });
         }
 
-        if (env('APP_ENV') == 'production') {
+        if (filter_var(env('FORCE_HTTPS', false), FILTER_VALIDATE_BOOL)) {
             $url->forceScheme('https');
         }
     }
