@@ -18,7 +18,7 @@ RUN npm run build
 # ----------------------
 # PHP production stage
 # ----------------------
-FROM php:8.3-fpm-alpine
+FROM php:8.3-fpm-alpine AS php-prod
 
 # Install system dependencies
 RUN apk add --no-cache \

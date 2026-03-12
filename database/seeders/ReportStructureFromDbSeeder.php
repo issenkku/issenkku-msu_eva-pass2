@@ -14,7 +14,7 @@ class ReportStructureFromDbSeeder extends Seeder
   array (
     'id' => 1,
     'version_name' => 'เกณฑ์การประเมินกลุ่มอาจารย์ ปี 2568',
-    'created_by' => 1,
+    'created_by' => null,
     'created_at' => '2025-10-17 07:03:03',
     'updated_at' => '2025-10-17 07:03:03',
   ),
@@ -22,7 +22,7 @@ class ReportStructureFromDbSeeder extends Seeder
   array (
     'id' => 2,
     'version_name' => 'เกณฑ์การประเมินกลุ่มสายสนับสนุน ปี 2568',
-    'created_by' => 1,
+    'created_by' => null,
     'created_at' => '2025-10-17 07:03:03',
     'updated_at' => '2025-10-17 07:03:03',
   ),
@@ -30,7 +30,7 @@ class ReportStructureFromDbSeeder extends Seeder
   array (
     'id' => 3,
     'version_name' => 'เกณฑ์การประเมินกลุ่มผู้บริหาร ปี 2568',
-    'created_by' => 1,
+    'created_by' => null,
     'created_at' => '2025-10-17 07:03:03',
     'updated_at' => '2025-10-17 07:03:03',
   ),

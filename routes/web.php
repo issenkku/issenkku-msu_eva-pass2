@@ -191,7 +191,9 @@ Route::middleware('auth:sanctum')->group(function () {
         }
         // (ทางเลือก) ถ้ามี role อื่นๆ หรือไม่มี role ที่ตรงเงื่อนไขเลย
         // อาจจะ logout แล้ว redirect ไปหน้า login เพื่อความปลอดภัย
-        Auth::logout();
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('error', 'คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
 

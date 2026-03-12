@@ -29,3 +29,7 @@ vendor/
 
 # Keep storage/bootstrap, but we’ll mount them as volumes
 # (so don’t ignore them!)
+
+# Avoid Windows symlink issues in build context
+public/storage
+

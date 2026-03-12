@@ -15,29 +15,40 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         // create roles
-        $adminRole = Role::create(['name' => 'admin']);
-        $managerRole = Role::create(['name' => 'ผู้บริหาร']);
-        $evaluatorRole = Role::create(['name' => 'ผู้ประเมิน']);
-        $evaluateeRole = Role::create(['name' => 'ผู้รับการประเมิน']);
-        $directorRole = Role::create(['name' => 'กรรมการ']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $managerRole = Role::firstOrCreate(['name' => 'ผู้บริหาร']);
+        $evaluatorRole = Role::firstOrCreate(['name' => 'ผู้ประเมิน']);
+        $evaluateeRole = Role::firstOrCreate(['name' => 'ผู้รับการประเมิน']);
+        $directorRole = Role::firstOrCreate(['name' => 'กรรมการ']);
 
         // Create permissions
-        $dashboardPermission = Permission::create(['name' => 'Employee Dashboard']);
-        $admindashboardPermission = Permission::create(['name' => 'Admin Dashboard']);
-        $employeeManageMentPermission = Permission::create(['name' => 'Employee Management']);
+        $dashboardPermission = Permission::firstOrCreate(['name' => 'Employee Dashboard']);
+        $admindashboardPermission = Permission::firstOrCreate(['name' => 'Admin Dashboard']);
+        $employeeManageMentPermission = Permission::firstOrCreate(['name' => 'Employee Management']);
 
         // Assign permissions to roles
-        $adminRole->givePermissionTo($admindashboardPermission,
-            $employeeManageMentPermission);
+        $adminRole->givePermissionTo(
+            $admindashboardPermission,
+            $employeeManageMentPermission
+        );
         $evaluateeRole->givePermissionTo($dashboardPermission);
 
-        // Assign role to user
-        User::find(1)->assignRole($adminRole);
-        User::find(2)->assignRole($evaluatorRole);
-        User::find(3)->assignRole($evaluatorRole);
-        User::find(4)->assignRole($evaluateeRole);
-        User::find(5)->assignRole($evaluateeRole);
-        User::find(6)->assignRole($managerRole);
-        User::find(7)->assignRole($directorRole);
+        // Assign role to user by email
+        $this->assignRoleByEmail('admin1@kkumail.com', $adminRole);
+        $this->assignRoleByEmail('evaluator1@gmail.com', $evaluatorRole);
+        $this->assignRoleByEmail('evaluator2@gmail.com', $evaluatorRole);
+        $this->assignRoleByEmail('evaluatee1@gmail.com', $evaluateeRole);
+        $this->assignRoleByEmail('evaluatee2@gmail.com', $evaluateeRole);
+        $this->assignRoleByEmail('manager@gmail.com', $managerRole);
+        $this->assignRoleByEmail('director@gmail.com', $directorRole);
+    }
+
+    private function assignRoleByEmail(string $email, Role $role): void
+    {
+        $user = User::where('email', $email)->first();
+        if (! $user) {
+            return;
+        }
+        $user->assignRole($role);
     }
 }
