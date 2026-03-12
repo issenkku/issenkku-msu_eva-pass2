@@ -1292,7 +1292,7 @@
             }
             
             fetch(this.action, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -1302,10 +1302,18 @@
                 body: JSON.stringify(formData),
                 credentials: 'same-origin'
             })
-            .then(response => response.json())
-            .then(data => {
+            .then(async response => {
+                let data = {};
+                try {
+                    data = await response.json();
+                } catch (err) {
+                    // keep default object if response is not JSON
+                }
+                return { ok: response.ok, status: response.status, data };
+            })
+            .then(({ ok, status, data }) => {
                 hideLoading();
-                if (data.success !== false) {
+                if (ok && data.success === true) {
                     showSuccess();
                 } else {
                     let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
@@ -1327,7 +1335,6 @@
 
         function collectFormData() {
             const formData = {
-                _method: 'PUT',
                 version_name: document.getElementById('version_name').value.trim(),
                 created_by: {{ Auth::user()->id }},
                 report_datas: [{
