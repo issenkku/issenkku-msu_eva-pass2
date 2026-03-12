@@ -479,7 +479,7 @@ class ReportStructureController extends Controller
     {
         $validated = $request->validate([
             'version_name' => 'required|string|max:255',
-            'created_by' => 'required|integer|exists:users,id',
+            'created_by' => 'sometimes|nullable|integer|exists:users,id',
 
             'report_datas' => 'required|array',
             'report_datas.*.report_title' => 'required|string',
@@ -525,10 +525,15 @@ class ReportStructureController extends Controller
         try {
             DB::transaction(function () use ($version, $validated) {
                 // 1. Update Criteria Version
-                $version->update([
+                $versionUpdateData = [
                     'version_name' => $validated['version_name'],
-                    'created_by' => $validated['created_by'],
-                ]);
+                ];
+
+                if (array_key_exists('created_by', $validated)) {
+                    $versionUpdateData['created_by'] = $validated['created_by'];
+                }
+
+                $version->update($versionUpdateData);
 
                 $keptReportDataIds = [];
                 $keptCategoryIds = [];
