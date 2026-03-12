@@ -1402,7 +1402,7 @@
                     const evalName = evalBlock.querySelector('.eval_name').value.trim();
                     const sumScore = evalBlock.querySelector('.sum_score').value;
 
-                    if (!evalName || !sumScore) {
+                    if (!evalName || sumScore === '') {
                         throw new Error(`กรุณากรอกชื่อรายการและคะแนนรวมสำหรับรายการที่ ${evalIndex + 1} ในหมวดหมู่ที่ ${catIndex + 1}`);
                     }
 
@@ -1456,7 +1456,7 @@
                                         const scoreA = subBlock.querySelector('.score_a').value;
                                         const scoreB = subBlock.querySelector('.score_b').value;
 
-                                        if (!subName || !scoreA || !scoreB) {
+                                        if (!subName || scoreA === '' || scoreB === '') {
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณย่อยที่ ${subIndex + 1}`);
                                         }
 
@@ -1492,7 +1492,7 @@
                                         qualTooltips = tooltipsElement.value.trim();
                                     }
 
-                                    if (!qualName || !qualRatio) {
+                                    if (!qualName || qualRatio === '') {
                                         throw new Error(`กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
                                     }
 
@@ -1518,7 +1518,7 @@
                                     ? $(descriptionTextarea).summernote('code') 
                                     : descriptionTextarea.value.trim() || '';
 
-                                if (!subName || !numScore) {
+                                if (!subName || numScore === '') {
                                     throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพย่อยที่ ${subIndex + 1}`);
                                 }
 
@@ -1549,4 +1549,3 @@
         }
     </script>
 @endpush
-
