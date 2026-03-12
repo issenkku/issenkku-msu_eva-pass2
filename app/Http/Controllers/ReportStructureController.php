@@ -24,6 +24,15 @@ use Illuminate\Validation\ValidationException;
 
 class ReportStructureController extends Controller
 {
+    private function jsonNoStore(array $payload, int $status = 200)
+    {
+        return response()->json($payload, $status, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
+
     // Get all criteria versions
     /**
      * เมธอด: index
@@ -51,7 +60,7 @@ class ReportStructureController extends Controller
             return $arr;
         });
 
-        return response()->json(['data' => $result]);
+        return $this->jsonNoStore(['data' => $result]);
     }
 
     /**
@@ -68,7 +77,7 @@ class ReportStructureController extends Controller
             // ตรวจสอบว่ามีเวอร์ชัน
             $versionExists = CriteriaVersion::where('id', $id)->exists();
             if (! $versionExists) {
-                return response()->json([
+                return $this->jsonNoStore([
                     'message' => 'CriteriaVersion not found',
                 ], 404);
             }
@@ -119,7 +128,7 @@ class ReportStructureController extends Controller
                 ->first();
 
             if (! $version) {
-                return response()->json([
+                return $this->jsonNoStore([
                     'message' => 'Error retrieving CriteriaVersion data',
                 ], 500);
             }
@@ -228,13 +237,13 @@ class ReportStructureController extends Controller
                 })->values()->all(),
             ];
 
-            return response()->json([
+            return $this->jsonNoStore([
                 'data' => $formattedResponse,
             ]);
         } catch (\Exception $e) {
             Log::error('Error fetching criteria version: '.$e->getMessage());
 
-            return response()->json([
+            return $this->jsonNoStore([
                 'message' => 'Failed to retrieve criteria version',
                 'error' => $e->getMessage(),
             ], 500);
@@ -926,7 +935,18 @@ class ReportStructureController extends Controller
                     ->delete();
             });
 
-            return response()->json([
+            $freshVersion = CriteriaVersion::with(['reportDatas', 'categories.evaluationLists'])->find($version->id);
+
+            Log::info('Report structure updated successfully', [
+                'criteria_version_id' => $version->id,
+                'version_name' => $freshVersion?->version_name,
+                'report_title' => optional($freshVersion?->reportDatas?->first())->report_title,
+                'report_description' => optional($freshVersion?->reportDatas?->first())->report_description,
+                'assessment_type' => optional($freshVersion?->reportDatas?->first())->assessment_type,
+                'categories_count' => $freshVersion?->categories?->count(),
+            ]);
+
+            return $this->jsonNoStore([
                 'success' => true,
                 'message' => 'Criteria version updated successfully',
                 'data' => new CriteriaVersionResource($version->fresh()),
@@ -934,7 +954,7 @@ class ReportStructureController extends Controller
         } catch (ValidationException $e) {
             Log::error('Validation error in update: '.json_encode($e->errors()));
 
-            return response()->json([
+            return $this->jsonNoStore([
                 'success' => false,
                 'message' => 'Validation failed',
                 'error' => $e->errors(),
@@ -943,7 +963,7 @@ class ReportStructureController extends Controller
             Log::error('Server error in update: '.$e->getMessage(), ['exception' => $e]);
             DB::rollBack();
 
-            return response()->json([
+            return $this->jsonNoStore([
                 'success' => false,
                 'message' => 'An error occurred: '.$e->getMessage(),
             ], 500);
@@ -1113,7 +1133,6 @@ class ReportStructureController extends Controller
         }
     }
 }
-
 
 
 
