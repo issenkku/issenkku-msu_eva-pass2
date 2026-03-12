@@ -92,6 +92,7 @@
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
+                cache: 'no-store',
                 credentials: 'same-origin'
             })
             .then(response => response.json())
@@ -209,12 +210,13 @@
             if (!id) return;
             if (btn) btn.disabled = true;
 
-            fetch(`/report-version/${id}`, {
+            fetch(`/report-version/${id}?t=${Date.now()}`, {
                 headers: {
                     'Accept': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
+                cache: 'no-store',
                 credentials: 'same-origin'
             })
             .then(res => res.ok ? res.json() : res.json().then(err => { throw new Error(err.message || '��Ŵ��������������'); }))

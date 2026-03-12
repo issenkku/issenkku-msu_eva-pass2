@@ -992,7 +992,7 @@
 
         function fetchVersionDetails() {
             showLoading();
-            const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}";
+            const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}?t=" + Date.now();
             
             fetch(url, {
                 headers: {
@@ -1000,6 +1000,7 @@
                     'X-Requested-With': 'XMLHttpRequest',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
+                cache: 'no-store',
                 credentials: 'same-origin'
             })
             .then(response => response.json())
@@ -1326,6 +1327,7 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(formData),
+                cache: 'no-store',
                 credentials: 'same-origin'
             })
             .then(async response => {
@@ -1338,10 +1340,12 @@
                 return { ok: response.ok, status: response.status, data };
             })
             .then(({ ok, status, data }) => {
-                hideLoading();
                 if (ok && data.success === true) {
+                    fetchVersionDetails();
+                    hideLoading();
                     showSuccess();
                 } else {
+                    hideLoading();
                     let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
                     if (data.message) {
                         errorMessage = data.message;
