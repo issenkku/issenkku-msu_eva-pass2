@@ -551,6 +551,7 @@ class ReportStructureController extends Controller
                 $keptQuantSubIds = [];
                 $keptQualMainIds = [];
                 $keptQualSubIds = [];
+                $processedQualMainIds = [];
 
                 // 2. Update/Create Report Datas
                 foreach ($validated['report_datas'] as $reportDatum) {
@@ -752,12 +753,15 @@ class ReportStructureController extends Controller
                                     }
 
                                     if ($qualityMainCriteria) {
-                                        $qualityMainCriteria->update([
-                                            'name' => $qlMain['name'],
-                                            'ratio' => $qlMain['ratio'],
-                                            'tooltips' => $qlMain['tooltips'],
-                                            'sequence' => $qlMain['sequence'],
-                                        ]);
+                                        if (! in_array($qualityMainCriteria->id, $processedQualMainIds, true)) {
+                                            $qualityMainCriteria->update([
+                                                'name' => $qlMain['name'],
+                                                'ratio' => $qlMain['ratio'],
+                                                'tooltips' => $qlMain['tooltips'],
+                                                'sequence' => $qlMain['sequence'],
+                                            ]);
+                                            $processedQualMainIds[] = $qualityMainCriteria->id;
+                                        }
                                     } else {
                                         $qualityMainCriteria = QualityMainCriteria::create([
                                             'criteria_version_id' => $version->id,
@@ -766,6 +770,7 @@ class ReportStructureController extends Controller
                                             'tooltips' => $qlMain['tooltips'],
                                             'sequence' => $qlMain['sequence'],
                                         ]);
+                                        $processedQualMainIds[] = $qualityMainCriteria->id;
                                     }
 
                                     $keptQualMainIds[] = $qualityMainCriteria->id;
@@ -1133,7 +1138,6 @@ class ReportStructureController extends Controller
         }
     }
 }
-
 
 
 

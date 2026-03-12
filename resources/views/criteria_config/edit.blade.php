@@ -1283,13 +1283,23 @@
             return Array.from(map.values());
         }
 
+        function getRichTextValue(element) {
+            const $element = $(element);
+
+            if ($element.next('.note-editor').length > 0 && typeof $element.summernote === 'function') {
+                return ($element.summernote('code') || '').trim();
+            }
+
+            return ($element.val() || '').trim();
+        }
+
         // Form submission with full data structure
         document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Save all Summernote content back to textareas before collecting data
             $('.richtext-editor').each(function() {
-                if ($(this).hasClass('note-editor')) {
+                if ($(this).next('.note-editor').length > 0) {
                     const content = $(this).summernote('code');
                     this.value = content;
                 }
@@ -1430,12 +1440,7 @@
                                     
                                     // Get content from Summernote or textarea
                                     const tooltipsElement = quantBlock.querySelector('.quant_tooltips');
-                                    let quantTooltips = '';
-                                    if ($(tooltipsElement).hasClass('note-editor')) {
-                                        quantTooltips = $(tooltipsElement).summernote('code').trim();
-                                    } else {
-                                        quantTooltips = tooltipsElement.value.trim();
-                                    }
+                                    const quantTooltips = getRichTextValue(tooltipsElement);
                                     
                                     const quantFormula = quantBlock.querySelector('.quant_formula').value.trim();
 
@@ -1489,12 +1494,7 @@
                                     
                                     // Get content from Summernote or textarea
                                     const tooltipsElement = qualBlock.querySelector('.qual_tooltips');
-                                    let qualTooltips = '';
-                                    if ($(tooltipsElement).hasClass('note-editor')) {
-                                        qualTooltips = $(tooltipsElement).summernote('code').trim();
-                                    } else {
-                                        qualTooltips = tooltipsElement.value.trim();
-                                    }
+                                    const qualTooltips = getRichTextValue(tooltipsElement);
 
                                     if (!qualName || qualRatio === '') {
                                         throw new Error(`กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qualIndex + 1}`);
@@ -1518,9 +1518,7 @@
                                 const numScore = subBlock.querySelector('.num_score').value;
                                 // Get content from Summernote editor if available, otherwise from textarea
                                 const descriptionTextarea = subBlock.querySelector('.qual_sub_description');
-                                const subDescription = $(descriptionTextarea).hasClass('note-editor')
-                                    ? $(descriptionTextarea).summernote('code') 
-                                    : descriptionTextarea.value.trim() || '';
+                                const subDescription = getRichTextValue(descriptionTextarea);
 
                                 if (!subName || numScore === '') {
                                     throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพย่อยที่ ${subIndex + 1}`);
