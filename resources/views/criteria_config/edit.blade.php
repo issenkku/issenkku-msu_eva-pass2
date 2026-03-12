@@ -421,6 +421,7 @@
 @push('scripts')
     <script>
         let originalData = null;
+        let currentReportDataId = null;
 
         // Clean up all existing Summernote instances
         function cleanupSummernote() {
@@ -585,8 +586,24 @@
             });
         }
 
+        function clearIdentityAttributes(rootElement) {
+            const identityAttrs = [
+                'data-category-id',
+                'data-evaluation-id',
+                'data-quantity-main-id',
+                'data-quality-main-id',
+                'data-quality-sub-id',
+            ];
+
+            identityAttrs.forEach(attr => rootElement.removeAttribute(attr));
+            rootElement.querySelectorAll(identityAttrs.map(attr => `[${attr}]`).join(',')).forEach(el => {
+                identityAttrs.forEach(attr => el.removeAttribute(attr));
+            });
+        }
+
         function cloneAndClear(blockSelector) {
             let node = document.querySelector(blockSelector).cloneNode(true);
+            clearIdentityAttributes(node);
             
             // Properly handle Summernote instances in cloned node
             $(node).find('.richtext-editor').each(function() {
@@ -760,6 +777,7 @@
                 const hiddenTemplate = document.querySelector('.category_block[style*="display: none"] .evaluation_list_block');
                 if (hiddenTemplate) {
                     const newBlock = hiddenTemplate.cloneNode(true);
+                    clearIdentityAttributes(newBlock);
                     
                     // Clean up the cloned block
                     $(newBlock).find('.richtext-editor').each(function() {
@@ -786,6 +804,7 @@
             
             // Clone from existing evaluation block in this category
             const newBlock = template.cloneNode(true);
+            clearIdentityAttributes(newBlock);
             
             // Clean up the cloned block
             $(newBlock).find('.richtext-editor').each(function() {
@@ -1008,9 +1027,11 @@
         function populateForm(data) {
             // Populate basic information
             document.getElementById('version_name').value = data.version_name || '';
+            currentReportDataId = null;
             
             if (data.report_datas && data.report_datas.length > 0) {
                 const reportData = data.report_datas[0];
+                currentReportDataId = reportData.report_data_id || reportData.id || null;
                 document.getElementById('report_title').value = reportData.report_title || '';
                 document.getElementById('report_description').value = reportData.report_description || '';
                 document.getElementById('assessment_type').value = reportData.assessment_type || '';
@@ -1092,6 +1113,7 @@
             const template = document.querySelector('.category_block');
             const newBlock = template.cloneNode(true);
             newBlock.style.display = 'block';
+            newBlock.dataset.categoryId = categoryData.categorie_id || categoryData.id || '';
 
             newBlock.querySelector('.main_categories').value = categoryData.main_categories || '';
             newBlock.querySelector('.sub_categories').value = categoryData.sub_categories || '';
@@ -1116,6 +1138,7 @@
         function createEvaluationFromData(evalData) {
             const template = document.querySelector('.evaluation_list_block');
             const newBlock = template.cloneNode(true);
+            newBlock.dataset.evaluationId = evalData.evaluation_id || evalData.id || '';
 
             newBlock.querySelector('.eval_name').value = evalData.name || '';
             newBlock.querySelector('.sum_score').value = evalData.sum_score || '';
@@ -1150,6 +1173,7 @@
             quantityData.forEach(quantMain => {
                 const template = document.querySelector('.quant_criteria_block');
                 const newBlock = template.cloneNode(true);
+                newBlock.dataset.quantityMainId = quantMain.quantity_main_criteria_id || quantMain.id || '';
 
                 newBlock.querySelector('.quant_name').value = quantMain.name || '';
                 
@@ -1194,6 +1218,7 @@
             qualityData.forEach(qualMain => {
                 const template = document.querySelector('.qual_criteria_block');
                 const newBlock = template.cloneNode(true);
+                newBlock.dataset.qualityMainId = qualMain.quality_main_criteria_id || qualMain.id || '';
 
                 newBlock.querySelector('.qual_name').value = qualMain.name || '';
                 newBlock.querySelector('.qual_ratio').value = qualMain.ratio || '';
@@ -1209,6 +1234,7 @@
                     qualMain.quality_sub_criterias.forEach(subData => {
                         const subBlockTemplate = document.querySelector('.qual_sub_criteria_block');
                         const subBlock = subBlockTemplate.cloneNode(true);
+                        subBlock.dataset.qualitySubId = subData.quality_sub_criteria_id || subData.id || '';
                         subBlock.querySelector('.qual_sub_name').value = subData.name || '';
                         subBlock.querySelector('.num_score').value = subData.num_score ?? '';
                         
@@ -1334,15 +1360,20 @@
         });
 
         function collectFormData() {
+            const reportDataPayload = {
+                report_title: document.getElementById('report_title').value.trim(),
+                report_description: document.getElementById('report_description').value.trim(),
+                assessment_type: document.getElementById('assessment_type').value.trim(),
+                comment: document.getElementById('comment').value.trim() || null
+            };
+            if (currentReportDataId) {
+                reportDataPayload.report_data_id = Number(currentReportDataId);
+            }
+
             const formData = {
                 version_name: document.getElementById('version_name').value.trim(),
                 created_by: {{ Auth::user()->id }},
-                report_datas: [{
-                    report_title: document.getElementById('report_title').value.trim(),
-                    report_description: document.getElementById('report_description').value.trim(),
-                    assessment_type: document.getElementById('assessment_type').value.trim(),
-                    comment: document.getElementById('comment').value.trim() || null
-                }],
+                report_datas: [reportDataPayload],
                 categories: []
             };
 
@@ -1361,6 +1392,10 @@
                     sequence: catIndex + 1,
                     evaluation_lists: []
                 };
+                const categoryId = catBlock.dataset.categoryId;
+                if (categoryId) {
+                    category.categorie_id = Number(categoryId);
+                }
 
                 // Collect evaluation lists
                 catBlock.querySelectorAll('.evaluation_list_block').forEach((evalBlock, evalIndex) => {
@@ -1379,6 +1414,10 @@
                         quantity_main_criterias: [],
                         quality_main_criterias: []
                     };
+                    const evaluationId = evalBlock.dataset.evaluationId;
+                    if (evaluationId) {
+                        evalData.evaluation_id = Number(evaluationId);
+                    }
 
                             // Collect quantity criteria if enabled
                             if (evalBlock.querySelector('.quantity_criteria_type').checked) {
@@ -1406,6 +1445,10 @@
                                         formula: quantFormula || 'D = A × C / B',
                                         quantity_sub_criterias: []
                                     };
+                                    const quantityMainId = quantBlock.dataset.quantityMainId;
+                                    if (quantityMainId) {
+                                        quantMain.quantity_main_criteria_id = Number(quantityMainId);
+                                    }
 
                                     // Collect quantity sub criteria
                                     quantBlock.querySelectorAll('.quant_sub_criteria_block').forEach((subBlock, subIndex) => {
@@ -1417,12 +1460,17 @@
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์ปริมาณย่อยที่ ${subIndex + 1}`);
                                         }
 
-                                        quantMain.quantity_sub_criterias.push({
+                                        const quantSubPayload = {
                                             name: subName,
                                             sequence: subIndex + 1,
                                             score_a: parseFloat(scoreA),
                                             score_b: parseFloat(scoreB)
-                                        });
+                                        };
+                                        const quantSubIdInput = subBlock.querySelector('.quant_sub_criteria_id');
+                                        if (quantSubIdInput && quantSubIdInput.value) {
+                                            quantSubPayload.quantity_sub_criteria_id = Number(quantSubIdInput.value);
+                                        }
+                                        quantMain.quantity_sub_criterias.push(quantSubPayload);
                                     });
 
                                     evalData.quantity_main_criterias.push(quantMain);
@@ -1455,6 +1503,10 @@
                                         sequence: qualIndex + 1,
                                         quality_sub_criterias: []
                                     };
+                                    const qualityMainId = qualBlock.dataset.qualityMainId;
+                                    if (qualityMainId) {
+                                        qualMain.quality_main_criteria_id = Number(qualityMainId);
+                                    }
 
                             // Collect quality sub criteria
                             qualBlock.querySelectorAll('.qual_sub_criteria_block').forEach((subBlock, subIndex) => {
@@ -1470,12 +1522,17 @@
                                     throw new Error(`กรุณากรอกข้อมูลเกณฑ์คุณภาพย่อยที่ ${subIndex + 1}`);
                                 }
 
-                                qualMain.quality_sub_criterias.push({
+                                const qualitySubPayload = {
                                     name: subName,
                                     sequence: subIndex + 1,
                                     num_score: parseFloat(numScore),
                                     description: subDescription
-                                });
+                                };
+                                const qualitySubId = subBlock.dataset.qualitySubId;
+                                if (qualitySubId) {
+                                    qualitySubPayload.quality_sub_criteria_id = Number(qualitySubId);
+                                }
+                                qualMain.quality_sub_criterias.push(qualitySubPayload);
                             });
 
                             evalData.quality_main_criterias.push(qualMain);
@@ -1492,3 +1549,4 @@
         }
     </script>
 @endpush
+
