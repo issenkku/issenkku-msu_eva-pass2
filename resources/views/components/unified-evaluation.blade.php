@@ -164,10 +164,12 @@
                                                                 {{ $subCriteria['name'] }}
                                                             </span>
                                                         </div>
-                                                        <a href="{{ route('evaluatee.workload', ['report_id' => $report?->id, 'quantity_sub_criteria_id' => $subCriteria['id']]) }}"
-                                                            class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 transition">
-                                                            จัดการข้อมูล
-                                                        </a>
+                                                        @unless ($readonly)
+                                                            <a href="{{ route('evaluatee.workload', ['report_id' => $report?->id, 'quantity_sub_criteria_id' => $subCriteria['id']]) }}"
+                                                                class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 transition">
+                                                                จัดการข้อมูล
+                                                            </a>
+                                                        @endunless
                                                     </summary>
                                                     @if (!$readonly)
                                                         <input type="hidden"

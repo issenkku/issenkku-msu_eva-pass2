@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;
 use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
 use App\Models\EvidenceAnswer;
 use App\Models\QuantitySubCriteria;
+use App\Models\Reports;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormItem;
@@ -17,17 +17,12 @@ use Illuminate\Http\RedirectResponse;
 
 class EvaluateeWorkloadEntryController extends Controller
 {
-    /**
-     * เมธอด: store
-     * จุดประสงค์: บันทึกข้อมูล WorkloadEntry, EvidenceAnswer
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param StoreWorkloadEntryRequest $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
+    private array $editableStatuses = ['Draft', 'Assigned'];
+
     public function store(StoreWorkloadEntryRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $this->ensureReportEditable((int) $validated['report_id']);
 
         if (empty($validated['workload_form_id']) && $request->filled('workload_form_item_id')) {
             $item = WorkloadFormItem::findOrFail($request->input('workload_form_item_id'));
@@ -45,7 +40,7 @@ class EvaluateeWorkloadEntryController extends Controller
             if ($variableName !== '') {
                 $fieldValues[$variableName] = $item->score;
             }
-            if (!array_key_exists('item_*', $fieldValues) && !array_key_exists('item_star', $fieldValues)) {
+            if (! array_key_exists('item_*', $fieldValues) && ! array_key_exists('item_star', $fieldValues)) {
                 $fieldValues['item_*'] = $item->score;
             }
         }
@@ -57,6 +52,7 @@ class EvaluateeWorkloadEntryController extends Controller
         $validated['calculated_score'] = $calculatedScore;
         $validated['field_values'] = $fieldValues;
         $entry = WorkloadEntry::create($validated);
+
         if ($evaluationListId) {
             foreach ((array) $evidenceLinks as $link) {
                 $link = trim((string) $link);
@@ -74,22 +70,15 @@ class EvaluateeWorkloadEntryController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'บันทึกภาระงานเรียบร้อยแล้ว');
+            ->with('success', 'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว');
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: บันทึกข้อมูล EvidenceAnswer อัปเดตข้อมูล ลบข้อมูล
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param UpdateWorkloadEntryRequest $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(UpdateWorkloadEntryRequest $request, $id): RedirectResponse
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
+            $this->ensureReportEditable((int) $entry->report_id);
+
             $validated = $request->validated();
             $workloadFormId = $validated['workload_form_id'] ?? $entry->workload_form_id;
             $fieldValues = $validated['field_values'] ?? $entry->field_values ?? [];
@@ -98,11 +87,14 @@ class EvaluateeWorkloadEntryController extends Controller
             if ($request->filled('workload_form_item_id')) {
                 $item = WorkloadFormItem::findOrFail($request->input('workload_form_item_id'));
                 $workloadFormId = $item->workload_form_id;
-                $variableName = $this->resolveItemVariableName(WorkloadForm::with(['fields'])->findOrFail($workloadFormId), (int) $item->sequence);
+                $variableName = $this->resolveItemVariableName(
+                    WorkloadForm::with(['fields'])->findOrFail($workloadFormId),
+                    (int) $item->sequence
+                );
                 if ($variableName !== '') {
                     $fieldValues[$variableName] = $item->score;
                 }
-                if (!array_key_exists('item_*', (array) $fieldValues) && !array_key_exists('item_star', (array) $fieldValues)) {
+                if (! array_key_exists('item_*', (array) $fieldValues) && ! array_key_exists('item_star', (array) $fieldValues)) {
                     $fieldValues['item_*'] = $item->score;
                 }
             }
@@ -144,18 +136,12 @@ class EvaluateeWorkloadEntryController extends Controller
         }
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id): RedirectResponse
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
+            $this->ensureReportEditable((int) $entry->report_id);
+
             EvidenceAnswer::where('workload_entry_id', $entry->id)->delete();
             $entry->delete();
 
@@ -218,7 +204,7 @@ class EvaluateeWorkloadEntryController extends Controller
             }
         }
 
-        if (!array_key_exists('item_*', $normalized) && !array_key_exists('item_star', $normalized)) {
+        if (! array_key_exists('item_*', $normalized) && ! array_key_exists('item_star', $normalized)) {
             foreach ($normalized as $key => $value) {
                 if (preg_match('/^item_\d+$/', $key)) {
                     $normalized['item_*'] = $value;
@@ -244,5 +230,14 @@ class EvaluateeWorkloadEntryController extends Controller
         }
 
         return (int) $subCriteria->evaluation_list_id;
+    }
+
+    private function ensureReportEditable(int $reportId): void
+    {
+        $report = Reports::findOrFail($reportId);
+
+        if (! in_array($report->status, $this->editableStatuses, true)) {
+            abort(403, 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว');
+        }
     }
 }

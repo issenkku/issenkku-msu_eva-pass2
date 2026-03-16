@@ -2,33 +2,28 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-
 use App\Http\Controllers\Controller;
+use App\Models\EvidenceAnswer;
+use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\Subject;
-use App\Models\EvidenceAnswer;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
-use App\Models\QuantityScore;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class EvaluationWorkloadController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า evaluatee.evaluation-workload
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า evaluatee.evaluation-workload
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
+    private array $editableStatuses = ['Draft', 'Assigned'];
+
     public function index(Request $request)
     {
         $reportId = $request->query('report_id');
-        $quantitySubCriterias = collect();
         $quantitySubCriteriaId = $request->query('quantity_sub_criteria_id');
+
+        $report = null;
+        $readonly = true;
+        $quantitySubCriterias = collect();
         $quantitySubCriteria = null;
         $workloadForms = collect();
         $subjects = Subject::where('is_active', true)
@@ -40,6 +35,8 @@ class EvaluationWorkloadController extends Controller
                 'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
             ])->find($reportId);
 
+            $readonly = ! $this->canEditReport($report);
+
             if ($report && $report->reportData && $report->reportData->criteriaVersion) {
                 $quantitySubCriterias = $report->reportData
                     ->criteriaVersion
@@ -48,6 +45,14 @@ class EvaluationWorkloadController extends Controller
                         return $main->quantitySubCriterias ?? collect();
                     });
             }
+        }
+
+        if ($readonly && $request->query('readonly') != 1 && $reportId) {
+            return redirect()->route('evaluatee.workload', [
+                'report_id' => $reportId,
+                'quantity_sub_criteria_id' => $quantitySubCriteriaId,
+                'readonly' => 1,
+            ]);
         }
 
         if ($quantitySubCriteriaId) {
@@ -69,6 +74,7 @@ class EvaluationWorkloadController extends Controller
                     ->orderByDesc('created_at')
                     ->get()
                     ->groupBy('workload_form_id');
+
                 $workloadTotalScore = $workloadEntriesByFormId
                     ->flatten(1)
                     ->sum(function ($entry) {
@@ -89,6 +95,8 @@ class EvaluationWorkloadController extends Controller
 
         return view('evaluatee.evaluation-workload', [
             'reportId' => $reportId,
+            'report' => $report,
+            'readonly' => $readonly,
             'quantitySubCriteriaId' => $quantitySubCriteriaId,
             'quantitySubCriterias' => $quantitySubCriterias,
             'quantitySubCriteria' => $quantitySubCriteria,
@@ -100,14 +108,6 @@ class EvaluationWorkloadController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: storeWorkloadScore
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function storeWorkloadScore(Request $request)
     {
         $validated = $request->validate([
@@ -121,6 +121,10 @@ class EvaluationWorkloadController extends Controller
         $report = Reports::find($reportId);
         if (! $report) {
             return redirect()->back()->with('error', 'ไม่พบรายงานที่ต้องการบันทึก');
+        }
+
+        if (! $this->canEditReport($report)) {
+            return redirect()->back()->with('error', 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว ไม่สามารถบันทึกด้านปริมาณได้');
         }
 
         $formIds = WorkloadForm::where('quantity_sub_criteria_id', $quantitySubCriteriaId)
@@ -159,5 +163,10 @@ class EvaluationWorkloadController extends Controller
         return redirect()
             ->back()
             ->with('success', 'บันทึกคะแนนภาระงานรวมเรียบร้อยแล้ว');
+    }
+
+    private function canEditReport(?Reports $report): bool
+    {
+        return $report && in_array($report->status, $this->editableStatuses, true);
     }
 }

@@ -5,6 +5,11 @@
 @section('content')
 {{-- บล็อกเนื้อหา --}}
 <div class="max-w-6xl mx-auto space-y-6">
+    @if(!empty($readonly))
+        <div class="workload-readonly-banner">
+            หน้านี้เป็นโหมดอ่านอย่างเดียว จึงไม่สามารถเพิ่ม แก้ไข หรือลบข้อมูลด้านปริมาณได้
+        </div>
+    @endif
 
 
     @if(false)
@@ -452,6 +457,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="workload-row-actions">
+                                                            @unless($readonly)
                                                             <button
                                                                 type="button"
                                                                 class="workload-mini-btn workload-edit-btn"
@@ -476,6 +482,7 @@
                                                                 buttonType="button"
                                                                 onclick="confirmDelete({{ $itemEntry->id }})"
                                                             />
+                                                            @endunless
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -496,6 +503,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="workload-row-actions">
+                                                            @unless($readonly)
                                                             <button
                                                                 class="workload-mini-btn workload-add-btn"
                                                                 type="button"
@@ -509,6 +517,7 @@
                                                                 <i class="fas fa-plus"></i>
                                                                 เพิ่มข้อมูล
                                                             </button>
+                                                            @endunless
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -613,11 +622,12 @@
 
     {{-- บล็อกเนื้อหา --}}
     <div class="workload-actions">
-        <a href="{{ route('evaluation.show', $reportId) }}" class="workload-back-btn">
+        <a href="{{ route('evaluation.show', ['id' => $reportId, 'readonly' => !empty($readonly) ? 1 : null]) }}" class="workload-back-btn">
             <i class="fas fa-arrow-left"></i>
             ย้อนกลับ
         </a>
         {{-- ฟอร์ม --}}
+        @unless($readonly)
         <form method="POST" action="{{ route('evaluatee.workload-score.store') }}">
             @csrf
             <input type="hidden" name="report_id" value="{{ $reportId }}">
@@ -627,10 +637,12 @@
                 บันทึก
             </button>
         </form>
+        @endunless
     </div>
 </div>
 
 {{--  --}}
+@unless($readonly)
 <div class="modal fade" id="workloadAddModal" tabindex="-1" aria-labelledby="workloadAddModalLabel" aria-hidden="true" data-bs-focus="false">
     {{--  --}}
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -756,8 +768,18 @@
         </div>
     </div>
 </div>
+@endunless
 <x-subject-modal />
 <style>
+    .workload-readonly-banner {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        border-radius: 14px;
+        padding: 14px 18px;
+        font-weight: 600;
+    }
+
     .workload-page-header {
         background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 60%, #e0f2fe 100%);
         border: 1px solid #e5e7eb;
