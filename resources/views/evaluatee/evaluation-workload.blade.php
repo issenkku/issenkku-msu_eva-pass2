@@ -12,180 +12,6 @@
     @endif
 
 
-    @if(false)
-        <section class="workload-panel">
-            <div class="workload-panel-header">
-                <div class="workload-summary-value">
-                            {{ $quantitySubCriteria->name ?? '-' }}
-                        </div>
-            </div>
-            <div class="workload-panel-body">
-                <div class="workload-summary-card" style="background: #eef2ff; color: #0f172a;">
-                    <div>
-                        <div class="workload-summary-title">Quantity Sub Criteria</div>
-                        <div class="workload-summary-value">
-                            {{ $quantitySubCriteria->name ?? '-' }}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="workload-table-wrap" style="margin-top: 16px;">
-                    {{-- ตารางข้อมูล --}}
-                    <table class="workload-table">
-                        <thead>
-                            <tr>
-                                <th>Group ID</th>
-                                <th>ชื่อกลุ่ม</th>
-                                <th>ลำดับ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($quantitySubCriteria->groups as $group)
-                                <tr>
-                                    <td>{{ $group->id }}</td>
-                                    <td>{{ $group->name ?? '-' }}</td>
-                                    <td>{{ $group->sequence ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3">ไม่พบข้อมูล quantity_sub_criteria_groups</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="workload-table-wrap" style="margin-top: 16px;">
-                    {{-- ตารางข้อมูล --}}
-                    <table class="workload-table">
-                        <thead>
-                            <tr>
-                                <th>Item ID</th>
-                                <th>ชื่อรายการ</th>
-                                <th>ลำดับ</th>
-                                <th>score_a</th>
-                                <th>score_b</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $groupItems = $quantitySubCriteria->groups
-                                    ->flatMap(function ($group) {
-                                        return $group->items ?? collect();
-                                    });
-                            @endphp
-                            @forelse($groupItems as $item)
-                                <tr>
-                                    <td>{{ $item->id }}</td>
-                                    <td>{{ $item->name ?? '-' }}</td>
-                                    <td>{{ $item->sequence ?? '-' }}</td>
-                                    <td>{{ $item->score_a ?? '-' }}</td>
-                                    <td>{{ $item->score_b ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5">ไม่พบข้อมูล quantity_sub_criteria_items</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="workload-table-wrap" style="margin-top: 16px;">
-                    {{-- ตารางข้อมูล --}}
-                    <table class="workload-table">
-                        <thead>
-                            <tr>
-                                <th>Form ID</th>
-                                <th>formula_logic</th>
-                                <th>quantity_sub_criteria_item_id</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($workloadForms as $form)
-                                <tr>
-                                    <td>{{ $form->id }}</td>
-                                    <td>{{ $form->formula_logic ?? '-' }}</td>
-                                    <td>{{ $form->quantity_sub_criteria_item_id ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3">ไม่พบข้อมูล workload_forms</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="workload-table-wrap" style="margin-top: 16px;">
-                    {{-- ตารางข้อมูล --}}
-                    <table class="workload-table">
-                        <thead>
-                            <tr>
-                                <th>Field ID</th>
-                                <th>label</th>
-                                <th>variable_name</th>
-                                <th>field_type</th>
-                                <th>workload_form_id</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $formFields = $workloadForms->flatMap(function ($form) {
-                                    return $form->fields ?? collect();
-                                });
-                            @endphp
-                            @forelse($formFields as $field)
-                                <tr>
-                                    <td>{{ $field->id }}</td>
-                                    <td>{{ $field->label ?? '-' }}</td>
-                                    <td>{{ $field->variable_name ?? '-' }}</td>
-                                    <td>{{ $field->field_type ?? '-' }}</td>
-                                    <td>{{ $field->workload_form_id ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5">ไม่พบข้อมูล workload_form_fields</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="workload-table-wrap" style="margin-top: 16px;">
-                    {{-- ตารางข้อมูล --}}
-                    <table class="workload-table">
-                        <thead>
-                            <tr>
-                                <th>Item ID</th>
-                                <th>label</th>
-                                <th>score</th>
-                                <th>sequence</th>
-                                <th>workload_form_id</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($formItems as $item)
-                                <tr>
-                                    <td>{{ $item->id }}</td>
-                                    <td>{{ $item->label ?? '-' }}</td>
-                                    <td>{{ $item->score ?? '-' }}</td>
-                                    <td>{{ $item->sequence ?? '-' }}</td>
-                                    <td>{{ $item->workload_form_id ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5">ไม่พบข้อมูล workload_form_items</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    @endif
-
-    {{--  --}}
     <div class="workload-page-header">
         <h1 class="workload-page-title">  {{ $quantitySubCriteria->name ?? '-' }}</h1>
         <p class="workload-page-subtitle">กรอกข้อมูลภาระงานและตรวจสอบผลรวม</p>
@@ -283,15 +109,19 @@
                                 $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
                                 $formFields = $itemForm?->fields
                                     ? $itemForm->fields->filter(function ($field) {
-                                        return strtolower((string) ($field->field_type ?? 'number')) !== 'item';
+                                        return strtolower((string) ($field->field_type ?? 'number')) !== 'item'
+                                            && !empty($field->variable_name);
+                                    })->unique(function ($field) {
+                                        $label = trim((string) ($field->label ?? ''));
+                                        return $label !== '' ? mb_strtolower($label) : strtolower((string) $field->variable_name);
                                     })->values()
                                     : collect();
                                 $itemHasGroupField = $formFields->contains(function ($field) use ($isGroupField) {
                                     return $isGroupField($field);
                                 });
                                 $tableFields = $itemHasGroupField
-                                    ? $fieldDefinitions
-                                    : $fieldDefinitions->reject(function ($field) use ($isGroupField) {
+                                    ? $formFields
+                                    : $formFields->reject(function ($field) use ($isGroupField) {
                                         return $isGroupField($field);
                                     })->values();
                                 $showLevelColumn = $itemEntries->contains(function ($entry) {
@@ -2176,7 +2006,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
 
 
 
