@@ -65,15 +65,19 @@
                     $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
                     $formFields = $itemForm?->fields
                         ? $itemForm->fields->filter(function ($field) {
-                            return strtolower((string) ($field->field_type ?? 'number')) !== 'item';
+                            return strtolower((string) ($field->field_type ?? 'number')) !== 'item'
+                                && !empty($field->variable_name);
+                        })->unique(function ($field) {
+                            $label = trim((string) ($field->label ?? ''));
+                            return $label !== '' ? mb_strtolower($label) : strtolower((string) $field->variable_name);
                         })->values()
                         : collect();
                     $itemHasGroupField = $formFields->contains(function ($field) use ($isGroupField) {
                         return $isGroupField($field);
                     });
                     $tableFields = $itemHasGroupField
-                        ? $fieldDefinitions
-                        : $fieldDefinitions->reject(function ($field) use ($isGroupField) {
+                        ? $formFields
+                        : $formFields->reject(function ($field) use ($isGroupField) {
                             return $isGroupField($field);
                         })->values();
                 @endphp
