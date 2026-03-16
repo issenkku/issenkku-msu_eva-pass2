@@ -59,6 +59,7 @@
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
             :qualityEvidenceMap="$qualityEvidenceMap"
+            :workloadMap="$workloadMap"
         />
 
         <!-- summary score -->
@@ -379,4 +380,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
-

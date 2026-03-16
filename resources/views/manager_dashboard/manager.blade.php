@@ -69,6 +69,7 @@
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
             :qualityEvidenceMap="$qualityEvidenceMap"
+            :workloadMap="$workloadMap"
         />
 
         {{-- บล็อกเนื้อหา --}}

@@ -4,8 +4,11 @@ namespace App\Services;
 use App\Models\Assignments;
 use App\Models\Reports;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
+use App\Models\WorkloadEntry;
+use App\Models\WorkloadForm;
 use Illuminate\Support\Facades\DB;
 
 class ReportDataService
@@ -97,6 +100,7 @@ class ReportDataService
 
         // Process categories and their evaluation lists
         $categoryItems = $this->processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap);
+        $workloadMap = $this->buildWorkloadMap($categoryItems, $id);
 
         return [
             'report' => $report,
@@ -116,7 +120,75 @@ class ReportDataService
             'categoryItems' => $categoryItems,
             'evidenceMap' => $evidenceMap,
             'qualityEvidenceMap' => $qualityEvidenceMap,
+            'workloadMap' => $workloadMap,
         ];
+    }
+
+    private function buildWorkloadMap($categoryItems, $reportId)
+    {
+        $quantitySubCriteriaIds = collect($categoryItems)
+            ->flatMap(function ($category) {
+                return collect($category['evaluation_lists'] ?? [])
+                    ->flatMap(function ($list) {
+                        return collect($list['quantity_items'] ?? [])
+                            ->flatMap(function ($main) {
+                                return collect($main['sub_criterias'] ?? [])->pluck('id');
+                            });
+                    });
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($quantitySubCriteriaIds->isEmpty()) {
+            return [];
+        }
+
+        $subCriteriaModels = QuantitySubCriteria::with(['groups.items'])
+            ->whereIn('id', $quantitySubCriteriaIds)
+            ->get()
+            ->keyBy('id');
+
+        $workloadFormsBySubCriteria = WorkloadForm::with(['fields', 'items', 'subCriteriaItem.group'])
+            ->whereIn('quantity_sub_criteria_id', $quantitySubCriteriaIds)
+            ->get()
+            ->groupBy('quantity_sub_criteria_id');
+
+        $allFormIds = $workloadFormsBySubCriteria
+            ->flatten(1)
+            ->pluck('id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $workloadEntriesByFormId = collect();
+        if ($allFormIds->isNotEmpty()) {
+            $workloadEntriesByFormId = WorkloadEntry::with(['subject'])
+                ->where('report_id', $reportId)
+                ->whereIn('workload_form_id', $allFormIds)
+                ->orderByDesc('created_at')
+                ->get()
+                ->groupBy('workload_form_id');
+        }
+
+        $evidenceLinksByEntryId = EvidenceAnswer::where('report_id', $reportId)
+            ->whereNotNull('workload_entry_id')
+            ->orderByDesc('created_at')
+            ->get()
+            ->groupBy('workload_entry_id')
+            ->map(fn ($answers) => $answers->pluck('link')->filter()->values());
+
+        $workloadMap = [];
+        foreach ($quantitySubCriteriaIds as $subCriteriaId) {
+            $workloadMap[$subCriteriaId] = [
+                'subCriteria' => $subCriteriaModels->get($subCriteriaId),
+                'workloadForms' => $workloadFormsBySubCriteria->get($subCriteriaId, collect()),
+                'workloadEntriesByFormId' => $workloadEntriesByFormId,
+                'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
+            ];
+        }
+
+        return $workloadMap;
     }
 
     private function processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap)

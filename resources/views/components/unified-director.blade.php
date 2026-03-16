@@ -2,7 +2,8 @@
     'categoryItems' => [],
     'readonly' => false,
     'evidenceMap' => [],
-    'qualityEvidenceMap' => []
+    'qualityEvidenceMap' => [],
+    'workloadMap' => [],
 ])
 
 @php
@@ -136,49 +137,67 @@
 
                                         {{-- Quantity Sub Criteria --}}
                                         <div class="space-y-3 ml-6 mb-6">
+                                            @if(!$readonly)
+                                                <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                                                    <div class="font-semibold mb-1">คำแนะนำการกรอกข้อมูล</div>
+                                                    <div>กรอกเฉพาะค่าหน่วยภาระงานที่ทำได้ (C) ตามเอกสารหลักฐานจริง</div>
+                                                    <div>ค่าน้ำหนักคะแนน (A) และหน่วยภาระงานมาตรฐาน (B) เป็นค่าที่ระบบกำหนด</div>
+                                                    <div>ระบบจะคำนวณค่าน้ำหนักคะแนนอัตโนมัติในช่องคำนวณ</div>
+                                                </div>
+                                            @endif
                                             @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
-                                                <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                                                    <div class="flex flex-col lg:flex-row lg:items-center gap-4 mb-3">
-                                                        <div class="flex items-start flex-1">
-                                                            <div>
-                                                                <label class="text-base text-gray-800">
-                                                                    {{ $subCriteria['name'] }}
-                                                                </label>
-                                                                @if(!empty($subCriteria['description']))
-                                                                    <div class="text-sm text-gray-500 mt-1">{{ $subCriteria['description'] }}</div>
-                                                                @endif
-                                                            </div>
+                                                <details class="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all open:shadow-md">
+                                                    <summary class="flex items-center justify-between gap-3 bg-gradient-to-r from-white via-purple-50/40 to-white px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                                                        <div class="min-w-0 flex items-center gap-3 flex-wrap">
+                                                            <span class="text-base font-semibold text-slate-800">
+                                                                {{ $subCriteria['name'] }}
+                                                            </span>
+                                                            <span class="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700">
+                                                                <span>ดูรายละเอียด</span>
+                                                                <svg class="w-4 h-4 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                                </svg>
+                                                                <svg class="w-4 h-4 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                                                </svg>
+                                                            </span>
                                                         </div>
+                                                    </summary>
+                                                    <div class="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-4">
+                                                        <div class="rounded-xl border border-slate-200 bg-white/90 p-4 shadow-sm">
+                                                            <div class="space-y-4">
+                                                                @if(!empty($subCriteria['description']))
+                                                                    <div class="rounded-lg bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">{{ $subCriteria['description'] }}</div>
+                                                                @endif
 
-                                                        <div class="w-full lg:w-2/3">
-                                                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                                                                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                                                                 {{-- Score A --}}
-                                                                <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         ค่าน้ำหนักคะแนน (A)
                                                                     </label>
                                                                     <input type="text" 
                                                                         name="quantity_list[{{ $subCriteria['id'] }}][score_A]" 
                                                                         value="{{ $subCriteria['score_a'] ?? '' }}"
                                                                         readonly
-                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
+                                                                        class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm">
                                                                 </div>
 
                                                                 {{-- Score B --}}
-                                                                <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
+                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานมาตรฐาน (B)
                                                                     </label>
                                                                     <input type="text" 
                                                                         name="quantity_list[{{ $subCriteria['id'] }}][score_B]" 
                                                                         value="{{ $subCriteria['score_b'] ?? '' }}"
                                                                         readonly
-                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm">
+                                                                        class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm">
                                                                 </div>
 
                                                                 {{-- Score C --}}
-                                                                <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                <div class="flex h-full flex-col rounded-xl border border-blue-200 bg-blue-50/60 p-3">
+                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานที่ทำได้ (C)
                                                                     </label>
                                                                     @if(!$readonly)
@@ -187,22 +206,22 @@
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             data-sub-criteria-id="{{ $subCriteria['id'] }}"
                                                                             oninput="calculateScoreD(this)"
-                                                                            class="bg-white text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500"
+                                                                            class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm focus:border-blue-400 focus:ring-blue-300"
                                                                             placeholder="ใส่ค่า C">
                                                                     @else
                                                                         <input type="text" 
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]" 
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             readonly
-                                                                            class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
+                                                                            class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm"
                                                                             placeholder="0">
                                                                     @endif
                                                                     
                                                                 </div>
 
                                                                 {{-- Score D --}}
-                                                                <div class="flex flex-col h-full">
-                                                                    <label class="text-sm font-semibold text-gray-700 text-center min-h-[40px] flex items-center justify-center mb-2">
+                                                                <div class="flex h-full flex-col rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
+                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         คำนวณหาค่าน้ำหนักคะแนน
                                                                     </label>
                                                                     <input type="text" 
@@ -210,21 +229,41 @@
                                                                         id="score-D-{{ $subCriteria['id'] }}"
                                                                         value="{{ $subCriteria['score_d'] ?? '' }}"
                                                                         readonly
-                                                                        class="bg-gray-100 text-center form-input text-base w-full h-11 px-3 rounded-lg border border-gray-300 shadow-sm"
+                                                                        class="h-10 w-full rounded-lg border border-emerald-300 bg-white px-3 text-center text-lg font-semibold text-emerald-700 shadow-sm"
                                                                         placeholder="0">
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    @if(!empty($subCriteria['score_description']))
+                                                    @php
+                                                        $workloadData = $workloadMap[$subCriteria['id']] ?? null;
+                                                        $workloadSubCriteria = $workloadData['subCriteria'] ?? null;
+                                                        $workloadForms = $workloadData['workloadForms'] ?? collect();
+                                                        $workloadEntriesByFormId = $workloadData['workloadEntriesByFormId'] ?? collect();
+                                                        $evidenceLinksByEntryId = $workloadData['evidenceLinksByEntryId'] ?? collect();
+                                                    @endphp
+                                                    <div class="mt-4 border-t border-slate-200 pt-4">
+                                                        <h4 class="mb-2 flex items-center text-sm font-semibold text-slate-800">
+                                                            รายการหลักฐานที่เกี่ยวข้อง
+                                                        </h4>
+                                                        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                                                            <div class="p-3 sm:p-4">
+                                                                <x-workload-summary :sub-criteria="$workloadSubCriteria" :workload-forms="$workloadForms"
+                                                                    :workload-entries-by-form-id="$workloadEntriesByFormId" :evidence-links-by-entry-id="$evidenceLinksByEntryId" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {{-- legacy score_description block removed
+                                                    @if(false && !empty($subCriteria['score_description']))
                                                         <h4 class="text-base font-semibold text-gray-800 flex items-center border-t border-gray-200 pt-3">
                                                             คำอธิบายหลักฐาน
                                                         </h4>
                                                         <div class="text-sm text-gray-500 mt-1">{{ $subCriteria['score_description'] }}</div>
                                                     @else
                                                         <div class="text-sm text-gray-500 mt-1">ไม่มีคำอธิบายหลักฐาน</div>
-                                                    @endif
+                                                    @endif --}}
                                                 </div>
+                                            </details>
 
                                                 @if(!$readonly)
                                                     <input type="hidden" 
