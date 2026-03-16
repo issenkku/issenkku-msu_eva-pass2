@@ -49,7 +49,8 @@ class UserController extends Controller
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
             'department_id' => 'required|exists:departments,id',
-            'role' => 'nullable|string',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name',
         ], [
             'name.unique' => 'ชื่อ-นามสกุลนี้ถูกใช้ไปแล้ว',
             'employee_id.unique' => 'รหัสพนักงานนี้ถูกใช้ไปแล้ว',
@@ -72,9 +73,7 @@ class UserController extends Controller
         ]);
 
         // ป้องกัน assignRole ถ้าไม่มีค่า role
-        if ($request->filled('role')) {
-            $user->syncRoles([$request->role]);
-        }
+        $user->syncRoles($request->input('roles', []));
 
         return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
     }
@@ -592,7 +591,8 @@ class UserController extends Controller
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
             'department_id' => 'required|exists:departments,id',
-            'role' => 'nullable|string',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|exists:roles,name',
             'employee_id' => [
                 'required',
                 'max:20',
@@ -621,9 +621,7 @@ class UserController extends Controller
 
         $user->save();
         // syncRoles เพื่อบันทึกบทบาทที่เลือกไว้
-        if ($request->filled('role')) {
-            $user->syncRoles([$request->role]);
-        }
+        $user->syncRoles($request->input('roles', []));
 
         return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }

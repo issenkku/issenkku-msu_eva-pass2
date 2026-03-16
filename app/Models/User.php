@@ -23,6 +23,14 @@ class User extends Authenticatable implements CanResetPassword
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use CanResetPasswordTrait, HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
 
+    public const DASHBOARD_ROLE_MAP = [
+        'admin' => 'dashboard',
+        'ผู้บริหาร' => 'manager.dashboard',
+        'กรรมการ' => 'director.dashboard',
+        'ผู้ประเมิน' => 'evaluator.index',
+        'ผู้รับการประเมิน' => 'evaluatee.dashboard',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -204,5 +212,34 @@ class User extends Authenticatable implements CanResetPassword
     public function evaluatorAssignmentData()
     {
         return $this->hasMany(AssignmentData::class, 'evaluator_id', 'id');
+    }
+
+    public function availableDashboardRoles(): array
+    {
+        return collect(self::DASHBOARD_ROLE_MAP)
+            ->filter(fn ($routeName, $roleName) => $this->hasRole($roleName))
+            ->map(fn ($routeName, $roleName) => [
+                'role' => $roleName,
+                'route' => $routeName,
+                'url' => route($routeName),
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function defaultDashboardRoute(): ?string
+    {
+        foreach (self::DASHBOARD_ROLE_MAP as $roleName => $routeName) {
+            if ($this->hasRole($roleName)) {
+                return $routeName;
+            }
+        }
+
+        return null;
+    }
+
+    public function hasMultipleDashboardRoles(): bool
+    {
+        return count($this->availableDashboardRoles()) > 1;
     }
 }

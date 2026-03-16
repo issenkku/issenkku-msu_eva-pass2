@@ -165,6 +165,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/', function (Request $request) {
         $user = $request->user();
 
+        $defaultRoute = $user->defaultDashboardRoute();
+
+        if ($defaultRoute) {
+            return redirect()->route($defaultRoute);
+        }
+
         if ($user->hasRole('admin')) {
             // ถ้าเป็น admin หรือ ผู้บริหาร ให้ไปที่ dashboard ของ admin
             return redirect()->route('dashboard'); // ชื่อ route ของ admin dashboard

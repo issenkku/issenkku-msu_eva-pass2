@@ -133,11 +133,19 @@ class UsersImport implements ToCollection
                 }
 
                 // Handle role assignment
-                $roleName = trim($mappedData['role'] ?? '');
-                if (! empty($roleName)) {
-                    $role = Role::firstOrCreate(['name' => $roleName]);
-                    $user->syncRoles([$role->name]);
-                    Log::info("Assigned role {$roleName} to user: ".$mappedData['employee_id']);
+                $roleNames = collect(preg_split('/[|,]/', (string) ($mappedData['role'] ?? '')))
+                    ->map(fn ($role) => trim($role))
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                if ($roleNames->isNotEmpty()) {
+                    $resolvedRoles = $roleNames->map(function ($roleName) {
+                        return Role::firstOrCreate(['name' => $roleName])->name;
+                    })->all();
+
+                    $user->syncRoles($resolvedRoles);
+                    Log::info('Assigned roles '.implode(', ', $resolvedRoles).' to user: '.$mappedData['employee_id']);
                 }
 
             } catch (\Exception $e) {
