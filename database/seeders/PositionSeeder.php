@@ -12,127 +12,55 @@ class PositionSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('positions')->insert([
-            [
-                'name' => 'คณบดี',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'รองคณบดีฝ่ายบริหารและแผน',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'รองคณบดีฝ่ายวิชาการและนวัตกรรมการเรียนรู้',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'รองคณบดีฝ่ายวิจัยและประกันคุณภาพ',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'รองคณบดีฝ่ายพัฒนานิสิตและบัณฑิตศึกษา',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'รองคณบดีฝ่ายเทคโนโลยีสารสนเทศและโครงสร้างพื้นฐาน',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'ผู้ช่วยคณบดีฝ่ายวิเทศสัมพันธ์',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'ผู้ช่วยคณบดีฝ่ายกิจการพิเศษและภาพลักษณ์องค์กร',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้าสำนักงานเลขานุการ',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้ากลุ่มงานบริหาร',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้ากลุ่มงานนโยบายแผนและคลัง',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้ากลุ่มงานวิชาการและพัฒนานิสิต',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้ากลุ่มงานบริการวิชาการ',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'ผู้อำนวยการศูนย์บริการวิชาการ',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้าสาขาอนามัยสิ่งแวดล้อม',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้าสาขาโภชนาการและการกำหนดอาหาร',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้าสาขาอาชีวอนามัยและความปลอดภัย',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'หัวหน้าสาขาเทคโนโลยีทางสุขภาพและความปลอดภัย',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'อาจารย์',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'เจ้าหน้าที่',
-                'description' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $timestamp = now();
+
+        $positions = [
+            'คณบดี',
+            'รองคณบดีฝ่ายบริหารและแผนงาน',
+            'รองคณบดีฝ่ายวิชาการและบัณฑิตศึกษา',
+            'รองคณบดีฝ่ายวิจัยและประกันคุณภาพ',
+            'รองคณบดีฝ่ายพัฒนานิสิตและโครงสร้างพื้นฐาน',
+            'ผู้ช่วยคณบดีฝ่ายวิเทศสัมพันธ์',
+            'ผู้ช่วยคณบดีฝ่ายกิจการพิเศษและภาพลักษณ์องค์กร',
+            'ผู้ช่วยคณบดีฝ่ายบริการวิชาการ',
+            'ประธานหลักสูตรสาธารณสุขศาสตรบัณฑิต',
+            'ประธานหลักสูตร วท.บ.อาชีวอนามัยและความปลอดภัย',
+            'ประธานหลักสูตร วท.บ.โภชนาการและการกำหนดอาหาร',
+            'ประธานหลักสูตร วท.บ.อนามัยสิ่งแวดล้อม',
+            'ประธานหลักสูตรสาธารณสุขศาสตรมหาบัณฑิต',
+            'ประธานหลักสูตร วท.ม.เทคโนโลยีสุขภาพและความปลอดภัย',
+            'ประธานหลักสูตรสาธารณสุขศาสตรดุษฎีบัณฑิต',
+            'ประธานหลักสูตร ปร.ด.เทคโนโลยีสุขภาพและความปลอดภัย',
+            'รองศาสตราจารย์',
+            'ผู้ช่วยศาสตราจารย์',
+            'อาจารย์',
+            'หัวหน้าสำนักงานเลขานุการคณะฯ',
+            'หัวหน้ากลุ่มงานบริหาร',
+            'หัวหน้ากลุ่มงานวิชาการและพัฒนานิสิต',
+            'หัวหน้ากลุ่มงานนโยบาย แผนและคลัง',
+            'นักวิเคราะห์นโยบายและแผน',
+            'นักวิชาการเงินและบัญชี',
+            'นักวิชาการศึกษา',
+            'นักวิชาการพัสดุ',
+            'นักวิชาการคอมพิวเตอร์',
+            'นักวิทยาศาสตร์',
+            'นักวิจัย',
+            'เจ้าหน้าที่วิจัย',
+            'เจ้าหน้าที่บริหารงานทั่วไป',
+            'เจ้าหน้าที่โสตทัศนูปกรณ์',
+            'พนักงานขับรถ',
+        ];
+
+        DB::table('positions')->insert(
+            array_map(
+                static fn (string $name): array => [
+                    'name' => $name,
+                    'description' => null,
+                    'created_at' => $timestamp,
+                    'updated_at' => $timestamp,
+                ],
+                $positions
+            )
+        );
     }
 }
