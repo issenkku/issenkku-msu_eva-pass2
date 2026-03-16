@@ -1111,19 +1111,25 @@
                 };
 
                 // ฟังก์ชันย่อย: attachItemRowHandlers
-                const attachItemRowHandlers = (row) => {
-                    const removeBtn = row.querySelector('.workload-item-remove');
-                    if (removeBtn) {
-                        removeBtn.addEventListener('click', () => {
-                            const message = 'ยืนยันการลบรายการนี้หรือไม่?';
-                            if (!window.confirm(message)) {
-                                return;
-                            }
-                            row.remove();
-                            updateItemSequence(card);
-                        });
-                    }
-                };
+                if (subitemTable && subitemTable.dataset.removeBound !== 'true') {
+                    subitemTable.dataset.removeBound = 'true';
+                    subitemTable.addEventListener('click', (event) => {
+                        const removeBtn = event.target.closest('.workload-item-remove');
+                        if (!removeBtn || !subitemTable.contains(removeBtn)) {
+                            return;
+                        }
+                        const row = removeBtn.closest('.workload-item-row');
+                        if (!row) {
+                            return;
+                        }
+                        const message = 'Confirm deleting this item?';
+                        if (!window.confirm(message)) {
+                            return;
+                        }
+                        row.remove();
+                        updateItemSequence(card);
+                    });
+                }
 
                 if (addItemButton && subitemTable) {
                     addItemButton.addEventListener('click', () => {
@@ -1135,7 +1141,6 @@
                         newRow.querySelectorAll('input').forEach((input) => {
                             input.value = '';
                         });
-                        attachItemRowHandlers(newRow);
                         subitemTable.insertBefore(newRow, subitemTable.querySelector('.subitem-actions'));
                         updateItemSequence(card);
                     });
@@ -1191,7 +1196,6 @@
                     });
                 });
 
-                card.querySelectorAll('.workload-item-row').forEach(attachItemRowHandlers);
                 updateItemSequence(card);
                 syncVariableChips();
 
@@ -1206,6 +1210,8 @@
             // ฟังก์ชันย่อย: sanitizeClonedSubCard
             const sanitizeClonedSubCard = (card, resetInit = false) => {
                 card.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+                card.querySelectorAll('[data-bound]').forEach((node) => delete node.dataset.bound);
+                card.querySelectorAll('[data-remove-bound]').forEach((node) => delete node.dataset.removeBound);
                 if (resetInit) {
                     card.dataset.initialized = 'false';
                 }
@@ -1239,6 +1245,8 @@
                 }
                 card.classList.remove('is-collapsed');
                 card.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+                card.querySelectorAll('[data-bound]').forEach((node) => delete node.dataset.bound);
+                card.querySelectorAll('[data-remove-bound]').forEach((node) => delete node.dataset.removeBound);
                 if (resetInit) {
                     card.dataset.mainInitialized = 'false';
                 }
