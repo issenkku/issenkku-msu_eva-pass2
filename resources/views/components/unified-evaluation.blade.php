@@ -163,9 +163,24 @@
                                                             <span class="text-sm font-semibold text-gray-800">
                                                                 {{ $subCriteria['name'] }}
                                                             </span>
+                                                            <span
+                                                                class="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-2 py-1 text-xs font-semibold text-purple-700">
+                                                                <span>ดูรายละเอียด</span>
+                                                                <svg class="w-4 h-4 chevron-down" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M19 9l-7 7-7-7" />
+                                                                </svg>
+                                                                <svg class="w-4 h-4 chevron-up" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                        d="M5 15l7-7 7 7" />
+                                                                </svg>
+                                                            </span>
                                                         </div>
                                                         @unless ($readonly)
                                                             <a href="{{ route('evaluatee.workload', ['report_id' => $report?->id, 'quantity_sub_criteria_id' => $subCriteria['id']]) }}"
+                                                                onclick="event.stopPropagation()"
                                                                 class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 transition">
                                                                 จัดการข้อมูล
                                                             </a>

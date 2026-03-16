@@ -222,10 +222,11 @@
                     @endphp
                     <details class="workload-dropdown">
                         <summary class="workload-toolbar">
-                            <button type="button" class="workload-select">
+                            <span class="workload-select">
                                 <span>{{ $group->name ?? '' }}</span>
-                                {{-- <i class="fas fa-chevron-down"></i> --}}
-                            </button>
+                                <span class="workload-select-hint">เลือกดูรายละเอียด</span>
+                                <span class="workload-select-icon" aria-hidden="true"></span>
+                            </span>
                     @php
                         $groupFormIds = $group->items
                             ->map(function ($item) use ($workloadForms) {
@@ -308,10 +309,11 @@
                                     <div class="workload-item-summary-left">
                                         <span class="workload-item-summary-title">{{ $item->name ?? '-' }}</span>
                                     </div>
-                                    {{-- <div class="workload-item-summary-right">
-                                        <span class="workload-item-summary-score">คะแนน {{ $itemTotalDisplay }}</span>
-                                        <span class="workload-item-summary-icon"></span>
-                                    </div> --}}
+                                    <div class="workload-item-summary-right">
+                                        <span class="workload-item-summary-hint">กดเพื่อดูรายละเอียด</span>
+                                        {{-- <span class="workload-item-summary-score">คะแนน {{ $itemTotalDisplay }}</span> --}}
+                                        <span class="workload-item-summary-icon" aria-hidden="true"></span>
+                                    </div>
                                 </summary>
                                 <div class="workload-subtable">
                                     <div class="workload-table-wrap">
@@ -853,7 +855,7 @@
     .workload-select {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 10px;
@@ -863,10 +865,27 @@
         font-size: 14px;
         cursor: pointer;
         list-style: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
     }
 
     .workload-select::-webkit-details-marker {
         display: none;
+    }
+
+    .workload-select-hint {
+        font-size: 12px;
+        font-weight: 500;
+        color: #64748b;
+    }
+
+    .workload-select-icon {
+        width: 9px;
+        height: 9px;
+        border-right: 2px solid #7c3aed;
+        border-bottom: 2px solid #7c3aed;
+        transform: rotate(45deg) translateY(-1px);
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
     }
 
     .workload-dropdown > summary {
@@ -887,6 +906,16 @@
 
     .workload-dropdown[open] > summary {
         margin-bottom: 16px;
+    }
+
+    .workload-dropdown[open] .workload-select {
+        border-color: #c4b5fd;
+        background: #faf5ff;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+    }
+
+    .workload-dropdown[open] .workload-select-icon {
+        transform: rotate(-135deg) translateY(-1px);
     }
 
     .workload-dropdown:not([open]) > summary {
@@ -957,6 +986,12 @@
         gap: 10px;
     }
 
+    .workload-item-summary-hint {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+    }
+
     .workload-item-summary-score {
         font-size: 12px;
         font-weight: 700;
@@ -973,6 +1008,7 @@
         border-bottom: 2px solid #475569;
         transform: rotate(45deg);
         transition: transform 0.2s ease;
+        flex-shrink: 0;
     }
 
     .workload-item-dropdown[open] .workload-item-summary-icon {
