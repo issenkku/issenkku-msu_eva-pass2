@@ -300,7 +300,7 @@
                                                             {{ $mainCriteria['name'] }}
                                                         </h4>
                                                         <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
-                                                            {{ $mainHasChecked ? 'มีการติ๊ก' : 'ยังไม่ติ๊ก' }}
+                                                            {{ $mainHasChecked ? 'มีการเลือกแล้ว' : 'ยังไม่เลือก' }}
                                                         </span>
                                                         {{-- <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                                                             คะแนนที่เลือก {{ number_format($selectedScore, 2) }}

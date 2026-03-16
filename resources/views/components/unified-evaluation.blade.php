@@ -273,7 +273,7 @@
                                                         </h4>
                                                         <span
                                                             class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
-                                                            {{ $mainHasChecked ? 'มีการติ๊ก' : 'ยังไม่ติ๊ก' }}
+                                                            {{ $mainHasChecked ? 'มีการเลือกแล้ว' : 'ยังไม่เลือก' }}
                                                         </span>
                                                     </div>
                                                     <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
