@@ -69,7 +69,8 @@ class EvaluationWorkloadController extends Controller
         if ($reportId && $workloadForms->isNotEmpty()) {
             $formIds = $workloadForms->pluck('id')->filter()->unique()->values();
             if ($formIds->isNotEmpty()) {
-                $workloadEntriesByFormId = WorkloadEntry::where('report_id', $reportId)
+                $workloadEntriesByFormId = WorkloadEntry::with('subject')
+                    ->where('report_id', $reportId)
                     ->whereIn('workload_form_id', $formIds)
                     ->orderByDesc('created_at')
                     ->get()

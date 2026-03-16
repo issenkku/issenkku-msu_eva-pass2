@@ -322,6 +322,7 @@
                                         <thead>
                                             <tr>
                                                 <th>กิจกรรม/โครงการ/งาน</th>
+                                                <th>รายวิชาที่เลือก</th>
                                                 @if($showLevelColumn)
                                                     <th>ระดับ</th>
                                                 @endif
@@ -339,7 +340,23 @@
                                                 @endforelse
                                                 <th>ภาระงาน</th>
                                                 <th>ลิงก์เอกสาร</th>
-                                                <th></th>
+                                                <th>
+                                                    @unless($readonly)
+                                                    <button
+                                                        class="workload-mini-btn workload-add-btn"
+                                                        type="button"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#workloadAddModal"
+                                                        data-default-form-id="{{ $itemForm->id ?? '' }}"
+                                                        data-group-id="{{ $group->id }}"
+                                                        data-group-name="{{ $group->name ?? '' }}"
+                                                        data-item-id="{{ $item->id }}"
+                                                    >
+                                                        <i class="fas fa-plus"></i>
+                                                        เพิ่มข้อมูล
+                                                    </button>
+                                                    @endunless
+                                                </th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -425,6 +442,18 @@
                                                 @endphp
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
+                                                    <td>
+                                                        @php
+                                                            $subjectDisplay = null;
+                                                            if ($itemEntry?->subject) {
+                                                                $subjectDisplay = trim(collect([
+                                                                    $itemEntry->subject->code ?? null,
+                                                                    $itemEntry->subject->name_th ?? null,
+                                                                ])->filter()->implode(' '));
+                                                            }
+                                                        @endphp
+                                                        {{ $subjectDisplay !== '' && $subjectDisplay !== null ? $subjectDisplay : '-' }}
+                                                    </td>
                                                     @if($showLevelColumn)
                                                         <td>
                                                             {{ $itemLabel ?? $item->description ?? '-' }}
@@ -491,6 +520,7 @@
                                             @empty
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
+                                                    <td>-</td>
                                                     @if($showLevelColumn)
                                                         <td>{{ $item->description ?? '-' }}</td>
                                                     @endif
@@ -503,25 +533,7 @@
                                                     <td>
                                                         -
                                                     </td>
-                                                    <td>
-                                                        <div class="workload-row-actions">
-                                                            @unless($readonly)
-                                                            <button
-                                                                class="workload-mini-btn workload-add-btn"
-                                                                type="button"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#workloadAddModal"
-                                                                data-default-form-id="{{ $itemForm->id ?? '' }}"
-                                                                data-group-id="{{ $group->id }}"
-                                                                data-group-name="{{ $group->name ?? '' }}"
-                                                                data-item-id="{{ $item->id }}"
-                                                            >
-                                                                <i class="fas fa-plus"></i>
-                                                                เพิ่มข้อมูล
-                                                            </button>
-                                                            @endunless
-                                                        </div>
-                                                    </td>
+                                                    <td></td>
                                                 </tr>
                                             @endforelse
                                         </tbody>

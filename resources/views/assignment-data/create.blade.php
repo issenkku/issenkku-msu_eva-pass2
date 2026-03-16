@@ -79,7 +79,10 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                             <option value="">-- กรุณาเลือกเกณฑ์การประเมิน --</option>
                             @foreach ($report_data as $item)
-                                <option value="{{ $item->id }}">{{ $item->report_title }}</option>
+                                <option value="{{ $item->id }}"
+                                    data-assessment-type="{{ $item->assessment_type }}">
+                                    {{ $item->report_title }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -117,7 +120,8 @@
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}"
                                         data-user-name="{{ $user->name }}"
-                                        data-user-email="{{ $user->position->name }}">
+                                        data-user-email="{{ $user->position->name }}"
+                                        data-personnel-type="{{ $user->personnel_type }}">
                                         {{ $user->name }} ({{ $user->position->name }})
                                     </option>
                                 @endforeach
@@ -233,6 +237,10 @@
 
         <script>
             $(document).ready(function() {
+                const evaluateeOptionTemplate = $('#evaluatees option').map(function() {
+                    return $(this).clone();
+                }).get();
+
                 function formatOption(option) {
                     if (!option.id) return option.text;
 
@@ -316,6 +324,51 @@
                     if ($countElement.length) {
                         $countElement.text(availableCount);
                     }
+                }
+
+                function normalizePersonnelType(value) {
+                    const text = String(value || '').trim();
+
+                    if (!text) {
+                        return '';
+                    }
+
+                    if (text.includes('วิชาการ')) {
+                        return 'วิชาการ';
+                    }
+
+                    if (text.includes('สนับสนุน')) {
+                        return 'สนับสนุน';
+                    }
+
+                    if (text.includes('บริหาร') || text.includes('ผู้บริหาร')) {
+                        return 'บริหาร';
+                    }
+
+                    return text;
+                }
+
+                function filterEvaluateesByCriteria() {
+                    const $criteria = $('#report_data_id');
+                    const $evaluatees = $('#evaluatees');
+                    const selectedAssessmentType = normalizePersonnelType(
+                        $criteria.find('option:selected').data('assessment-type')
+                    );
+                    const currentSelected = $evaluatees.val() || [];
+                    const matchedOptions = evaluateeOptionTemplate
+                        .filter(option => {
+                            const userType = normalizePersonnelType($(option).data('personnel-type'));
+                            return !selectedAssessmentType || userType === selectedAssessmentType;
+                        })
+                        .map(option => $(option).clone());
+                    const nextSelected = matchedOptions
+                        .map(option => String(option.val()))
+                        .filter(value => currentSelected.includes(value));
+
+                    $evaluatees.empty().append(matchedOptions);
+                    $evaluatees.val(nextSelected).trigger('change.select2');
+                    updateAvailableCount($evaluatees, 'evaluatees-available-count');
+                    $('#evaluatees-total-count').text(evaluateeOptionTemplate.length);
                 }
 
                 function updateDisplayAndCounts() {
@@ -415,9 +468,13 @@
 
                 // Event listeners
                 $('#start_time, #end_time').on('change', updateSummary);
-                $('#report_data_id').on('change', updateSummary);
+                $('#report_data_id').on('change', function() {
+                    filterEvaluateesByCriteria();
+                    updateSummary();
+                });
 
                 // Update summary initially
+                filterEvaluateesByCriteria();
                 updateSummary();
 
                 // Reset button

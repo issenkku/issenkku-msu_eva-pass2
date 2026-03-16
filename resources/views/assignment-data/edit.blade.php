@@ -108,7 +108,8 @@
                                 $currentReportDataId = $assignmentData->assignments->first()?->report?->reportData?->id;
                             @endphp
                             @foreach ($report_data as $item)
-                                <option value="{{ $item->id }}" 
+                                <option value="{{ $item->id }}"
+                                    data-assessment-type="{{ $item->assessment_type }}"
                                     {{ $currentReportDataId == $item->id ? 'selected' : '' }}>
                                     {{ $item->report_title }}
                                 </option>
@@ -148,8 +149,9 @@
                                 class="form-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}"
-                                        data-name="{{ $user->name }}"
-                                        data-email="{{ $user->position->name }}"
+                                        data-user-name="{{ $user->name }}"
+                                        data-user-email="{{ $user->position->name }}"
+                                        data-personnel-type="{{ $user->personnel_type }}"
                                         {{ in_array($user->id, $selectedEvaluatees) ? 'selected' : '' }}>
                                         {{ $user->name }} ({{ $user->position->name }})
                                     </option>
@@ -159,7 +161,7 @@
                             <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-blue-200">
                                 <p class="text-sm font-medium text-gray-700 mb-2">
                                     <i class="fas fa-check-circle mr-2 text-blue-500"></i>ผู้รับการประเมินที่เลือก:
-                                    <span id="evaluatees-display-count" class="text-blue-600 font-semibold">{{ count($selectedEvaluatees) }}</span> คน
+                                    <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">{{ count($selectedEvaluatees) }}</span> คน
                                 </p>
                                 <div id="selected-evaluatees" class="flex flex-wrap gap-2">
                                     @if(count($selectedEvaluatees) > 0)
@@ -197,8 +199,8 @@
                                 <option value="">-- เลือกผู้ประเมิน --</option>
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" 
-                                        data-name="{{ $user->name }}"
-                                        data-email="{{ $user->position->name }}"
+                                        data-user-name="{{ $user->name }}"
+                                        data-user-email="{{ $user->position->name }}"
                                         {{ $assignmentData->evaluator_id == $user->id ? 'selected' : '' }}>
                                         {{ $user->name }} ({{ $user->position->name }})
                                     </option>
@@ -210,7 +212,7 @@
                                 <p class="text-sm font-medium text-gray-700 mb-2">
                                     <i class="fas fa-check-circle mr-2 text-green-500"></i>ผู้ประเมินที่เลือก:
                                 </p>
-                                <div id="selected-evaluator" class="flex flex-col gap-2">
+                                <div id="selected-evaluators" class="flex flex-col gap-2">
                                     @if($assignmentData->evaluatorUser)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                                             {{ $assignmentData->evaluatorUser->name }} ({{ $assignmentData->evaluatorUser->email }})
@@ -279,6 +281,10 @@
 
         <script>
             $(document).ready(function() {
+                const evaluateeOptionTemplate = $('#evaluatees option').map(function() {
+                    return $(this).clone();
+                }).get();
+
                 function formatOption(option) {
                     if (!option.id) return option.text;
 
@@ -362,6 +368,51 @@
                     if ($countElement.length) {
                         $countElement.text(availableCount);
                     }
+                }
+
+                function normalizePersonnelType(value) {
+                    const text = String(value || '').trim();
+
+                    if (!text) {
+                        return '';
+                    }
+
+                    if (text.includes('วิชาการ')) {
+                        return 'วิชาการ';
+                    }
+
+                    if (text.includes('สนับสนุน')) {
+                        return 'สนับสนุน';
+                    }
+
+                    if (text.includes('บริหาร') || text.includes('ผู้บริหาร')) {
+                        return 'บริหาร';
+                    }
+
+                    return text;
+                }
+
+                function filterEvaluateesByCriteria() {
+                    const $criteria = $('#report_data_id');
+                    const $evaluatees = $('#evaluatees');
+                    const selectedAssessmentType = normalizePersonnelType(
+                        $criteria.find('option:selected').data('assessment-type')
+                    );
+                    const currentSelected = $evaluatees.val() || [];
+                    const matchedOptions = evaluateeOptionTemplate
+                        .filter(option => {
+                            const userType = normalizePersonnelType($(option).data('personnel-type'));
+                            return !selectedAssessmentType || userType === selectedAssessmentType;
+                        })
+                        .map(option => $(option).clone());
+                    const nextSelected = matchedOptions
+                        .map(option => String(option.val()))
+                        .filter(value => currentSelected.includes(value));
+
+                    $evaluatees.empty().append(matchedOptions);
+                    $evaluatees.val(nextSelected).trigger('change.select2');
+                    updateAvailableCount($evaluatees, 'evaluatees-available-count');
+                    $('#evaluatees-total-count').text(evaluateeOptionTemplate.length);
                 }
 
                 function updateDisplayAndCounts() {
@@ -461,9 +512,13 @@
 
                 // Event listeners
                 $('#start_time, #end_time').on('change', updateSummary);
-                $('#report_data_id').on('change', updateSummary);
+                $('#report_data_id').on('change', function() {
+                    filterEvaluateesByCriteria();
+                    updateSummary();
+                });
 
                 // Update summary initially
+                filterEvaluateesByCriteria();
                 updateSummary();
 
                 // Reset button

@@ -306,7 +306,7 @@
                                                 ด้านคุณภาพ
                                                 </h3>
                                                 <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                    เช็กแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
+                                                    ตรวจสอบแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
                                                 </span>
                                             </div>
                                             <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
