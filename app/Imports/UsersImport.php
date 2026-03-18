@@ -5,8 +5,8 @@ namespace App\Imports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
 use App\Models\User;
-use Illuminate\Support\Collection;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -21,11 +21,9 @@ class UsersImport implements ToCollection
 
     public function collection(Collection $rows)
     {
-        // Keep compatibility with Maatwebsite's ToCollection contract
         $this->processRows($rows);
     }
 
-    // Expose row processing so controllers can feed rows from any worksheet
     public function processRows(Collection $rows): void
     {
         foreach ($rows->skip(1) as $index => $row) {
@@ -37,91 +35,84 @@ class UsersImport implements ToCollection
                     continue;
                 }
 
-                $mappedData = [
-                    'prefix' => $rowArray[0] ?? null,           // คำนำหน้า
-                    'name' => $rowArray[1] ?? null,             // ชื่อ-สกุล
-                    'employee_id' => $rowArray[2] ?? null,      // รหัสพนักงาน
-                    'department' => $rowArray[3] ?? null,       // สาขาวิชา
-                    'position' => $rowArray[4] ?? null,         // ตำแหน่ง
-                    'personnel_type' => $rowArray[5] ?? null,   // ประเภทบุคลากร
-                    'email' => $rowArray[6] ?? null,            // อีเมล
-                    'phone' => $rowArray[7] ?? null,            // เบอร์โทร
-                    'bio' => $rowArray[8] ?? null,              // ประวัติการศึกษา
-                    'password' => $rowArray[9] ?? null,         // รหัสผ่าน
-                    'status' => $rowArray[10] ?? null,          // สถานะ
-                    'role' => $rowArray[11] ?? null,            // บทบาท
-                ];
+                $mappedData = $this->mapRow($rowArray);
 
                 Log::info('Processing row '.($index + 2), ['mapped_data' => $mappedData]);
 
-                // Validate required fields
                 if (! $this->validateRequiredFields($mappedData, $index)) {
                     continue;
                 }
 
-                // Handle position
-                $positionName = trim($mappedData['position']);
+                $positionName = trim((string) $mappedData['position']);
                 $position = Positions::firstOrCreate(
                     ['name' => $positionName],
                     ['name' => $positionName]
                 );
 
-                // Handle department
-                $departmentName = trim($mappedData['department']);
+                $departmentName = trim((string) $mappedData['department']);
                 $department = Departments::firstOrCreate(
                     ['department_name' => $departmentName],
                     ['department_name' => $departmentName]
                 );
 
-                // Handle password
                 $password = $mappedData['password'] ?? 'password123';
-                if (empty(trim($password))) {
+                if (empty(trim((string) $password))) {
                     $password = 'password123';
                 }
 
-                // Normalize and sanitize
-                $email = strtolower(trim($mappedData['email']));
-                $rawPhone = trim($mappedData['phone']);
+                $email = strtolower(trim((string) $mappedData['email']));
+                $rawPhone = trim((string) $mappedData['phone']);
                 $digits = preg_replace('/\D+/', '', $rawPhone);
-                // Format to 3-3-4 if 10 digits, else keep original
-                if (strlen($digits) === 10) {
-                    $phone = substr($digits, 0, 3) . '-' . substr($digits, 3, 3) . '-' . substr($digits, 6);
-                } else {
-                    $phone = $rawPhone;
-                }
+                $phone = strlen($digits) === 10
+                    ? substr($digits, 0, 3).'-'.substr($digits, 3, 3).'-'.substr($digits, 6)
+                    : $rawPhone;
 
-                $status = trim($mappedData['status'] ?? 'active');
-                if (!in_array(strtolower($status), ['active', 'inactive'])) {
+                $status = trim((string) ($mappedData['status'] ?? 'active'));
+                if (! in_array(strtolower($status), ['active', 'inactive'], true)) {
                     $status = 'active';
                 }
 
+                $educationHistory = $this->normalizeEducationHistory([
+                    [
+                        'graduation_year' => $mappedData['graduation_year'] ?? null,
+                        'degree' => $mappedData['degree'] ?? $mappedData['bio'] ?? null,
+                        'university' => $mappedData['university'] ?? null,
+                    ],
+                ]);
+
                 $userData = [
-                    'prefix' => trim($mappedData['prefix']),
-                    'name' => trim($mappedData['name']),
+                    'prefix' => trim((string) $mappedData['prefix']),
+                    'name' => trim((string) $mappedData['name']),
                     'position_id' => $position->id,
-                    'personnel_type' => trim($mappedData['personnel_type']),
+                    'personnel_type' => trim((string) $mappedData['personnel_type']),
                     'department_id' => $department->id,
-                    'employee_id' => trim($mappedData['employee_id']),
+                    'employee_id' => trim((string) $mappedData['employee_id']),
                     'email' => $email,
                     'phone' => $phone,
-                    'password' => Hash::make($password),
-                    'bio' => ! empty(trim($mappedData['bio'] ?? '')) ? trim($mappedData['bio']) : null,
+                    'password' => Hash::make((string) $password),
+                    'bio' => $this->buildEducationBio($educationHistory, $mappedData['bio'] ?? null),
+                    'education_history' => $educationHistory,
                     'status' => $status,
                 ];
 
-                // Only remove completely empty values, but keep null values for nullable fields
                 $userData = array_filter($userData, function ($value, $key) {
-                    $nullableFields = ['bio'];
-                    if (in_array($key, $nullableFields) && is_null($value)) {
+                    $nullableFields = ['bio', 'education_history'];
+
+                    if (in_array($key, $nullableFields, true) && is_null($value)) {
                         return true;
                     }
 
                     return $value !== null && $value !== '';
                 }, ARRAY_FILTER_USE_BOTH);
 
-                $existingUser = User::where('employee_id', trim($mappedData['employee_id']))->first();
+                $existingUser = User::where('employee_id', trim((string) $mappedData['employee_id']))->first();
 
                 if ($existingUser) {
+                    $userData['education_history'] = $this->mergeEducationHistory(
+                        $existingUser->education_history_entries,
+                        $educationHistory
+                    );
+                    $userData['bio'] = $this->buildEducationBio($userData['education_history']);
                     $existingUser->update($userData);
                     $user = $existingUser;
                     Log::info('Updated user: '.$mappedData['employee_id']);
@@ -132,7 +123,6 @@ class UsersImport implements ToCollection
                     $this->created++;
                 }
 
-                // Handle role assignment
                 $roleNames = collect(preg_split('/[|,]/', (string) ($mappedData['role'] ?? '')))
                     ->map(fn ($role) => trim($role))
                     ->filter()
@@ -147,7 +137,6 @@ class UsersImport implements ToCollection
                     $user->syncRoles($resolvedRoles);
                     Log::info('Assigned roles '.implode(', ', $resolvedRoles).' to user: '.$mappedData['employee_id']);
                 }
-
             } catch (\Exception $e) {
                 $duplicateMessage = $this->buildDuplicateMessage($e, $mappedData ?? [], $index + 2);
                 if ($duplicateMessage !== null) {
@@ -162,12 +151,10 @@ class UsersImport implements ToCollection
                     'error' => $e->getTraceAsString(),
                 ]);
                 $this->skipped++;
-                continue;
             }
         }
     }
 
-    // Optional import stats to show in UI
     public function stats(): array
     {
         return [
@@ -182,25 +169,42 @@ class UsersImport implements ToCollection
         return $this->errors;
     }
 
-    /**
-     * Check if row is empty
-     */
+    private function mapRow(array $rowArray): array
+    {
+        $isNewFormat = count($rowArray) >= 14;
+
+        return [
+            'prefix' => $rowArray[0] ?? null,
+            'name' => $rowArray[1] ?? null,
+            'employee_id' => $rowArray[2] ?? null,
+            'department' => $rowArray[3] ?? null,
+            'position' => $rowArray[4] ?? null,
+            'personnel_type' => $rowArray[5] ?? null,
+            'email' => $rowArray[6] ?? null,
+            'phone' => $rowArray[7] ?? null,
+            'graduation_year' => $isNewFormat ? ($rowArray[8] ?? null) : null,
+            'degree' => $isNewFormat ? ($rowArray[9] ?? null) : null,
+            'university' => $isNewFormat ? ($rowArray[10] ?? null) : null,
+            'bio' => $isNewFormat ? null : ($rowArray[8] ?? null),
+            'password' => $isNewFormat ? ($rowArray[11] ?? null) : ($rowArray[9] ?? null),
+            'status' => $isNewFormat ? ($rowArray[12] ?? null) : ($rowArray[10] ?? null),
+            'role' => $isNewFormat ? ($rowArray[13] ?? null) : ($rowArray[11] ?? null),
+        ];
+    }
+
     private function isEmptyRow(array $row): bool
     {
         return empty(array_filter($row, function ($value) {
-            return ! empty(trim($value ?? ''));
+            return ! empty(trim((string) ($value ?? '')));
         }));
     }
 
-    /**
-     * Validate required fields
-     */
     private function validateRequiredFields(array $data, int $index): bool
     {
         $requiredFields = ['prefix', 'email', 'phone', 'employee_id', 'name', 'position', 'department'];
 
         foreach ($requiredFields as $field) {
-            if (empty(trim($data[$field] ?? ''))) {
+            if (empty(trim((string) ($data[$field] ?? '')))) {
                 Log::warning("Missing required field '{$field}' in row ".($index + 2), [
                     'field_value' => $data[$field] ?? 'null',
                     'all_data' => $data,
@@ -215,7 +219,7 @@ class UsersImport implements ToCollection
 
     private function buildDuplicateMessage(\Exception $e, array $mappedData, int $rowNumber): ?string
     {
-        if (!($e instanceof QueryException)) {
+        if (! ($e instanceof QueryException)) {
             return null;
         }
 
@@ -247,5 +251,47 @@ class UsersImport implements ToCollection
         }
 
         return "ข้อมูลซ้ำ: {$field} ({$value})";
+    }
+
+    private function normalizeEducationHistory(array $entries): ?array
+    {
+        $normalized = collect($entries)
+            ->filter(fn ($entry) => is_array($entry))
+            ->map(fn (array $entry) => [
+                'graduation_year' => filled($entry['graduation_year'] ?? null) ? (string) $entry['graduation_year'] : null,
+                'degree' => filled($entry['degree'] ?? null) ? trim((string) $entry['degree']) : null,
+                'university' => filled($entry['university'] ?? null) ? trim((string) $entry['university']) : null,
+            ])
+            ->filter(fn (array $entry) => filled($entry['graduation_year']) || filled($entry['degree']) || filled($entry['university']))
+            ->values()
+            ->all();
+
+        return $normalized === [] ? null : $normalized;
+    }
+
+    private function buildEducationBio(?array $educationHistory, ?string $fallbackBio = null): ?string
+    {
+        if (!empty($educationHistory)) {
+            return collect($educationHistory)
+                ->map(function (array $entry) {
+                    return collect([
+                        $entry['graduation_year'] ?? null,
+                        $entry['degree'] ?? null,
+                        $entry['university'] ?? null,
+                    ])->filter(fn ($value) => filled($value))->implode(' ');
+                })
+                ->filter(fn ($line) => filled($line))
+                ->implode(PHP_EOL);
+        }
+
+        return filled($fallbackBio) ? trim((string) $fallbackBio) : null;
+    }
+
+    private function mergeEducationHistory(array $existingEntries, ?array $newEntries): ?array
+    {
+        return $this->normalizeEducationHistory([
+            ...$existingEntries,
+            ...($newEntries ?? []),
+        ]);
     }
 }

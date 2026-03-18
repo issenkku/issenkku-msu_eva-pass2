@@ -45,6 +45,7 @@ class User extends Authenticatable implements CanResetPassword
         'phone',
         'personnel_type',
         'bio',
+        'education_history',
         'portfolio',
         'profile_photo_path',
         'status',
@@ -73,7 +74,36 @@ class User extends Authenticatable implements CanResetPassword
         return [
             'password' => 'hashed',
             'is_public_profile_enabled' => 'boolean',
+            'education_history' => 'array',
         ];
+    }
+
+    public function getEducationHistoryEntriesAttribute(): array
+    {
+        $entries = collect($this->education_history ?? [])
+            ->filter(fn ($entry) => is_array($entry))
+            ->map(fn (array $entry) => [
+                'graduation_year' => filled($entry['graduation_year'] ?? null) ? (string) $entry['graduation_year'] : null,
+                'degree' => filled($entry['degree'] ?? null) ? trim((string) $entry['degree']) : null,
+                'university' => filled($entry['university'] ?? null) ? trim((string) $entry['university']) : null,
+            ])
+            ->filter(fn (array $entry) => filled($entry['graduation_year']) || filled($entry['degree']) || filled($entry['university']))
+            ->values()
+            ->all();
+
+        if (!empty($entries)) {
+            return $entries;
+        }
+
+        if (filled($this->bio)) {
+            return [[
+                'graduation_year' => null,
+                'degree' => $this->bio,
+                'university' => null,
+            ]];
+        }
+
+        return [];
     }
 
     /**

@@ -101,6 +101,7 @@
                         'contact' => $user['phone'],
                         'email' => $user['email'],
                         'bio' => $user['bio'],
+                        'education_history' => $user['education_history_entries'] ?? [],
                         'status' => $user['status'],
                         'position_id' => $user['position_id'],
                         'department_id' => $user['department_id'],

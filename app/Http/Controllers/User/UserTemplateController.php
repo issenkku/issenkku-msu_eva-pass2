@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-
 use App\Http\Controllers\Controller;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -13,244 +11,135 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class UserTemplateController extends Controller
 {
-    /**
-     * เมธอด: download
-     * จุดประสงค์: ส่งไฟล์สำหรับดาวน์โหลด
-     * อินพุต: ไม่มี
-     * เอาต์พุต: ไฟล์ดาวน์โหลด
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function download(): BinaryFileResponse
     {
         $headers = [
-            'prefix' => 'คำนำหน้า',
-            'name' => 'ชื่อ-นามสกุล',
-            'employee_id' => 'รหัสพนักงาน',
-            'department' => 'สาขาวิชา',
-            'position' => 'ตำแหน่ง',
-            'personnel_type' => 'ประเภทบุคลากร',
-            'email' => 'อีเมล',
-            'phone' => 'เบอร์โทร',
-            'bio' => 'ประวัติการศึกษา',
-            'password' => 'รหัสผ่าน',
-            'status' => 'สถานะ',
-            'role' => 'บทบาท',
+            'คำนำหน้า',
+            'ชื่อ-นามสกุล',
+            'รหัสพนักงาน',
+            'สาขาวิชา',
+            'ตำแหน่ง',
+            'ประเภทบุคลากร',
+            'อีเมล',
+            'เบอร์โทร',
+            'ปีที่จบ',
+            'วุฒิการศึกษา',
+            'มหาวิทยาลัยที่จบ',
+            'รหัสผ่าน',
+            'สถานะ',
+            'บทบาท',
         ];
 
-        $sampleData = [
-            [
-                'คำนำหน้า' => 'นาย',
-                'ชื่อ-นามสกุล' => 'สมชาย ใจดี',
-                'รหัสพนักงาน' => '00001',
-                'สาขาวิชา' => 'หน่วยห้องสมุด',
-                'ตำแหน่ง' => 'กลุ่มงานบริหาร',
-                'ประเภทบุคลากร' => 'สนับสนุน',
-                'อีเมล' => 'somchai@university.ac.th',
-                'เบอร์โทร' => '081-234-5678',
-                'ประวัติการศึกษา' => 'ปริญญาเอก สาขาวิทยาการคอมพิวเตอร์',
-                'รหัสผ่าน' => '123456',
-                'สถานะ' => 'active',
-                'บทบาท' => 'admin',
-            ],
-        ];
+        $sampleData = [[
+            'นาย',
+            'สมชาย ใจดี',
+            '00001',
+            'สาขาสาธารณสุขศาสตร์',
+            'อาจารย์',
+            'วิชาการ',
+            'somchai@university.ac.th',
+            '081-234-5678',
+            '2562',
+            'ปรัชญาดุษฎีบัณฑิต',
+            'มหาวิทยาลัยมหาสารคาม',
+            '123456',
+            'active',
+            'admin',
+        ]];
 
-        $roles = Role::pluck('name')->toArray();
-        $options = [
-            ['ฟิลด์', 'ตัวเลือก (ถ้ามี)', 'ตัวอย่าง/หมายเหตุ'],
+        $roles = Role::pluck('name')->implode(' | ');
+        $helpRows = [
+            ['ฟิลด์', 'ตัวอย่าง/ตัวเลือก', 'หมายเหตุ'],
             ['คำนำหน้า', 'นาย | นาง | นางสาว', 'บังคับกรอก'],
-            ['ประเภทบุคลากร', 'วิชาการ | สนับสนุน | บริหาร ', 'บังคับกรอก'],
-            ['สถานะ', 'active | inactive', 'ค่าเริ่มต้น active'],
-            ['บทบาท', implode(' | ', $roles), 'ปล่อยว่างได้ หากไม่ต้องการกำหนด'],
-            ['หมายเหตุ', '', 'หัวตารางบรรทัด 1 ข้อมูลเริ่มบรรทัด 2'],
+            ['ประเภทบุคลากร', 'วิชาการ | สนับสนุน | บริหาร', 'บังคับกรอก'],
+            ['สถานะ', 'active | inactive', 'ถ้าไม่กรอกจะใช้ active'],
+            ['บทบาท', $roles, 'ใส่ได้หลายบทบาทโดยคั่นด้วย | หรือ ,'],
+            ['ประวัติการศึกษา', '1 แถวต่อ 1 วุฒิ', 'ถ้ามีหลายวุฒิให้เพิ่มหลายแถวโดยใช้ข้อมูลบุคลากรคนเดิม'],
         ];
 
         return Excel::download(
-            new class($sampleData, $headers, $options) implements WithMultipleSheets {
-                private array $data;
-                private array $headers;
-                private array $options;
-
-                /**
-                 * เมธอด: __construct
-                 * จุดประสงค์: ประมวลผลคำขอ
-                 * อินพุต: โมเดล array
-                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                 * @param array $data ค่าที่รับเข้ามา
-                 * @param array $headers ค่าที่รับเข้ามา
-                 * @param array $options ค่าที่รับเข้ามา
-                 * @return mixed ผลลัพธ์ของการทำงาน
-                 */
-                public function __construct(array $data, array $headers, array $options)
-                {
-                    $this->data = $data;
-                    $this->headers = $headers;
-                    $this->options = $options;
+            new class($sampleData, $headers, $helpRows) implements WithMultipleSheets {
+                public function __construct(
+                    private array $sampleData,
+                    private array $headers,
+                    private array $helpRows,
+                ) {
                 }
 
-                /**
-                 * เมธอด: sheets
-                 * จุดประสงค์: ประมวลผลคำขอ
-                 * อินพุต: ไม่มี
-                 * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                 * @param void ไม่มีพารามิเตอร์
-                 * @return mixed ผลลัพธ์ของการทำงาน
-                 */
                 public function sheets(): array
                 {
                     return [
-                        // Sheet 1: Template
-                        new class($this->data, $this->headers) implements FromArray, WithHeadings, WithStyles, WithColumnWidths {
-                            private array $data;
-                            private array $headers;
-
-                            /**
-                             * เมธอด: __construct
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: โมเดล array
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param array $data ค่าที่รับเข้ามา
-                             * @param array $headers ค่าที่รับเข้ามา
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
-                            public function __construct(array $data, array $headers)
-                            {
-                                $this->data = $data;
-                                $this->headers = $headers;
+                        new class($this->sampleData, $this->headers) implements FromArray, WithHeadings, WithStyles, WithColumnWidths {
+                            public function __construct(
+                                private array $sampleData,
+                                private array $headers,
+                            ) {
                             }
 
-                            /**
-                             * เมธอด: array
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: ไม่มี
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param void ไม่มีพารามิเตอร์
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function array(): array
                             {
-                                return $this->data;
+                                return $this->sampleData;
                             }
 
-                            /**
-                             * เมธอด: headings
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: ไม่มี
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param void ไม่มีพารามิเตอร์
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function headings(): array
                             {
-                                return array_values($this->headers);
+                                return $this->headers;
                             }
 
-                            /**
-                             * เมธอด: styles
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: โมเดล Worksheet
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param Worksheet $sheet ค่าที่รับเข้ามา
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function styles(Worksheet $sheet)
                             {
-                                $sheet->getStyle('A1:Z100')->getFont()->setName('TH Sarabun New')->setSize(14);
-                                $sheet->getStyle('A1:Z1')->getFont()->setBold(true);
+                                $sheet->setTitle('Template');
+                                $sheet->getStyle('A1:N100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                                $sheet->getStyle('A1:N1')->getFont()->setBold(true);
                             }
 
-                            /**
-                             * เมธอด: columnWidths
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: ไม่มี
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param void ไม่มีพารามิเตอร์
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function columnWidths(): array
                             {
                                 return [
-                                    'B' => 25,
-                                    'C' => 15,
-                                    'D' => 30,
-                                    'E' => 25,
-                                    'G' => 24,
+                                    'A' => 14,
+                                    'B' => 28,
+                                    'C' => 16,
+                                    'D' => 24,
+                                    'E' => 22,
+                                    'F' => 18,
+                                    'G' => 26,
                                     'H' => 18,
-                                    'I' => 35,
+                                    'I' => 12,
+                                    'J' => 24,
+                                    'K' => 28,
+                                    'L' => 16,
+                                    'M' => 12,
+                                    'N' => 20,
                                 ];
                             }
                         },
-
-                        // Sheet 2: Options / Help
-                        new class($this->options) implements FromArray, WithStyles, WithColumnWidths {
-                            private array $options;
-
-                            /**
-                             * เมธอด: __construct
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: โมเดล array
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param array $options ค่าที่รับเข้ามา
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
-                            public function __construct(array $options)
+                        new class($this->helpRows) implements FromArray, WithStyles, WithColumnWidths {
+                            public function __construct(private array $helpRows)
                             {
-                                $this->options = $options;
                             }
 
-                            /**
-                             * เมธอด: array
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: ไม่มี
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param void ไม่มีพารามิเตอร์
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function array(): array
                             {
-                                return $this->options;
+                                return $this->helpRows;
                             }
 
-                            /**
-                             * เมธอด: styles
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: โมเดล Worksheet
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param Worksheet $sheet ค่าที่รับเข้ามา
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function styles(Worksheet $sheet)
                             {
-                                // Sanitize sheet title: Excel forbids \\ / * ? : [ ] and length > 31
-                                $rawTitle = 'ตัวเลือก/คำอธิบาย';
-                                $safeTitle = preg_replace('/[\\\\\/*?:\[\]]/u', '-', $rawTitle);
-                                if (function_exists('mb_substr')) {
-                                    $safeTitle = mb_substr($safeTitle, 0, 31);
-                                } else {
-                                    $safeTitle = substr($safeTitle, 0, 31);
-                                }
-                                $sheet->setTitle($safeTitle);
-                                $sheet->getStyle('A1:E100')->getFont()->setName('TH Sarabun New')->setSize(14);
-                                $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+                                $sheet->setTitle('คำอธิบาย');
+                                $sheet->getStyle('A1:C100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                                $sheet->getStyle('A1:C1')->getFont()->setBold(true);
                             }
 
-                            /**
-                             * เมธอด: columnWidths
-                             * จุดประสงค์: ประมวลผลคำขอ
-                             * อินพุต: ไม่มี
-                             * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-                             * @param void ไม่มีพารามิเตอร์
-                             * @return mixed ผลลัพธ์ของการทำงาน
-                             */
                             public function columnWidths(): array
                             {
                                 return [
-                                    'A' => 24,
-                                    'B' => 50,
-                                    'C' => 45,
+                                    'A' => 18,
+                                    'B' => 40,
+                                    'C' => 42,
                                 ];
                             }
                         },

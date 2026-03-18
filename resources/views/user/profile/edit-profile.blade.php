@@ -162,9 +162,10 @@
 
             <div class="col-span-2">
                 <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">ประวัติการศึกษา</label>
-                <textarea id="bio" name="bio" rows="5"
-                          class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('bio') border-red-500 @enderror"
-                          placeholder="กรอกประวัติการศึกษา เช่น ปริญญาตรี, ปริญญาโท, ปริญญาเอก และสถาบันที่สำเร็จการศึกษา">{{ old('bio', $user->bio) }}</textarea>
+                <div id="educationHistoryRows" class="space-y-3"></div>
+                <button type="button" id="addEducationHistoryRow" class="mt-3 rounded-md border border-blue-300 px-3 py-2 text-sm text-blue-700 hover:bg-blue-50">
+                    เพิ่มวุฒิการศึกษา
+                </button>
                 @error('bio')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -228,6 +229,49 @@
 
 <script>
 {{-- สคริปต์ช่วยฝั่งผู้ใช้ --}}
+const oldEducationHistory = @json(old('education_history', $user->education_history_entries));
+
+function educationHistoryRowTemplate(index, entry = {}) {
+    return `
+        <div class="grid grid-cols-1 gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-[140px_1fr_1fr_auto]">
+            <input type="text" name="education_history[${index}][graduation_year]" value="${entry.graduation_year ?? ''}" placeholder="ปีที่จบ" maxlength="4"
+                   class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2">
+            <input type="text" name="education_history[${index}][degree]" value="${entry.degree ?? ''}" placeholder="วุฒิการศึกษา"
+                   class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2">
+            <input type="text" name="education_history[${index}][university]" value="${entry.university ?? ''}" placeholder="มหาวิทยาลัยที่จบ"
+                   class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2">
+            <button type="button" onclick="removeEducationHistoryRow(this)" class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50">ลบ</button>
+        </div>
+    `;
+}
+
+function renderEducationHistoryRows(entries = []) {
+    const container = document.getElementById('educationHistoryRows');
+    const normalizedEntries = Array.isArray(entries) && entries.length > 0 ? entries : [{}];
+    container.innerHTML = normalizedEntries.map((entry, index) => educationHistoryRowTemplate(index, entry)).join('');
+}
+
+function removeEducationHistoryRow(button) {
+    const container = document.getElementById('educationHistoryRows');
+    button.closest('div.grid').remove();
+
+    const rows = Array.from(container.children).map(row => ({
+        graduation_year: row.querySelector('[name$="[graduation_year]"]')?.value ?? '',
+        degree: row.querySelector('[name$="[degree]"]')?.value ?? '',
+        university: row.querySelector('[name$="[university]"]')?.value ?? '',
+    }));
+
+    renderEducationHistoryRows(rows);
+}
+
+document.getElementById('addEducationHistoryRow').addEventListener('click', function() {
+    const container = document.getElementById('educationHistoryRows');
+    const index = container.children.length;
+    container.insertAdjacentHTML('beforeend', educationHistoryRowTemplate(index, {}));
+});
+
+renderEducationHistoryRows(oldEducationHistory);
+
 // Preview photo when selected
 document.getElementById('profile_photo').addEventListener('change', function(e) {
     const file = e.target.files[0];

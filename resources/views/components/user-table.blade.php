@@ -17,6 +17,7 @@
         'phone' => $employee['contact'] ?? '',
         'personnel_type' => $employee['type'] ?? '',
         'bio' => $employee['bio'] ?? '',
+        'education_history' => $employee['education_history'] ?? [],
         'status' => $employee['status'] ?? 'active',
         'position_id' => $employee['position_id'] ?? null,
         'department_id' => $employee['department_id'] ?? null,

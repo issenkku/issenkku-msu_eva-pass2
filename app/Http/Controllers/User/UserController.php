@@ -46,6 +46,10 @@ class UserController extends Controller
             'phone' => 'required|max:20|unique:users,phone',
             'personnel_type' => 'required|string|max:100',
             'bio' => 'nullable|string|max:1000',
+            'education_history' => 'nullable|array',
+            'education_history.*.graduation_year' => 'nullable|digits:4',
+            'education_history.*.degree' => 'nullable|string|max:255',
+            'education_history.*.university' => 'nullable|string|max:255',
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
             'department_id' => 'required|exists:departments,id',
@@ -58,6 +62,8 @@ class UserController extends Controller
             'phone.unique' => 'เบอร์โทรนี้ถูกใช้ไปแล้ว',
         ]);
 
+        $educationHistory = $this->normalizeEducationHistory($request->input('education_history', []));
+
         $user = User::create([
             'prefix' => $request->prefix,
             'name' => $request->name,
@@ -66,7 +72,8 @@ class UserController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'personnel_type' => $request->personnel_type,
-            'bio' => $request->bio,
+            'bio' => $this->buildEducationBio($educationHistory, $request->bio),
+            'education_history' => $educationHistory,
             'status' => $request->status,
             'position_id' => $request->position_id,
             'department_id' => $request->department_id,
@@ -555,6 +562,7 @@ class UserController extends Controller
         $users->getCollection()->transform(function ($user) {
             $array = $user->toArray();
             $array['role_names'] = $user->roles->pluck('name')->toArray();
+            $array['education_history_entries'] = $user->education_history_entries;
             return $array;
         });
 
@@ -588,6 +596,10 @@ class UserController extends Controller
             ],
             'personnel_type' => 'required|string|max:100',
             'bio' => 'nullable|string|max:1000',
+            'education_history' => 'nullable|array',
+            'education_history.*.graduation_year' => 'nullable|digits:4',
+            'education_history.*.degree' => 'nullable|string|max:255',
+            'education_history.*.university' => 'nullable|string|max:255',
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
             'department_id' => 'required|exists:departments,id',
@@ -612,6 +624,9 @@ class UserController extends Controller
         }
 
         $validated = $request->validate($rules);
+        $educationHistory = $this->normalizeEducationHistory($validated['education_history'] ?? []);
+        $validated['education_history'] = $educationHistory;
+        $validated['bio'] = $this->buildEducationBio($educationHistory, $validated['bio'] ?? null);
 
         $user->fill(collect($validated)->except('password')->toArray());
 
@@ -639,5 +654,38 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
+    }
+    private function normalizeEducationHistory(array $entries): ?array
+    {
+        $normalized = collect($entries)
+            ->filter(fn ($entry) => is_array($entry))
+            ->map(fn (array $entry) => [
+                'graduation_year' => filled($entry['graduation_year'] ?? null) ? (string) $entry['graduation_year'] : null,
+                'degree' => filled($entry['degree'] ?? null) ? trim((string) $entry['degree']) : null,
+                'university' => filled($entry['university'] ?? null) ? trim((string) $entry['university']) : null,
+            ])
+            ->filter(fn (array $entry) => filled($entry['graduation_year']) || filled($entry['degree']) || filled($entry['university']))
+            ->values()
+            ->all();
+
+        return $normalized === [] ? null : $normalized;
+    }
+
+    private function buildEducationBio(?array $educationHistory, ?string $fallbackBio = null): ?string
+    {
+        if (!empty($educationHistory)) {
+            return collect($educationHistory)
+                ->map(function (array $entry) {
+                    return collect([
+                        $entry['graduation_year'] ?? null,
+                        $entry['degree'] ?? null,
+                        $entry['university'] ?? null,
+                    ])->filter(fn ($value) => filled($value))->implode(' ');
+                })
+                ->filter(fn ($line) => filled($line))
+                ->implode(PHP_EOL);
+        }
+
+        return filled($fallbackBio) ? trim($fallbackBio) : null;
     }
 }

@@ -59,7 +59,31 @@
 
                 <div class="md:col-span-2 bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <strong class="text-gray-800">ประวัติการศึกษา:</strong>
-                    <p class="text-gray-700 whitespace-pre-line mt-2">{{ $user->bio ?? '-' }}</p>
+                    @php($educationHistory = $user->education_history_entries)
+                    @if (!empty($educationHistory))
+                        <div class="mt-3 overflow-x-auto">
+                            <table class="min-w-full text-left text-sm text-gray-700">
+                                <thead class="text-gray-600">
+                                    <tr>
+                                        <th class="py-2 pr-4">ปีที่จบ</th>
+                                        <th class="py-2 pr-4">วุฒิการศึกษา</th>
+                                        <th class="py-2">มหาวิทยาลัยที่จบ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($educationHistory as $entry)
+                                        <tr class="border-t border-gray-200">
+                                            <td class="py-2 pr-4">{{ $entry['graduation_year'] ?? '-' }}</td>
+                                            <td class="py-2 pr-4">{{ $entry['degree'] ?? '-' }}</td>
+                                            <td class="py-2">{{ $entry['university'] ?? '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-gray-700 mt-2">-</p>
+                    @endif
                 </div>
 
                 {{-- ส่วนผลงาน (แสดงเมื่อมีข้อมูล) --}}

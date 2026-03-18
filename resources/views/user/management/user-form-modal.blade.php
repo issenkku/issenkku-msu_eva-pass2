@@ -100,7 +100,10 @@
 
                 <div>
                     <h3 class="mb-2 font-semibold text-purple-600">ประวัติการศึกษา</h3>
-                    <input type="text" name="bio" id="bio" class="w-full rounded border px-3 py-2">
+                    <div id="educationHistoryRows" class="space-y-3"></div>
+                    <button type="button" onclick="addEducationHistoryRow()" class="mt-3 rounded border border-purple-300 px-3 py-2 text-sm text-purple-700 hover:bg-purple-50">
+                        เพิ่มวุฒิการศึกษา
+                    </button>
                 </div>
 
                 <div id="passwordPanel">
@@ -164,6 +167,42 @@ function setModalTitle(title) {
     }
 }
 
+function educationHistoryRowTemplate(index, entry = {}) {
+    return `
+        <div class="grid grid-cols-1 gap-3 rounded border border-gray-200 p-3 md:grid-cols-[140px_1fr_1fr_auto]">
+            <input type="text" name="education_history[${index}][graduation_year]" value="${entry.graduation_year ?? ''}" placeholder="ปีที่จบ" maxlength="4" class="w-full rounded border px-3 py-2">
+            <input type="text" name="education_history[${index}][degree]" value="${entry.degree ?? ''}" placeholder="วุฒิการศึกษา" class="w-full rounded border px-3 py-2">
+            <input type="text" name="education_history[${index}][university]" value="${entry.university ?? ''}" placeholder="มหาวิทยาลัยที่จบ" class="w-full rounded border px-3 py-2">
+            <button type="button" onclick="removeEducationHistoryRow(this)" class="rounded border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50">ลบ</button>
+        </div>
+    `;
+}
+
+function renderEducationHistoryRows(entries = []) {
+    const container = document.getElementById('educationHistoryRows');
+    const normalizedEntries = Array.isArray(entries) && entries.length > 0 ? entries : [{}];
+    container.innerHTML = normalizedEntries.map((entry, index) => educationHistoryRowTemplate(index, entry)).join('');
+}
+
+function addEducationHistoryRow(entry = {}) {
+    const container = document.getElementById('educationHistoryRows');
+    const index = container.children.length;
+    container.insertAdjacentHTML('beforeend', educationHistoryRowTemplate(index, entry));
+}
+
+function removeEducationHistoryRow(button) {
+    const container = document.getElementById('educationHistoryRows');
+    button.closest('div.grid').remove();
+
+    const rows = Array.from(container.children).map(row => ({
+        graduation_year: row.querySelector('[name$="[graduation_year]"]')?.value ?? '',
+        degree: row.querySelector('[name$="[degree]"]')?.value ?? '',
+        university: row.querySelector('[name$="[university]"]')?.value ?? '',
+    }));
+
+    renderEducationHistoryRows(rows);
+}
+
 function openCreateModal(button) {
     const modal = document.getElementById('userModal');
     const form = document.getElementById('userForm');
@@ -175,6 +214,7 @@ function openCreateModal(button) {
     document.getElementById('formMethod').value = 'POST';
     document.getElementById('passwordPanel').style.display = 'block';
     document.getElementById('password').required = true;
+    renderEducationHistoryRows([]);
 
     setSelectedRoles(roleSelect, []);
     setModalTitle('เพิ่มผู้ใช้งานใหม่');
@@ -193,13 +233,17 @@ function openEditModal(user) {
     form.setAttribute('data-user-id', user.id);
     document.getElementById('formMethod').value = 'PUT';
 
-    ['prefix', 'name', 'employee_id', 'department_id', 'position_id', 'personnel_type', 'email', 'phone', 'bio', 'status']
+    ['prefix', 'name', 'employee_id', 'department_id', 'position_id', 'personnel_type', 'email', 'phone', 'status']
         .forEach(field => {
             const input = document.getElementById(field);
             if (input && user[field] !== undefined) {
                 input.value = user[field] ?? '';
             }
         });
+
+    renderEducationHistoryRows(user.education_history && user.education_history.length > 0
+        ? user.education_history
+        : (user.bio ? [{ degree: user.bio }] : []));
 
     document.getElementById('passwordPanel').style.display = 'none';
     document.getElementById('password').required = false;
@@ -233,6 +277,7 @@ function closeModal() {
     document.getElementById('passwordPanel').style.display = 'block';
     document.getElementById('password').required = true;
     document.querySelectorAll('[id$="Error"]').forEach(err => err.classList.add('hidden'));
+    renderEducationHistoryRows([]);
 
     setSelectedRoles(document.getElementById('roles'), []);
     setModalTitle('เพิ่มผู้ใช้งานใหม่');
@@ -319,8 +364,11 @@ const validateUniqueField = debounce(async (id, fieldName, label) => {
 }, 400);
 
 document.addEventListener('DOMContentLoaded', () => {
+    const oldEducationHistory = @json(old('education_history', []));
     const roleSelect = document.getElementById('roles');
     const currentRoleDisplay = document.getElementById('currentRoleDisplay');
+
+    renderEducationHistoryRows(oldEducationHistory);
 
     roleSelect.addEventListener('change', function() {
         const selectedRoles = Array.from(

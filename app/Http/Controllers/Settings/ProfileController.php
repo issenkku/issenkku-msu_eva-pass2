@@ -80,6 +80,8 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $validated = $request->validated();
+        $validated['education_history'] = $this->normalizeEducationHistory($validated['education_history'] ?? []);
+        $validated['bio'] = $this->buildEducationBio($validated['education_history'], $validated['bio'] ?? null);
 
         // Handle profile photo upload
         if ($request->hasFile('profile_photo')) {
@@ -123,6 +125,40 @@ class ProfileController extends Controller
         $user->save();
 
         return redirect()->route('profile.show')->with('success', 'โปรไฟล์ได้รับการอัปเดตเรียบร้อยแล้ว');
+    }
+
+    private function normalizeEducationHistory(array $entries): ?array
+    {
+        $normalized = collect($entries)
+            ->filter(fn ($entry) => is_array($entry))
+            ->map(fn (array $entry) => [
+                'graduation_year' => filled($entry['graduation_year'] ?? null) ? (string) $entry['graduation_year'] : null,
+                'degree' => filled($entry['degree'] ?? null) ? trim((string) $entry['degree']) : null,
+                'university' => filled($entry['university'] ?? null) ? trim((string) $entry['university']) : null,
+            ])
+            ->filter(fn (array $entry) => filled($entry['graduation_year']) || filled($entry['degree']) || filled($entry['university']))
+            ->values()
+            ->all();
+
+        return $normalized === [] ? null : $normalized;
+    }
+
+    private function buildEducationBio(?array $educationHistory, ?string $fallbackBio = null): ?string
+    {
+        if (!empty($educationHistory)) {
+            return collect($educationHistory)
+                ->map(function (array $entry) {
+                    return collect([
+                        $entry['graduation_year'] ?? null,
+                        $entry['degree'] ?? null,
+                        $entry['university'] ?? null,
+                    ])->filter(fn ($value) => filled($value))->implode(' ');
+                })
+                ->filter(fn ($line) => filled($line))
+                ->implode(PHP_EOL);
+        }
+
+        return filled($fallbackBio) ? trim($fallbackBio) : null;
     }
 
     /**
