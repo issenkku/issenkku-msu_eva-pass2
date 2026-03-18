@@ -26,7 +26,32 @@ class SubjectController extends Controller
             return response()->json(Subject::all());
         }
 
-        $subjects = Subject::orderBy('code')->paginate(10);
+        $sort = $request->input('sort', 'code_asc');
+        $status = $request->input('status');
+
+        $subjects = Subject::query()
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->input('search'));
+
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('code', 'like', "%{$search}%")
+                        ->orWhere('name_th', 'like', "%{$search}%")
+                        ->orWhere('name_en', 'like', "%{$search}%");
+                });
+            })
+            ->when($status === 'active', fn ($query) => $query->where('is_active', true))
+            ->when($status === 'inactive', fn ($query) => $query->where('is_active', false));
+
+        match ($sort) {
+            'latest' => $subjects->orderByDesc('id'),
+            'oldest' => $subjects->orderBy('id'),
+            'code_desc' => $subjects->orderByDesc('code'),
+            'name_asc' => $subjects->orderBy('name_th'),
+            'name_desc' => $subjects->orderByDesc('name_th'),
+            default => $subjects->orderBy('code'),
+        };
+
+        $subjects = $subjects->paginate(10)->withQueryString();
 
         return view('subjects.index', compact('subjects'));
     }

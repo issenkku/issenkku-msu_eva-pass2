@@ -371,6 +371,29 @@
                 icon="fas fa-plus" />
         </div>
 
+        <x-list-toolbar
+            searchPlaceholder="ค้นหาชื่อตำแหน่ง..."
+            :sortOptions="[
+                'latest' => 'ใหม่สุด',
+                'oldest' => 'เก่าสุด',
+                'name_asc' => 'ชื่อ A-Z',
+                'name_desc' => 'ชื่อ Z-A',
+                'most_users' => 'ใช้งานมากที่สุด',
+                'least_users' => 'ใช้งานน้อยที่สุด',
+            ]"
+            :filters="[
+                [
+                    'name' => 'usage',
+                    'label' => 'สถานะการใช้งาน',
+                    'options' => [
+                        'used' => 'มีบุคลากรใช้งาน',
+                        'unused' => 'ยังไม่มีบุคลากร',
+                    ],
+                    'placeholder' => 'ทั้งหมด',
+                ],
+            ]"
+        />
+
         <!-- Table Container -->
         {{--  --}}
         <div class="table-container">
@@ -393,7 +416,7 @@
                         <tbody>
                             @foreach ($positions as $index => $position)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $positions->firstItem() + $index }}</td>
                                     <td><strong>{{ $position->name }}</strong></td>
                                     {{-- <td>{{ $position->description ?? '-' }}</td> --}}
                                     <td>
@@ -403,7 +426,7 @@
                                                 text="แก้ไข" 
                                                 class="text-sm"
                                                 icon="fas fa-edit"
-                                                onclick="handleEdit({{ $position->id }}, '{{ $position->name }}', '{{ $position->description }}')"
+                                                onclick='handleEdit({{ $position->id }}, @json($position->name), @json($position->description))'
                                             />
                                             <x-button 
                                                 type="danger" 

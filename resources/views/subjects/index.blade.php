@@ -368,6 +368,29 @@
                 icon="fas fa-plus" />
         </div>
 
+        <x-list-toolbar
+            searchPlaceholder="ค้นหารหัสหรือชื่อรายวิชา..."
+            :sortOptions="[
+                'code_asc' => 'รหัส A-Z',
+                'code_desc' => 'รหัส Z-A',
+                'name_asc' => 'ชื่อ A-Z',
+                'name_desc' => 'ชื่อ Z-A',
+                'latest' => 'ใหม่สุด',
+                'oldest' => 'เก่าสุด',
+            ]"
+            :filters="[
+                [
+                    'name' => 'status',
+                    'label' => 'สถานะ',
+                    'options' => [
+                        'active' => 'เปิดใช้งาน',
+                        'inactive' => 'ปิดใช้งาน',
+                    ],
+                    'placeholder' => 'ทั้งหมด',
+                ],
+            ]"
+        />
+
         <!-- Table Container -->
         {{--  --}}
         <div class="table-container">
@@ -390,7 +413,7 @@
                         <tbody>
                             @foreach ($subjects as $index => $subject)
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $subjects->firstItem() + $index }}</td>
                                     <td class="text-start">
                                         <strong>{{ $subject->code }}: {{ $subject->name_th }}</strong>
                                         @if (!empty($subject->name_en))
@@ -405,7 +428,7 @@
                                                 text="แก้ไข" 
                                                 class="text-sm"
                                                 icon="fas fa-edit"
-                                                onclick="handleEdit({{ $subject->id }}, '{{ addslashes($subject->code) }}', '{{ addslashes($subject->name_th) }}', '{{ addslashes($subject->name_en ?? '') }}', {{ $subject->credits }})"
+                                                onclick='handleEdit({{ $subject->id }}, @json($subject->code), @json($subject->name_th), @json($subject->name_en ?? ""), {{ $subject->credits }})'
                                             />
                                             <x-button 
                                                 type="danger" 

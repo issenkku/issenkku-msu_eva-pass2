@@ -17,9 +17,31 @@ class DepartmentsController extends Controller
      * @param void ไม่มีพารามิเตอร์
      * @return mixed ผลลัพธ์ของการทำงาน
      */
-    public function index()
+    public function index(Request $request)
     {
-        $departments = Departments::paginate(10);
+        $sort = $request->input('sort', 'latest');
+        $usage = $request->input('usage');
+
+        $departments = Departments::query()
+            ->withCount('user')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->input('search'));
+
+                $query->where('department_name', 'like', "%{$search}%");
+            })
+            ->when($usage === 'used', fn ($query) => $query->has('user'))
+            ->when($usage === 'unused', fn ($query) => $query->doesntHave('user'));
+
+        match ($sort) {
+            'name_asc' => $departments->orderBy('department_name'),
+            'name_desc' => $departments->orderByDesc('department_name'),
+            'most_users' => $departments->orderByDesc('user_count')->orderBy('department_name'),
+            'least_users' => $departments->orderBy('user_count')->orderBy('department_name'),
+            'oldest' => $departments->orderBy('id'),
+            default => $departments->orderByDesc('id'),
+        };
+
+        $departments = $departments->paginate(10)->withQueryString();
 
         return view('departments.index', compact('departments'));
         // --- IGNORE ---

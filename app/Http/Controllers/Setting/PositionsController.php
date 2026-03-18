@@ -17,9 +17,31 @@ class PositionsController extends Controller
      * @param void ไม่มีพารามิเตอร์
      * @return mixed ผลลัพธ์ของการทำงาน
      */
-    public function index()
+    public function index(Request $request)
     {
-        $positions = Positions::paginate(10);
+        $sort = $request->input('sort', 'latest');
+        $usage = $request->input('usage');
+
+        $positions = Positions::query()
+            ->withCount('user')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = trim($request->input('search'));
+
+                $query->where('name', 'like', "%{$search}%");
+            })
+            ->when($usage === 'used', fn ($query) => $query->has('user'))
+            ->when($usage === 'unused', fn ($query) => $query->doesntHave('user'));
+
+        match ($sort) {
+            'name_asc' => $positions->orderBy('name'),
+            'name_desc' => $positions->orderByDesc('name'),
+            'most_users' => $positions->orderByDesc('user_count')->orderBy('name'),
+            'least_users' => $positions->orderBy('user_count')->orderBy('name'),
+            'oldest' => $positions->orderBy('id'),
+            default => $positions->orderByDesc('id'),
+        };
+
+        $positions = $positions->paginate(10)->withQueryString();
 
         return view('positions.index', compact('positions'));
         // --- IGNORE ---
