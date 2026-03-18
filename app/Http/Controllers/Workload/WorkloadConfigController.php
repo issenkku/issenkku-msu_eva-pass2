@@ -176,7 +176,7 @@ class WorkloadConfigController extends Controller
             'groups.*.items.*.fields.*.field_type' => ['required', 'string', 'max:255'],
             'groups.*.items.*.form_items' => ['nullable', 'array'],
             'groups.*.items.*.form_items.*.label' => ['required', 'string', 'max:255'],
-            'groups.*.items.*.form_items.*.score' => ['nullable', 'integer', 'min:0'],
+            'groups.*.items.*.form_items.*.score' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'groups.*.items.*.form_items.*.sequence' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -261,7 +261,7 @@ class WorkloadConfigController extends Controller
                         WorkloadFormItem::create([
                             'label' => $entry['label'],
                             'score' => array_key_exists('score', $entry) && $entry['score'] !== null
-                                ? (int) $entry['score']
+                                ? round((float) $entry['score'], 2)
                                 : null,
                             'sequence' => $entry['sequence'],
                             'workload_form_id' => $form->id,

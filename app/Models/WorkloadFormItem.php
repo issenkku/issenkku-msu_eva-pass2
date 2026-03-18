@@ -17,7 +17,7 @@ class WorkloadFormItem extends Model
     ];
 
     protected $casts = [
-        'score' => 'integer',
+        'score' => 'decimal:2',
     ];
 
     public function form()

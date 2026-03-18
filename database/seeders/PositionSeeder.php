@@ -51,16 +51,18 @@ class PositionSeeder extends Seeder
             'พนักงานขับรถ',
         ];
 
-        DB::table('positions')->insert(
+        DB::table('positions')->upsert(
             array_map(
-                static fn (string $name): array => [
+                static fn (string $name) => [
                     'name' => $name,
                     'description' => null,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ],
                 $positions
-            )
+            ),
+            ['name'],
+            ['description', 'updated_at']
         );
     }
 }

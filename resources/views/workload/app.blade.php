@@ -120,7 +120,7 @@
                                         <div class="subitem-label">1</div>
                                         <input type="text" class="form-control workload-item-name" value="">
                                         <input type="number" class="form-control workload-item-score" value=""
-                                            min="0" step="1">
+                                            min="0" step="0.01">
                                         <button class="icon-btn is-danger workload-item-remove" type="button">×</button>
                                     </div>
 

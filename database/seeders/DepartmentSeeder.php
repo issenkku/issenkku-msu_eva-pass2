@@ -27,13 +27,15 @@ class DepartmentSeeder extends Seeder
             'หลักสูตร ปร.ด.เทคโนโลยีสุขภาพและความปลอดภัย',
         ];
 
-        DB::table('departments')->insert(
+        DB::table('departments')->upsert(
             array_map(
                 static fn (string $department): array => [
                     'department_name' => $department,
                 ],
                 $departments
-            )
+            ),
+            ['department_name'],
+            ['department_name']
         );
     }
 }
