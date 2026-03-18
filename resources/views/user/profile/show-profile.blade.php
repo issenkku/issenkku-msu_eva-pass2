@@ -96,7 +96,14 @@
             </div>
 
             {{-- ปุ่มแก้ไขข้อมูล --}}
-            <div class="mt-8 flex justify-end">
+            <div class="mt-8 flex flex-wrap justify-end gap-3">
+                @if ($user->is_public_profile_enabled)
+                <x-button
+                    type="primary"
+                    text="ดู Public View"
+                    icon="fas fa-up-right-from-square"
+                    href="{{ $user->public_profile_url }}" />
+                @endif
                 <x-button 
                     type="warning"
                     text="แก้ไขข้อมูล"

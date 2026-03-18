@@ -43,6 +43,11 @@ class Reports extends Model
         return $this->hasMany(EvidenceAnswer::class, 'report_id');
     }
 
+    public function workloadEntries()
+    {
+        return $this->hasMany(WorkloadEntry::class, 'report_id');
+    }
+
     public function assignments()
     {
         return $this->hasOne(Assignments::class, 'report_id');

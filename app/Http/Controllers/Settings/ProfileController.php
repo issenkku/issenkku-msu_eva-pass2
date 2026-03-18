@@ -46,9 +46,51 @@ class ProfileController extends Controller
             ->where('is_public_profile_enabled', true)
             ->firstOrFail();
 
-        $user = $user->load('position', 'department', 'roles');
+        $user = $user->load([
+            'position',
+            'department',
+            'roles',
+            'assignment.assignmentData',
+            'assignment.report.reportData',
+            'assignment.report.workloadEntries.subject',
+            'assignment.report.evidenceAnswers',
+            'assignment.report.quantityScores',
+            'assignment.report.qualityScores',
+        ]);
 
-        return view('user.profile.show-profile-public', compact('user'));
+        $evaluatedWorks = $user->assignment
+            ->filter(fn ($assignment) => $assignment->report && $assignment->report->status === 'Completed')
+            ->map(function ($assignment) {
+                $report = $assignment->report;
+                $entries = $report->workloadEntries ?? collect();
+                $subjects = $entries
+                    ->map(fn ($entry) => $entry->subject?->code ? $entry->subject->code.' '.$entry->subject->name : ($entry->subject->name ?? null))
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                return [
+                    'report_title' => $report->reportData->report_title ?? 'ไม่ระบุชื่อรอบประเมิน',
+                    'report_description' => $report->reportData->report_description ?? null,
+                    'status' => $report->status ?? '-',
+                    'evaluator_name' => $assignment->assignmentData?->evaluatorUser?->name ?? '-',
+                    'evaluator_position' => $assignment->assignmentData?->evaluatorPosition?->name ?? null,
+                    'period_start' => optional($assignment->assignmentData?->start_time)->format('d/m/Y'),
+                    'period_end' => optional($assignment->assignmentData?->end_time)->format('d/m/Y'),
+                    'workload_entries_count' => $entries->count(),
+                    'subjects' => $subjects,
+                    'evidence_count' => ($report->evidenceAnswers ?? collect())->count(),
+                    'quantity_score' => round((float) ($report->quantityScores?->sum('score_D') ?? 0), 2),
+                    'quality_score' => round((float) ($report->qualityScores?->sum('score') ?? 0), 2),
+                    'updated_at' => optional($report->updated_at)?->format('d/m/Y H:i'),
+                ];
+            })
+            ->sortByDesc(function ($item) {
+                return $item['updated_at'] ?? '';
+            })
+            ->values();
+
+        return view('user.profile.show-profile-public', compact('user', 'evaluatedWorks'));
     }
 
     /**
