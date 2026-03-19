@@ -724,6 +724,20 @@
             gap: 8px;
         }
 
+        .workload-variable-chips {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .workload-variable-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
         .chip {
             border: 1px solid #dbeafe;
             background: #eff6ff;
@@ -986,6 +1000,14 @@
                     }
                     variableChips.innerHTML = '';
 
+                    const creditsRow = document.createElement('div');
+                    creditsRow.className = 'workload-variable-chip-row';
+                    variableChips.appendChild(creditsRow);
+
+                    const workloadRow = document.createElement('div');
+                    workloadRow.className = 'workload-variable-chip-row';
+                    variableChips.appendChild(workloadRow);
+
                     const builtInVariables = [
                         { label: 'หน่วยกิตรวม', value: 'credits' },
                         { label: 'หน่วยกิตบรรยาย', value: 'lecture_credits' },
@@ -1004,12 +1026,12 @@
                                 insertToken(formulaText, variable.value);
                             }
                         });
-                        variableChips.appendChild(chip);
+                        creditsRow.appendChild(chip);
                     });
 
                     const itemRows = card.querySelectorAll('.workload-item-row');
                     if (!itemRows.length) {
-                        if (variableChips.children.length > 0) {
+                        if (creditsRow.children.length > 0) {
                             return;
                         }
                         const emptyChip = document.createElement('button');
@@ -1017,7 +1039,7 @@
                         emptyChip.type = 'button';
                         emptyChip.disabled = true;
                         emptyChip.textContent = 'ยังไม่มีตัวแปร';
-                        variableChips.appendChild(emptyChip);
+                        workloadRow.appendChild(emptyChip);
                         return;
                     }
 
@@ -1033,7 +1055,7 @@
                             insertToken(formulaText, valueText);
                         }
                     });
-                    variableChips.appendChild(chip);
+                    workloadRow.appendChild(chip);
                 };
 
                 // ฟังก์ชันย่อย: addFormulaItem
