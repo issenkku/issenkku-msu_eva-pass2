@@ -304,7 +304,7 @@
                     <!-- จัดการข้อมูล Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle 
-                           {{ request()->routeIs(['settings.*', 'departments.*', 'positions.*']) ? 'active' : '' }}"
+                           {{ request()->routeIs(['settings.*', 'departments.*', 'positions.*', 'job-level.*']) ? 'active' : '' }}"
                             href="#" id="navbarDataDropdown" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
                             <i class="fas fa-database me-2 text-gray "></i>
@@ -326,10 +326,17 @@
                                 </a>
                             </li>
                             <li>
+                                <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('job-level.*') ? 'fw-bold' : '' }}"
+                                    href="{{ route('job-level.index', []) ?? '#' }}">
+                                    <i class="fas fa-user-tie me-2 text-gray"></i>
+                                    ข้อมูลระดับตําแหน่งงาน
+                                </a>
+                            </li>
+                            <li>
                                 <a class="dropdown-item dropdown-item-custom {{ request()->routeIs('positions.*') ? 'fw-bold' : '' }}"
                                     href="{{ route('positions.index', []) ?? '#' }}">
-                                    <i class="fas fa-user-tie me-2 text-gray"></i>
-                                    ข้อมูลตำแหน่ง
+                                    <i class="fas fa-briefcase me-2 text-gray"></i>
+                                    ข้อมูลตำแหน่งงาน
                                 </a>
                             </li>
                         </ul>

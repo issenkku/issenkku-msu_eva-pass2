@@ -16,6 +16,7 @@ use App\Http\Controllers\FileExportController;
 use App\Http\Controllers\Manager\ManagerController;
 use App\Http\Controllers\Manager\ManagerScoreController;
 use App\Http\Controllers\Setting\DepartmentsController;
+use App\Http\Controllers\Setting\JobLevelsController;
 use App\Http\Controllers\Setting\PositionsController;
 use App\Http\Controllers\Setting\SettingsController;
 use App\Http\Controllers\Settings\RoleAndPermissionController;
@@ -47,6 +48,13 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/store', [PositionsController::class, 'store'])->name('store');
         Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
         Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('job-level')->name('job-level.')->group(function () {
+        Route::get('/', [JobLevelsController::class, 'index'])->name('index');
+        Route::post('/store', [JobLevelsController::class, 'store'])->name('store');
+        Route::put('/{id}', [JobLevelsController::class, 'update'])->name('update');
+        Route::delete('/{id}', [JobLevelsController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('users')->name('users.')->group(function () {

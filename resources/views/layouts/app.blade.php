@@ -533,6 +533,7 @@
                                 <li><a class="dropdown-item" href="{{ route('settings.index') }}">ตั้งค่าเว็บไซต์</a></li>
                                 <li><a class="dropdown-item" href="{{ route('departments.index') }}">ตั้งค่าหน่วยงาน/แผนก</a></li>
                                 <li><a class="dropdown-item" href="{{ route('positions.index') }}">ตั้งค่าตำแหน่งงาน</a></li>
+                                <li><a class="dropdown-item" href="{{ route('job-level.index') }}">ตั้งค่าระดับตำแหน่งงาน</a></li>
                                 <li><a class="dropdown-item" href="{{ route('subjects.index') }}">ตั้งค่ารายวิชา</a></li>
                             </ul>
                         </li>
@@ -657,6 +658,7 @@
                             <a href="{{ route('settings.index') }}" class="mobile-dropdown-item">ตั้งค่าเว็บไซต์</a>
                             <a href="{{ route('departments.index') }}" class="mobile-dropdown-item">ตั้งค่าหน่วยงาน/แผนก</a>
                             <a href="{{ route('positions.index') }}" class="mobile-dropdown-item">ตั้งค่าตำแหน่งงาน</a>
+                            <a href="{{ route('job-level.index') }}" class="mobile-dropdown-item">ตั้งค่าระดับตำแหน่งงาน</a>
                         </div>
                     </div>
                 @endif
