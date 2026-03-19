@@ -55,16 +55,22 @@
                 <!-- Categories -->
                 <div id="categories_container" class="space-y-8">
                     <!-- Category Template (hidden) -->
-                    <div class="category_block bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300" style="display: none;">
+                    <div class="category_block bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300" style="display: none;" draggable="true" data-draggable-level="category">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-bold text-xl text-gray-900">หมวดหมู่การประเมิน</h3>
-                            <div class="flex space-x-3">
-                                <button type="button" class="move_category_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
+                            <div class="flex items-center space-x-3">
+                                <button type="button" class="drag_handle inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                    </svg>
+                                    <span class="text-sm font-medium">ลากจัดลำดับ</span>
+                                </button>
+                                <button type="button" class="move_category_up_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                     </svg>
                                 </button>
-                                <button type="button" class="move_category_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                <button type="button" class="move_category_down_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
@@ -79,7 +85,9 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
-                                <span class="category_sequence text-gray-700 font-medium text-lg">1</span>
+                                <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-700">
+                                    <span class="category_sequence">1</span>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่หลัก <span class="text-red-500">*</span></label>
@@ -99,16 +107,22 @@
                                 รายการประเมิน
                             </h4>
                             <!-- Evaluation List Template -->
-                            <div class="evaluation_list_block bg-gray-100 p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300">
+                            <div class="evaluation_list_block bg-gray-100 p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300" draggable="true" data-draggable-level="evaluation">
                                 <div class="flex justify-between items-center mb-4">
                                     <h5 class="font-bold text-gray-900">รายการประเมิน</h5>
-                                    <div class="flex space-x-3">
-                                        <button type="button" class="move_eval_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
+                                    <div class="flex items-center space-x-3">
+                                        <button type="button" class="drag_handle inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                            </svg>
+                                            <span class="text-xs font-medium">ลากจัดลำดับ</span>
+                                        </button>
+                                        <button type="button" class="move_eval_up_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                             </svg>
                                         </button>
-                                        <button type="button" class="move_eval_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                        <button type="button" class="move_eval_down_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                             </svg>
@@ -123,7 +137,9 @@
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
-                                        <span name="eval_sequence" class="eval_sequence text-gray-700 font-medium text-lg">1</span>
+                                        <div class="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-700">
+                                            <span class="eval_sequence">1.1</span>
+                                        </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span class="text-red-500">*</span></label>
@@ -168,16 +184,21 @@
                                         เพิ่มเกณฑ์ปริมาณหลัก
                                     </button>
                                     <!-- Quantity Main Criteria Template -->
-                                    <div class="quant_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                    <div class="quant_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200" draggable="true" data-draggable-level="quantity-main">
                                         <div class="flex justify-between items-center mb-3">
                                             <h6 class="text-sm font-bold text-gray-900">เกณฑ์ปริมาณหลัก</h6>
-                                            <div class="flex space-x-3">
-                                                <button type="button" class="move_quant_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
+                                            <div class="flex items-center space-x-3">
+                                                <button type="button" class="drag_handle inline-flex items-center text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button" class="move_quant_up_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                                     </svg>
                                                 </button>
-                                                <button type="button" class="move_quant_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                                <button type="button" class="move_quant_down_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                     </svg>
@@ -192,7 +213,9 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
-                                                <span name="quant_main_sequence" class="quant_main_sequence text-gray-700 font-medium text-lg">1</span>
+                                                <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
+                                                    <span class="quant_main_sequence">1.1.1</span>
+                                                </div>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span class="text-red-500">*</span></label>
@@ -213,20 +236,29 @@
                                         </div>
                                         <!-- Quantity Sub Criteria Container -->
                                         <div class="quant_sub_criteria_container space-y-3 pl-4 border-l-2 border-green-200 mb-3">
-                                            <div class="quant_sub_criteria_block bg-gray-50 p-3 rounded-lg">
+                                            <div class="quant_sub_criteria_block bg-gray-50 p-3 rounded-lg" draggable="true" data-draggable-level="quantity-sub">
                                                 <div class="flex justify-between items-center mb-2">
                                                     <span class="text-sm font-medium text-gray-600">เกณฑ์ปริมาณย่อย</span>
-                                                    <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
+                                                    <div class="flex items-center gap-3">
+                                                        <button type="button" class="drag_handle inline-flex items-center text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                            </svg>
+                                                        </button>
+                                                        <button type="button" class="delete_quant_sub_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <input type="hidden" name="quant_sub_criteria_id" class="quant_sub_criteria_id" value="">
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:items-end">
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
-                                                        <span name="quant_sub_sequence" class="quant_sub_sequence text-gray-700 font-medium text-lg">1</span>
+                                                        <div class="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
+                                                            <span class="quant_sub_sequence">1.1.1.1</span>
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย <span class="text-red-500">*</span></label>
@@ -274,16 +306,21 @@
                                         เพิ่มเกณฑ์คุณภาพหลัก
                                     </button>
                                     <!-- Quality Main Criteria Template -->
-                                    <div class="qual_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                                    <div class="qual_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200" draggable="true" data-draggable-level="quality-main">
                                         <div class="flex justify-between items-center mb-3">
                                             <h6 class="text-sm font-bold text-gray-900">เกณฑ์คุณภาพหลัก</h6>
-                                            <div class="flex space-x-3">
-                                                <button type="button" class="move_qual_up_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
+                                            <div class="flex items-center space-x-3">
+                                                <button type="button" class="drag_handle inline-flex items-center text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                    </svg>
+                                                </button>
+                                                <button type="button" class="move_qual_up_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200" disabled>
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                                                     </svg>
                                                 </button>
-                                                <button type="button" class="move_qual_down_btn text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
+                                                <button type="button" class="move_qual_down_btn hidden text-blue-600 hover:text-blue-800 disabled:text-gray-400 transition duration-200">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                     </svg>
@@ -298,7 +335,9 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
-                                                <span name="qual_main_sequence" class="qual_main_sequence text-gray-700 font-medium text-lg">1</span>
+                                                <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
+                                                    <span class="qual_main_sequence">1.1.1</span>
+                                                </div>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span class="text-red-500">*</span></label>
@@ -315,19 +354,28 @@
                                         </div>
                                         <!-- Quality Sub Criteria Container -->
                                         <div class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
-                                            <div class="qual_sub_criteria_block bg-purple-50 p-3 rounded-lg">
+                                            <div class="qual_sub_criteria_block bg-purple-50 p-3 rounded-lg" draggable="true" data-draggable-level="quality-sub">
                                                 <div class="flex justify-between items-center mb-2">
                                                     <span class="text-sm font-medium text-gray-600">เกณฑ์คุณภาพย่อย</span>
-                                                    <button type="button" class="delete_qual_sub_btn text-red-600 hover:text-red-800 transition duration-200">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                    </button>
+                                                    <div class="flex items-center gap-3">
+                                                        <button type="button" class="drag_handle inline-flex items-center text-gray-500 hover:text-gray-700 transition duration-200" title="ลากเพื่อจัดลำดับ">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                                                            </svg>
+                                                        </button>
+                                                        <button type="button" class="delete_qual_sub_btn text-red-600 hover:text-red-800 transition duration-200">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
-                                                        <span name="qual_sub_sequence" class="qual_sub_sequence text-gray-700 font-medium text-lg">1</span>
+                                                        <div class="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
+                                                            <span class="qual_sub_sequence">1.1.1.1</span>
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <label class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย <span class="text-red-500">*</span></label>
@@ -634,14 +682,14 @@
             if (blockSelector === '.evaluation_list_block') {
                 const container = node.closest('.category_block').querySelector('.evaluation_lists_container');
                 const index = container.querySelectorAll('.evaluation_list_block').length + 1;
-                node.querySelector('.eval_sequence').textContent = index;
+                setSequenceInputValue(node.querySelector('.eval_sequence'), index);
                 node.querySelector('.quantity_main_criterias_container').classList.add('hidden');
                 node.querySelector('.quality_main_criterias_container').classList.add('hidden');
             }
             if (blockSelector === '.category_block') {
                 const container = document.getElementById('categories_container');
                 const index = container.querySelectorAll('.category_block').length + 1;
-                node.querySelector('.category_sequence').textContent = index;
+                setSequenceInputValue(node.querySelector('.category_sequence'), index);
             }
             
             return node;
@@ -670,49 +718,154 @@
             });
         }
 
+        function bindSequenceInputs() {}
+
+        function setSequenceInputValue(input, value) {
+            if (!input) {
+                return;
+            }
+
+            input.textContent = String(value);
+        }
+
+        function getSequenceValue(block, selector, fallback) {
+            const input = block.querySelector(selector);
+            return (input?.textContent || '').trim() || String(fallback);
+        }
+
+        function parseSequenceValue(value) {
+            return String(value || '')
+                .split('.')
+                .map((part) => {
+                    const parsed = Number(part);
+                    return Number.isFinite(parsed) ? parsed : Number.MAX_SAFE_INTEGER;
+                });
+        }
+
+        function compareSequenceValues(left, right) {
+            const leftParts = parseSequenceValue(left);
+            const rightParts = parseSequenceValue(right);
+            const maxLength = Math.max(leftParts.length, rightParts.length);
+
+            for (let index = 0; index < maxLength; index++) {
+                const leftPart = leftParts[index] ?? -1;
+                const rightPart = rightParts[index] ?? -1;
+                if (leftPart !== rightPart) {
+                    return leftPart - rightPart;
+                }
+            }
+
+            return String(left).localeCompare(String(right), undefined, { numeric: true });
+        }
+
         function updateSequences() {
             // Update category sequences
             document.querySelectorAll('.category_block:not([style*="display: none"])').forEach((catBlock, index) => {
-                catBlock.querySelector('.category_sequence').textContent = index + 1;
-            });
+                const categoryPrefix = `${index + 1}`;
+                setSequenceInputValue(catBlock.querySelector('.category_sequence'), categoryPrefix);
 
-            // Update evaluation sequences
-            document.querySelectorAll('.evaluation_lists_container').forEach(container => {
-                container.querySelectorAll('.evaluation_list_block').forEach((evalBlock, index) => {
-                    evalBlock.querySelector('.eval_sequence').textContent = index + 1;
-                });
-            });
+                catBlock.querySelectorAll('.evaluation_lists_container').forEach(container => {
+                    container.querySelectorAll('.evaluation_list_block').forEach((evalBlock, evalIndex) => {
+                        const evalPrefix = `${categoryPrefix}.${evalIndex + 1}`;
+                        setSequenceInputValue(evalBlock.querySelector('.eval_sequence'), evalPrefix);
 
-            // Update quantity main criteria sequences
-            document.querySelectorAll('.quantity_main_criterias_container').forEach(container => {
-                container.querySelectorAll('.quant_criteria_block').forEach((block, index) => {
-                    block.querySelector('.quant_main_sequence').textContent = index + 1;
-                });
-            });
+                        evalBlock.querySelectorAll('.quantity_main_criterias_container').forEach(quantityContainer => {
+                            quantityContainer.querySelectorAll('.quant_criteria_block').forEach((block, quantIndex) => {
+                                const quantPrefix = `${evalPrefix}.${quantIndex + 1}`;
+                                setSequenceInputValue(block.querySelector('.quant_main_sequence'), quantPrefix);
 
-            // Update quantity sub criteria sequences
-            document.querySelectorAll('.quant_sub_criteria_container').forEach(container => {
-                container.querySelectorAll('.quant_sub_criteria_block').forEach((block, index) => {
-                    block.querySelector('.quant_sub_sequence').textContent = index + 1;
-                });
-            });
+                                block.querySelectorAll('.quant_sub_criteria_container').forEach(subContainer => {
+                                    subContainer.querySelectorAll('.quant_sub_criteria_block').forEach((subBlock, subIndex) => {
+                                        setSequenceInputValue(subBlock.querySelector('.quant_sub_sequence'), `${quantPrefix}.${subIndex + 1}`);
+                                    });
+                                });
+                            });
+                        });
 
-            // Update quality main criteria sequences
-            document.querySelectorAll('.quality_main_criterias_container').forEach(container => {
-                container.querySelectorAll('.qual_criteria_block').forEach((block, index) => {
-                    block.querySelector('.qual_main_sequence').textContent = index + 1;
-                });
-            });
+                        evalBlock.querySelectorAll('.quality_main_criterias_container').forEach(qualityContainer => {
+                            qualityContainer.querySelectorAll('.qual_criteria_block').forEach((block, qualIndex) => {
+                                const qualPrefix = `${evalPrefix}.${qualIndex + 1}`;
+                                setSequenceInputValue(block.querySelector('.qual_main_sequence'), qualPrefix);
 
-            // Update quality sub criteria sequences
-            document.querySelectorAll('.qual_sub_criterias_container').forEach(container => {
-                container.querySelectorAll('.qual_sub_criteria_block').forEach((block, index) => {
-                    block.querySelector('.qual_sub_sequence').textContent = index + 1;
+                                block.querySelectorAll('.qual_sub_criterias_container').forEach(subContainer => {
+                                    subContainer.querySelectorAll('.qual_sub_criteria_block').forEach((subBlock, subIndex) => {
+                                        setSequenceInputValue(subBlock.querySelector('.qual_sub_sequence'), `${qualPrefix}.${subIndex + 1}`);
+                                    });
+                                });
+                            });
+                        });
+                    });
                 });
             });
 
             updateQuantSubSettingLinks();
         }
+
+        let draggedBlock = null;
+
+        document.addEventListener('pointerdown', function (e) {
+            document.querySelectorAll('[data-drag-armed="true"]').forEach((block) => {
+                delete block.dataset.dragArmed;
+            });
+
+            const handle = e.target.closest('.drag_handle');
+            if (!handle) {
+                return;
+            }
+
+            const block = handle.closest('[data-draggable-level]');
+            if (block) {
+                block.dataset.dragArmed = 'true';
+            }
+        });
+
+        document.addEventListener('pointerup', function () {
+            document.querySelectorAll('[data-drag-armed="true"]').forEach((block) => {
+                delete block.dataset.dragArmed;
+            });
+        });
+
+        document.addEventListener('dragstart', function (e) {
+            const block = e.target.closest('[data-draggable-level]');
+            if (!block || block.dataset.dragArmed !== 'true') {
+                e.preventDefault();
+                return;
+            }
+
+            draggedBlock = block;
+            block.classList.add('opacity-60');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', block.dataset.draggableLevel || 'move');
+        });
+
+        document.addEventListener('dragover', function (e) {
+            if (!draggedBlock) {
+                return;
+            }
+
+            const target = e.target.closest('[data-draggable-level]');
+            if (!target || target === draggedBlock) {
+                return;
+            }
+
+            if (target.dataset.draggableLevel !== draggedBlock.dataset.draggableLevel || target.parentElement !== draggedBlock.parentElement) {
+                return;
+            }
+
+            e.preventDefault();
+            const rect = target.getBoundingClientRect();
+            const insertAfter = (e.clientY - rect.top) > (rect.height / 2);
+            target.parentElement.insertBefore(draggedBlock, insertAfter ? target.nextElementSibling : target);
+            updateSequences();
+        });
+
+        document.addEventListener('dragend', function () {
+            if (draggedBlock) {
+                draggedBlock.classList.remove('opacity-60');
+                delete draggedBlock.dataset.dragArmed;
+            }
+            draggedBlock = null;
+        });
 
         // Category handlers
         function handleDeleteCategory(categoryBlock) {
@@ -1392,7 +1545,12 @@
             };
 
             // Collect categories
-            document.querySelectorAll('.category_block:not([style*="display: none"])').forEach((catBlock, catIndex) => {
+            Array.from(document.querySelectorAll('.category_block:not([style*="display: none"])'))
+                .sort((left, right) => compareSequenceValues(
+                    getSequenceValue(left, '.category_sequence', 1),
+                    getSequenceValue(right, '.category_sequence', 1)
+                ))
+                .forEach((catBlock, catIndex) => {
                 const mainCategories = catBlock.querySelector('.main_categories').value.trim();
                 const subCategories = catBlock.querySelector('.sub_categories').value.trim();
 
@@ -1412,7 +1570,12 @@
                 }
 
                 // Collect evaluation lists
-                catBlock.querySelectorAll('.evaluation_list_block').forEach((evalBlock, evalIndex) => {
+                Array.from(catBlock.querySelectorAll('.evaluation_list_block'))
+                    .sort((left, right) => compareSequenceValues(
+                        getSequenceValue(left, '.eval_sequence', `${catIndex + 1}.1`),
+                        getSequenceValue(right, '.eval_sequence', `${catIndex + 1}.1`)
+                    ))
+                    .forEach((evalBlock, evalIndex) => {
                     const evalName = evalBlock.querySelector('.eval_name').value.trim();
                     const sumScore = evalBlock.querySelector('.sum_score').value;
 
@@ -1435,7 +1598,12 @@
 
                             // Collect quantity criteria if enabled
                             if (evalBlock.querySelector('.quantity_criteria_type').checked) {
-                                evalBlock.querySelectorAll('.quant_criteria_block').forEach((quantBlock, quantIndex) => {
+                                Array.from(evalBlock.querySelectorAll('.quant_criteria_block'))
+                                    .sort((left, right) => compareSequenceValues(
+                                        getSequenceValue(left, '.quant_main_sequence', `${catIndex + 1}.${evalIndex + 1}.1`),
+                                        getSequenceValue(right, '.quant_main_sequence', `${catIndex + 1}.${evalIndex + 1}.1`)
+                                    ))
+                                    .forEach((quantBlock, quantIndex) => {
                                     const quantName = quantBlock.querySelector('.quant_name').value.trim();
                                     
                                     // Get content from Summernote or textarea
@@ -1460,7 +1628,12 @@
                                     }
 
                                     // Collect quantity sub criteria
-                                    quantBlock.querySelectorAll('.quant_sub_criteria_block').forEach((subBlock, subIndex) => {
+                                    Array.from(quantBlock.querySelectorAll('.quant_sub_criteria_block'))
+                                        .sort((left, right) => compareSequenceValues(
+                                            getSequenceValue(left, '.quant_sub_sequence', `${catIndex + 1}.${evalIndex + 1}.${quantIndex + 1}.1`),
+                                            getSequenceValue(right, '.quant_sub_sequence', `${catIndex + 1}.${evalIndex + 1}.${quantIndex + 1}.1`)
+                                        ))
+                                        .forEach((subBlock, subIndex) => {
                                         const subName = subBlock.querySelector('.quant_sub_name').value.trim();
                                         const scoreA = subBlock.querySelector('.score_a').value;
                                         const scoreB = subBlock.querySelector('.score_b').value;
@@ -1488,7 +1661,12 @@
 
                             // Collect quality criteria if enabled
                             if (evalBlock.querySelector('.quality_criteria_type').checked) {
-                                evalBlock.querySelectorAll('.qual_criteria_block').forEach((qualBlock, qualIndex) => {
+                                Array.from(evalBlock.querySelectorAll('.qual_criteria_block'))
+                                    .sort((left, right) => compareSequenceValues(
+                                        getSequenceValue(left, '.qual_main_sequence', `${catIndex + 1}.${evalIndex + 1}.1`),
+                                        getSequenceValue(right, '.qual_main_sequence', `${catIndex + 1}.${evalIndex + 1}.1`)
+                                    ))
+                                    .forEach((qualBlock, qualIndex) => {
                                     const qualName = qualBlock.querySelector('.qual_name').value.trim();
                                     const qualRatio = qualBlock.querySelector('.qual_ratio').value;
                                     
@@ -1513,7 +1691,12 @@
                                     }
 
                             // Collect quality sub criteria
-                            qualBlock.querySelectorAll('.qual_sub_criteria_block').forEach((subBlock, subIndex) => {
+                            Array.from(qualBlock.querySelectorAll('.qual_sub_criteria_block'))
+                                .sort((left, right) => compareSequenceValues(
+                                    getSequenceValue(left, '.qual_sub_sequence', `${catIndex + 1}.${evalIndex + 1}.${qualIndex + 1}.1`),
+                                    getSequenceValue(right, '.qual_sub_sequence', `${catIndex + 1}.${evalIndex + 1}.${qualIndex + 1}.1`)
+                                ))
+                                .forEach((subBlock, subIndex) => {
                                 const subName = subBlock.querySelector('.qual_sub_name').value.trim();
                                 const numScore = subBlock.querySelector('.num_score').value;
                                 // Get content from Summernote editor if available, otherwise from textarea
