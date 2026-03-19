@@ -10,6 +10,7 @@ use App\Models\WorkloadFormItem;
 use App\Models\QuantitySubCriteria;
 use App\Models\QuantitySubCriteriaGroup;
 use App\Models\QuantitySubCriteriaItem;
+use App\Services\WorkloadFormulaEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -306,6 +307,7 @@ class WorkloadConfigController extends Controller
             static fn ($field) => strtolower($field['variable_name'] ?? ''),
             array_filter($fields, static fn ($field) => strtolower($field['field_type'] ?? '') === 'text')
         );
+        $builtInVariables = WorkloadFormulaEvaluator::subjectCreditVariables();
 
         preg_match_all('/[A-Za-z_][A-Za-z0-9_]*/', $formula, $matches);
         $tokens = array_unique(array_map('strtolower', $matches[0] ?? []));
@@ -318,6 +320,9 @@ class WorkloadConfigController extends Controller
                 continue;
             }
             if ($token === 'item_star') {
+                continue;
+            }
+            if (in_array($token, $builtInVariables, true)) {
                 continue;
             }
             if (!in_array($token, $variables, true)) {

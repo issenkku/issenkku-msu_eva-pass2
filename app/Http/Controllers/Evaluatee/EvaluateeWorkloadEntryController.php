@@ -8,6 +8,7 @@ use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
 use App\Models\EvidenceAnswer;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Models\Subject;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormItem;
@@ -45,6 +46,10 @@ class EvaluateeWorkloadEntryController extends Controller
             }
         }
 
+        $fieldValues = $this->mergeSubjectCreditFieldValues(
+            $fieldValues,
+            isset($validated['subject_id']) ? (int) $validated['subject_id'] : null
+        );
         $fieldValues = $this->resolveItemFieldValues($form, $fieldValues);
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
             ->evaluate($form->formula_logic, $form->fields, $fieldValues);
@@ -100,6 +105,12 @@ class EvaluateeWorkloadEntryController extends Controller
             }
 
             $form = WorkloadForm::with(['fields', 'items'])->findOrFail($workloadFormId);
+            $fieldValues = $this->mergeSubjectCreditFieldValues(
+                (array) $fieldValues,
+                array_key_exists('subject_id', $validated)
+                    ? ($validated['subject_id'] !== null ? (int) $validated['subject_id'] : null)
+                    : ($entry->subject_id !== null ? (int) $entry->subject_id : null)
+            );
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
@@ -170,6 +181,30 @@ class EvaluateeWorkloadEntryController extends Controller
         }
 
         return $sequence > 0 ? 'item_' . $sequence : '';
+    }
+
+    private function mergeSubjectCreditFieldValues(array $fieldValues, ?int $subjectId): array
+    {
+        $normalized = [];
+        foreach ($fieldValues as $key => $value) {
+            $normalized[strtolower((string) $key)] = $value;
+        }
+
+        if (! $subjectId) {
+            return $normalized;
+        }
+
+        $subject = Subject::find($subjectId);
+        if (! $subject) {
+            return $normalized;
+        }
+
+        $normalized['credits'] = (float) ($subject->credits ?? 0);
+        $normalized['lecture_credits'] = (float) ($subject->lecture_credits ?? 0);
+        $normalized['lab_credits'] = (float) ($subject->lab_credits ?? 0);
+        $normalized['self_study_credits'] = (float) ($subject->self_study_credits ?? 0);
+
+        return $normalized;
     }
 
     private function resolveItemFieldValues(WorkloadForm $form, array $fieldValues): array

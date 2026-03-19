@@ -8,17 +8,10 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class SubjectSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $timestamp = now();
-        $source = database_path('seeders/data/subject-seed-source.xlsx');
-
-        if (! is_file($source)) {
-            throw new \RuntimeException("Subject seed source not found: {$source}");
-        }
+        $source = $this->resolveSourcePath();
 
         $sheet = IOFactory::load($source)->getSheet(0);
         $rows = $sheet->toArray(null, true, true, false);
@@ -33,6 +26,9 @@ class SubjectSeeder extends Seeder
             $nameEn = preg_replace('/\s+/u', ' ', trim((string) ($row[2] ?? '')));
             $creditText = trim((string) ($row[3] ?? ''));
             $credits = trim((string) ($row[4] ?? ''));
+            $lectureCredits = trim((string) ($row[5] ?? ''));
+            $labCredits = trim((string) ($row[6] ?? ''));
+            $selfStudyCredits = trim((string) ($row[7] ?? ''));
 
             if ($code === '' || $nameTh === '' || isset($subjects[$code])) {
                 continue;
@@ -42,11 +38,19 @@ class SubjectSeeder extends Seeder
                 $credits = $matches[1];
             }
 
+            $lectureCredits = $lectureCredits !== '' ? (int) $lectureCredits : 0;
+            $labCredits = $labCredits !== '' ? (int) $labCredits : 0;
+            $selfStudyCredits = $selfStudyCredits !== '' ? (int) $selfStudyCredits : 0;
+            $credits = $credits !== '' ? (int) $credits : ($lectureCredits + $labCredits + $selfStudyCredits);
+
             $subjects[$code] = [
                 'code' => $code,
                 'name_th' => $nameTh,
                 'name_en' => $nameEn !== '' ? $nameEn : null,
-                'credits' => (int) $credits,
+                'credits' => $credits,
+                'lecture_credits' => $lectureCredits,
+                'lab_credits' => $labCredits,
+                'self_study_credits' => $selfStudyCredits,
                 'is_active' => true,
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
@@ -59,5 +63,21 @@ class SubjectSeeder extends Seeder
                 $subject
             );
         }
+    }
+
+    private function resolveSourcePath(): string
+    {
+        $candidates = [
+            'C:\\Users\\pisut\\Downloads\\ข้อมูลรายวิชา(1).xlsx',
+            database_path('seeders/data/subject-seed-source.xlsx'),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new \RuntimeException('Subject seed source not found in expected locations.');
     }
 }

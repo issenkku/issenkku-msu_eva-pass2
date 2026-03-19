@@ -986,8 +986,32 @@
                     }
                     variableChips.innerHTML = '';
 
+                    const builtInVariables = [
+                        { label: 'หน่วยกิตรวม', value: 'credits' },
+                        { label: 'หน่วยกิตบรรยาย', value: 'lecture_credits' },
+                        { label: 'หน่วยกิตปฏิบัติ', value: 'lab_credits' },
+                        { label: 'หน่วยกิตศึกษาด้วยตนเอง', value: 'self_study_credits' },
+                    ];
+
+                    builtInVariables.forEach((variable) => {
+                        const chip = document.createElement('button');
+                        chip.className = 'chip';
+                        chip.type = 'button';
+                        chip.textContent = variable.label;
+                        chip.dataset.value = variable.value;
+                        chip.addEventListener('click', () => {
+                            if (formulaText) {
+                                insertToken(formulaText, variable.value);
+                            }
+                        });
+                        variableChips.appendChild(chip);
+                    });
+
                     const itemRows = card.querySelectorAll('.workload-item-row');
                     if (!itemRows.length) {
+                        if (variableChips.children.length > 0) {
+                            return;
+                        }
                         const emptyChip = document.createElement('button');
                         emptyChip.className = 'chip chip-muted';
                         emptyChip.type = 'button';

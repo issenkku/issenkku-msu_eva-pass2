@@ -1,8 +1,5 @@
-{{-- ไฟล์มุมมอง: resources/views\components\subject-modal.blade.php --}}
 <div class="modal fade" id="subjectModal" tabindex="-1" aria-labelledby="subjectModalLabel" aria-hidden="true">
-    {{--  --}}
     <div class="modal-dialog modal-lg subject-modal-dialog">
-        {{--  --}}
         <div class="modal-content modal-content-custom">
             <div class="modal-header modal-header-custom">
                 <h5 class="modal-title" id="subjectModalLabel">
@@ -11,7 +8,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body modal-body-custom">
-                {{-- ฟอร์ม --}}
                 <form id="subjectForm" method="POST" action="{{ request()->routeIs('evaluatee.workload') ? route('subjects.store.evaluatee') : route('subjects.store') }}">
                     @csrf
                     <input type="hidden" name="_method" id="form_method" value="POST">
@@ -19,42 +15,55 @@
 
                     <div class="mb-3">
                         <label for="code" class="form-label">รหัสรายวิชา <span class="text-danger">*</span></label>
-                        <input type="text" id="code" name="code" class="form-control" required
-                            placeholder="กรุณาระบุรหัสรายวิชา">
+                        <input type="text" id="code" name="code" class="form-control" required placeholder="กรุณาระบุรหัสรายวิชา">
                         <div class="text-red-500 text-sm mt-1 hidden" id="codeError">กรุณากรอกรหัสรายวิชา</div>
                     </div>
 
                     <div class="mb-3">
                         <label for="name_th" class="form-label">ชื่อรายวิชา (ไทย) <span class="text-danger">*</span></label>
-                        <input type="text" id="name_th" name="name_th" class="form-control" required
-                            placeholder="กรุณาระบุชื่อรายวิชาภาษาไทย">
+                        <input type="text" id="name_th" name="name_th" class="form-control" required placeholder="กรุณาระบุชื่อรายวิชาภาษาไทย">
                         <div class="text-red-500 text-sm mt-1 hidden" id="nameThError">กรุณากรอกชื่อรายวิชา</div>
                     </div>
 
                     <div class="mb-3">
                         <label for="name_en" class="form-label">ชื่อรายวิชา (อังกฤษ)</label>
-                        <input type="text" id="name_en" name="name_en" class="form-control"
-                            placeholder="กรุณาระบุชื่อรายวิชาภาษาอังกฤษ (ถ้ามี)">
+                        <input type="text" id="name_en" name="name_en" class="form-control" placeholder="กรุณาระบุชื่อรายวิชาภาษาอังกฤษ (ถ้ามี)">
                     </div>
 
-                    <div class="mb-3">
-                        <label for="credits" class="form-label">หน่วยกิต <span class="text-danger">*</span></label>
-                        <input type="number" id="credits" name="credits" class="form-control" min="0" required
-                            placeholder="กรุณาระบุหน่วยกิต">
-                        <div class="text-red-500 text-sm mt-1 hidden" id="creditsError">กรุณากรอกหน่วยกิต</div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="lecture_credits" class="form-label">หน่วยกิตบรรยาย <span class="text-danger">*</span></label>
+                            <input type="number" id="lecture_credits" name="lecture_credits" class="form-control" min="0" required placeholder="0">
+                            <div class="text-red-500 text-sm mt-1 hidden" id="lectureCreditsError">กรุณากรอกหน่วยกิตบรรยาย</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="lab_credits" class="form-label">หน่วยกิตปฏิบัติ <span class="text-danger">*</span></label>
+                            <input type="number" id="lab_credits" name="lab_credits" class="form-control" min="0" required placeholder="0">
+                            <div class="text-red-500 text-sm mt-1 hidden" id="labCreditsError">กรุณากรอกหน่วยกิตปฏิบัติ</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="self_study_credits" class="form-label">หน่วยกิตศึกษาด้วยตนเอง <span class="text-danger">*</span></label>
+                            <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" required placeholder="0">
+                            <div class="text-red-500 text-sm mt-1 hidden" id="selfStudyCreditsError">กรุณากรอกหน่วยกิตศึกษาด้วยตนเอง</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <label for="credits" class="form-label">หน่วยกิตรวม</label>
+                        <input type="number" id="credits" name="credits" class="form-control bg-light" min="0" readonly placeholder="0">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <x-button 
-                    type="defualt" 
-                    text="ยกเลิก" 
+                <x-button
+                    type="defualt"
+                    text="ยกเลิก"
                     icon="fas fa-times"
                     data-bs-dismiss="modal" />
-                <x-button 
+                <x-button
                     type="primary"
-                    buttonType="button" 
-                    text="บันทึก" 
+                    buttonType="button"
+                    text="บันทึก"
                     onclick="submitForm()"
                     icon="fas fa-save"
                     id="subjectSubmitBtn"

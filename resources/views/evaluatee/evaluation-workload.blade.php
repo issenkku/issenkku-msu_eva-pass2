@@ -507,8 +507,12 @@
                     <select class="workload-modal-select" name="subject_id">
                         <option value="">-- เลือกรายวิชา --</option>
                         @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}" data-credits="{{ $subject->credits ?? '' }}">
-                                {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} ({{ $subject->credits ?? '-' }} หน่วยกิต)
+                            <option value="{{ $subject->id }}"
+                                data-credits="{{ $subject->credits ?? '' }}"
+                                data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}"
+                                data-lab-credits="{{ $subject->lab_credits ?? 0 }}"
+                                data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}">
+                                {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} (รวม {{ $subject->credits ?? '-' }} หน่วยกิต | บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }})
                             </option>
                         @endforeach
                     </select>
@@ -1493,6 +1497,48 @@ document.addEventListener('DOMContentLoaded', function () {
         }) || candidates[0] || null;
     }
 
+    function getActiveFormScope() {
+        const formId = getActiveFormId();
+        if (detailFieldsContainer && formId) {
+            return detailFieldsContainer.querySelector('.workload-form-fields[data-form-id="' + formId + '"]');
+        }
+        return detailFieldsContainer || document;
+    }
+
+    function findSubjectCreditInput(candidates) {
+        const scope = getActiveFormScope() || document;
+        const candidateList = Array.isArray(candidates) ? candidates : [candidates];
+
+        for (const candidate of candidateList) {
+            const exact = scope.querySelector('input[name="field_values[' + candidate.name + ']"]');
+            if (exact && !exact.disabled) {
+                return exact;
+            }
+        }
+
+        const fields = Array.from(scope.querySelectorAll('.workload-modal-subfield'));
+        for (const field of fields) {
+            const label = field.querySelector('.workload-modal-sub-label');
+            const input = field.querySelector('input');
+            if (!label || !input || input.disabled) {
+                continue;
+            }
+
+            const text = (label.textContent || '').trim().toLowerCase();
+            const matched = candidateList.some(function (candidate) {
+                return candidate.labels.some(function (keyword) {
+                    return text.includes(keyword);
+                });
+            });
+
+            if (matched) {
+                return input;
+            }
+        }
+
+        return null;
+    }
+
     function updateCreditsFromSubject() {
         if (!subjectSelect) {
             return;
@@ -1501,22 +1547,53 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!selected) {
             return;
         }
-        const credits = selected.dataset ? selected.dataset.credits : '';
-        if (credits === undefined || credits === null || credits === '') {
-            return;
-        }
-        const creditsInput = getActiveCreditsInput();
-        if (!creditsInput) {
-            return;
-        }
-        const wasAuto = creditsInput.dataset ? creditsInput.dataset.autofill === 'true' : false;
-        const isEmpty = creditsInput.value === '' || creditsInput.value === '1';
-        if (isEmpty || wasAuto) {
-            creditsInput.value = credits;
-            if (creditsInput.dataset) {
-                creditsInput.dataset.autofill = 'true';
+
+        const mappings = [
+            {
+                value: selected.dataset ? selected.dataset.lectureCredits : '',
+                candidates: [
+                    { name: 'lecture_credits', labels: ['บรรยาย', 'lecture'] },
+                ],
+            },
+            {
+                value: selected.dataset ? selected.dataset.labCredits : '',
+                candidates: [
+                    { name: 'lab_credits', labels: ['ปฏิบัติ', 'lab'] },
+                ],
+            },
+            {
+                value: selected.dataset ? selected.dataset.selfStudyCredits : '',
+                candidates: [
+                    { name: 'self_study_credits', labels: ['ศึกษาด้วยตนเอง', 'self'] },
+                ],
+            },
+            {
+                value: selected.dataset ? selected.dataset.credits : '',
+                candidates: [
+                    { name: 'credits', labels: ['หน่วยกิต', 'credit'] },
+                ],
+            },
+        ];
+
+        mappings.forEach(function (mapping) {
+            if (mapping.value === undefined || mapping.value === null || mapping.value === '') {
+                return;
             }
-        }
+
+            const input = findSubjectCreditInput(mapping.candidates);
+            if (!input) {
+                return;
+            }
+
+            const wasAuto = input.dataset ? input.dataset.autofill === 'true' : false;
+            const isEmpty = input.value === '' || input.value === '1';
+            if (isEmpty || wasAuto) {
+                input.value = mapping.value;
+                if (input.dataset) {
+                    input.dataset.autofill = 'true';
+                }
+            }
+        });
     }
 
     function setFormMode(mode, entryId) {
@@ -1857,17 +1934,37 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        function updateSubjectCreditTotal() {
+            const lectureInput = document.getElementById('lecture_credits');
+            const labInput = document.getElementById('lab_credits');
+            const selfStudyInput = document.getElementById('self_study_credits');
+            const totalInput = document.getElementById('credits');
+
+            if (!lectureInput || !labInput || !selfStudyInput || !totalInput) {
+                return;
+            }
+
+            totalInput.value = Number(lectureInput.value || 0) + Number(labInput.value || 0) + Number(selfStudyInput.value || 0);
+        }
+
         function validateSubjectForm() {
             const codeInput = document.getElementById('code');
             const nameThInput = document.getElementById('name_th');
+            const lectureCreditsInput = document.getElementById('lecture_credits');
+            const labCreditsInput = document.getElementById('lab_credits');
+            const selfStudyCreditsInput = document.getElementById('self_study_credits');
             const creditsInput = document.getElementById('credits');
 
-            if (!codeInput || !nameThInput || !creditsInput) {
+            if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput) {
                 return true;
             }
 
             const codeValue = codeInput.value.trim();
             const nameThValue = nameThInput.value.trim();
+            const lectureCreditsValue = lectureCreditsInput.value.trim();
+            const labCreditsValue = labCreditsInput.value.trim();
+            const selfStudyCreditsValue = selfStudyCreditsInput.value.trim();
+            updateSubjectCreditTotal();
             const creditsValue = creditsInput.value.trim();
 
             let isValid = true;
@@ -1902,19 +1999,53 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            if (creditsValue === '' || Number.isNaN(Number(creditsValue))) {
-                creditsInput.classList.add('is-invalid');
-                const creditsError = document.getElementById('creditsError');
-                if (creditsError) {
-                    creditsError.style.display = 'block';
+            if (lectureCreditsValue === '' || Number.isNaN(Number(lectureCreditsValue))) {
+                lectureCreditsInput.classList.add('is-invalid');
+                const lectureCreditsError = document.getElementById('lectureCreditsError');
+                if (lectureCreditsError) {
+                    lectureCreditsError.style.display = 'block';
                 }
                 isValid = false;
             } else {
-                creditsInput.classList.remove('is-invalid');
-                const creditsError = document.getElementById('creditsError');
-                if (creditsError) {
-                    creditsError.style.display = 'none';
+                lectureCreditsInput.classList.remove('is-invalid');
+                const lectureCreditsError = document.getElementById('lectureCreditsError');
+                if (lectureCreditsError) {
+                    lectureCreditsError.style.display = 'none';
                 }
+            }
+
+            if (labCreditsValue === '' || Number.isNaN(Number(labCreditsValue))) {
+                labCreditsInput.classList.add('is-invalid');
+                const labCreditsError = document.getElementById('labCreditsError');
+                if (labCreditsError) {
+                    labCreditsError.style.display = 'block';
+                }
+                isValid = false;
+            } else {
+                labCreditsInput.classList.remove('is-invalid');
+                const labCreditsError = document.getElementById('labCreditsError');
+                if (labCreditsError) {
+                    labCreditsError.style.display = 'none';
+                }
+            }
+
+            if (selfStudyCreditsValue === '' || Number.isNaN(Number(selfStudyCreditsValue))) {
+                selfStudyCreditsInput.classList.add('is-invalid');
+                const selfStudyCreditsError = document.getElementById('selfStudyCreditsError');
+                if (selfStudyCreditsError) {
+                    selfStudyCreditsError.style.display = 'block';
+                }
+                isValid = false;
+            } else {
+                selfStudyCreditsInput.classList.remove('is-invalid');
+                const selfStudyCreditsError = document.getElementById('selfStudyCreditsError');
+                if (selfStudyCreditsError) {
+                    selfStudyCreditsError.style.display = 'none';
+                }
+            }
+
+            if (creditsValue === '' || Number.isNaN(Number(creditsValue))) {
+                isValid = false;
             }
 
             return isValid;
@@ -1929,6 +2060,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 redirectInput.value = window.location.href;
             }
             form.action = "{{ route('subjects.store.evaluatee') }}?redirect_to=" + encodeURIComponent(window.location.href);
+            updateSubjectCreditTotal();
 
             if (!validateSubjectForm()) {
                 return;
@@ -2006,12 +2138,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
-
-
-
 
 
 

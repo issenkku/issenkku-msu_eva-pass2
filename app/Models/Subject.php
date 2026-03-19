@@ -14,6 +14,9 @@ class Subject extends Model
         'name_th',
         'name_en',
         'credits',
+        'lecture_credits',
+        'lab_credits',
+        'self_study_credits',
         'is_active',
     ];
 }

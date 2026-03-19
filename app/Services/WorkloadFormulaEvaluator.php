@@ -8,6 +8,18 @@ use Illuminate\Validation\ValidationException;
 
 class WorkloadFormulaEvaluator
 {
+    public const SUBJECT_CREDIT_VARIABLES = [
+        'credits',
+        'lecture_credits',
+        'lab_credits',
+        'self_study_credits',
+    ];
+
+    public static function subjectCreditVariables(): array
+    {
+        return self::SUBJECT_CREDIT_VARIABLES;
+    }
+
     public function evaluate(string $formula, iterable $fields, array $fieldValues): float
     {
         $normalized = $this->normalizeFormula($formula);
@@ -92,6 +104,17 @@ class WorkloadFormulaEvaluator
             $variables['item_star'] = [
                 'type' => 'number',
                 'value' => $values['item_star'],
+            ];
+        }
+
+        foreach (self::SUBJECT_CREDIT_VARIABLES as $variableName) {
+            if (! array_key_exists($variableName, $values) || array_key_exists($variableName, $variables)) {
+                continue;
+            }
+
+            $variables[$variableName] = [
+                'type' => 'number',
+                'value' => $values[$variableName],
             ];
         }
 

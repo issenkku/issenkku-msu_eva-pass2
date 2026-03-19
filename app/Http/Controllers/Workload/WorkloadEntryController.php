@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Workload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;
 use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
+use App\Models\Subject;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Services\WorkloadFormulaEvaluator;
@@ -70,7 +71,11 @@ class WorkloadEntryController extends Controller
     {
         $validated = $request->validated();
         $form = WorkloadForm::with(['fields', 'items'])->findOrFail($validated['workload_form_id']);
-        $fieldValues = $this->resolveItemFieldValues($form, (array) ($validated['field_values'] ?? []));
+        $fieldValues = $this->mergeSubjectCreditFieldValues(
+            (array) ($validated['field_values'] ?? []),
+            isset($validated['subject_id']) ? (int) $validated['subject_id'] : null
+        );
+        $fieldValues = $this->resolveItemFieldValues($form, $fieldValues);
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
             ->evaluate($form->formula_logic, $form->fields, $fieldValues);
 
@@ -99,6 +104,12 @@ class WorkloadEntryController extends Controller
             $fieldValues = $validated['field_values'] ?? $entry->field_values ?? [];
 
             $form = WorkloadForm::with(['fields', 'items'])->findOrFail($workloadFormId);
+            $fieldValues = $this->mergeSubjectCreditFieldValues(
+                (array) $fieldValues,
+                array_key_exists('subject_id', $validated)
+                    ? ($validated['subject_id'] !== null ? (int) $validated['subject_id'] : null)
+                    : ($entry->subject_id !== null ? (int) $entry->subject_id : null)
+            );
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
@@ -131,6 +142,30 @@ class WorkloadEntryController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Workload entry not found'], 404);
         }
+    }
+
+    private function mergeSubjectCreditFieldValues(array $fieldValues, ?int $subjectId): array
+    {
+        $normalized = [];
+        foreach ($fieldValues as $key => $value) {
+            $normalized[strtolower((string) $key)] = $value;
+        }
+
+        if (! $subjectId) {
+            return $normalized;
+        }
+
+        $subject = Subject::find($subjectId);
+        if (! $subject) {
+            return $normalized;
+        }
+
+        $normalized['credits'] = (float) ($subject->credits ?? 0);
+        $normalized['lecture_credits'] = (float) ($subject->lecture_credits ?? 0);
+        $normalized['lab_credits'] = (float) ($subject->lab_credits ?? 0);
+        $normalized['self_study_credits'] = (float) ($subject->self_study_credits ?? 0);
+
+        return $normalized;
     }
 
     private function resolveItemFieldValues(WorkloadForm $form, array $fieldValues): array
