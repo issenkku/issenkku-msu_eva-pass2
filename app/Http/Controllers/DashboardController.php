@@ -7,6 +7,7 @@ use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\Department;
+use App\Models\Setting\Positions;
 use App\Models\QuantityScore;
 use App\Models\Reports;
 use App\Models\User;
@@ -87,8 +88,9 @@ class DashboardController extends Controller
         $endDate = $request->input('end_time');
 
         // Fetch all departments for the filter dropdown
-        $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']);
+        $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name', 'position_name']);
         $departments = Department::all();
+        $positions = Positions::orderBy('name')->get();
 
         // If no filters are provided, don't set default dates to ensure all data is fetched
         // $latestPeriod = AssignmentData::latest('end_time')->first();
@@ -226,6 +228,7 @@ class DashboardController extends Controller
             'statusLabels' => $statusLabels,
             'statusColors' => $statusColors,
             'departments' => $departments,
+            'positions' => $positions,
             // 'reports' => $reportsQuery->get(),
             'reports' => $reportsWithScores,
             'evaluationPeriod' => $evaluationPeriod,

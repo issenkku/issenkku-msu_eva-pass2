@@ -97,6 +97,12 @@ class EvaluationService
             });
         }
 
+        if (! empty($filters['position_name'])) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($filters) {
+                return optional($assignment->evaluateeUser?->position)->name === $filters['position_name'];
+            });
+        }
+
         return $evaluations;
     }
 

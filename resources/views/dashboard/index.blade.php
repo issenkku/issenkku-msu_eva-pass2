@@ -155,7 +155,7 @@
                 </div>
                 <!-- Filter Summary -->
                 <div class="mb-6">
-                    @if (request('start_time') || request('end_time') || request('department_name'))
+                    @if (request('start_time') || request('end_time') || request('department_name') || request('position_name'))
                         <span class="text-black ml-4 inline-flex text-sm border px-2 py-1 rounded bg-gray-100">
                             มีการกรองข้อมูล
                         </span>
@@ -194,6 +194,27 @@
                                 </select>
                                 
                                 <!-- Custom arrow icon -->
+                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 text-sm">ตำแหน่งงาน</label>
+                            <div class="relative">
+                                <select name="position_name"
+                                    class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                    <option value="">ทุกตำแหน่งงาน</option>
+                                    @foreach ($positions ?? [] as $position)
+                                        <option value="{{ $position->name }}"
+                                            {{ request('position_name') == $position->name ? 'selected' : '' }}>
+                                            {{ $position->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
                                 <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
                                     <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -532,6 +553,7 @@
             document.querySelector('input[name="start_time"]').value = '';
             document.querySelector('input[name="end_time"]').value = '';
             document.querySelector('select[name="department_name"]').value = '';
+            document.querySelector('select[name="position_name"]').value = '';
             document.getElementById('filterForm').submit();
         }
     </script>
