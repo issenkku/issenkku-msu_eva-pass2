@@ -114,6 +114,33 @@
                 return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
             })->values(); // Reset keys
         }
+
+        $progressMap = [
+            'Assigned' => 0,
+            'Manager_assign' => 0,
+            'Draft' => 25,
+            'Pending' => 50,
+            'Evaluator_draft' => 50,
+            'Director_assigned' => 75,
+            'Manager_draft' => 75,
+            'Director_draft' => 90,
+            'Completed' => 100,
+        ];
+
+        $statusLabelMap = [
+            'Assigned' => 'ยังไม่ประเมิน',
+            'Draft' => 'เริ่มกรอกข้อมูล',
+            'Pending' => 'รอผู้ประเมินประเมิน',
+            'Evaluator_draft' => 'ผู้ประเมินเริ่มประเมิน',
+            'Director_assigned' => 'รอกรรมการรับรองผล',
+            'Director_draft' => 'กรรมการเริ่มรับรองผล',
+            'Manager_assign' => 'ยังไม่ประเมิน',
+            'Manager_draft' => 'กำลังดำเนินการ',
+            'Completed' => 'ประเมินเสร็จสิ้น',
+        ];
+
+        $urgentFollowUps = collect($followUpEvaluations ?? [])
+            ->take(3);
     @endphp
 
     {{-- บล็อกเนื้อหา --}}
@@ -124,7 +151,7 @@
                 <!-- Header -->
                 <div class="mb-8 animate-fadeIn">
                     <h1 class="text-3xl font-bold text-gray-900 mb-2">แดชบอร์ด</h1>
-                    <p class="text-gray-600">ภาพรวมผลการประเมินและตัวชี้วัดประสิทธิภาพ</p>
+                    <p class="text-gray-600">ภาพรวมความคืบหน้าการประเมินเพื่อใช้ติดตามผู้ที่ยังกรอกไม่เสร็จ</p>
                 </div>
                 <!-- Filter Summary -->
                 <div class="mb-6">
@@ -186,44 +213,120 @@
 
             <!-- Statistics Cards -->
             <div class="gap-6 mb-8">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <x-summary-score
-                        title="จำนวนผู้เข้ารับการประเมิน"
-                        :value="$totalEvaluatees"
-                        subtitle="จำนวนผู้เข้าร่วมการประเมินทั้งหมด"
-                        color="blue"
-                        icon="fas fa-users"
-                        iconSize="text-3xl"
-                    />
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6 animate-fadeIn">
+                        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">ภาพรวมความคืบหน้าการกรอกข้อมูล</h3>
+                                <p class="text-sm text-gray-500 mt-1">ใช้ติดตามว่าผู้เข้ารับการประเมินอยู่ขั้นตอนไหน และเหลืองานค้างเท่าไร</p>
+                            </div>
+                            <div class="text-left md:text-right">
+                                <div class="text-3xl font-bold text-gray-900">{{ $progressPercent }}%</div>
+                                <div class="text-sm text-gray-500">เสร็จสิ้นแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
+                            </div>
+                        </div>
 
-                    <x-summary-score
-                        title="คะแนนเฉลี่ย"
-                        :value="$averageScore"
-                        subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
-                        color="purple"
-                    />
-                </div>
+                        <div class="mt-5">
+                            <div class="h-4 w-full overflow-hidden rounded-full bg-gray-100">
+                                <div class="h-full rounded-full bg-green-500 transition-all duration-500" style="width: {{ min($progressPercent, 100) }}%"></div>
+                            </div>
+                        </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <x-bar-chart 
-                        chart-id="statusChart"
-                        title="สถานะผลการประเมิน"
-                        :data="$chartData"
-                        :labels="$statusLabels"
-                        :colors="$statusColors"
-                    />
+                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                            <x-summary-score
+                                title="จำนวนคนที่มีในระบบ"
+                                :value="$totalUsers"
+                                subtitle="จำนวนผู้ใช้งานทั้งหมดในระบบ"
+                                color="blue"
+                                icon="fas fa-users"
+                                iconSize="text-3xl"
+                            />
 
-                    <x-scatter-chart-component 
-                        :scatter-data="$scatterData"
-                        chart-id="myChart"
-                        title="กราฟการกระจายตัวของคะแนน"
-                    />
+                            <x-summary-score
+                                title="จำนวนผู้เข้าประเมิน"
+                                :value="$totalEvaluatees"
+                                subtitle="จำนวนผู้ที่อยู่ในรอบประเมินตามเงื่อนไขที่เลือก"
+                                color="blue"
+                                icon="fas fa-user-check"
+                                iconSize="text-3xl"
+                            />
 
+                            <x-summary-score
+                                title="จำนวนคนที่ประเมินเสร็จ"
+                                :value="$completedEvaluatees"
+                                :subtitle="'คิดเป็น '.$completedEvaluateesPercent.'% ของผู้เข้ารับการประเมินทั้งหมด'"
+                                color="green"
+                                icon="fas fa-check-circle"
+                                iconSize="text-3xl"
+                            />
+
+                            <x-summary-score
+                                title="จำนวนคนที่ยังไม่เริ่ม"
+                                :value="$notStartedEvaluatees"
+                                subtitle="ผู้ที่ยังไม่เริ่มกรอกข้อมูลประเมิน"
+                                color="red"
+                                icon="fas fa-hourglass-start"
+                                iconSize="text-3xl"
+                            />
+
+                            <x-summary-score
+                                title="จำนวนคนที่เริ่มดำเนินการแล้ว"
+                                :value="$startedEvaluatees"
+                                :subtitle="'คิดเป็น '.$startedEvaluateesPercent.'% ของผู้เข้ารับการประเมินทั้งหมด'"
+                                color="yellow"
+                                icon="fas fa-spinner"
+                                iconSize="text-3xl"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6 animate-fadeIn">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">รายการที่ควรติดตาม</h3>
+                                <p class="text-sm text-gray-500 mt-1">แสดงผู้ที่ยังไม่เสร็จ โดยเรียงจากงานที่ค้างมากไปน้อย</p>
+                            </div>
+                            <a href="#evaluation-list" class="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition">
+                                ดูทั้งหมด
+                            </a>
+                        </div>
+
+                        <div class="mt-4 space-y-3">
+                            @forelse($followUpEvaluations as $followUp)
+                                @php
+                                    $followUpStatus = $followUp->report->status ?? 'Assigned';
+                                    $followUpProgress = $progressMap[$followUpStatus] ?? 0;
+                                    $followUpPrettyStatus = $statusLabelMap[$followUpStatus] ?? $followUpStatus;
+                                    $followUpName = $followUp->evaluateeName ?? '-';
+                                    $followUpDueDate = optional($followUp->assignmentData)->end_time
+                                        ? Carbon::parse($followUp->assignmentData->end_time)->format('d/m/Y')
+                                        : '-';
+                                @endphp
+                                <div class="rounded-xl border border-gray-100 px-4 py-3">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="font-medium text-gray-900">{{ $followUpName }}</div>
+                                            <div class="text-sm text-gray-500">สถานะ {{ $followUpPrettyStatus }}</div>
+                                        </div>
+                                        <div class="text-sm font-semibold text-gray-700">{{ $followUpProgress }}%</div>
+                                    </div>
+                                    <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                                        <div class="h-full rounded-full bg-blue-500" style="width: {{ $followUpProgress }}%"></div>
+                                    </div>
+                                    <div class="mt-2 text-xs text-gray-500">ครบกำหนด {{ $followUpDueDate }}</div>
+                                </div>
+                            @empty
+                                <div class="rounded-xl bg-green-50 px-4 py-6 text-sm text-green-700">
+                                    ไม่มีรายการค้างติดตามในเงื่อนไขที่เลือก
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Users Table -->
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
+            <div id="evaluation-list" class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
                 <div class="px-6 pt-4">
                     <h3 class="text-lg font-semibold text-gray-900 mb-2 sm:mb-0">ผลการประเมินรายบุคคล</h3>
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b">
@@ -290,6 +393,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้รับการประเมิน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ชื่อผู้ประเมิน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">สถานะ</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">ความคืบหน้า</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">คะแนน</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">จัดการ</th>
                                 <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center">ส่งออกไฟล์</th>
@@ -316,6 +420,7 @@
                                         'Completed' => 'ประเมินเสร็จสิ้น',
                                     ];
                                     $prettyStatus = $statusMapping[$status] ?? $status;
+                                    $progressPercentPerRow = $progressMap[$status] ?? 0;
 
                                     $statusClass = match ($status) {
                                         'Completed' => 'bg-green-100 text-green-800',
@@ -350,6 +455,18 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="mx-auto max-w-[160px]">
+                                            <div class="flex items-center justify-between text-xs text-gray-500">
+                                                <span>Progress</span>
+                                                <span>{{ $progressPercentPerRow }}%</span>
+                                            </div>
+                                            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                                                <div class="h-full rounded-full {{ $progressPercentPerRow === 100 ? 'bg-green-500' : ($progressPercentPerRow === 0 ? 'bg-red-500' : 'bg-blue-500') }}"
+                                                    style="width: {{ $progressPercentPerRow }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-center font-medium text-gray-900">{{ $score }}
                                         </div>
                                     </td>
@@ -377,7 +494,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">ไม่พบรายงานการประเมิน</td>
+                                    <td colspan="8" class="px-6 py-4 text-center text-gray-500">ไม่พบรายงานการประเมิน</td>
                                 </tr>
                             @endforelse
                         </tbody>

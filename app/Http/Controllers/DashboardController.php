@@ -58,6 +58,19 @@ class DashboardController extends Controller
         })->count();
     }
 
+    private function statusToProgress(string $status): int
+    {
+        return match ($status) {
+            'Assigned', 'Manager_assign' => 0,
+            'Draft' => 25,
+            'Pending', 'Evaluator_draft' => 50,
+            'Director_assigned', 'Manager_draft' => 75,
+            'Director_draft' => 90,
+            'Completed' => 100,
+            default => 0,
+        };
+    }
+
     /**
      * เมธอด: index
      * จุดประสงค์: แสดงหน้า dashboard.index บันทึกข้อมูล LengthAwarePaginator
@@ -100,6 +113,13 @@ class DashboardController extends Controller
         ];
 
         $totalEvaluations = $evaluations->count();
+        $notStartedCount = $this->countByStatus($evaluations, ['Assigned', 'Manager_assign']);
+        $draftCount = $this->countByStatus($evaluations, ['Draft']);
+        $inReviewCount = $this->countByStatus($evaluations, ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_draft']);
+        $completedCount = $this->countByStatus($evaluations, ['Completed']);
+        $startedCount = max($totalEvaluations - $notStartedCount, 0);
+        $progressPercent = $totalEvaluations > 0 ? round(($completedCount / $totalEvaluations) * 100, 1) : 0;
+        $startedPercent = $totalEvaluations > 0 ? round(($startedCount / $totalEvaluations) * 100, 1) : 0;
 
         // dd($chartData);
 
@@ -107,6 +127,38 @@ class DashboardController extends Controller
             ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
+        $completedEvaluatees = $evaluations
+            ->filter(function ($assignment) {
+                return optional($assignment->report)->status === 'Completed' && $assignment->evaluateeUser;
+            })
+            ->groupBy('evaluateeUser.id')
+            ->count();
+        $notStartedEvaluatees = $evaluations
+            ->filter(function ($assignment) {
+                return in_array(optional($assignment->report)->status ?? 'Assigned', ['Assigned', 'Manager_assign']) && $assignment->evaluateeUser;
+            })
+            ->groupBy('evaluateeUser.id')
+            ->count();
+        $startedEvaluatees = $evaluations
+            ->filter(function ($assignment) {
+                return in_array(optional($assignment->report)->status ?? 'Assigned', [
+                    'Draft',
+                    'Pending',
+                    'Evaluator_draft',
+                    'Director_assigned',
+                    'Director_draft',
+                    'Manager_draft',
+                ]) && $assignment->evaluateeUser;
+            })
+            ->groupBy('evaluateeUser.id')
+            ->count();
+        $completedEvaluateesPercent = $totalEvaluatees > 0
+            ? round(($completedEvaluatees / $totalEvaluatees) * 100, 1)
+            : 0;
+        $startedEvaluateesPercent = $totalEvaluatees > 0
+            ? round(($startedEvaluatees / $totalEvaluatees) * 100, 1)
+            : 0;
+        $totalUsers = User::count();
 
         $userReports = $evaluations->map(function ($assignment) {
             return $assignment->report;
@@ -121,6 +173,20 @@ class DashboardController extends Controller
 
         // Get reports with scores
         $reportsWithScores = $this->reportsWithScores($evaluations);
+
+        $followUpEvaluations = $evaluations
+            ->filter(fn ($assignment) => optional($assignment->report)->status !== 'Completed')
+            ->sortBy(function ($assignment) {
+                $progress = $this->statusToProgress(optional($assignment->report)->status ?? 'Assigned');
+                $endTime = optional($assignment->assignmentData)->end_time;
+
+                return [
+                    $progress,
+                    $endTime ? Carbon::parse($endTime)->timestamp : PHP_INT_MAX,
+                ];
+            })
+            ->take(5)
+            ->values();
 
         // Evaluation period for display
         $evaluationPeriod = $this->getEvaluationPeriod($startDate, $endDate);
@@ -143,6 +209,20 @@ class DashboardController extends Controller
             'chartData' => $chartData,
             'totalEvaluations' => $totalEvaluations,
             'totalEvaluatees' => $totalEvaluatees,
+            'totalUsers' => $totalUsers,
+            'completedEvaluatees' => $completedEvaluatees,
+            'completedEvaluateesPercent' => $completedEvaluateesPercent,
+            'notStartedEvaluatees' => $notStartedEvaluatees,
+            'startedEvaluatees' => $startedEvaluatees,
+            'startedEvaluateesPercent' => $startedEvaluateesPercent,
+            'notStartedCount' => $notStartedCount,
+            'draftCount' => $draftCount,
+            'inReviewCount' => $inReviewCount,
+            'completedCount' => $completedCount,
+            'startedCount' => $startedCount,
+            'progressPercent' => $progressPercent,
+            'startedPercent' => $startedPercent,
+            'followUpEvaluations' => $followUpEvaluations,
             'statusLabels' => $statusLabels,
             'statusColors' => $statusColors,
             'departments' => $departments,
