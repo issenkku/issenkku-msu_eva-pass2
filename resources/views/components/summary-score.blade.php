@@ -28,7 +28,7 @@
 @endphp
 
 {{--  --}}
-<div class="stat-card bg-white rounded-xl p-6 shadow-md hover-scale {{ $borderColor }} border-l-4 flex items-center justify-between mb-4">
+<div {{ $attributes->class(['stat-card bg-white rounded-xl p-6 shadow-md hover-scale border-l-4 flex items-center justify-between mb-4', $borderColor]) }}>
     <div>
         <p class="text-gray-500 text-sm font-medium">{{ $title }}</p>
         <p class="text-3xl font-bold mt-2 text-gray-900">{{ $value }}</p>

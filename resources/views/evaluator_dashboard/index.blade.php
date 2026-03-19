@@ -1,26 +1,19 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views\evaluator_dashboard\index.blade.php --}}
 
 @section('content')
-{{-- บล็อกเนื้อหา --}}
 <div class="max-w-8xl mx-auto space-y-6">
-    <!-- Profile Card at Top -->
-    <x-profile-card 
+    <x-profile-card
         :user="$user"
-        title="ข้อมูลผู้ประเมิน"/>
+        title="ข้อมูลผู้ประเมิน" />
 
-    {{-- บล็อกเนื้อหา --}}
-    <div class=" py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
-        {{-- บล็อกเนื้อหา --}}
+    <div class="py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
         <div class="mb-4">
-            <h2 class="text-2xl font-semibold text-gray-800">สรุปผลการประเมิน</h2>
-            <p class="text-gray-600">ภาพรวมของผลการประเมินทั้งหมด</p>
+            <h2 class="text-2xl font-semibold text-gray-800">ภาพรวมงานประเมินของคุณ</h2>
+            <p class="text-gray-600">เน้นดูว่างานไหนกำลังรอคุณประเมิน งานไหนใกล้ครบกำหนด และงานไหนส่งต่อแล้ว</p>
         </div>
-        
-        {{-- บล็อกเนื้อหา --}}
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8 animate-fadeIn border border-gray-200">
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
             <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
-            {{-- ฟอร์ม --}}
             <form id="filterForm" method="get" class="space-y-1">
                 <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
                     <div>
@@ -42,57 +35,127 @@
                 </div>
             </form>
         </div>
-        
-        {{--  --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <x-summary-score
-                title="จำนวนผู้เข้ารับการประเมิน"
-                :value="$totalEvaluatees"
-                subtitle="จำนวนผู้เข้าร่วมการประเมินทั้งหมด"
-                color="blue"
-                icon="fas fa-users"
-                iconSize="text-3xl"
-            />
 
-            <x-summary-score
-                title="คะแนนเฉลี่ย"
-                :value="$averageScore"
-                subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
-                color="purple"
-            />
-        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">ภาพรวมความคืบหน้างานประเมิน</h3>
+                        <p class="mt-1 text-sm text-gray-500">ใช้ติดตามงานที่ต้องดำเนินการและงานที่ส่งต่อไปยังขั้นตอนถัดไปแล้ว</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-extrabold text-gray-900">{{ $progressPercent }}%</div>
+                        <div class="text-sm text-gray-500">เสร็จสิ้นแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
+                    </div>
+                </div>
 
-        {{--  --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <x-bar-chart 
-                chart-id="statusChart"
-                title="สถานะผลการประเมิน"
-                :data="$chartData"
-                :labels="$statusLabels"
-                :colors="$statusColors"
-            />
+                <div class="mt-6 h-4 w-full overflow-hidden rounded-full bg-gray-100">
+                    <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
+                </div>
 
-            <x-scatter-chart-component 
-                :scatter-data="$scatterData"
-                chart-id="myChart"
-                title="กราฟการกระจายตัวของคะแนน"
-            />
+                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                    <x-summary-score
+                        title="งานทั้งหมด"
+                        :value="$totalEvaluations"
+                        subtitle="รายการที่คุณได้รับมอบหมาย"
+                        color="blue"
+                        icon="fas fa-clipboard-list"
+                        iconSize="text-3xl"
+                        class="xl:col-span-2"
+                    />
 
+                    <x-summary-score
+                        title="รอคุณประเมิน"
+                        :value="$pendingEvaluatorCount"
+                        subtitle="รายการที่พร้อมให้คุณดำเนินการ"
+                        color="red"
+                        icon="fas fa-bolt"
+                        iconSize="text-3xl"
+                        class="xl:col-span-2"
+                    />
+
+                    <x-summary-score
+                        title="กำลังประเมิน"
+                        :value="$inProgressCount"
+                        subtitle="รายการที่คุณเริ่มประเมินแล้ว"
+                        color="yellow"
+                        icon="fas fa-spinner"
+                        iconSize="text-3xl"
+                        class="xl:col-span-2"
+                    />
+
+                    <x-summary-score
+                        title="ส่งต่อแล้ว"
+                        :value="$forwardedCount"
+                        subtitle="รายการที่พ้นขั้นตอนของคุณแล้ว"
+                        color="purple"
+                        icon="fas fa-share"
+                        iconSize="text-3xl"
+                        class="xl:col-span-3"
+                    />
+
+                    <x-summary-score
+                        title="ประเมินเสร็จสิ้น"
+                        :value="$completedCount"
+                        subtitle="รายการที่ปิดงานเรียบร้อยแล้ว"
+                        color="green"
+                        icon="fas fa-check-circle"
+                        iconSize="text-3xl"
+                        class="xl:col-span-3"
+                    />
+                </div>
+
+            </div>
+
+            <div class="rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">รายการที่ควรติดตาม</h3>
+                        <p class="mt-1 text-sm text-gray-500">แสดงงานที่กำลังรอคุณหรือใกล้ครบกำหนดก่อน</p>
+                    </div>
+                    <a href="#evaluation-table" class="text-sm font-medium text-blue-600 hover:text-blue-700">ดูทั้งหมด</a>
+                </div>
+
+                <div class="mt-5 space-y-4">
+                    @forelse($followUpEvaluations->take(5) as $item)
+                        <div class="rounded-2xl border border-gray-200 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $item['evaluatee_name'] }}</p>
+                                    <p class="text-sm text-gray-500">สถานะ: {{ $item['pretty_status'] }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">{{ $item['progress_percent'] }}%</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                                <div class="h-full rounded-full bg-blue-500" style="width: {{ min($item['progress_percent'], 100) }}%;"></div>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
+                                <span>ครบกำหนด {{ $item['due_date'] }}</span>
+                                <span>{{ $item['remaining_text'] }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
+                            ไม่มีรายการที่ต้องติดตาม
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 
-    
-
-    <x-evaluator-table  
-        :evaluations="$evaluations"  
-        :statusCounts="$statusCounts"
-        :years="$years" />
+    <div id="evaluation-table">
+        <x-evaluator-table
+            :evaluations="$evaluations"
+            :statusCounts="$statusCounts"
+            :years="$years" />
+    </div>
 </div>
 
 @if(session('success'))
-    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
-        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -107,13 +170,12 @@
     </div>
 @endif
 
-<!-- Mobile-friendly spacing -->
 <style>
 @media (max-width: 768px) {
     .space-y-6 > * + * {
         margin-top: 1rem;
     }
-    
+
     .max-w-4xl {
         max-width: 100%;
         padding: 0 1rem;
@@ -124,28 +186,6 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            // Simple fade in animation
-            $('.table-card, .sidebar-card').css('opacity', '0').animate({
-                opacity: 1
-            }, 200);
-
-            // Simple hover effect for table rows
-            $('.evaluation-table tbody tr').hover(
-                function() {
-                    $(this).addClass('hover-row');
-                },
-                function() {
-                    $(this).removeClass('hover-row');
-                }
-            );
-
-            // Auto refresh every 5 minutes
-            setInterval(function() {
-                console.log('Auto refreshing data...');
-            }, 300000);
-        });
-
         function resetFilters() {
             document.querySelector('input[name="start_time"]').value = '';
             document.querySelector('input[name="end_time"]').value = '';

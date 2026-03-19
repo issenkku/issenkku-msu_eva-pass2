@@ -50,6 +50,12 @@ class DashboardEvaluateeController extends Controller
         $averageScore = ScoreService::calculateAverageScore($userReports);
         $highestScore = ScoreService::calculateHighestScore($userReports);
         $scatterData = GraphDataService::scatterData($userReports);
+        $latestCompletedScore = optional(
+            $user->assignment
+                ->filter(fn ($assignment) => optional($assignment->report)->status === 'Completed')
+                ->sortByDesc(fn ($assignment) => optional($assignment->report)->updated_at ?? optional($assignment->assignmentData)->end_time)
+                ->first()
+        )->report->score ?? 0;
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -124,6 +130,16 @@ class DashboardEvaluateeController extends Controller
             return $assignment['daysLeft'] !== null && $assignment['daysLeft'] >= 0;
         });
 
+        $totalAssignments = $evaluations->count();
+        $completedAssignments = $this->countByStatus($evaluations, ['Completed']);
+        $actionRequiredAssignments = $this->countByStatus($evaluations, ['Assigned', 'Draft']);
+        $inReviewAssignments = $this->countByStatus($evaluations, [
+            'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft',
+        ]);
+        $dueSoonAssignments = $unfinishedAssignments->filter(function ($assignment) {
+            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] <= 3;
+        })->count();
+
         // dd($scatterData);
 
         $page = $request->input('page', 1);
@@ -144,7 +160,13 @@ class DashboardEvaluateeController extends Controller
             'averageScore' => $averageScore,
             'highestScore' => $highestScore,
             'scatterData' => $scatterData,
+            'latestCompletedScore' => round((float) $latestCompletedScore, 2),
             'unfinishedAssignments' => $unfinishedAssignments,
+            'totalAssignments' => $totalAssignments,
+            'completedAssignments' => $completedAssignments,
+            'actionRequiredAssignments' => $actionRequiredAssignments,
+            'inReviewAssignments' => $inReviewAssignments,
+            'dueSoonAssignments' => $dueSoonAssignments,
         ]);
     }
 

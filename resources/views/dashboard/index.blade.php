@@ -286,7 +286,7 @@
                                 <h3 class="text-lg font-semibold text-gray-900">รายการที่ควรติดตาม</h3>
                                 <p class="text-sm text-gray-500 mt-1">แสดงผู้ที่ยังไม่เสร็จ โดยเรียงจากงานที่ค้างมากไปน้อย</p>
                             </div>
-                            <a href="#evaluation-list" class="inline-flex items-center rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition">
+                            <a href="#evaluation-list" class="inline-flex items-center whitespace-nowrap text-xs font-semibold leading-none text-blue-600 hover:text-blue-700 transition">
                                 ดูทั้งหมด
                             </a>
                         </div>

@@ -74,8 +74,52 @@ class DirectorController extends Controller
         });
 
         $totalEvaluations = $evaluations->count();
+        $awaitingDirectorCount = $this->countByStatus($evaluations, ['Director_assigned']);
+        $directorInProgressCount = $this->countByStatus($evaluations, ['Director_draft']);
+        $forwardedToManagerCount = $this->countByStatus($evaluations, ['Manager_assign', 'Manager_draft']);
+        $completedCount = $this->countByStatus($evaluations, ['Completed']);
+        $progressPercent = $totalEvaluations > 0
+            ? round(($completedCount / $totalEvaluations) * 100, 1)
+            : 0;
+        $dueSoonCount = $evaluations->filter(function ($assignment) {
+            $endTime = optional($assignment->assignmentData)->end_time;
+            $status = optional($assignment->report)->status;
 
-        // dd($chartData);
+            if (! $endTime || $status === 'Completed') {
+                return false;
+            }
+
+            return Carbon::parse($endTime)->between(now()->startOfDay(), now()->copy()->addDays(7)->endOfDay());
+        })->count();
+        $overdueCount = $evaluations->filter(function ($assignment) {
+            $endTime = optional($assignment->assignmentData)->end_time;
+            $status = optional($assignment->report)->status;
+
+            if (! $endTime || $status === 'Completed') {
+                return false;
+            }
+
+            return Carbon::parse($endTime)->endOfDay()->lt(now());
+        })->count();
+        $followUpEvaluations = $evaluations
+            ->filter(fn ($assignment) => optional($assignment->report)->status !== 'Completed')
+            ->sortBy([
+                fn ($assignment) => $this->getFollowUpPriority(optional($assignment->report)->status),
+                fn ($assignment) => optional($assignment->assignmentData)->end_time ?? '9999-12-31',
+            ])
+            ->map(function ($assignment) {
+                $statusMeta = $this->getStatusMeta(optional($assignment->report)->status);
+                $endTime = optional($assignment->assignmentData)->end_time;
+
+                return [
+                    'evaluatee_name' => $assignment->evaluateeName ?? '-',
+                    'pretty_status' => $statusMeta['label'],
+                    'progress_percent' => $statusMeta['progress'],
+                    'due_date' => $endTime ? Carbon::parse($endTime)->format('d/m/Y') : '-',
+                    'remaining_text' => $this->formatRemainingText($endTime),
+                ];
+            })
+            ->values();
 
         $totalEvaluatees = $evaluations
             ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
@@ -87,11 +131,6 @@ class DirectorController extends Controller
         })->filter();
 
         $averageScore = ScoreService::calculateAverageScore($userReports);
-        $scatterData = GraphDataService::scatterData($userReports);
-        $countData = GraphDataService::statusCounts($userReports);
-        $chartData = array_values($countData);
-        $statusLabels = GraphDataService::getStatusLabels();
-        $statusColors = GraphDataService::getStatusColors();
 
         $page = $request->input('page', 1);
         $perPage = 10;
@@ -113,13 +152,58 @@ class DirectorController extends Controller
             'allReportsData' => $allReportsData, // Complete reports data
             'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
             'averageScore' => $averageScore,
-            'scatterData' => $scatterData,
-            'chartData' => $chartData,
             'totalEvaluations' => $totalEvaluations,
             'totalEvaluatees' => $totalEvaluatees,
-            'statusLabels' => $statusLabels,
-            'statusColors' => $statusColors,
             'departments' => $departments,
+            'awaitingDirectorCount' => $awaitingDirectorCount,
+            'directorInProgressCount' => $directorInProgressCount,
+            'forwardedToManagerCount' => $forwardedToManagerCount,
+            'completedCount' => $completedCount,
+            'progressPercent' => $progressPercent,
+            'dueSoonCount' => $dueSoonCount,
+            'overdueCount' => $overdueCount,
+            'followUpEvaluations' => $followUpEvaluations,
         ]);
+    }
+
+    private function getStatusMeta(?string $status): array
+    {
+        return match ($status) {
+            'Assigned', 'Draft', 'Pending', 'Evaluator_draft' => ['label' => 'อยู่ในขั้นตอนก่อนถึงกรรมการ', 'progress' => 50],
+            'Director_assigned' => ['label' => 'รอกรรมการพิจารณา', 'progress' => 75],
+            'Director_draft' => ['label' => 'กรรมการกำลังพิจารณา', 'progress' => 85],
+            'Manager_assign', 'Manager_draft' => ['label' => 'ส่งต่อผู้บริหารแล้ว', 'progress' => 95],
+            'Completed' => ['label' => 'รับรองเสร็จสิ้น', 'progress' => 100],
+            default => ['label' => $status ?? '-', 'progress' => 0],
+        };
+    }
+
+    private function getFollowUpPriority(?string $status): int
+    {
+        return match ($status) {
+            'Director_assigned' => 1,
+            'Director_draft' => 2,
+            'Assigned', 'Draft', 'Pending', 'Evaluator_draft' => 3,
+            default => 4,
+        };
+    }
+
+    private function formatRemainingText($endTime): string
+    {
+        if (! $endTime) {
+            return '-';
+        }
+
+        $days = now()->startOfDay()->diffInDays(Carbon::parse($endTime)->startOfDay(), false);
+
+        if ($days < 0) {
+            return 'เลยกำหนด '.abs($days).' วัน';
+        }
+
+        if ($days === 0) {
+            return 'ครบกำหนดวันนี้';
+        }
+
+        return 'เหลือ '.$days.' วัน';
     }
 }

@@ -1,26 +1,19 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views\manager_dashboard\index.blade.php --}}
 
 @section('content')
-{{-- บล็อกเนื้อหา --}}
 <div class="max-w-8xl mx-auto space-y-6">
-    <!-- Profile Card at Top -->
-    <x-profile-card 
+    <x-profile-card
         :user="$user"
-        title="ข้อมูลผู้บริหาร"/>
+        title="ข้อมูลผู้บริหาร" />
 
-    {{-- บล็อกเนื้อหา --}}
-    <div class=" py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
-        {{-- บล็อกเนื้อหา --}}
+    <div class="py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
         <div class="mb-4">
-            <h2 class="text-2xl font-semibold text-gray-800">สรุปผลการประเมิน</h2>
-            <p class="text-gray-600">ภาพรวมของผลการประเมินทั้งหมด</p>
+            <h2 class="text-2xl font-semibold text-gray-800">ภาพรวมงานรับรองผลของผู้บริหาร</h2>
+            <p class="text-gray-600">เน้นดูว่างานไหนรอการรับรองจากคุณ งานไหนกำลังดำเนินการ และงานไหนปิดงานแล้ว</p>
         </div>
-        
-        {{-- บล็อกเนื้อหา --}}
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8 animate-fadeIn border border-gray-200">
+
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
             <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
-            {{-- ฟอร์ม --}}
             <form id="filterForm" method="get" class="space-y-1">
                 <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
                     <div>
@@ -46,8 +39,6 @@
                                     </option>
                                 @endforeach
                             </select>
-                            
-                            <!-- Custom arrow icon -->
                             <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
                                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -56,7 +47,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0" >
+                <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0">
                     <button type="button" onclick="resetFilters()"
                         class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
                     <button type="submit"
@@ -64,55 +55,130 @@
                 </div>
             </form>
         </div>
-        
-        {{--  --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <x-summary-score
-                title="จำนวนผู้เข้ารับการประเมิน"
-                :value="$totalEvaluatees"
-                subtitle="จำนวนผู้เข้าร่วมการประเมินทั้งหมด"
-                color="blue"
-                icon="fas fa-users"
-                iconSize="text-3xl"
-            />
 
-            <x-summary-score
-                title="คะแนนเฉลี่ย"
-                :value="$averageScore"
-                subtitle="คะแนนเฉลี่ยทุกปีการประเมิน"
-                color="purple"
-            />
-        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="xl:col-span-2 rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">ภาพรวมการรับรองผล</h3>
+                        <p class="mt-1 text-sm text-gray-500">ใช้ติดตามคิวงานที่กำลังรอผู้บริหารรับรองและงานที่ยังอยู่ก่อนถึงขั้นตอนของคุณ</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-4xl font-extrabold text-gray-900">{{ $progressPercent }}%</div>
+                        <div class="text-sm text-gray-500">รับรองเสร็จแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
+                    </div>
+                </div>
 
-        {{--  --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <x-bar-chart 
-                chart-id="statusChart"
-                title="สถานะผลการประเมิน"
-                :data="$chartData"
-                :labels="$statusLabels"
-                :colors="$statusColors"
-            />
+                <div class="mt-6 h-4 w-full overflow-hidden rounded-full bg-gray-100">
+                    <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
+                </div>
 
-            <x-scatter-chart-component 
-                :scatter-data="$scatterData"
-                chart-id="myChart"
-                title="กราฟการกระจายตัวของคะแนน"
-            />
+                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                    <x-summary-score
+                        title="ผู้เข้าประเมิน"
+                        :value="$totalEvaluatees"
+                        subtitle="จำนวนบุคลากรที่อยู่ในรอบประเมิน"
+                        color="blue"
+                        icon="fas fa-users"
+                        iconSize="text-3xl"
+                    />
 
+                    <x-summary-score
+                        title="งานทั้งหมด"
+                        :value="$totalEvaluations"
+                        subtitle="รายการประเมินที่อยู่ในระบบ"
+                        color="blue"
+                        icon="fas fa-layer-group"
+                        iconSize="text-3xl"
+                    />
+
+                    <x-summary-score
+                        title="รอผู้บริหารรับรอง"
+                        :value="$awaitingManagerCount"
+                        subtitle="รายการที่รอการตัดสินใจจากคุณ"
+                        color="red"
+                        icon="fas fa-signature"
+                        iconSize="text-3xl"
+                    />
+
+                    <x-summary-score
+                        title="กำลังรับรอง"
+                        :value="$managerInProgressCount"
+                        subtitle="รายการที่คุณเริ่มพิจารณาแล้ว"
+                        color="yellow"
+                        icon="fas fa-spinner"
+                        iconSize="text-3xl"
+                    />
+
+                    <x-summary-score
+                        title="รับรองเสร็จสิ้น"
+                        :value="$completedCount"
+                        subtitle="รายการที่ปิดงานเรียบร้อยแล้ว"
+                        color="green"
+                        icon="fas fa-check-circle"
+                        iconSize="text-3xl"
+                    />
+                </div>
+
+                <div class="mt-6 rounded-2xl bg-gray-50 p-5">
+                    <h4 class="text-lg font-semibold text-gray-900">สรุปสำหรับผู้บริหาร</h4>
+                    <p class="mt-2 text-sm text-gray-600">
+                        ขณะนี้มีงานที่ยังอยู่ก่อนถึงขั้นตอนของคุณ {{ $beforeManagerCount }} รายการ,
+                        งานใกล้ครบกำหนด {{ $dueSoonCount }} รายการ
+                        และงานเลยกำหนด {{ $overdueCount }} รายการ
+                    </p>
+                </div>
+            </div>
+
+            <div class="rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-900">รายการที่ควรติดตาม</h3>
+                        <p class="mt-1 text-sm text-gray-500">แสดงงานที่ใกล้ถึงคิวผู้บริหารและงานที่รอการรับรองก่อน</p>
+                    </div>
+                    <a href="#evaluation-table" class="text-sm font-medium text-blue-600 hover:text-blue-700">ดูทั้งหมด</a>
+                </div>
+
+                <div class="mt-5 space-y-4">
+                    @forelse($followUpEvaluations->take(5) as $item)
+                        <div class="rounded-2xl border border-gray-200 p-4">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-lg font-semibold text-gray-900">{{ $item['evaluatee_name'] }}</p>
+                                    <p class="text-sm text-gray-500">สถานะ: {{ $item['pretty_status'] }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-bold text-gray-900">{{ $item['progress_percent'] }}%</p>
+                                </div>
+                            </div>
+                            <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                                <div class="h-full rounded-full bg-blue-500" style="width: {{ min($item['progress_percent'], 100) }}%;"></div>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between text-sm text-gray-500">
+                                <span>ครบกำหนด {{ $item['due_date'] }}</span>
+                                <span>{{ $item['remaining_text'] }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-500">
+                            ไม่มีรายการที่ต้องติดตาม
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </div>
     </div>
 
-    <x-manager-table  
-        :evaluations="$evaluations"  
-        :statusCounts="$statusCounts"
-        :years="$years" />
+    <div id="evaluation-table">
+        <x-manager-table
+            :evaluations="$evaluations"
+            :statusCounts="$statusCounts"
+            :years="$years" />
+    </div>
 </div>
 
 @if(session('success'))
-    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
-        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -127,13 +193,12 @@
     </div>
 @endif
 
-<!-- Mobile-friendly spacing -->
 <style>
 @media (max-width: 768px) {
     .space-y-6 > * + * {
         margin-top: 1rem;
     }
-    
+
     .max-w-4xl {
         max-width: 100%;
         padding: 0 1rem;
@@ -144,28 +209,6 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
-            // Simple fade in animation
-            $('.table-card, .sidebar-card').css('opacity', '0').animate({
-                opacity: 1
-            }, 200);
-
-            // Simple hover effect for table rows
-            $('.evaluation-table tbody tr').hover(
-                function() {
-                    $(this).addClass('hover-row');
-                },
-                function() {
-                    $(this).removeClass('hover-row');
-                }
-            );
-
-            // Auto refresh every 5 minutes
-            setInterval(function() {
-                console.log('Auto refreshing data...');
-            }, 300000);
-        });
-
         function resetFilters() {
             document.querySelector('input[name="start_time"]').value = '';
             document.querySelector('input[name="end_time"]').value = '';
