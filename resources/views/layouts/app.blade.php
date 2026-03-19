@@ -818,7 +818,6 @@
         <script>
             // Show success message if needed
             // alert('{{ session('success') }}');
-            console.log('Success: {{ session('success') }}');
         </script>
     @endif
 </body>

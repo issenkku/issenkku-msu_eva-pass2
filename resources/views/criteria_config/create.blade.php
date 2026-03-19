@@ -1714,9 +1714,6 @@
 
                 const data = await response.json();
 
-                // Log the response for debugging
-                console.log('Response from server:', data);
-
                 hideLoading();
 
                 if (response.ok && data.success) {

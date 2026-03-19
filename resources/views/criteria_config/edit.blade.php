@@ -481,7 +481,7 @@
                             $(this).summernote('destroy');
                         }
                     } catch (e) {
-                        console.log('Error destroying summernote:', e);
+                        console.error('Error destroying summernote:', e);
                     }
                 }
                 
@@ -545,10 +545,6 @@
                                 placeholder: placeholder,
                                 lang: 'th-TH',
                                 callbacks: {
-                                    onInit: function() {
-                                        // Ensure content is loaded properly
-                                        console.log('Summernote initialized for:', $editor.attr('class'));
-                                    },
                                     onChange: function(contents, $editable) {
                                         $editor.val(contents);
                                     }
@@ -1258,7 +1254,6 @@
             
             // Initialize Summernote after all data is populated and DOM is ready
             setTimeout(function() {
-                console.log('Initializing Summernote after data population...');
                 initializeSummernote();
             }, 1500); // Increased timeout to ensure all DOM manipulation is complete
         }
