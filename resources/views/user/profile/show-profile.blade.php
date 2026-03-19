@@ -23,7 +23,7 @@
                          class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-purple-100">
                 </div>
                 <div class="flex-grow">
-                    <h3 class="text-2xl font-bold text-gray-900">{{ $user->prefix }} {{ $user->name }}</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $user->display_name }}</h3>
                     <p class="text-lg text-gray-600">{{ $user->email }}</p>
                     <p class="text-sm text-gray-500 mt-1">{{ optional($user->position)->name ?? '-' }} | {{ optional($user->department)->department_name ?? '-' }}</p>
                 </div>

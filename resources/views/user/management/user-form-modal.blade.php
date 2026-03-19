@@ -25,13 +25,20 @@
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
                             <label class="block">คำนำหน้า <span class="text-red-600">*</span></label>
-                            <select name="prefix" id="prefix" class="w-full rounded border px-3 py-2" required>
-                                <option value="" disabled selected hidden>--เลือกคำนำหน้า--</option>
-                                <option value="นาย">นาย</option>
-                                <option value="นาง">นาง</option>
-                                <option value="นางสาว">นางสาว</option>
-                            </select>
+                            <input type="text" name="prefix" id="prefix" class="w-full rounded border px-3 py-2" required list="user-prefix-options" placeholder="เช่น นาย, อ.ดร., ว่าที่ ร.ต.">
+                            <datalist id="user-prefix-options">
+                                <option value="นาย">
+                                <option value="นาง">
+                                <option value="นางสาว">
+                                <option value="อ.ดร.">
+                                <option value="ผศ.ดร.">
+                                <option value="รศ.ดร.">
+                                <option value="ศ.ดร.">
+                                <option value="ว่าที่ ร.ต.">
+                                <option value="ว่าที่พันตรี">
+                            </datalist>
                             <div class="mt-1 hidden text-sm text-red-500" id="prefixError">จำเป็นต้องกรอกข้อมูล</div>
+                            <div class="mt-1 text-xs text-gray-500">กรอกคำนำหน้าแบบกำหนดเองได้</div>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block">ชื่อ-นามสกุล <span class="text-red-600">*</span></label>

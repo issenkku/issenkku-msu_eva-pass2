@@ -29,7 +29,7 @@
 <tr class="border-b">
     <td class="p-4 text-center">{{ $index }}</td>
     <td class="p-4">
-        {{ $employee['prefix'] }}{{ $employee['name'] }}
+        {{ trim(collect([$employee['prefix'] ?? '', $employee['name'] ?? ''])->filter()->implode(' ')) }}
         @if (!empty($employee['role_names']))
             <div class="mt-1 flex flex-wrap gap-1">
                 @foreach ($employee['role_names'] as $role)

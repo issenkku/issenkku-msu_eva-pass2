@@ -81,7 +81,7 @@
                 </div>
                 <div class="flex-grow">
                     <p class="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Public Profile</p>
-                    <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{{ $user->prefix }} {{ $user->name }}</h2>
+                    <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{{ $user->display_name }}</h2>
                     <p class="mt-3 text-lg font-medium text-slate-700">{{ optional($user->position)->name ?? '-' }}</p>
                     <p class="mt-1 text-sm text-slate-500">{{ optional($user->department)->department_name ?? '-' }}</p>
 

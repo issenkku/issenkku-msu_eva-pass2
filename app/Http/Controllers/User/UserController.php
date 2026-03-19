@@ -38,7 +38,7 @@ class UserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'prefix' => 'required|string|max:10',
+            'prefix' => 'required|string|max:50',
             'name' => 'required|string|max:100|unique:users,name',
             'employee_id' => 'required|max:20|unique:users,employee_id',
             'password' => ['required', 'max:50'],
@@ -587,7 +587,7 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $rules = [
-            'prefix' => 'required|string|max:10',
+            'prefix' => 'required|string|max:50',
             'name' => 'required|string|max:100',
             'phone' => [
                 'required',

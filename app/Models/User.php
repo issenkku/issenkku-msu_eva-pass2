@@ -106,6 +106,14 @@ class User extends Authenticatable implements CanResetPassword
         return [];
     }
 
+    public function getDisplayNameAttribute(): string
+    {
+        return trim(collect([
+            $this->prefix,
+            $this->name,
+        ])->filter(fn ($value) => filled($value))->implode(' '));
+    }
+
     /**
      * Boot method to generate UUID on creating
      */
