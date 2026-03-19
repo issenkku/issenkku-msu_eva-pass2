@@ -20,6 +20,7 @@
         'education_history' => $employee['education_history'] ?? [],
         'status' => $employee['status'] ?? 'active',
         'position_id' => $employee['position_id'] ?? null,
+        'job_level_id' => $employee['job_level_id'] ?? null,
         'department_id' => $employee['department_id'] ?? null,
         'roles' => array_map(fn ($role) => ['name' => $role], $employee['role_names'] ?? []),
     ];
@@ -50,6 +51,7 @@
     </td>
     <td class="p-4 text-center">{{ $employee['code'] }}</td>
     <td class="p-4 text-center">{{ $employee['position'] }}</td>
+    <td class="p-4 text-center">{{ $employee['job_level'] ?? '-' }}</td>
     <td class="p-4 text-center">
         <span class="{{ $typeClass }} rounded-full px-3 py-1 text-sm">{{ $employee['type'] }}</span>
     </td>

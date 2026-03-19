@@ -30,6 +30,7 @@ class ProfileUpdateRequest extends FormRequest
                 Rule::unique(User::class)->ignore($this->user()->id)],
             'personnel_type' => ['required', 'string'],
             'position_id' => ['required', 'exists:positions,id'],
+            'job_level_id' => ['nullable', 'exists:job_levels,id'],
             'department_id' => ['required', 'exists:departments,id'],
             'bio' => 'nullable|string|max:1000',
             'education_history' => ['nullable', 'array'],

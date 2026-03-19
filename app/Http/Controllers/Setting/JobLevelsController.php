@@ -64,6 +64,16 @@ class JobLevelsController extends Controller
     public function destroy($id)
     {
         $jobLevel = JobLevel::findOrFail($id);
+
+        $userCount = $jobLevel->users()->count();
+
+        if ($userCount > 0) {
+            return redirect()->route('job-level.index')->with(
+                'error',
+                "ไม่สามารถลบระดับตำแหน่งงาน {$jobLevel->name} ได้ เนื่องจากยังมีการผูกกับผู้ใช้ {$userCount} รายการ"
+            );
+        }
+
         $jobLevel->delete();
 
         return redirect()->route('job-level.index')->with('success', 'ลบข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');

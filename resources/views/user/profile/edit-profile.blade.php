@@ -113,12 +113,11 @@
             <div>
                 <label for="personnel_type" class="block text-sm font-medium text-gray-700 mb-1">ประเภทบุคลากร</label>
                 <select id="personnel_type" name="personnel_type"
-                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black bg-gray-100 cursor-not-allowed px-3 py-2 @error('personnel_type') border-red-500 @enderror" disabled>
+                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('personnel_type') border-red-500 @enderror">
                     <option value="">เลือกประเภทบุคลากร</option>
                     <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type) == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                     <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type) == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
                 </select>
-                <input type="hidden" name="personnel_type" value="{{ old('personnel_type', $user->personnel_type) }}">
                 @error('personnel_type')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -127,7 +126,7 @@
             <div>
                 <label for="position_id" class="block text-sm font-medium text-gray-700 mb-1">ตำแหน่ง</label>
                 <select id="position_id" name="position_id"
-                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black bg-gray-100 cursor-not-allowed px-3 py-2 @error('position_id') border-red-500 @enderror" disabled>
+                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('position_id') border-red-500 @enderror">
                     <option value="">เลือกตำแหน่ง</option>
                     @foreach ($positions as $position)
                         <option value="{{ $position->id }}"
@@ -136,8 +135,24 @@
                         </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="position_id" value="{{ old('position_id', $user->position_id) }}">
                 @error('position_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="job_level_id" class="block text-sm font-medium text-gray-700 mb-1">ระดับตำแหน่งงาน</label>
+                <select id="job_level_id" name="job_level_id"
+                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('job_level_id') border-red-500 @enderror">
+                    <option value="">เลือกระดับตำแหน่งงาน</option>
+                    @foreach ($jobLevels as $jobLevel)
+                        <option value="{{ $jobLevel->id }}"
+                            {{ old('job_level_id', $user->job_level_id ?? '') == $jobLevel->id ? 'selected' : '' }}>
+                            {{ $jobLevel->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('job_level_id')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -145,7 +160,7 @@
             <div>
                 <label for="department_id" class="block text-sm font-medium text-gray-700 mb-1">สาขาวิชา</label>
                 <select id="department_id" name="department_id"
-                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black bg-gray-100 cursor-not-allowed px-3 py-2 @error('department_id') border-red-500 @enderror" disabled>
+                        class="block w-full rounded-md border border-black shadow-sm focus:border-black focus:ring-black px-3 py-2 @error('department_id') border-red-500 @enderror">
                     <option value="">เลือกสาขาวิชา</option>
                     @foreach ($departments as $department)
                         <option value="{{ $department->id }}"
@@ -154,7 +169,6 @@
                         </option>
                     @endforeach
                 </select>
-                <input type="hidden" name="department_id" value="{{ old('department_id', $user->department_id) }}">
                 @error('department_id')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror

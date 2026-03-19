@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Models\Setting\Departments;
+use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -27,7 +28,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request)
     {
-        $user = $request->user()->load('position', 'department', 'roles');
+        $user = $request->user()->load('position', 'jobLevel', 'department', 'roles');
 
         return view('user.profile.show-profile', compact('user'));
     }
@@ -48,6 +49,7 @@ class ProfileController extends Controller
 
         $user = $user->load([
             'position',
+            'jobLevel',
             'department',
             'roles',
             'assignment.assignmentData',
@@ -105,9 +107,10 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
         $positions = Positions::all(); // Your positions
+        $jobLevels = JobLevel::all();
         $departments = Departments::all(); // Your departments
 
-        return view('user.profile.edit-profile', compact('user', 'positions', 'departments'));
+        return view('user.profile.edit-profile', compact('user', 'positions', 'jobLevels', 'departments'));
     }
 
     /**

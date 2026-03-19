@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Setting\Departments;
+use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Notifications\CustomResetPassword;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
@@ -50,6 +51,7 @@ class User extends Authenticatable implements CanResetPassword
         'profile_photo_path',
         'status',
         'position_id',
+        'job_level_id',
         'department_id',
         'public_profile_uuid',
         'is_public_profile_enabled',
@@ -174,6 +176,11 @@ class User extends Authenticatable implements CanResetPassword
     public function department()
     {
         return $this->belongsTo(Departments::class);
+    }
+
+    public function jobLevel()
+    {
+        return $this->belongsTo(JobLevel::class);
     }
 
     public function assignment()

@@ -82,7 +82,12 @@
                 <div class="flex-grow">
                     <p class="text-sm font-medium uppercase tracking-[0.18em] text-slate-500">Public Profile</p>
                     <h2 class="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">{{ $user->display_name }}</h2>
-                    <p class="mt-3 text-lg font-medium text-slate-700">{{ optional($user->position)->name ?? '-' }}</p>
+                    <p class="mt-3 text-lg font-medium text-slate-700">
+                        {{ optional($user->position)->name ?? '-' }}
+                        @if ($user->jobLevel)
+                            | {{ $user->jobLevel->name }}
+                        @endif
+                    </p>
                     <p class="mt-1 text-sm text-slate-500">{{ optional($user->department)->department_name ?? '-' }}</p>
 
                     <div class="mt-5 flex flex-wrap gap-2 text-sm">
@@ -108,6 +113,37 @@
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">เบอร์โทร</p>
                     <p class="mt-2 text-base font-medium text-slate-900">{{ $user->phone ?: '-' }}</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">หน่วยงาน</p>
+                    <p class="mt-2 text-base font-medium text-slate-900">{{ optional($user->department)->department_name ?? '-' }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="print-avoid-break border-t border-slate-200 px-8 py-8">
+            <div class="mb-5 flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">ข้อมูลงาน</h3>
+                    <p class="text-sm text-slate-600">แสดงข้อมูลตำแหน่งและรายละเอียดการปฏิบัติงาน</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">ตำแหน่งงาน</p>
+                    <p class="mt-2 text-base font-medium text-slate-900">{{ optional($user->position)->name ?? '-' }}</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">ระดับตำแหน่งงาน</p>
+                    <p class="mt-2 text-base font-medium text-slate-900">{{ optional($user->jobLevel)->name ?? '-' }}</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">ประเภทบุคลากร</p>
+                    <p class="mt-2 text-base font-medium text-slate-900">{{ $user->personnel_type ?? '-' }}</p>
                 </div>
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">หน่วยงาน</p>

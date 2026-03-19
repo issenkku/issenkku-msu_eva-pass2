@@ -6,6 +6,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Imports\UsersImport;
 use App\Models\Setting\Departments;
+use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -52,6 +53,7 @@ class UserController extends Controller
             'education_history.*.university' => 'nullable|string|max:255',
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
+            'job_level_id' => 'nullable|exists:job_levels,id',
             'department_id' => 'required|exists:departments,id',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',
@@ -76,6 +78,7 @@ class UserController extends Controller
             'education_history' => $educationHistory,
             'status' => $request->status,
             'position_id' => $request->position_id,
+            'job_level_id' => $request->job_level_id,
             'department_id' => $request->department_id,
         ]);
 
@@ -528,7 +531,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         // เริ่มต้น Query Builder พร้อมกับ Eager Loading ที่จำเป็น
-        $query = User::with(['position', 'roles']);
+        $query = User::with(['position', 'jobLevel', 'roles']);
 
         // --- เพิ่ม Logic การค้นหา ---
         if ($request->filled('search')) {
@@ -548,6 +551,9 @@ class UserController extends Controller
         }
         if ($request->filled('position_id')) {
             $query->whereIn('position_id', (array) $request->position_id);
+        }
+        if ($request->filled('job_level_id')) {
+            $query->whereIn('job_level_id', (array) $request->job_level_id);
         }
         if ($request->filled('personnel_type')) {
             $query->whereIn('personnel_type', (array) $request->personnel_type);
@@ -569,10 +575,11 @@ class UserController extends Controller
         // ดึงข้อมูลสำหรับ Dropdown/Filter
         $departments = Departments::all();
         $positions = Positions::all();
+        $jobLevels = JobLevel::all();
         $roles = Role::all();
         $user = null; // สำหรับฟอร์มสร้างผู้ใช้ใหม่
 
-        return view('user.management.index', compact('users', 'departments', 'positions', 'roles', 'user'));
+        return view('user.management.index', compact('users', 'departments', 'positions', 'jobLevels', 'roles', 'user'));
     }
 
     /**
@@ -602,6 +609,7 @@ class UserController extends Controller
             'education_history.*.university' => 'nullable|string|max:255',
             'status' => 'required|max:20',
             'position_id' => 'required|exists:positions,id',
+            'job_level_id' => 'nullable|exists:job_levels,id',
             'department_id' => 'required|exists:departments,id',
             'roles' => 'nullable|array',
             'roles.*' => 'string|exists:roles,name',

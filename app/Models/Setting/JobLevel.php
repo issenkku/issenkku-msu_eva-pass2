@@ -2,6 +2,7 @@
 
 namespace App\Models\Setting;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
@@ -14,6 +15,11 @@ class JobLevel extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'job_level_id');
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -127,6 +127,16 @@ class DepartmentsController extends Controller
     public function destroy($id)
     {
         $department = Departments::findOrFail($id);
+
+        $userCount = $department->user()->count();
+
+        if ($userCount > 0) {
+            return redirect()->route('departments.index')->with(
+                'error',
+                "ไม่สามารถลบหน่วยงาน {$department->department_name} ได้ เนื่องจากยังมีการผูกกับผู้ใช้ {$userCount} รายการ"
+            );
+        }
+
         $department->delete();
 
         return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');

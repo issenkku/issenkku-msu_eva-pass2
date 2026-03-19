@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Setting;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\AssignmentData;
 use App\Models\Setting\Positions;
 use Illuminate\Http\Request;
 
@@ -127,6 +128,32 @@ class PositionsController extends Controller
     public function destroy($id)
     {
         $positions = Positions::findOrFail($id);
+
+        $userCount = $positions->user()->count();
+        $evaluatorAssignmentCount = AssignmentData::where('evaluator_position_id', $positions->id)->count();
+        $evaluateeAssignmentCount = AssignmentData::where('evaluatee_position_id', $positions->id)->count();
+
+        $bindings = [];
+
+        if ($userCount > 0) {
+            $bindings[] = "ผู้ใช้ {$userCount} รายการ";
+        }
+
+        if ($evaluatorAssignmentCount > 0) {
+            $bindings[] = "รอบประเมินในฝั่งผู้ประเมิน {$evaluatorAssignmentCount} รายการ";
+        }
+
+        if ($evaluateeAssignmentCount > 0) {
+            $bindings[] = "รอบประเมินในฝั่งผู้ถูกประเมิน {$evaluateeAssignmentCount} รายการ";
+        }
+
+        if ($bindings !== []) {
+            return redirect()->route('positions.index')->with(
+                'error',
+                "ไม่สามารถลบตำแหน่ง {$positions->name} ได้ เนื่องจากยังมีการผูกกับ ".implode(', ', $bindings)
+            );
+        }
+
         $positions->delete();
 
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
