@@ -111,6 +111,72 @@
                 @endif
             </section>
 
+            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+                <div class="mb-5 flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">ผลงานการประเมิน</h3>
+                        <p class="text-sm text-gray-600">สรุปงานและรอบประเมินที่บันทึกอยู่ในระบบประเมินผล</p>
+                    </div>
+                </div>
+
+                @if (($evaluatedWorks ?? collect())->isNotEmpty())
+                    <div class="space-y-4">
+                        @foreach ($evaluatedWorks as $work)
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                                <div>
+                                    <h4 class="text-lg font-semibold text-slate-900">{{ $work['report_title'] }}</h4>
+                                    @if (!empty($work['report_description']))
+                                        <p class="mt-1 text-sm text-slate-600">{{ $work['report_description'] }}</p>
+                                    @endif
+                                </div>
+
+                                <div class="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-700 md:grid-cols-3">
+                                    <div class="rounded-xl bg-slate-50 p-3">
+                                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">ช่วงประเมิน</p>
+                                        <p class="mt-2 font-medium text-slate-900">
+                                            {{ $work['period_start'] && $work['period_end'] ? $work['period_start'].' - '.$work['period_end'] : '-' }}
+                                        </p>
+                                    </div>
+                                    <div class="rounded-xl bg-slate-50 p-3">
+                                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">ผู้ประเมิน</p>
+                                        <p class="mt-2 font-medium text-slate-900">{{ $work['evaluator_name'] ?: '-' }}</p>
+                                        @if (!empty($work['evaluator_position']))
+                                            <p class="mt-1 text-xs text-slate-500">{{ $work['evaluator_position'] }}</p>
+                                        @endif
+                                    </div>
+                                    <div class="rounded-xl bg-slate-50 p-3">
+                                        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">คะแนนรวม</p>
+                                        <p class="mt-2 font-medium text-slate-900">QNT {{ $work['quantity_score'] }} | QLT {{ $work['quality_score'] }}</p>
+                                    </div>
+                                </div>
+
+                                @if (!empty($work['subjects']) && count($work['subjects']) > 0)
+                                    <div class="mt-4">
+                                        <p class="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">รายวิชาหรือหัวข้องานที่เกี่ยวข้อง</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach ($work['subjects'] as $subject)
+                                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{{ $subject }}</span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @if (!empty($work['updated_at']))
+                                    <p class="mt-4 text-xs text-slate-400">อัปเดตล่าสุด {{ $work['updated_at'] }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm text-slate-500">
+                        ยังไม่มีผลงานที่ถูกบันทึกไว้ในระบบประเมิน
+                    </div>
+                @endif
+            </section>
+
             <div class="pt-2 flex flex-wrap justify-end gap-3">
                 @if ($user->is_public_profile_enabled)
                     <x-button

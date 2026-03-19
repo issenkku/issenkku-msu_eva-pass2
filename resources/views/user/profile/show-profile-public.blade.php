@@ -221,7 +221,7 @@
                     <i class="fas fa-clipboard-check"></i>
                 </div>
                 <div>
-                    <h3 class="text-xl font-bold text-slate-900">ผลงานที่ใช้ในการประเมิน</h3>
+                    <h3 class="text-xl font-bold text-slate-900">ผลงานการประเมิน</h3>
                     <p class="text-sm text-slate-600">สรุปงานและรอบประเมินที่บันทึกอยู่ในระบบประเมินผล</p>
                 </div>
             </div>
