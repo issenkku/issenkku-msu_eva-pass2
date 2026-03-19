@@ -591,10 +591,6 @@ class ReportStructureController extends Controller
 
                     if (! empty($categoryId)) {
                         $category = $version->categories()->where('id', $categoryId)->first();
-                    } elseif (! empty($categoryData['sequence'])) {
-                        $category = $version->categories()
-                            ->where('sequence', $categoryData['sequence'])
-                            ->first();
                     }
 
                     if ($category) {
@@ -621,11 +617,6 @@ class ReportStructureController extends Controller
 
                             if (! empty($evaluationId)) {
                                 $evaluationList = $version->evaluationLists()->where('id', $evaluationId)->first();
-                            } elseif (! empty($evalListData['sequence'])) {
-                                $evaluationList = $version->evaluationLists()
-                                    ->where('categorie_id', $category->id)
-                                    ->where('sequence', $evalListData['sequence'])
-                                    ->first();
                             }
 
                             if ($evaluationList) {
@@ -656,10 +647,6 @@ class ReportStructureController extends Controller
 
                                     if (! empty($qMainId)) {
                                         $quantityMainCriteria = $version->quantityMainCriterias()->where('id', $qMainId)->first();
-                                    } elseif (! empty($qMain['name'])) {
-                                        $quantityMainCriteria = $version->quantityMainCriterias()
-                                            ->where('name', $qMain['name'])
-                                            ->first();
                                     }
 
                                     if ($quantityMainCriteria) {
@@ -703,15 +690,6 @@ class ReportStructureController extends Controller
                                                 ->first();
                                         }
 
-                                        if (! $quantitySubCriteria) {
-                                            $quantitySubCriteria = QuantitySubCriteria::where('criteria_version_id', $version->id)
-                                                ->where('evaluation_list_id', $evaluationList->id)
-                                                ->where('quantity_main_criteria_id', $quantityMainCriteria->id)
-                                                ->where('name', $qSub['name'])
-                                                ->where('sequence', $qSub['sequence'])
-                                                ->first();
-                                        }
-
                                         if ($quantitySubCriteria) {
                                             $quantitySubCriteria->update([
                                                 'quantity_main_criteria_id' => $quantityMainCriteria->id,
@@ -746,10 +724,6 @@ class ReportStructureController extends Controller
 
                                     if (! empty($qlMainId)) {
                                         $qualityMainCriteria = $version->qualityMainCriterias()->where('id', $qlMainId)->first();
-                                    } elseif (! empty($qlMain['sequence'])) {
-                                        $qualityMainCriteria = $version->qualityMainCriterias()
-                                            ->where('sequence', $qlMain['sequence'])
-                                            ->first();
                                     }
 
                                     if ($qualityMainCriteria) {
@@ -783,15 +757,6 @@ class ReportStructureController extends Controller
                                         if (! empty($qlSubId)) {
                                             $qualitySubCriteria = QualitySubCriteria::where('id', $qlSubId)
                                                 ->where('criteria_version_id', $version->id)
-                                                ->first();
-                                        }
-
-                                        if (! $qualitySubCriteria) {
-                                            $qualitySubCriteria = QualitySubCriteria::where('criteria_version_id', $version->id)
-                                                ->where('evaluation_list_id', $evaluationList->id)
-                                                ->where('quality_main_criteria_id', $qualityMainCriteria->id)
-                                                ->where('name', $qlSub['name'])
-                                                ->where('sequence', $qlSub['sequence'])
                                                 ->first();
                                         }
 
@@ -1138,7 +1103,6 @@ class ReportStructureController extends Controller
         }
     }
 }
-
 
 
 
