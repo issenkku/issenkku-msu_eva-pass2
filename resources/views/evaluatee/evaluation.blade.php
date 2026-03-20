@@ -359,6 +359,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        if (isSubmit) {
+            document.querySelectorAll('[id^="evidence-links-quality-"][data-require-evidence="1"]').forEach(container => {
+                const mainCriteriaName = container.dataset.mainCriteriaName || 'เกณฑ์ที่เลือก';
+                const qualityMainCard = container.closest('details');
+                const hasSelectedScore = qualityMainCard
+                    ? Array.from(qualityMainCard.querySelectorAll('input[name^="quality_list"][name$="[score]"]')).some(input => input.value.trim() !== '')
+                    : false;
+
+                if (!hasSelectedScore) {
+                    return;
+                }
+
+                const hasEvidence = Array.from(container.querySelectorAll('input[type="url"]'))
+                    .some(input => input.value.trim() !== '');
+
+                if (!hasEvidence) {
+                    errors.push(`กรุณาแนบหลักฐานสำหรับเกณฑ์ "${mainCriteriaName}"`);
+                }
+            });
+        }
+
         return errors;
     }
 

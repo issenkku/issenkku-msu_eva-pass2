@@ -35,7 +35,27 @@
     </div>
     @endif
 
+    @if($errors->any())
+    <div id="errorMessage" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
+        <div class="flex items-start space-x-3">
+            <svg class="h-6 w-6 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M4.93 19h14.14c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.2 16c-.77 1.33.19 3 1.73 3z"></path>
+            </svg>
+            <div>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
     @if(isset($quantitySubCriteria) && $quantitySubCriteria)
+        @if(!empty($quantitySubCriteria->require_evidence))
+            <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+                เกณฑ์นี้กำหนดให้แนบหลักฐานก่อนบันทึกข้อมูลภาระงาน
+            </div>
+        @endif
         @forelse($quantitySubCriteria->groups as $group)
             {{-- ส่วนย่อยของหน้า --}}
             <section class="workload-panel">
@@ -496,6 +516,7 @@
             <form method="POST" id="workloadEntryForm" action="{{ route('evaluatee.workload-entries.store') }}" data-store-url="{{ route('evaluatee.workload-entries.store') }}" data-update-url="{{ route('evaluatee.workload-entries.update', '__id__') }}">
                 @csrf
                 <input type="hidden" id="workloadFormMethod" name="_method" value="">
+                <input type="hidden" id="workloadRequireEvidenceFlag" value="{{ !empty($quantitySubCriteria?->require_evidence) ? 1 : 0 }}">
                 <div class="modal-header workload-modal-header">
                 <h5 class="modal-title w-100 text-center" id="workloadAddModalLabel">เพิ่มข้อมูลภาระงาน</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -557,6 +578,11 @@
              
                     <div class="workload-modal-field workload-modal-field-link">
                         <label class="workload-modal-label">แบบลิงก์หลักฐาน</label>
+                        @if(!empty($quantitySubCriteria?->require_evidence))
+                            <div class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                ต้องแนบอย่างน้อย 1 ลิงก์สำหรับเกณฑ์นี้
+                            </div>
+                        @endif
                         <div id="workload-evidence-links">
                             <div class="workload-evidence-row">
                                 <input type="text" class="workload-modal-input" name="evidence_links[]" placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้" />
@@ -1353,6 +1379,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalTitle = document.getElementById('workloadAddModalLabel');
     const subjectSelect = document.querySelector('select[name="subject_id"]');
     const evidenceContainer = document.getElementById('workload-evidence-links');
+    const workloadRequireEvidenceFlag = document.getElementById('workloadRequireEvidenceFlag');
     const detailFieldsContainer = document.getElementById('workload-detail-fields');
     const groupLabelInput = document.getElementById('workloadGroupLabel');
     let lastDefaultFormId = '';
@@ -1763,6 +1790,20 @@ document.addEventListener('DOMContentLoaded', function () {
         updateFormFields();
     }
 
+    function validateWorkloadEvidence() {
+        if (!workloadRequireEvidenceFlag || workloadRequireEvidenceFlag.value !== '1') {
+            return true;
+        }
+
+        const evidenceInputs = evidenceContainer
+            ? Array.from(evidenceContainer.querySelectorAll('input[name="evidence_links[]"]'))
+            : [];
+
+        return evidenceInputs.some(function (input) {
+            return input.value.trim() !== '';
+        });
+    }
+
     if (itemSelect) {
         itemSelect.addEventListener('change', function () {
             const selected = itemSelect.selectedOptions[0];
@@ -1869,6 +1910,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             fillFields(pendingEditPayload.fieldValues || {}, pendingEditPayload.formId, true);
             setEvidenceLinks(pendingEditPayload.evidenceLinks || []);
+        });
+    }
+
+    if (workloadForm) {
+        workloadForm.addEventListener('submit', function (event) {
+            if (validateWorkloadEvidence()) {
+                return;
+            }
+
+            event.preventDefault();
+            alert('กรุณาแนบหลักฐานอย่างน้อย 1 รายการก่อนบันทึกข้อมูลภาระงาน');
         });
     }
 
@@ -2138,9 +2190,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
 
 
 

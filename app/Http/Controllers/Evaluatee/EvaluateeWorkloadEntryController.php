@@ -15,6 +15,7 @@ use App\Models\WorkloadFormItem;
 use App\Services\WorkloadFormulaEvaluator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 
 class EvaluateeWorkloadEntryController extends Controller
 {
@@ -53,6 +54,8 @@ class EvaluateeWorkloadEntryController extends Controller
         $fieldValues = $this->resolveItemFieldValues($form, $fieldValues);
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
             ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+
+        $this->ensureEvidenceProvided($form->quantity_sub_criteria_id, (array) $evidenceLinks);
 
         $validated['calculated_score'] = $calculatedScore;
         $validated['field_values'] = $fieldValues;
@@ -114,6 +117,8 @@ class EvaluateeWorkloadEntryController extends Controller
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+
+            $this->ensureEvidenceProvided($form->quantity_sub_criteria_id, (array) $evidenceLinks);
 
             $validated['workload_form_id'] = $workloadFormId;
             $validated['calculated_score'] = $calculatedScore;
@@ -273,6 +278,27 @@ class EvaluateeWorkloadEntryController extends Controller
 
         if (! in_array($report->status, $this->editableStatuses, true)) {
             abort(403, 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว');
+        }
+    }
+    private function ensureEvidenceProvided(?int $quantitySubCriteriaId, array $evidenceLinks): void
+    {
+        if (! $quantitySubCriteriaId) {
+            return;
+        }
+
+        $subCriteria = QuantitySubCriteria::find($quantitySubCriteriaId);
+        if (! $subCriteria || ! $subCriteria->require_evidence) {
+            return;
+        }
+
+        $hasEvidence = collect($evidenceLinks)->contains(function ($link) {
+            return trim((string) $link) !== '';
+        });
+
+        if (! $hasEvidence) {
+            throw ValidationException::withMessages([
+                'evidence_links' => ['กรุณาแนบหลักฐานสำหรับเกณฑ์นี้ก่อนบันทึกข้อมูลภาระงาน'],
+            ]);
         }
     }
 }

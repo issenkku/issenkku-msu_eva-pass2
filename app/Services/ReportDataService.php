@@ -275,6 +275,7 @@ class ReportDataService
                             'name' => $subCriteria->name,
                             'sequence' => $subCriteria->sequence,
                             'description' => $subCriteria->description ?? null,
+                            'require_evidence' => (bool) $subCriteria->require_evidence,
                             'score_a' => $subCriteria->score_a,
                             'score_b' => $subCriteria->score_b,
                             'tor_compliant' => $quantityScore?->score_C ?? '',
@@ -314,6 +315,7 @@ class ReportDataService
                         'name' => $mainCriteria->name,
                         'tooltips' => $mainCriteria->tooltips,
                         'ratio' => $mainCriteria->ratio,
+                        'require_evidence' => (bool) $mainCriteria->require_evidence,
                         'main_calculated_score' => round($mainCalculatedScore, 2),
                         'sub_criterias' => [],
                     ];

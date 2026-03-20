@@ -207,6 +207,11 @@
                                                             $workloadData['evidenceLinksByEntryId'] ?? collect();
                                                     @endphp
                                                     <div class="border-t border-gray-200 px-4 py-4 bg-gray-50">
+                                                        @if (!empty($subCriteria['require_evidence']))
+                                                            <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                                                เกณฑ์นี้กำหนดให้แนบหลักฐานก่อนบันทึกภาระงาน
+                                                            </div>
+                                                        @endif
                                                         <x-workload-summary :sub-criteria="$workloadSubCriteria" :workload-forms="$workloadForms"
                                                             :workload-entries-by-form-id="$workloadEntriesByFormId" :evidence-links-by-entry-id="$evidenceLinksByEntryId" />
                                                     </div>
@@ -424,6 +429,11 @@
                                                             }
                                                         @endphp
 
+                                                        @if (!empty($mainCriteria['require_evidence']))
+                                                            <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                                                                เกณฑ์นี้กำหนดให้แนบหลักฐานก่อนส่งแบบประเมิน
+                                                            </div>
+                                                        @endif
                                                         @if (!$readonly)
                                                             <h3
                                                                 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
@@ -437,7 +447,9 @@
                                                                 แนบลิงก์หลักฐาน
                                                             </h3>
                                                             <div
-                                                                id="evidence-links-quality-{{ $mainCriteria['id'] }}">
+                                                                id="evidence-links-quality-{{ $mainCriteria['id'] }}"
+                                                                data-require-evidence="{{ !empty($mainCriteria['require_evidence']) ? '1' : '0' }}"
+                                                                data-main-criteria-name="{{ $mainCriteria['name'] }}">
                                                                 @foreach ($links as $idx => $link)
                                                                     <div
                                                                         class="flex items-center mb-2 evidence-link-row">

@@ -19,7 +19,12 @@ class QualityMainCriteria extends Model
         'ratio',
         'tooltips',
         'sequence',
+        'require_evidence',
         'criteria_version_id',
+    ];
+
+    protected $casts = [
+        'require_evidence' => 'boolean',
     ];
 
     public function criteriaVersion(): BelongsTo

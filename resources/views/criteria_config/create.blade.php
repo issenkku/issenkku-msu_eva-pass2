@@ -408,6 +408,10 @@
                                                         </a>
                                                     </div>
                                                 </div>
+                                                <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                                    <input type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                                    <span>บังคับแนบหลักฐานก่อนบันทึกภาระงาน</span>
+                                                </label>
                                             </div>
                                         </div>
                                         <button type="button"
@@ -515,6 +519,10 @@
                                                     placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                             </div>
                                         </div>
+                                        <label class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <input type="checkbox" class="qual_require_evidence h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <span>บังคับแนบหลักฐานเมื่อเลือกเกณฑ์นี้</span>
+                                        </label>
                                         <div
                                             class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
                                             <div class="qual_sub_criteria_block bg-gray-50 p-3 rounded-lg"
@@ -1595,7 +1603,8 @@
                                         name: subName,
                                         sequence: sk + 1,
                                         score_a: Number(scoreA),
-                                        score_b: Number(scoreB)
+                                        score_b: Number(scoreB),
+                                        require_evidence: subQ.querySelector('.quant_require_evidence')?.checked || false
                                     });
                                 });
 
@@ -1636,6 +1645,7 @@
                                 ratio: Number(qualRatio),
                                 tooltips: qualTooltips || null,
                                 sequence: qj + 1,
+                                require_evidence: qMain.querySelector('.qual_require_evidence')?.checked || false,
                                 quality_sub_criterias: []
                             };
 
