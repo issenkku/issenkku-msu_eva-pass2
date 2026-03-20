@@ -329,7 +329,7 @@
                                                         @php
                                                             $scoreValue = $itemEntry?->calculated_score;
                                                             $scoreDisplay = is_numeric($scoreValue)
-                                                                ? number_format((float) $scoreValue, 0, '.', '')
+                                                                ? number_format((float) $scoreValue, 2, '.', '')
                                                                 : ($scoreValue ?? '-');
                                                         @endphp
                                                         {{ $scoreDisplay }}
@@ -2570,7 +2570,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
 
 
 
