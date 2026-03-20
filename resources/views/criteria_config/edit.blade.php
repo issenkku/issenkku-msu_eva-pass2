@@ -56,6 +56,7 @@
                 <div id="categories_container" class="space-y-8">
                     <!-- Category Template (hidden) -->
                     <div class="category_block bg-white p-8 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300" style="display: none;" draggable="true" data-draggable-level="category">
+                        <input type="hidden" class="category_id_value" value="">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-bold text-xl text-gray-900">หมวดหมู่การประเมิน</h3>
                             <div class="flex items-center space-x-3">
@@ -108,6 +109,7 @@
                             </h4>
                             <!-- Evaluation List Template -->
                             <div class="evaluation_list_block bg-gray-100 p-6 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-300" draggable="true" data-draggable-level="evaluation">
+                                <input type="hidden" class="evaluation_id_value" value="">
                                 <div class="flex justify-between items-center mb-4">
                                     <h5 class="font-bold text-gray-900">รายการประเมิน</h5>
                                     <div class="flex items-center space-x-3">
@@ -185,6 +187,7 @@
                                     </button>
                                     <!-- Quantity Main Criteria Template -->
                                     <div class="quant_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200" draggable="true" data-draggable-level="quantity-main">
+                                        <input type="hidden" class="quantity_main_id_value" value="">
                                         <div class="flex justify-between items-center mb-3">
                                             <h6 class="text-sm font-bold text-gray-900">เกณฑ์ปริมาณหลัก</h6>
                                             <div class="flex items-center space-x-3">
@@ -280,6 +283,10 @@
                                                         </a>
                                                     </div>
                                                 </div>
+                                                <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                                    <input type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                                    <span>บังคับแนบหลักฐานก่อนบันทึกภาระงาน</span>
+                                                </label>
                                             </div>
                                         </div>
                                         <button type="button" class="add_quant_sub_criteria_btn text-sm px-3 py-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition flex items-center">
@@ -307,6 +314,7 @@
                                     </button>
                                     <!-- Quality Main Criteria Template -->
                                     <div class="qual_criteria_block bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200" draggable="true" data-draggable-level="quality-main">
+                                        <input type="hidden" class="quality_main_id_value" value="">
                                         <div class="flex justify-between items-center mb-3">
                                             <h6 class="text-sm font-bold text-gray-900">เกณฑ์คุณภาพหลัก</h6>
                                             <div class="flex items-center space-x-3">
@@ -352,6 +360,10 @@
                                             <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500"></span></label>
                                             <textarea name="qual_tooltips" class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
+                                        <label class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <input type="checkbox" class="qual_require_evidence h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <span>บังคับแนบหลักฐานเมื่อเลือกเกณฑ์นี้</span>
+                                        </label>
                                         <!-- Quality Sub Criteria Container -->
                                         <div class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
                                             <div class="qual_sub_criteria_block bg-purple-50 p-3 rounded-lg" draggable="true" data-draggable-level="quality-sub">
@@ -470,6 +482,7 @@
     <script>
         let originalData = null;
         let currentReportDataId = null;
+        let isInitialDataLoaded = false;
 
         // Clean up all existing Summernote instances
         function cleanupSummernote() {
@@ -642,6 +655,10 @@
             identityAttrs.forEach(attr => rootElement.removeAttribute(attr));
             rootElement.querySelectorAll(identityAttrs.map(attr => `[${attr}]`).join(',')).forEach(el => {
                 identityAttrs.forEach(attr => el.removeAttribute(attr));
+            });
+
+            rootElement.querySelectorAll('.category_id_value, .evaluation_id_value, .quantity_main_id_value, .quality_main_id_value, .quant_sub_criteria_id').forEach(el => {
+                el.value = '';
             });
         }
 
@@ -1140,6 +1157,7 @@
         }
 
         function fetchVersionDetails() {
+            isInitialDataLoaded = false;
             showLoading();
             const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}?t=" + Date.now();
             
@@ -1155,9 +1173,11 @@
             .then(response => response.json())
             .then(data => {
                 hideLoading();
+                isInitialDataLoaded = false;
                 if (data.data) {
                     originalData = data.data;
                     populateForm(data.data);
+                    isInitialDataLoaded = true;
                     
                     // Initialize Summernote for all rich text editors after populating data
                     setTimeout(() => {
@@ -1169,6 +1189,7 @@
             })
             .catch(error => {
                 hideLoading();
+                isInitialDataLoaded = false;
                 console.error('Error:', error);
                 showError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
             });
@@ -1263,6 +1284,10 @@
             const newBlock = template.cloneNode(true);
             newBlock.style.display = 'block';
             newBlock.dataset.categoryId = categoryData.categorie_id || categoryData.id || '';
+            const categoryIdInput = newBlock.querySelector('.category_id_value');
+            if (categoryIdInput) {
+                categoryIdInput.value = categoryData.categorie_id || categoryData.id || '';
+            }
 
             newBlock.querySelector('.main_categories').value = categoryData.main_categories || '';
             newBlock.querySelector('.sub_categories').value = categoryData.sub_categories || '';
@@ -1276,9 +1301,6 @@
                     const evalBlock = createEvaluationFromData(evalData);
                     evaluationContainer.appendChild(evalBlock);
                 });
-            } else {
-                const emptyEvalBlock = createEvaluationFromData({});
-                evaluationContainer.appendChild(emptyEvalBlock);
             }
 
             return newBlock;
@@ -1288,6 +1310,10 @@
             const template = document.querySelector('.evaluation_list_block');
             const newBlock = template.cloneNode(true);
             newBlock.dataset.evaluationId = evalData.evaluation_id || evalData.id || '';
+            const evaluationIdInput = newBlock.querySelector('.evaluation_id_value');
+            if (evaluationIdInput) {
+                evaluationIdInput.value = evalData.evaluation_id || evalData.id || '';
+            }
 
             newBlock.querySelector('.eval_name').value = evalData.name || '';
             newBlock.querySelector('.sum_score').value = evalData.sum_score || '';
@@ -1323,6 +1349,10 @@
                 const template = document.querySelector('.quant_criteria_block');
                 const newBlock = template.cloneNode(true);
                 newBlock.dataset.quantityMainId = quantMain.quantity_main_criteria_id || quantMain.id || '';
+                const quantityMainIdInput = newBlock.querySelector('.quantity_main_id_value');
+                if (quantityMainIdInput) {
+                    quantityMainIdInput.value = quantMain.quantity_main_criteria_id || quantMain.id || '';
+                }
 
                 newBlock.querySelector('.quant_name').value = quantMain.name || '';
                 
@@ -1346,14 +1376,14 @@
                         if (quantSubIdInput) {
                             quantSubIdInput.value = subData.quantity_sub_criteria_id || subData.id || '';
                         }
+                        const quantRequireEvidence = subBlock.querySelector('.quant_require_evidence');
+                        if (quantRequireEvidence) {
+                            quantRequireEvidence.checked = Boolean(subData.require_evidence);
+                        }
                         subBlock.querySelector('.score_a').value = subData.score_a || '';
                         subBlock.querySelector('.score_b').value = subData.score_b || '';
                         subContainer.appendChild(subBlock);
                     });
-                } else {
-                    const subBlockTemplate = document.querySelector('.quant_sub_criteria_block');
-                    const subBlock = subBlockTemplate.cloneNode(true);
-                    subContainer.appendChild(subBlock);
                 }
                 container.appendChild(newBlock);
             });
@@ -1368,9 +1398,17 @@
                 const template = document.querySelector('.qual_criteria_block');
                 const newBlock = template.cloneNode(true);
                 newBlock.dataset.qualityMainId = qualMain.quality_main_criteria_id || qualMain.id || '';
+                const qualityMainIdInput = newBlock.querySelector('.quality_main_id_value');
+                if (qualityMainIdInput) {
+                    qualityMainIdInput.value = qualMain.quality_main_criteria_id || qualMain.id || '';
+                }
 
                 newBlock.querySelector('.qual_name').value = qualMain.name || '';
                 newBlock.querySelector('.qual_ratio').value = qualMain.ratio || '';
+                const qualRequireEvidence = newBlock.querySelector('.qual_require_evidence');
+                if (qualRequireEvidence) {
+                    qualRequireEvidence.checked = Boolean(qualMain.require_evidence);
+                }
                 
                 // Set content for Summernote editor
                 const tooltipsTextarea = newBlock.querySelector('.qual_tooltips');
@@ -1393,10 +1431,6 @@
                         
                         subContainer.appendChild(subBlock);
                     });
-                } else {
-                    const subBlockTemplate = document.querySelector('.qual_sub_criteria_block');
-                    const subBlock = subBlockTemplate.cloneNode(true);
-                    subContainer.appendChild(subBlock);
                 }
                 container.appendChild(newBlock);
             });
@@ -1444,6 +1478,11 @@
         // Form submission with full data structure
         document.getElementById('editForm').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            if (!isInitialDataLoaded) {
+                showError('ยังโหลดข้อมูลเดิมไม่สำเร็จ ระบบจะไม่บันทึกเพื่อป้องกันการสร้างข้อมูลซ้ำ');
+                return;
+            }
             
             // Save all Summernote content back to textareas before collecting data
             $('.richtext-editor').each(function() {
@@ -1559,7 +1598,7 @@
                     sequence: catIndex + 1,
                     evaluation_lists: []
                 };
-                const categoryId = catBlock.dataset.categoryId;
+                const categoryId = catBlock.querySelector('.category_id_value')?.value || catBlock.dataset.categoryId;
                 if (categoryId) {
                     category.categorie_id = Number(categoryId);
                 }
@@ -1586,7 +1625,7 @@
                         quantity_main_criterias: [],
                         quality_main_criterias: []
                     };
-                    const evaluationId = evalBlock.dataset.evaluationId;
+                    const evaluationId = evalBlock.querySelector('.evaluation_id_value')?.value || evalBlock.dataset.evaluationId;
                     if (evaluationId) {
                         evalData.evaluation_id = Number(evaluationId);
                     }
@@ -1617,7 +1656,7 @@
                                         formula: quantFormula || 'D = A × C / B',
                                         quantity_sub_criterias: []
                                     };
-                                    const quantityMainId = quantBlock.dataset.quantityMainId;
+                                    const quantityMainId = quantBlock.querySelector('.quantity_main_id_value')?.value || quantBlock.dataset.quantityMainId;
                                     if (quantityMainId) {
                                         quantMain.quantity_main_criteria_id = Number(quantityMainId);
                                     }
@@ -1641,7 +1680,8 @@
                                             name: subName,
                                             sequence: subIndex + 1,
                                             score_a: parseFloat(scoreA),
-                                            score_b: parseFloat(scoreB)
+                                            score_b: parseFloat(scoreB),
+                                            require_evidence: subBlock.querySelector('.quant_require_evidence')?.checked || false
                                         };
                                         const quantSubIdInput = subBlock.querySelector('.quant_sub_criteria_id');
                                         if (quantSubIdInput && quantSubIdInput.value) {
@@ -1678,9 +1718,10 @@
                                         ratio: parseInt(qualRatio),
                                         tooltips: qualTooltips || null,
                                         sequence: qualIndex + 1,
+                                        require_evidence: qualBlock.querySelector('.qual_require_evidence')?.checked || false,
                                         quality_sub_criterias: []
                                     };
-                                    const qualityMainId = qualBlock.dataset.qualityMainId;
+                                    const qualityMainId = qualBlock.querySelector('.quality_main_id_value')?.value || qualBlock.dataset.qualityMainId;
                                     if (qualityMainId) {
                                         qualMain.quality_main_criteria_id = Number(qualityMainId);
                                     }

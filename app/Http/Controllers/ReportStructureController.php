@@ -20,10 +20,31 @@ use App\Models\WorkloadFormItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class ReportStructureController extends Controller
 {
+    private function hasQuantityRequireEvidenceColumn(): bool
+    {
+        static $cached = null;
+        if ($cached === null) {
+            $cached = Schema::hasColumn('quantity_sub_criterias', 'require_evidence');
+        }
+
+        return $cached;
+    }
+
+    private function hasQualityRequireEvidenceColumn(): bool
+    {
+        static $cached = null;
+        if ($cached === null) {
+            $cached = Schema::hasColumn('quality_main_criterias', 'require_evidence');
+        }
+
+        return $cached;
+    }
+
     private function jsonNoStore(array $payload, int $status = 200)
     {
         return response()->json($payload, $status, [
@@ -74,6 +95,9 @@ class ReportStructureController extends Controller
     public function show($id)
     {
         try {
+            $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+            $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
+
             // ตรวจสอบว่ามีเวอร์ชัน
             $versionExists = CriteriaVersion::where('id', $id)->exists();
             if (! $versionExists) {
@@ -93,16 +117,21 @@ class ReportStructureController extends Controller
                         $query->select('id', 'categorie_id', 'criteria_version_id', 'name', 'sum_score', 'sequence', 'annotation')
                             ->orderBy('sequence');
                     },
-                    'categories.evaluationLists.quantitySubCriterias' => function ($query) {
-                        $query->select(
+                    'categories.evaluationLists.quantitySubCriterias' => function ($query) use ($hasQuantityRequireEvidence) {
+                        $columns = [
                             'quantity_sub_criterias.id',
                             'quantity_sub_criterias.name',
                             'quantity_sub_criterias.sequence',
                             'score_a',
                             'score_b',
                             'quantity_main_criteria_id',
-                            'evaluation_list_id'
-                        )
+                            'evaluation_list_id',
+                        ];
+                        if ($hasQuantityRequireEvidence) {
+                            $columns[] = 'require_evidence';
+                        }
+
+                        $query->select($columns)
                             ->orderBy('sequence');
                     },
                     'categories.evaluationLists.quantitySubCriterias.mainCriteria' => function ($query) {
@@ -120,8 +149,13 @@ class ReportStructureController extends Controller
                         )
                             ->orderBy('sequence');
                     },
-                    'categories.evaluationLists.qualitySubCriterias.mainCriteria' => function ($query) {
-                        $query->select('id', 'name', 'ratio', 'tooltips', 'sequence')->orderBy('sequence');
+                    'categories.evaluationLists.qualitySubCriterias.mainCriteria' => function ($query) use ($hasQualityRequireEvidence) {
+                        $columns = ['id', 'name', 'ratio', 'tooltips', 'sequence'];
+                        if ($hasQualityRequireEvidence) {
+                            $columns[] = 'require_evidence';
+                        }
+
+                        $query->select($columns)->orderBy('sequence');
                     },
                 ])
                 ->where('id', $id)
@@ -146,14 +180,14 @@ class ReportStructureController extends Controller
                         'comment' => $reportData->comment,
                     ];
                 }),
-                'categories' => $version->categories->map(function ($category) {
+                'categories' => $version->categories->map(function ($category) use ($hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
                     // กลุ่ม evaluation lists ตาม category
                     return [
                         'categorie_id' => $category->id,
                         'main_categories' => $category->main_categories,
                         'sub_categories' => $category->sub_categories,
                         'sequence' => $category->sequence,
-                        'evaluation_lists' => $category->evaluationLists->map(function ($evalList) {
+                        'evaluation_lists' => $category->evaluationLists->map(function ($evalList) use ($hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
                             // สร้าง Map ของ quantity main criterias
                             $quantityMainMap = [];
 
@@ -186,6 +220,7 @@ class ReportStructureController extends Controller
                                     'sequence' => $qSub->sequence,
                                     'score_a' => (float) $qSub->score_a,
                                     'score_b' => (float) $qSub->score_b,
+                                    'require_evidence' => $hasQuantityRequireEvidence ? (bool) $qSub->require_evidence : false,
                                 ];
                             }
 
@@ -207,6 +242,7 @@ class ReportStructureController extends Controller
                                         'ratio' => $main->ratio,
                                         'tooltips' => $main->tooltips,
                                         'sequence' => $main->sequence,
+                                        'require_evidence' => $hasQualityRequireEvidence ? (bool) $main->require_evidence : false,
                                         'quality_sub_criterias' => [],
                                     ];
                                 }
@@ -261,44 +297,56 @@ class ReportStructureController extends Controller
      */
     public function store(Request $request)
     {
+        $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+        $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
+
         $validated = $request->validate([
             'version_name' => 'sometimes|string|max:255', // เปลี่ยนจาก required เป็น sometimes
             'source_version_id' => 'nullable|integer|exists:criteria_versions,id',
             'created_by' => 'required|integer|exists:users,id',
 
             'report_datas' => 'required|array',
+            'report_datas.*.report_data_id' => 'sometimes|nullable|integer|exists:report_datas,id',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'nullable|string',
             'report_datas.*.assessment_type' => 'required|string', // ถ้าหากมี 2 อย่างนี้ |in:quantity,quality
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
+            'categories.*.categorie_id' => 'sometimes|nullable|integer|exists:categories,id',
             'categories.*.main_categories' => 'required|string',
             'categories.*.sub_categories' => 'required|string',
             'categories.*.sequence' => 'required|integer|min:1',
 
             'categories.*.evaluation_lists' => 'sometimes|array|min:1',
+            'categories.*.evaluation_lists.*.evaluation_id' => 'sometimes|nullable|integer|exists:evaluation_lists,id',
             'categories.*.evaluation_lists.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.quantity_sub_criteria_id' => 'sometimes|nullable|integer|exists:quantity_sub_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_evidence' => 'nullable|boolean',
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_main_criteria_id' => 'sometimes|nullable|integer|exists:quality_main_criterias,id',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|numeric|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.require_evidence' => 'nullable|boolean',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.quality_sub_criteria_id' => 'sometimes|nullable|integer|exists:quality_sub_criterias,id',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
@@ -306,7 +354,7 @@ class ReportStructureController extends Controller
         ]);
 
         try {
-            $version = DB::transaction(function () use ($validated) {
+            $version = DB::transaction(function () use ($validated, $hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
                 // Generate version_name automatically if not provided or contains AUTO
                 if (empty($validated['version_name']) || strpos($validated['version_name'], 'AUTO') !== false) {
                     $currentYear = now()->year + 543; // Convert to Buddhist Era
@@ -396,6 +444,7 @@ class ReportStructureController extends Controller
                                                 'sequence' => $qSub['sequence'],
                                                 'score_a' => $qSub['score_a'],
                                                 'score_b' => $qSub['score_b'],
+                                                ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
                                             ]);
                                         }
                                     }
@@ -411,6 +460,7 @@ class ReportStructureController extends Controller
                                         'ratio' => $qlMain['ratio'],
                                         'tooltips' => $qlMain['tooltips'],
                                         'sequence' => $qlMain['sequence'],
+                                        ...($hasQualityRequireEvidence ? ['require_evidence' => (bool) ($qlMain['require_evidence'] ?? false)] : []),
                                     ]);
                                     if (! empty($qlMain['quality_sub_criterias'])) {
                                         foreach ($qlMain['quality_sub_criterias'] as $qlSub) {
@@ -486,43 +536,55 @@ class ReportStructureController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+        $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
+
         $validated = $request->validate([
             'version_name' => 'required|string|max:255',
             'created_by' => 'sometimes|nullable|integer|exists:users,id',
 
             'report_datas' => 'required|array',
+            'report_datas.*.report_data_id' => 'sometimes|nullable|integer|exists:report_datas,id',
             'report_datas.*.report_title' => 'required|string',
             'report_datas.*.report_description' => 'nullable|string',
             'report_datas.*.assessment_type' => 'required|string',
             'report_datas.*.comment' => 'nullable|string',
 
             'categories' => 'required|array|min:1',
+            'categories.*.categorie_id' => 'sometimes|nullable|integer|exists:categories,id',
             'categories.*.main_categories' => 'required|string',
             'categories.*.sub_categories' => 'required|string',
             'categories.*.sequence' => 'required|integer|min:1',
 
             'categories.*.evaluation_lists' => 'sometimes|array|min:1',
+            'categories.*.evaluation_lists.*.evaluation_id' => 'sometimes|nullable|integer|exists:evaluation_lists,id',
             'categories.*.evaluation_lists.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.quantity_sub_criteria_id' => 'sometimes|nullable|integer|exists:quantity_sub_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_evidence' => 'nullable|boolean',
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_main_criteria_id' => 'sometimes|nullable|integer|exists:quality_main_criterias,id',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.ratio' => 'required|numeric|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.require_evidence' => 'nullable|boolean',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.quality_sub_criteria_id' => 'sometimes|nullable|integer|exists:quality_sub_criterias,id',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
@@ -530,9 +592,20 @@ class ReportStructureController extends Controller
         ]);
 
         $version = CriteriaVersion::findOrFail($id);
+        $hasExistingCategories = $version->categories()->exists();
+        $submittedCategoryIds = collect($validated['categories'] ?? [])
+            ->pluck('categorie_id')
+            ->filter()
+            ->values();
+
+        if ($hasExistingCategories && $submittedCategoryIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'categories' => ['ไม่พบรหัสหมวดหมู่เดิมในข้อมูลที่ส่งมา กรุณาโหลดหน้าใหม่ก่อนบันทึกเพื่อป้องกันข้อมูลซ้ำ'],
+            ]);
+        }
 
         try {
-            DB::transaction(function () use ($version, $validated) {
+            DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
                 // 1. Update Criteria Version
                 $versionUpdateData = [
                     'version_name' => $validated['version_name'],
@@ -698,6 +771,7 @@ class ReportStructureController extends Controller
                                                     'sequence' => $qSub['sequence'],
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
+                                                    ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
                                                 ]);
                                             } else {
                                                 $quantitySubCriteria = QuantitySubCriteria::create([
@@ -708,6 +782,7 @@ class ReportStructureController extends Controller
                                                     'sequence' => $qSub['sequence'],
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
+                                                    ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
                                                 ]);
                                             }
 
@@ -733,6 +808,7 @@ class ReportStructureController extends Controller
                                                 'ratio' => $qlMain['ratio'],
                                                 'tooltips' => $qlMain['tooltips'],
                                                 'sequence' => $qlMain['sequence'],
+                                                ...($hasQualityRequireEvidence ? ['require_evidence' => (bool) ($qlMain['require_evidence'] ?? false)] : []),
                                             ]);
                                             $processedQualMainIds[] = $qualityMainCriteria->id;
                                         }
@@ -743,6 +819,7 @@ class ReportStructureController extends Controller
                                             'ratio' => $qlMain['ratio'],
                                             'tooltips' => $qlMain['tooltips'],
                                             'sequence' => $qlMain['sequence'],
+                                            ...($hasQualityRequireEvidence ? ['require_evidence' => (bool) ($qlMain['require_evidence'] ?? false)] : []),
                                         ]);
                                         $processedQualMainIds[] = $qualityMainCriteria->id;
                                     }
@@ -1103,6 +1180,3 @@ class ReportStructureController extends Controller
         }
     }
 }
-
-
-
