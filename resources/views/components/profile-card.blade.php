@@ -14,7 +14,7 @@
                 <span class="text-gray-700">{{ $user->position->name ?? '-' }}</span>
             </div>
             <div class="flex">
-                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ระดับ:</span>
+                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ระดับตำแหน่ง:</span>
                 <span class="text-gray-700">{{ $user->jobLevel->name ?? '-' }}</span>
             </div>
         </div>
