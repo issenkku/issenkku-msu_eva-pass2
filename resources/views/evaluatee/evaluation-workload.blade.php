@@ -575,7 +575,7 @@
                                         data-variable-name="{{ $varName }}"
                                         data-score="{{ $item->score }}"
                                     >
-                                        {{ $form->subCriteriaItem->name ?? ("รายการ #" . $form->id) }} - {{ $item->label }} ({{ $item->score }})
+                                        {{ $item->label }} ({{ $item->score }})
                                     </option>
                                 @endforeach
                             @endforeach
@@ -2235,7 +2235,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
 
 
 
