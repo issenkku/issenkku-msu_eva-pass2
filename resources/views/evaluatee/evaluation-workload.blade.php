@@ -533,18 +533,42 @@
                 <input type="hidden" name="report_id" value="{{ $reportId }}">
                 <div class="workload-modal-section" id="workloadSubjectSection" @if(empty($quantitySubCriteria?->require_subject)) style="display:none;" @endif>
                     <label class="workload-modal-label">รายวิชา <span class="required">*</span></label>
-                    <select class="workload-modal-select" name="subject_id" @if(!empty($quantitySubCriteria?->require_subject)) required @endif>
-                        <option value="">-- เลือกรายวิชา --</option>
-                        @foreach($subjects as $subject)
-                            <option value="{{ $subject->id }}"
-                                data-credits="{{ $subject->credits ?? '' }}"
-                                data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}"
-                                data-lab-credits="{{ $subject->lab_credits ?? 0 }}"
-                                data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}">
-                                {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} (รวม {{ $subject->credits ?? '-' }} หน่วยกิต | บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="hidden" name="subject_id" id="workloadSubjectId" value="">
+                    <div class="workload-subject-picker" id="workloadSubjectPicker">
+                        <button type="button" class="workload-subject-trigger" id="workloadSubjectTrigger" aria-expanded="false">
+                            <span class="workload-subject-trigger-text" id="workloadSubjectTriggerText">-- เลือกรายวิชา --</span>
+                            <span class="workload-subject-trigger-icon" aria-hidden="true"></span>
+                        </button>
+                        <div class="workload-subject-dropdown" id="workloadSubjectDropdown" hidden>
+                            <div class="workload-subject-search-row">
+                                <input
+                                    type="text"
+                                    class="workload-modal-input"
+                                    id="workloadSubjectSearch"
+                                    placeholder="ค้นหารายวิชา / รหัสวิชา"
+                                    autocomplete="off"
+                                />
+                                <button type="button" class="workload-subject-clear-btn" id="workloadSubjectClearBtn">ล้าง</button>
+                            </div>
+                            <div class="workload-subject-options" id="workloadSubjectOptions">
+                                @foreach($subjects as $subject)
+                                    <button
+                                        type="button"
+                                        class="workload-subject-option"
+                                        data-subject-id="{{ $subject->id }}"
+                                        data-credits="{{ $subject->credits ?? '' }}"
+                                        data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}"
+                                        data-lab-credits="{{ $subject->lab_credits ?? 0 }}"
+                                        data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}"
+                                        data-search="{{ mb_strtolower(trim(($subject->code ?? '') . ' ' . ($subject->name_th ?? '') . ' ' . ($subject->name_en ?? ''))) }}"
+                                    >
+                                        {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} (รวม {{ $subject->credits ?? '-' }} หน่วยกิต | บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }})
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div class="workload-subject-empty" id="workloadSubjectEmpty" hidden>ไม่พบรายวิชาที่ค้นหา</div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="workload-alert-box" id="workloadSubjectAlertBox" @if(empty($quantitySubCriteria?->require_subject)) style="display:none;" @endif>
@@ -1168,6 +1192,113 @@
         background: #ffffff;
     }
 
+    .workload-subject-picker {
+        position: relative;
+    }
+
+    .workload-subject-trigger {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: left;
+    }
+
+    .workload-subject-trigger:disabled {
+        background: #f3f4f6;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    .workload-subject-trigger-text {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .workload-subject-trigger-icon {
+        width: 10px;
+        height: 10px;
+        border-right: 2px solid #64748b;
+        border-bottom: 2px solid #64748b;
+        transform: rotate(45deg);
+        flex-shrink: 0;
+        margin-top: -4px;
+    }
+
+    .workload-subject-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        z-index: 30;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: 0 16px 30px rgba(15, 23, 42, 0.14);
+        padding: 12px;
+    }
+
+    .workload-subject-search-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .workload-subject-clear-btn {
+        border: 1px solid #d1d5db;
+        background: #f8fafc;
+        color: #334155;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .workload-subject-options {
+        max-height: 260px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+    }
+
+    .workload-subject-option {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid #e5e7eb;
+        background: #ffffff;
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #0f172a;
+    }
+
+    .workload-subject-option:last-child {
+        border-bottom: none;
+    }
+
+    .workload-subject-option:hover {
+        background: #eff6ff;
+    }
+
+    .workload-subject-empty {
+        padding: 12px;
+        text-align: center;
+        color: #64748b;
+        font-size: 13px;
+    }
+
     .workload-modal-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1385,7 +1516,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const workloadForm = document.getElementById('workloadEntryForm');
     const methodField = document.getElementById('workloadFormMethod');
     const modalTitle = document.getElementById('workloadAddModalLabel');
-    const subjectSelect = document.querySelector('select[name="subject_id"]');
+    const subjectIdField = document.getElementById('workloadSubjectId');
+    const subjectPicker = document.getElementById('workloadSubjectPicker');
+    const subjectTrigger = document.getElementById('workloadSubjectTrigger');
+    const subjectTriggerText = document.getElementById('workloadSubjectTriggerText');
+    const subjectDropdown = document.getElementById('workloadSubjectDropdown');
+    const subjectSearchInput = document.getElementById('workloadSubjectSearch');
+    const subjectClearBtn = document.getElementById('workloadSubjectClearBtn');
+    const subjectOptionContainer = document.getElementById('workloadSubjectOptions');
+    const subjectEmptyState = document.getElementById('workloadSubjectEmpty');
+    const subjectOptions = subjectOptionContainer ? Array.from(subjectOptionContainer.querySelectorAll('.workload-subject-option')) : [];
     const subjectSection = document.getElementById('workloadSubjectSection');
     const subjectAlertBox = document.getElementById('workloadSubjectAlertBox');
     const evidenceContainer = document.getElementById('workload-evidence-links');
@@ -1448,6 +1588,95 @@ document.addEventListener('DOMContentLoaded', function () {
         return !!(workloadRequireSubjectFlag && workloadRequireSubjectFlag.value === '1');
     }
 
+    function getSelectedSubjectOption() {
+        if (!subjectIdField) {
+            return null;
+        }
+
+        return subjectOptions.find(function (option) {
+            return option.dataset.subjectId === subjectIdField.value;
+        }) || null;
+    }
+
+    function openSubjectDropdown() {
+        if (!subjectDropdown || !subjectTrigger) {
+            return;
+        }
+
+        subjectDropdown.hidden = false;
+        subjectTrigger.setAttribute('aria-expanded', 'true');
+        if (subjectSearchInput) {
+            subjectSearchInput.focus();
+            subjectSearchInput.select();
+        }
+    }
+
+    function closeSubjectDropdown() {
+        if (!subjectDropdown || !subjectTrigger) {
+            return;
+        }
+
+        subjectDropdown.hidden = true;
+        subjectTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    function updateSubjectTriggerText() {
+        if (!subjectTriggerText) {
+            return;
+        }
+
+        const selectedOption = getSelectedSubjectOption();
+        subjectTriggerText.textContent = selectedOption
+            ? (selectedOption.textContent || '').trim()
+            : '-- เลือกรายวิชา --';
+    }
+
+    function filterSubjectOptions() {
+        if (!subjectOptions.length) {
+            return;
+        }
+
+        const keyword = (subjectSearchInput ? subjectSearchInput.value : '').trim().toLowerCase();
+        let visibleCount = 0;
+
+        subjectOptions.forEach(function (option) {
+            const haystack = (option.dataset.search || '') + ' ' + ((option.textContent || '').trim().toLowerCase());
+            const matched = keyword === '' || haystack.includes(keyword);
+            option.hidden = !matched;
+            if (matched) {
+                visibleCount++;
+            }
+        });
+
+        if (subjectEmptyState) {
+            subjectEmptyState.hidden = visibleCount > 0;
+        }
+    }
+
+    function clearSubjectSelection() {
+        if (subjectIdField) {
+            subjectIdField.value = '';
+        }
+        if (subjectSearchInput) {
+            subjectSearchInput.value = '';
+        }
+        updateSubjectTriggerText();
+        filterSubjectOptions();
+    }
+
+    function selectSubjectOption(option, keepOpen) {
+        if (!option || !subjectIdField) {
+            return;
+        }
+
+        subjectIdField.value = option.dataset.subjectId || '';
+        updateSubjectTriggerText();
+        updateCreditsFromSubject();
+        if (!keepOpen) {
+            closeSubjectDropdown();
+        }
+    }
+
     function updateSubjectRequirementState() {
         const enabled = requiresSubject();
 
@@ -1459,12 +1688,31 @@ document.addEventListener('DOMContentLoaded', function () {
             subjectAlertBox.style.display = enabled ? '' : 'none';
         }
 
-        if (subjectSelect) {
-            subjectSelect.disabled = !enabled;
-            subjectSelect.required = enabled;
+        if (subjectTrigger) {
+            subjectTrigger.disabled = !enabled;
+        }
+
+        if (subjectSearchInput) {
+            subjectSearchInput.disabled = !enabled;
             if (!enabled) {
-                subjectSelect.value = '';
+                subjectSearchInput.value = '';
             }
+        }
+
+        if (subjectClearBtn) {
+            subjectClearBtn.disabled = !enabled;
+        }
+
+        if (subjectIdField) {
+            subjectIdField.disabled = !enabled;
+            if (!enabled) {
+                subjectIdField.value = '';
+            }
+        }
+
+        if (!enabled) {
+            updateSubjectTriggerText();
+            closeSubjectDropdown();
         }
     }
 
@@ -1602,10 +1850,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateCreditsFromSubject() {
-        if (!subjectSelect || !requiresSubject()) {
+        if (!subjectIdField || !requiresSubject()) {
             return;
         }
-        const selected = subjectSelect.selectedOptions ? subjectSelect.selectedOptions[0] : null;
+        const selected = getSelectedSubjectOption();
         if (!selected) {
             return;
         }
@@ -1853,11 +2101,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (subjectSelect) {
-        subjectSelect.addEventListener('change', function () {
-            updateCreditsFromSubject();
+    if (subjectTrigger) {
+        subjectTrigger.addEventListener('click', function () {
+            if (subjectDropdown && !subjectDropdown.hidden) {
+                closeSubjectDropdown();
+            } else {
+                openSubjectDropdown();
+                filterSubjectOptions();
+            }
         });
     }
+
+    if (subjectSearchInput) {
+        subjectSearchInput.addEventListener('input', function () {
+            filterSubjectOptions();
+        });
+    }
+
+    if (subjectClearBtn) {
+        subjectClearBtn.addEventListener('click', function () {
+            clearSubjectSelection();
+            if (subjectSearchInput) {
+                subjectSearchInput.focus();
+            }
+        });
+    }
+
+    subjectOptions.forEach(function (option) {
+        option.addEventListener('click', function () {
+            selectSubjectOption(option, false);
+        });
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!subjectPicker || !subjectDropdown || subjectDropdown.hidden) {
+            return;
+        }
+
+        if (!subjectPicker.contains(event.target)) {
+            closeSubjectDropdown();
+        }
+    });
 
     if (detailFieldsContainer) {
         detailFieldsContainer.addEventListener('input', function (event) {
@@ -1885,6 +2169,7 @@ document.addEventListener('DOMContentLoaded', function () {
         workloadModalEl.addEventListener('show.bs.modal', function (event) {
             const trigger = event.relatedTarget;
             const isEdit = trigger && trigger.classList && trigger.classList.contains('workload-edit-btn');
+            clearSubjectSelection();
             if (isEdit) {
                 const entryId = trigger.dataset.entryId;
                 const formId = trigger.dataset.formId || '';
@@ -1897,9 +2182,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 setFormMode('edit', entryId);
                 setActiveGroup(groupId, groupName);
-                if (subjectSelect) {
-                    subjectSelect.value = subjectId;
+                if (subjectIdField) {
+                    subjectIdField.value = subjectId || '';
                 }
+                updateSubjectTriggerText();
                 updateSubjectRequirementState();
                 setActiveFormId(formId);
                 updateFormFields();
@@ -1917,9 +2203,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (workloadForm) {
                 workloadForm.reset();
             }
-            if (subjectSelect) {
-                subjectSelect.value = '';
-            }
+            clearSubjectSelection();
             updateSubjectRequirementState();
             fillFields({}, '', true);
             setEvidenceLinks([]);
@@ -1953,7 +2237,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (workloadForm) {
         workloadForm.addEventListener('submit', function (event) {
-            if (requiresSubject() && subjectSelect && !subjectSelect.value) {
+            if (requiresSubject() && subjectIdField && !subjectIdField.value) {
                 event.preventDefault();
                 alert('กรุณาเลือกรายวิชาสำหรับเกณฑ์นี้ก่อนบันทึกภาระงาน');
                 return;
@@ -1970,6 +2254,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateFormFields();
     updateSubjectRequirementState();
+    updateSubjectTriggerText();
+    filterSubjectOptions();
 });
 </script>
 <script>
@@ -2235,14 +2521,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
-
-
-
-
-
 
 
 
