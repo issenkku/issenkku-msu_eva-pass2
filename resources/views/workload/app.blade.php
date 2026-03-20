@@ -145,6 +145,11 @@
                                                     placeholder="กรอกชื่อตัวแปร">
                                             </div>
                                             <div>
+                                                <label class="form-label">หมายเหตุ</label>
+                                                <input type="text" class="form-control workload-variable-note"
+                                                    placeholder="อธิบายว่าฟิลด์นี้ใช้กรอกอะไร">
+                                            </div>
+                                            <div>
                                                 <label class="form-label">ประเภทอินพุต</label>
                                                 <select class="form-select workload-variable-type">
                                                     <option value="">กรุณาเลือกประเภทอินพุต</option>
@@ -656,7 +661,7 @@
 
         .formula-row {
             display: grid;
-            grid-template-columns: 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr 1fr auto;
             gap: 12px;
             align-items: end;
         }
@@ -682,6 +687,23 @@
             padding: 10px 12px;
             border-radius: 10px;
             color: #374151;
+        }
+
+        .formula-item-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .formula-item-label {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .formula-item-note {
+            font-size: 0.8rem;
+            color: #6b7280;
         }
 
         .formula-value {
@@ -989,6 +1011,7 @@
                 const addItemButton = card.querySelector('.workload-add-item');
                 const addVariableButton = card.querySelector('.workload-add-variable');
                 const variableLabelInput = card.querySelector('.workload-variable-label');
+                const variableNoteInput = card.querySelector('.workload-variable-note');
                 const variableTypeSelect = card.querySelector('.workload-variable-type');
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
@@ -1059,16 +1082,30 @@
                 };
 
                 // ฟังก์ชันย่อย: addFormulaItem
-                const addFormulaItem = (label, variableName, fieldType) => {
+                const addFormulaItem = (label, variableName, fieldType, note = '') => {
                     if (!formulaList) {
                         return;
                     }
                     const row = document.createElement('div');
                     row.className = 'formula-item';
                     row.dataset.fieldType = fieldType || 'input';
+                    row.dataset.note = note || '';
+
+                    const meta = document.createElement('div');
+                    meta.className = 'formula-item-meta';
 
                     const labelSpan = document.createElement('span');
                     labelSpan.textContent = label || 'ตัวแปร';
+
+                    labelSpan.className = 'formula-item-label';
+                    meta.appendChild(labelSpan);
+
+                    if (note) {
+                        const noteSpan = document.createElement('span');
+                        noteSpan.className = 'formula-item-note';
+                        noteSpan.textContent = note;
+                        meta.appendChild(noteSpan);
+                    }
 
                     const valueSpan = document.createElement('span');
                     valueSpan.className = 'formula-value';
@@ -1083,7 +1120,7 @@
                         syncVariableChips();
                     });
 
-                    row.appendChild(labelSpan);
+                    row.appendChild(meta);
                     row.appendChild(valueSpan);
                     row.appendChild(button);
                     row.addEventListener('click', (event) => {
@@ -1195,8 +1232,10 @@
                 if (addVariableButton) {
                     addVariableButton.addEventListener('click', () => {
                         const currentLabelInput = card.querySelector('.workload-variable-label');
+                        const currentNoteInput = card.querySelector('.workload-variable-note');
                         const currentTypeSelect = card.querySelector('.workload-variable-type');
                         const label = currentLabelInput ? currentLabelInput.value.trim() : '';
+                        const note = currentNoteInput ? currentNoteInput.value.trim() : '';
                         let fieldType = currentTypeSelect ? currentTypeSelect.value : '';
                         if (!label) {
                             alert('กรุณากรอกชื่อตัวแปร');
@@ -1211,10 +1250,13 @@
                             : fieldType === 'item'
                                 ? `item_${getNextItemSequence()}`
                                 : `text_${getNextVariableIndex('text')}`;
-                        addFormulaItem(label, variableName, fieldType);
+                        addFormulaItem(label, variableName, fieldType, note);
 
                         if (currentLabelInput) {
                             currentLabelInput.value = '';
+                        }
+                        if (currentNoteInput) {
+                            currentNoteInput.value = '';
                         }
                         if (currentTypeSelect) {
                             currentTypeSelect.value = '';
@@ -1458,7 +1500,8 @@
                             api.addFormulaItem(
                                 field.label || `ตัวแปร ${idx + 1}`,
                                 field.variable_name || `input_${idx + 1}`,
-                                field.field_type || 'input'
+                                field.field_type || 'input',
+                                field.note || ''
                             );
                         });
                         api.syncVariableChips();
@@ -1660,12 +1703,13 @@
 
                             const fields = [];
                             subCard.querySelectorAll('.formula-item').forEach((row) => {
-                                const label = row.querySelector('span');
+                                const label = row.querySelector('.formula-item-label');
                                 const value = row.querySelector('.formula-value');
                                 fields.push({
                                     label: label ? label.textContent.trim() : '',
                                     variable_name: value ? value.textContent.trim() : '',
                                     field_type: row.dataset.fieldType || 'input',
+                                    note: row.dataset.note || '',
                                 });
                             });
 

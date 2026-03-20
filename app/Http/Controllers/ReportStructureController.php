@@ -1183,6 +1183,7 @@ class ReportStructureController extends Controller
                     foreach ($oldForm->fields as $field) {
                         WorkloadFormField::create([
                             'label' => $field->label,
+                            'note' => $field->note,
                             'variable_name' => $field->variable_name,
                             'field_type' => $field->field_type,
                             'workload_form_id' => $newForm->id,

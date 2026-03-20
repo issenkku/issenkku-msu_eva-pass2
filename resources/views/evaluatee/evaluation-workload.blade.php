@@ -655,6 +655,9 @@
                                     @if($fieldType !== "item")
                                         <div class="workload-modal-subfield">
                                             <label class="workload-modal-sub-label">{{ $field->label ?? $field->variable_name }}</label>
+                                            @if(!empty($field->note))
+                                                <div class="workload-modal-sub-note">{{ $field->note }}</div>
+                                            @endif
                                             <input type="{{ $fieldType === 'text' ? 'text' : 'number' }}" class="workload-modal-input" name="field_values[{{ $field->variable_name }}]" />
                                         </div>
                                     @endif
@@ -1351,6 +1354,13 @@
         font-weight: 600;
         color: #374151;
         margin-bottom: 4px;
+    }
+
+    .workload-modal-sub-note {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 6px;
+        line-height: 1.5;
     }
 
     .workload-link-btn {
@@ -2543,8 +2553,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
 
 
 

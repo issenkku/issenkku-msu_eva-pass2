@@ -11,6 +11,7 @@ class WorkloadFormField extends Model
 
     protected $fillable = [
         'label',
+        'note',
         'variable_name',
         'field_type',
         'workload_form_id',

@@ -15,6 +15,7 @@ class UpdateWorkloadFormFieldRequest extends FormRequest
     {
         return [
             'label' => ['sometimes', 'required', 'string', 'max:255'],
+            'note' => ['sometimes', 'nullable', 'string', 'max:255'],
             'variable_name' => ['sometimes', 'required', 'string', 'max:255'],
             'field_type' => ['sometimes', 'required', 'string', 'max:255'],
         ];
