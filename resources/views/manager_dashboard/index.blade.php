@@ -116,21 +116,11 @@
                     <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <x-summary-score
-                        title="ผู้เข้าประเมิน"
-                        :value="$totalEvaluatees"
-                        subtitle="จำนวนบุคลากรที่อยู่ในรอบประเมิน"
-                        color="blue"
-                        icon="fas fa-users"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
-
-                    <x-summary-score
-                        title="งานทั้งหมด"
+                        title="จำนวนคนที่มีในระบบ"
                         :value="$totalEvaluations"
-                        subtitle="รายการประเมินที่อยู่ในระบบ"
+                        subtitle="จำนวนรายการประเมินทั้งหมดในระบบ"
                         color="blue"
                         icon="fas fa-layer-group"
                         iconSize="text-3xl"
@@ -138,7 +128,27 @@
                     />
 
                     <x-summary-score
-                        title="รอผู้บริหารรับรอง"
+                        title="จำนวนผู้เข้าประเมิน"
+                        :value="$totalEvaluatees"
+                        subtitle="จำนวนผู้ที่อยู่ในรอบประเมินตามเงื่อนไขที่เลือก"
+                        color="blue"
+                        icon="fas fa-users"
+                        iconSize="text-3xl"
+                        class="h-full"
+                    />
+
+                    <x-summary-score
+                        title="จำนวนคนที่รับรองเสร็จ"
+                        :value="$completedCount"
+                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($completedCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
+                        color="green"
+                        icon="fas fa-check-circle"
+                        iconSize="text-3xl"
+                        class="h-full"
+                    />
+
+                    <x-summary-score
+                        title="จำนวนคนที่รอผู้บริหารรับรอง"
                         :value="$awaitingManagerCount"
                         subtitle="รายการที่รอการตัดสินใจจากคุณ"
                         color="red"
@@ -148,21 +158,11 @@
                     />
 
                     <x-summary-score
-                        title="กำลังรับรอง"
+                        title="จำนวนคนที่เริ่มดำเนินการแล้ว"
                         :value="$managerInProgressCount"
-                        subtitle="รายการที่คุณเริ่มพิจารณาแล้ว"
+                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($managerInProgressCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
                         color="yellow"
                         icon="fas fa-spinner"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
-
-                    <x-summary-score
-                        title="รับรองเสร็จสิ้น"
-                        :value="$completedCount"
-                        subtitle="รายการที่ปิดงานเรียบร้อยแล้ว"
-                        color="green"
-                        icon="fas fa-check-circle"
                         iconSize="text-3xl"
                         class="h-full"
                     />

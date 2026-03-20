@@ -104,55 +104,55 @@
                     <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+                <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
                     <x-summary-score
-                        title="งานทั้งหมด"
+                        title="จำนวนคนที่มีในระบบ"
                         :value="$totalEvaluations"
-                        subtitle="รายการที่คุณได้รับมอบหมาย"
+                        subtitle="จำนวนผู้ใช้งานทั้งหมดในระบบ"
                         color="blue"
-                        icon="fas fa-clipboard-list"
+                        icon="fas fa-users"
                         iconSize="text-3xl"
-                        class="xl:col-span-2"
+                        class="h-full"
                     />
 
                     <x-summary-score
-                        title="รอคุณประเมิน"
-                        :value="$pendingEvaluatorCount"
-                        subtitle="รายการที่พร้อมให้คุณดำเนินการ"
-                        color="red"
-                        icon="fas fa-bolt"
+                        title="จำนวนผู้เข้าประเมิน"
+                        :value="$totalEvaluatees"
+                        subtitle="จำนวนผู้ที่อยู่ในรอบประเมินตามเงื่อนไขที่เลือก"
+                        color="blue"
+                        icon="fas fa-user-check"
                         iconSize="text-3xl"
-                        class="xl:col-span-2"
+                        class="h-full"
                     />
 
                     <x-summary-score
-                        title="กำลังประเมิน"
-                        :value="$inProgressCount"
-                        subtitle="รายการที่คุณเริ่มประเมินแล้ว"
-                        color="yellow"
-                        icon="fas fa-spinner"
-                        iconSize="text-3xl"
-                        class="xl:col-span-2"
-                    />
-
-                    <x-summary-score
-                        title="ส่งต่อแล้ว"
-                        :value="$forwardedCount"
-                        subtitle="รายการที่พ้นขั้นตอนของคุณแล้ว"
-                        color="purple"
-                        icon="fas fa-share"
-                        iconSize="text-3xl"
-                        class="xl:col-span-3"
-                    />
-
-                    <x-summary-score
-                        title="ประเมินเสร็จสิ้น"
+                        title="จำนวนคนที่ประเมินเสร็จ"
                         :value="$completedCount"
-                        subtitle="รายการที่ปิดงานเรียบร้อยแล้ว"
+                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($completedCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
                         color="green"
                         icon="fas fa-check-circle"
                         iconSize="text-3xl"
-                        class="xl:col-span-3"
+                        class="h-full"
+                    />
+
+                    <x-summary-score
+                        title="จำนวนคนที่ยังไม่เริ่ม"
+                        :value="$pendingEvaluatorCount"
+                        subtitle="ผู้ที่ยังไม่มีการกรอกข้อมูลประเมิน"
+                        color="red"
+                        icon="fas fa-hourglass-end"
+                        iconSize="text-3xl"
+                        class="h-full"
+                    />
+
+                    <x-summary-score
+                        title="จำนวนคนที่เริ่มดำเนินการแล้ว"
+                        :value="$inProgressCount"
+                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($inProgressCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
+                        color="yellow"
+                        icon="fas fa-spinner"
+                        iconSize="text-3xl"
+                        class="h-full"
                     />
                 </div>
             </div>
