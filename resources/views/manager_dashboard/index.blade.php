@@ -116,7 +116,7 @@
                     <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     <x-summary-score
                         title="ผู้เข้าประเมิน"
                         :value="$totalEvaluatees"
@@ -124,6 +124,7 @@
                         color="blue"
                         icon="fas fa-users"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -133,6 +134,7 @@
                         color="blue"
                         icon="fas fa-layer-group"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -142,6 +144,7 @@
                         color="red"
                         icon="fas fa-signature"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -151,6 +154,7 @@
                         color="yellow"
                         icon="fas fa-spinner"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -160,10 +164,18 @@
                         color="green"
                         icon="fas fa-check-circle"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
                 </div>
 
-            
+                <div class="mt-6 rounded-2xl bg-gray-50 p-5">
+                    <h4 class="text-lg font-semibold text-gray-900">สรุปสำหรับผู้บริหาร</h4>
+                    <p class="mt-2 text-sm text-gray-600">
+                        ขณะนี้มีงานที่ยังอยู่ก่อนถึงขั้นตอนของคุณ {{ $beforeManagerCount }} รายการ
+                        งานใกล้ครบกำหนด {{ $dueSoonCount }} รายการ
+                        และงานเลยกำหนด {{ $overdueCount }} รายการ
+                    </p>
+                </div>
             </div>
 
             <div class="rounded-2xl bg-white p-6 shadow-md border border-gray-100">

@@ -117,7 +117,7 @@
                     <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                     <x-summary-score
                         title="ผู้เข้าประเมิน"
                         :value="$totalEvaluatees"
@@ -125,6 +125,7 @@
                         color="blue"
                         icon="fas fa-users"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -134,6 +135,7 @@
                         color="blue"
                         icon="fas fa-layer-group"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -143,6 +145,7 @@
                         color="red"
                         icon="fas fa-stamp"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -152,6 +155,7 @@
                         color="yellow"
                         icon="fas fa-spinner"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
 
                     <x-summary-score
@@ -161,6 +165,7 @@
                         color="green"
                         icon="fas fa-check-circle"
                         iconSize="text-3xl"
+                        class="h-full"
                     />
                 </div>
 
