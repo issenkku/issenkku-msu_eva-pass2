@@ -527,6 +527,10 @@
                                             <input type="checkbox" class="qual_require_evidence h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                                             <span>บังคับแนบหลักฐานเมื่อเลือกเกณฑ์นี้</span>
                                         </label>
+                                        <label class="mb-4 ml-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                                            <input type="checkbox" class="qual_allow_multiple h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <span>เลือกได้หลายตัวเลือก</span>
+                                        </label>
                                         <div
                                             class="qual_sub_criterias_container space-y-3 pl-4 border-l-2 border-purple-200 mb-3">
                                             <div class="qual_sub_criteria_block bg-gray-50 p-3 rounded-lg"
@@ -1651,6 +1655,7 @@
                                 tooltips: qualTooltips || null,
                                 sequence: qj + 1,
                                 require_evidence: qMain.querySelector('.qual_require_evidence')?.checked || false,
+                                allow_multiple: qMain.querySelector('.qual_allow_multiple')?.checked || false,
                                 quality_sub_criterias: []
                             };
 

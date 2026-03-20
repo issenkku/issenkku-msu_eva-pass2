@@ -447,6 +447,7 @@ class DashboardController extends Controller
                 'qm.tooltips as main_tooltips',
                 'qm.sequence as main_sequence',
                 'qm.ratio as main_ratio',
+                'qm.allow_multiple as allow_multiple',
                 'qs.id as sub_id',
                 'qs.name as sub_name',
                 'qs.sequence as sub_sequence',
@@ -477,7 +478,7 @@ class DashboardController extends Controller
             'evaluationLists' => function ($query) {
                 $query->orderBy('sequence')->with([
                     'quantitySubCriterias.mainCriteria:id,name,tooltips',
-                    'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence',
+                    'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
                 ]);
             },
         ])

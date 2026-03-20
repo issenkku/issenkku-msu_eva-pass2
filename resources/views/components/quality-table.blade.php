@@ -88,6 +88,8 @@
                                         value="1"
                                         data-score="{{ $item['num_score'] ?? 0 }}"
                                         data-sub-criteria-id="{{ $item['sub_criteria_id'] }}"
+                                        data-main-criteria-id="{{ $item['main_criteria_id'] ?? '' }}"
+                                        data-allow-multiple="{{ !empty($item['allow_multiple']) ? '1' : '0' }}"
                                         onchange="handleQualityCheckboxChange(this)"
                                         {{ $shouldBeChecked ? 'checked' : '' }}
                                         class="mt-1 mr-3 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
@@ -198,7 +200,24 @@
 function handleQualityCheckboxChange(checkbox) {
     const subCriteriaId = checkbox.dataset.subCriteriaId;
     const score = parseFloat(checkbox.dataset.score) || 0;
+    const mainCriteriaId = checkbox.dataset.mainCriteriaId;
+    const allowMultiple = checkbox.dataset.allowMultiple === '1';
     const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
+
+    if (checkbox.checked && mainCriteriaId && !allowMultiple) {
+        document.querySelectorAll(`input[name*="quality_criteria"][data-main-criteria-id="${mainCriteriaId}"]`).forEach(otherCheckbox => {
+            if (otherCheckbox !== checkbox) {
+                otherCheckbox.checked = false;
+                const otherSubCriteriaId = otherCheckbox.dataset.subCriteriaId;
+                const otherScoreInput = document.getElementById(`quality-score-${otherSubCriteriaId}`);
+                if (otherScoreInput) {
+                    otherScoreInput.value = '';
+                    otherScoreInput.classList.remove('bg-white');
+                    otherScoreInput.classList.add('bg-gray-50', 'cursor-not-allowed');
+                }
+            }
+        });
+    }
     
     if (scoreInput) {
         if (checkbox.checked) {

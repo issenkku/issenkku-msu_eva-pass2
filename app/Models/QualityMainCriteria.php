@@ -20,11 +20,13 @@ class QualityMainCriteria extends Model
         'tooltips',
         'sequence',
         'require_evidence',
+        'allow_multiple',
         'criteria_version_id',
     ];
 
     protected $casts = [
         'require_evidence' => 'boolean',
+        'allow_multiple' => 'boolean',
     ];
 
     public function criteriaVersion(): BelongsTo

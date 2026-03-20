@@ -346,6 +346,8 @@
                                                     value="1"
                                                     data-score="{{ $subCriteria['num_score'] ?? 0 }}"
                                                     data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                    data-main-criteria-id="{{ $mainCriteria['id'] }}"
+                                                    data-allow-multiple="{{ !empty($mainCriteria['allow_multiple']) ? '1' : '0' }}"
                                                     onchange="handleQualityCheckboxChange(this)"
                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
@@ -696,7 +698,22 @@ document.addEventListener('DOMContentLoaded', function() {
 function handleQualityCheckboxChange(checkbox) {
     const subCriteriaId = checkbox.dataset.subCriteriaId;
     const score = parseFloat(checkbox.dataset.score) || 0;
+    const mainCriteriaId = checkbox.dataset.mainCriteriaId;
+    const allowMultiple = checkbox.dataset.allowMultiple === '1';
     const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
+
+    if (checkbox.checked && mainCriteriaId && !allowMultiple) {
+        document.querySelectorAll(`input[name*="quality_criteria"][data-main-criteria-id="${mainCriteriaId}"]`).forEach(otherCheckbox => {
+            if (otherCheckbox !== checkbox) {
+                otherCheckbox.checked = false;
+                const otherSubCriteriaId = otherCheckbox.dataset.subCriteriaId;
+                const otherScoreInput = document.getElementById(`quality-score-${otherSubCriteriaId}`);
+                if (otherScoreInput) {
+                    otherScoreInput.value = '';
+                }
+            }
+        });
+    }
     
     if (scoreInput) {
         if (checkbox.checked) {
@@ -719,5 +736,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-

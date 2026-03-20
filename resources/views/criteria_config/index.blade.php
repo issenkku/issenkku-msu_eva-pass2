@@ -196,6 +196,7 @@
                             ratio: ql.ratio ?? 1,
                             tooltips: ql.tooltips || null,
                             sequence: ql.sequence ?? 1,
+                            allow_multiple: Boolean(ql.allow_multiple),
                             quality_sub_criterias: (ql.quality_sub_criterias || []).map((qs) => ({
                                 name: qs.name || '',
                                 sequence: qs.sequence ?? 1,

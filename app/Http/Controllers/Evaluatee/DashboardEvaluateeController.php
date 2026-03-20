@@ -395,6 +395,7 @@ class DashboardEvaluateeController extends Controller
                                     'tooltips' => $mainCriteria->tooltips,
                                     'ratio' => $mainCriteria->ratio,
                                     'require_evidence' => (bool) $mainCriteria->require_evidence,
+                                    'allow_multiple' => (bool) ($mainCriteria->allow_multiple ?? false),
                                     'main_calculated_score' => round($mainCalculatedScore, 2),
                                     'sub_criterias' => [],
                                 ];
