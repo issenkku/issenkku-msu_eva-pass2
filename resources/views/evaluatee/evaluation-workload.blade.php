@@ -651,15 +651,31 @@
                                 @forelse($form->fields as $field)
                                     @php
                                         $fieldType = strtolower((string) ($field->field_type ?? "number"));
+                                        $defaultValue = $field->default_value ?? '';
                                     @endphp
                                     @if($fieldType !== "item")
-                                        <div class="workload-modal-subfield">
-                                            <label class="workload-modal-sub-label">{{ $field->label ?? $field->variable_name }}</label>
-                                            @if(!empty($field->note))
-                                                <div class="workload-modal-sub-note">{{ $field->note }}</div>
-                                            @endif
-                                            <input type="{{ $fieldType === 'text' ? 'text' : 'number' }}" class="workload-modal-input" name="field_values[{{ $field->variable_name }}]" />
-                                        </div>
+                                        @if($defaultValue !== '')
+                                            <input
+                                                type="hidden"
+                                                name="field_values[{{ $field->variable_name }}]"
+                                                value="{{ $defaultValue }}"
+                                                data-default-value="{{ $defaultValue }}"
+                                            />
+                                        @else
+                                            <div class="workload-modal-subfield">
+                                                <label class="workload-modal-sub-label">{{ $field->label ?? $field->variable_name }}</label>
+                                                @if(!empty($field->note))
+                                                    <div class="workload-modal-sub-note">{{ $field->note }}</div>
+                                                @endif
+                                                <input
+                                                    type="{{ $fieldType === 'text' ? 'text' : 'number' }}"
+                                                    class="workload-modal-input"
+                                                    name="field_values[{{ $field->variable_name }}]"
+                                                    value=""
+                                                    data-default-value=""
+                                                />
+                                            </div>
+                                        @endif
                                     @endif
                                 @empty
                                     <div class="workload-modal-subfield">
@@ -1988,6 +2004,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             });
         }
+        const hasExplicitValues = Object.keys(normalized).length > 0;
         const escapeCss = function (value) {
             if (window.CSS && typeof window.CSS.escape === 'function') {
                 return window.CSS.escape(value);
@@ -2000,7 +2017,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             if (clearAll) {
                 inputs.forEach(function (input) {
-                    input.value = '';
+                    input.value = hasExplicitValues ? '' : (input.dataset.defaultValue || '');
                 });
             }
             inputs.forEach(function (input) {
@@ -2553,9 +2570,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
 
 
 

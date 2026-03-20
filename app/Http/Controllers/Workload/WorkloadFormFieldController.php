@@ -48,6 +48,7 @@ class WorkloadFormFieldController extends Controller
             $field = WorkloadFormField::create([
                 'label' => $request->validated()['label'],
                 'note' => $request->validated()['note'] ?? null,
+                'default_value' => $request->validated()['default_value'] ?? null,
                 'variable_name' => $request->validated()['variable_name'],
                 'field_type' => $request->validated()['field_type'],
                 'workload_form_id' => $workloadFormId,

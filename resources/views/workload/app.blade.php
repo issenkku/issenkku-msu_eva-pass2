@@ -150,6 +150,11 @@
                                                     placeholder="อธิบายว่าฟิลด์นี้ใช้กรอกอะไร">
                                             </div>
                                             <div>
+                                                <label class="form-label">ค่าเริ่มต้น</label>
+                                                <input type="text" class="form-control workload-variable-default-value"
+                                                    placeholder="ใส่ค่าที่ต้องการให้แสดงไว้ก่อน">
+                                            </div>
+                                            <div>
                                                 <label class="form-label">ประเภทอินพุต</label>
                                                 <select class="form-select workload-variable-type">
                                                     <option value="">กรุณาเลือกประเภทอินพุต</option>
@@ -663,7 +668,7 @@
 
         .formula-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
             gap: 12px;
             align-items: end;
         }
@@ -707,6 +712,11 @@
         .formula-item-note {
             font-size: 0.8rem;
             color: #6b7280;
+        }
+
+        .formula-item-default {
+            font-size: 0.8rem;
+            color: #0f766e;
         }
 
         .formula-value {
@@ -1022,6 +1032,7 @@
                 const cancelVariableEditButton = card.querySelector('.workload-cancel-variable-edit');
                 const variableLabelInput = card.querySelector('.workload-variable-label');
                 const variableNoteInput = card.querySelector('.workload-variable-note');
+                const variableDefaultValueInput = card.querySelector('.workload-variable-default-value');
                 const variableTypeSelect = card.querySelector('.workload-variable-type');
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
@@ -1033,6 +1044,9 @@
                     }
                     if (variableNoteInput) {
                         variableNoteInput.value = '';
+                    }
+                    if (variableDefaultValueInput) {
+                        variableDefaultValueInput.value = '';
                     }
                     if (variableTypeSelect) {
                         variableTypeSelect.value = '';
@@ -1064,6 +1078,9 @@
                     }
                     if (variableNoteInput) {
                         variableNoteInput.value = row.dataset.note || '';
+                    }
+                    if (variableDefaultValueInput) {
+                        variableDefaultValueInput.value = row.dataset.defaultValue || '';
                     }
                     if (variableTypeSelect) {
                         variableTypeSelect.value = row.dataset.fieldType || '';
@@ -1142,7 +1159,7 @@
                 };
 
                 // ฟังก์ชันย่อย: addFormulaItem
-                const addFormulaItem = (label, variableName, fieldType, note = '') => {
+                const addFormulaItem = (label, variableName, fieldType, note = '', defaultValue = '') => {
                     if (!formulaList) {
                         return;
                     }
@@ -1150,6 +1167,7 @@
                     row.className = 'formula-item';
                     row.dataset.fieldType = fieldType || 'input';
                     row.dataset.note = note || '';
+                    row.dataset.defaultValue = defaultValue || '';
 
                     const meta = document.createElement('div');
                     meta.className = 'formula-item-meta';
@@ -1165,6 +1183,13 @@
                         noteSpan.className = 'formula-item-note';
                         noteSpan.textContent = note;
                         meta.appendChild(noteSpan);
+                    }
+
+                    if (defaultValue !== '') {
+                        const defaultValueSpan = document.createElement('span');
+                        defaultValueSpan.className = 'formula-item-default';
+                        defaultValueSpan.textContent = `ค่าเริ่มต้น: ${defaultValue}`;
+                        meta.appendChild(defaultValueSpan);
                     }
 
                     const valueSpan = document.createElement('span');
@@ -1306,9 +1331,11 @@
                     addVariableButton.addEventListener('click', () => {
                         const currentLabelInput = card.querySelector('.workload-variable-label');
                         const currentNoteInput = card.querySelector('.workload-variable-note');
+                        const currentDefaultValueInput = card.querySelector('.workload-variable-default-value');
                         const currentTypeSelect = card.querySelector('.workload-variable-type');
                         const label = currentLabelInput ? currentLabelInput.value.trim() : '';
                         const note = currentNoteInput ? currentNoteInput.value.trim() : '';
+                        const defaultValue = currentDefaultValueInput ? currentDefaultValueInput.value.trim() : '';
                         let fieldType = currentTypeSelect ? currentTypeSelect.value : '';
                         if (!label) {
                             alert('กรุณากรอกชื่อตัวแปร');
@@ -1321,11 +1348,13 @@
                         if (editingFormulaRow) {
                             const labelEl = editingFormulaRow.querySelector('.formula-item-label');
                             const noteEl = editingFormulaRow.querySelector('.formula-item-note');
+                            const defaultValueEl = editingFormulaRow.querySelector('.formula-item-default');
                             if (labelEl) {
                                 labelEl.textContent = label;
                             }
                             editingFormulaRow.dataset.fieldType = fieldType;
                             editingFormulaRow.dataset.note = note;
+                            editingFormulaRow.dataset.defaultValue = defaultValue;
 
                             if (note) {
                                 if (noteEl) {
@@ -1340,6 +1369,19 @@
                                 noteEl.remove();
                             }
 
+                            if (defaultValue !== '') {
+                                if (defaultValueEl) {
+                                    defaultValueEl.textContent = `ค่าเริ่มต้น: ${defaultValue}`;
+                                } else {
+                                    const newDefaultValueEl = document.createElement('span');
+                                    newDefaultValueEl.className = 'formula-item-default';
+                                    newDefaultValueEl.textContent = `ค่าเริ่มต้น: ${defaultValue}`;
+                                    editingFormulaRow.querySelector('.formula-item-meta')?.appendChild(newDefaultValueEl);
+                                }
+                            } else if (defaultValueEl) {
+                                defaultValueEl.remove();
+                            }
+
                             resetVariableForm();
                             return;
                         }
@@ -1349,7 +1391,7 @@
                             : fieldType === 'item'
                                 ? `item_${getNextItemSequence()}`
                                 : `text_${getNextVariableIndex('text')}`;
-                        addFormulaItem(label, variableName, fieldType, note);
+                        addFormulaItem(label, variableName, fieldType, note, defaultValue);
                         resetVariableForm();
                     });
                 }
@@ -1597,7 +1639,8 @@
                                 field.label || `ตัวแปร ${idx + 1}`,
                                 field.variable_name || `input_${idx + 1}`,
                                 field.field_type || 'input',
-                                field.note || ''
+                                field.note || '',
+                                field.default_value || ''
                             );
                         });
                         api.syncVariableChips();
@@ -1806,6 +1849,7 @@
                                     variable_name: value ? value.textContent.trim() : '',
                                     field_type: row.dataset.fieldType || 'input',
                                     note: row.dataset.note || '',
+                                    default_value: row.dataset.defaultValue || '',
                                 });
                             });
 

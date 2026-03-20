@@ -1184,6 +1184,7 @@ class ReportStructureController extends Controller
                         WorkloadFormField::create([
                             'label' => $field->label,
                             'note' => $field->note,
+                            'default_value' => $field->default_value,
                             'variable_name' => $field->variable_name,
                             'field_type' => $field->field_type,
                             'workload_form_id' => $newForm->id,

@@ -16,6 +16,7 @@ class StoreWorkloadFormFieldRequest extends FormRequest
         return [
             'label' => ['required', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:255'],
+            'default_value' => ['nullable', 'string', 'max:255'],
             'variable_name' => ['required', 'string', 'max:255'],
             'field_type' => ['required', 'string', 'max:255'],
         ];

@@ -174,6 +174,7 @@ class WorkloadConfigController extends Controller
             'groups.*.items.*.fields' => ['nullable', 'array'],
             'groups.*.items.*.fields.*.label' => ['required', 'string', 'max:255'],
             'groups.*.items.*.fields.*.note' => ['nullable', 'string', 'max:255'],
+            'groups.*.items.*.fields.*.default_value' => ['nullable', 'string', 'max:255'],
             'groups.*.items.*.fields.*.variable_name' => ['required', 'string', 'max:255'],
             'groups.*.items.*.fields.*.field_type' => ['required', 'string', 'max:255'],
             'groups.*.items.*.form_items' => ['nullable', 'array'],
@@ -254,6 +255,7 @@ class WorkloadConfigController extends Controller
                         WorkloadFormField::create([
                             'label' => $field['label'],
                             'note' => $field['note'] ?? null,
+                            'default_value' => $field['default_value'] ?? null,
                             'variable_name' => $field['variable_name'],
                             'field_type' => $field['field_type'],
                             'workload_form_id' => $form->id,
