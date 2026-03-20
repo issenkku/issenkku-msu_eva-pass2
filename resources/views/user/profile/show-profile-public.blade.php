@@ -215,7 +215,7 @@
             @endif
         </section>
 
-        <section class="border-t border-slate-200 px-8 py-8">
+        {{-- <section class="border-t border-slate-200 px-8 py-8">
             <div class="mb-5 flex items-center gap-3">
                 <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                     <i class="fas fa-clipboard-check"></i>
@@ -279,7 +279,7 @@
                     ยังไม่มีผลงานที่ถูกบันทึกไว้ในระบบประเมิน
                 </div>
             @endif
-        </section>
+        </section> --}}
     </article>
 </div>
 </body>
