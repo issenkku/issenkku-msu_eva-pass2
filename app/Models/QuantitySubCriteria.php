@@ -24,10 +24,12 @@ class QuantitySubCriteria extends Model
         'evaluation_list_id',
         'description',
         'require_evidence',
+        'require_subject',
     ];
 
     protected $casts = [
         'require_evidence' => 'boolean',
+        'require_subject' => 'boolean',
     ];
 
     public function groups()

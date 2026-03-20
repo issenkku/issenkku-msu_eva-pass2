@@ -35,6 +35,16 @@ class ReportStructureController extends Controller
         return $cached;
     }
 
+    private function hasQuantityRequireSubjectColumn(): bool
+    {
+        static $cached = null;
+        if ($cached === null) {
+            $cached = Schema::hasColumn('quantity_sub_criterias', 'require_subject');
+        }
+
+        return $cached;
+    }
+
     private function hasQualityRequireEvidenceColumn(): bool
     {
         static $cached = null;
@@ -96,6 +106,7 @@ class ReportStructureController extends Controller
     {
         try {
             $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+            $hasQuantityRequireSubject = $this->hasQuantityRequireSubjectColumn();
             $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
 
             // ตรวจสอบว่ามีเวอร์ชัน
@@ -117,7 +128,7 @@ class ReportStructureController extends Controller
                         $query->select('id', 'categorie_id', 'criteria_version_id', 'name', 'sum_score', 'sequence', 'annotation')
                             ->orderBy('sequence');
                     },
-                    'categories.evaluationLists.quantitySubCriterias' => function ($query) use ($hasQuantityRequireEvidence) {
+                    'categories.evaluationLists.quantitySubCriterias' => function ($query) use ($hasQuantityRequireEvidence, $hasQuantityRequireSubject) {
                         $columns = [
                             'quantity_sub_criterias.id',
                             'quantity_sub_criterias.name',
@@ -129,6 +140,9 @@ class ReportStructureController extends Controller
                         ];
                         if ($hasQuantityRequireEvidence) {
                             $columns[] = 'require_evidence';
+                        }
+                        if ($hasQuantityRequireSubject) {
+                            $columns[] = 'require_subject';
                         }
 
                         $query->select($columns)
@@ -180,14 +194,14 @@ class ReportStructureController extends Controller
                         'comment' => $reportData->comment,
                     ];
                 }),
-                'categories' => $version->categories->map(function ($category) use ($hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
+                'categories' => $version->categories->map(function ($category) use ($hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence) {
                     // กลุ่ม evaluation lists ตาม category
                     return [
                         'categorie_id' => $category->id,
                         'main_categories' => $category->main_categories,
                         'sub_categories' => $category->sub_categories,
                         'sequence' => $category->sequence,
-                        'evaluation_lists' => $category->evaluationLists->map(function ($evalList) use ($hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
+                        'evaluation_lists' => $category->evaluationLists->map(function ($evalList) use ($hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence) {
                             // สร้าง Map ของ quantity main criterias
                             $quantityMainMap = [];
 
@@ -221,6 +235,7 @@ class ReportStructureController extends Controller
                                     'score_a' => (float) $qSub->score_a,
                                     'score_b' => (float) $qSub->score_b,
                                     'require_evidence' => $hasQuantityRequireEvidence ? (bool) $qSub->require_evidence : false,
+                                    'require_subject' => $hasQuantityRequireSubject ? (bool) $qSub->require_subject : false,
                                 ];
                             }
 
@@ -298,6 +313,7 @@ class ReportStructureController extends Controller
     public function store(Request $request)
     {
         $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+        $hasQuantityRequireSubject = $this->hasQuantityRequireSubjectColumn();
         $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
 
         $validated = $request->validate([
@@ -337,6 +353,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_evidence' => 'nullable|boolean',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_subject' => 'nullable|boolean',
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_main_criteria_id' => 'sometimes|nullable|integer|exists:quality_main_criterias,id',
@@ -354,7 +371,7 @@ class ReportStructureController extends Controller
         ]);
 
         try {
-            $version = DB::transaction(function () use ($validated, $hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
+            $version = DB::transaction(function () use ($validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence) {
                 // Generate version_name automatically if not provided or contains AUTO
                 if (empty($validated['version_name']) || strpos($validated['version_name'], 'AUTO') !== false) {
                     $currentYear = now()->year + 543; // Convert to Buddhist Era
@@ -445,6 +462,7 @@ class ReportStructureController extends Controller
                                                 'score_a' => $qSub['score_a'],
                                                 'score_b' => $qSub['score_b'],
                                                 ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
+                                                ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
                                             ]);
                                         }
                                     }
@@ -537,6 +555,7 @@ class ReportStructureController extends Controller
     public function update(Request $request, $id)
     {
         $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
+        $hasQuantityRequireSubject = $this->hasQuantityRequireSubjectColumn();
         $hasQualityRequireEvidence = $this->hasQualityRequireEvidenceColumn();
 
         $validated = $request->validate([
@@ -575,6 +594,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_a' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.score_b' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_evidence' => 'nullable|boolean',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.require_subject' => 'nullable|boolean',
 
             'categories.*.evaluation_lists.*.quality_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_main_criteria_id' => 'sometimes|nullable|integer|exists:quality_main_criterias,id',
@@ -605,7 +625,7 @@ class ReportStructureController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQualityRequireEvidence) {
+            DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence) {
                 // 1. Update Criteria Version
                 $versionUpdateData = [
                     'version_name' => $validated['version_name'],
@@ -772,6 +792,7 @@ class ReportStructureController extends Controller
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
                                                     ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
+                                                    ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
                                                 ]);
                                             } else {
                                                 $quantitySubCriteria = QuantitySubCriteria::create([
@@ -783,6 +804,7 @@ class ReportStructureController extends Controller
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
                                                     ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
+                                                    ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
                                                 ]);
                                             }
 

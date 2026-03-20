@@ -29,4 +29,9 @@ class WorkloadForm extends Model
     {
         return $this->belongsTo(QuantitySubCriteriaItem::class, 'quantity_sub_criteria_item_id');
     }
+
+    public function quantitySubCriteria()
+    {
+        return $this->belongsTo(QuantitySubCriteria::class, 'quantity_sub_criteria_id');
+    }
 }

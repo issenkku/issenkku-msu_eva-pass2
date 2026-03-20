@@ -144,6 +144,7 @@
                                     : $formFields->reject(function ($field) use ($isGroupField) {
                                         return $isGroupField($field);
                                     })->values();
+                                $requiresSubject = !empty($quantitySubCriteria?->require_subject);
                                 $showLevelColumn = $itemEntries->contains(function ($entry) {
                                     return !empty($entry?->subject_id);
                                 });
@@ -172,7 +173,9 @@
                                         <thead>
                                             <tr>
                                                 <th>กิจกรรม/โครงการ/งาน</th>
-                                                <th>รายวิชาที่เลือก</th>
+                                                @if($requiresSubject)
+                                                    <th>รายวิชาที่เลือก</th>
+                                                @endif
                                                 @if($showLevelColumn)
                                                     <th>ระดับ</th>
                                                 @endif
@@ -292,18 +295,20 @@
                                                 @endphp
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
-                                                    <td>
-                                                        @php
-                                                            $subjectDisplay = null;
-                                                            if ($itemEntry?->subject) {
-                                                                $subjectDisplay = trim(collect([
-                                                                    $itemEntry->subject->code ?? null,
-                                                                    $itemEntry->subject->name_th ?? null,
-                                                                ])->filter()->implode(' '));
-                                                            }
-                                                        @endphp
-                                                        {{ $subjectDisplay !== '' && $subjectDisplay !== null ? $subjectDisplay : '-' }}
-                                                    </td>
+                                                    @if($requiresSubject)
+                                                        <td>
+                                                            @php
+                                                                $subjectDisplay = null;
+                                                                if ($itemEntry?->subject) {
+                                                                    $subjectDisplay = trim(collect([
+                                                                        $itemEntry->subject->code ?? null,
+                                                                        $itemEntry->subject->name_th ?? null,
+                                                                    ])->filter()->implode(' '));
+                                                                }
+                                                            @endphp
+                                                            {{ $subjectDisplay !== '' && $subjectDisplay !== null ? $subjectDisplay : '-' }}
+                                                        </td>
+                                                    @endif
                                                     @if($showLevelColumn)
                                                         <td>
                                                             {{ $itemLabel ?? $item->description ?? '-' }}
@@ -370,7 +375,9 @@
                                             @empty
                                                 <tr>
                                                     <td>{{ $item->name ?? '-' }}</td>
-                                                    <td>-</td>
+                                                    @if($requiresSubject)
+                                                        <td>-</td>
+                                                    @endif
                                                     @if($showLevelColumn)
                                                         <td>{{ $item->description ?? '-' }}</td>
                                                     @endif
@@ -517,15 +524,16 @@
                 @csrf
                 <input type="hidden" id="workloadFormMethod" name="_method" value="">
                 <input type="hidden" id="workloadRequireEvidenceFlag" value="{{ !empty($quantitySubCriteria?->require_evidence) ? 1 : 0 }}">
+                <input type="hidden" id="workloadRequireSubjectFlag" value="{{ !empty($quantitySubCriteria?->require_subject) ? 1 : 0 }}">
                 <div class="modal-header workload-modal-header">
                 <h5 class="modal-title w-100 text-center" id="workloadAddModalLabel">เพิ่มข้อมูลภาระงาน</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
                 <div class="modal-body workload-modal-body">
                 <input type="hidden" name="report_id" value="{{ $reportId }}">
-                <div class="workload-modal-section">
-                    <label class="workload-modal-label">รายวิชา</label>
-                    <select class="workload-modal-select" name="subject_id">
+                <div class="workload-modal-section" id="workloadSubjectSection" @if(empty($quantitySubCriteria?->require_subject)) style="display:none;" @endif>
+                    <label class="workload-modal-label">รายวิชา <span class="required">*</span></label>
+                    <select class="workload-modal-select" name="subject_id" @if(!empty($quantitySubCriteria?->require_subject)) required @endif>
                         <option value="">-- เลือกรายวิชา --</option>
                         @foreach($subjects as $subject)
                             <option value="{{ $subject->id }}"
@@ -539,7 +547,7 @@
                     </select>
                 </div>
 
-                <div class="workload-alert-box">
+                <div class="workload-alert-box" id="workloadSubjectAlertBox" @if(empty($quantitySubCriteria?->require_subject)) style="display:none;" @endif>
                     <div class="workload-alert-icon">
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
@@ -1378,8 +1386,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const methodField = document.getElementById('workloadFormMethod');
     const modalTitle = document.getElementById('workloadAddModalLabel');
     const subjectSelect = document.querySelector('select[name="subject_id"]');
+    const subjectSection = document.getElementById('workloadSubjectSection');
+    const subjectAlertBox = document.getElementById('workloadSubjectAlertBox');
     const evidenceContainer = document.getElementById('workload-evidence-links');
     const workloadRequireEvidenceFlag = document.getElementById('workloadRequireEvidenceFlag');
+    const workloadRequireSubjectFlag = document.getElementById('workloadRequireSubjectFlag');
     const detailFieldsContainer = document.getElementById('workload-detail-fields');
     const groupLabelInput = document.getElementById('workloadGroupLabel');
     let lastDefaultFormId = '';
@@ -1430,6 +1441,30 @@ document.addEventListener('DOMContentLoaded', function () {
         activeGroupId = groupId || '';
         if (groupLabelInput) {
             groupLabelInput.value = groupName || (activeGroupId ? 'หมวดย่อย #' + activeGroupId : '-');
+        }
+    }
+
+    function requiresSubject() {
+        return !!(workloadRequireSubjectFlag && workloadRequireSubjectFlag.value === '1');
+    }
+
+    function updateSubjectRequirementState() {
+        const enabled = requiresSubject();
+
+        if (subjectSection) {
+            subjectSection.style.display = enabled ? '' : 'none';
+        }
+
+        if (subjectAlertBox) {
+            subjectAlertBox.style.display = enabled ? '' : 'none';
+        }
+
+        if (subjectSelect) {
+            subjectSelect.disabled = !enabled;
+            subjectSelect.required = enabled;
+            if (!enabled) {
+                subjectSelect.value = '';
+            }
         }
     }
 
@@ -1567,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateCreditsFromSubject() {
-        if (!subjectSelect) {
+        if (!subjectSelect || !requiresSubject()) {
             return;
         }
         const selected = subjectSelect.selectedOptions ? subjectSelect.selectedOptions[0] : null;
@@ -1788,6 +1823,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         updateFormFields();
+        updateSubjectRequirementState();
     }
 
     function validateWorkloadEvidence() {
@@ -1864,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (subjectSelect) {
                     subjectSelect.value = subjectId;
                 }
+                updateSubjectRequirementState();
                 setActiveFormId(formId);
                 updateFormFields();
                 if (itemSelect && itemId) {
@@ -1883,6 +1920,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (subjectSelect) {
                 subjectSelect.value = '';
             }
+            updateSubjectRequirementState();
             fillFields({}, '', true);
             setEvidenceLinks([]);
             pendingEditPayload = null;
@@ -1915,6 +1953,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (workloadForm) {
         workloadForm.addEventListener('submit', function (event) {
+            if (requiresSubject() && subjectSelect && !subjectSelect.value) {
+                event.preventDefault();
+                alert('กรุณาเลือกรายวิชาสำหรับเกณฑ์นี้ก่อนบันทึกภาระงาน');
+                return;
+            }
+
             if (validateWorkloadEvidence()) {
                 return;
             }
@@ -1925,6 +1969,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updateFormFields();
+    updateSubjectRequirementState();
 });
 </script>
 <script>
@@ -2190,13 +2235,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
-
-
-
-
 
 
 

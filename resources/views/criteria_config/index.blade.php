@@ -187,6 +187,8 @@
                                 sequence: qs.sequence ?? 1,
                                 score_a: qs.score_a ?? 0,
                                 score_b: qs.score_b ?? 0,
+                                require_evidence: Boolean(qs.require_evidence),
+                                require_subject: Boolean(qs.require_subject),
                             })),
                         })),
                         quality_main_criterias: (ev.quality_main_criterias || []).map((ql) => ({

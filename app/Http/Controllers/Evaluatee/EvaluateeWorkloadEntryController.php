@@ -31,7 +31,11 @@ class EvaluateeWorkloadEntryController extends Controller
             $validated['workload_form_id'] = $item->workload_form_id;
         }
 
-        $form = WorkloadForm::with(['fields', 'items'])->findOrFail($validated['workload_form_id']);
+        $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria'])->findOrFail($validated['workload_form_id']);
+        $validated['subject_id'] = $this->resolveSubjectIdForForm(
+            $form,
+            array_key_exists('subject_id', $validated) ? $validated['subject_id'] : null
+        );
         $fieldValues = (array) ($validated['field_values'] ?? []);
         $evidenceLinks = $request->input('evidence_links', []);
         $evaluationListId = $this->resolveEvaluationListId($form);
@@ -107,12 +111,14 @@ class EvaluateeWorkloadEntryController extends Controller
                 }
             }
 
-            $form = WorkloadForm::with(['fields', 'items'])->findOrFail($workloadFormId);
+            $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria'])->findOrFail($workloadFormId);
+            $validated['subject_id'] = $this->resolveSubjectIdForForm(
+                $form,
+                array_key_exists('subject_id', $validated) ? $validated['subject_id'] : null
+            );
             $fieldValues = $this->mergeSubjectCreditFieldValues(
                 (array) $fieldValues,
-                array_key_exists('subject_id', $validated)
-                    ? ($validated['subject_id'] !== null ? (int) $validated['subject_id'] : null)
-                    : ($entry->subject_id !== null ? (int) $entry->subject_id : null)
+                $validated['subject_id'] !== null ? (int) $validated['subject_id'] : null
             );
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
@@ -186,6 +192,24 @@ class EvaluateeWorkloadEntryController extends Controller
         }
 
         return $sequence > 0 ? 'item_' . $sequence : '';
+    }
+
+    private function resolveSubjectIdForForm(WorkloadForm $form, mixed $subjectId): ?int
+    {
+        $subCriteria = $form->quantitySubCriteria ?: QuantitySubCriteria::find($form->quantity_sub_criteria_id);
+        $normalizedSubjectId = $subjectId !== null && $subjectId !== '' ? (int) $subjectId : null;
+
+        if (! $subCriteria || ! $subCriteria->require_subject) {
+            return null;
+        }
+
+        if (! $normalizedSubjectId) {
+            throw ValidationException::withMessages([
+                'subject_id' => ['กรุณาเลือกรายวิชาสำหรับเกณฑ์นี้ก่อนบันทึกภาระงาน'],
+            ]);
+        }
+
+        return $normalizedSubjectId;
     }
 
     private function mergeSubjectCreditFieldValues(array $fieldValues, ?int $subjectId): array
