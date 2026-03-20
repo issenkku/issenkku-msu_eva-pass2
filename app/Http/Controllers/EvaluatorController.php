@@ -69,18 +69,6 @@ class EvaluatorController extends Controller
             });
         });
 
-        // Apply search filter
-        if ($request->filled('search')) {
-            $searchTerm = $request->input('search');
-            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
-                $evaluateeName = optional($assignment->evaluateeUser)->name ?? '';
-                $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
-
-                return str_contains(strtolower($evaluateeName), strtolower($searchTerm))
-                    || str_contains(strtolower($reportTitle), strtolower($searchTerm));
-            });
-        }
-
         // Get unique years from assignment_datas
         $years = $assignmentDatas->pluck('start_time')
             ->filter()
@@ -91,11 +79,64 @@ class EvaluatorController extends Controller
             ->sortDesc()
             ->values();
 
+        // Apply search filter
+        if ($request->filled('search')) {
+            $searchTerm = mb_strtolower($request->input('search'));
+            $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
+                $evaluateeName = mb_strtolower(optional($assignment->evaluateeUser)->name ?? '');
+                $employeeId = mb_strtolower((string) (optional($assignment->evaluateeUser)->employee_id ?? ''));
+                $reportTitle = mb_strtolower(optional(optional($assignment->report)->reportData)->report_title ?? '');
+
+                return str_contains($evaluateeName, $searchTerm)
+                    || str_contains($employeeId, $searchTerm)
+                    || str_contains($reportTitle, $searchTerm);
+            });
+        }
+
         // Apply year filter
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
                 return $year == $request->input('year');
+            });
+        }
+
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            $statusGroups = [
+                'waiting' => ['Assigned', 'Draft', 'Pending'],
+                'in_progress' => ['Evaluator_draft'],
+                'forwarded' => ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
+                'completed' => ['Completed'],
+            ];
+
+            if (isset($statusGroups[$status])) {
+                $evaluations = $evaluations->filter(function ($assignment) use ($statusGroups, $status) {
+                    return in_array(optional($assignment->report)->status, $statusGroups[$status], true);
+                });
+            }
+        }
+
+        if ($request->filled('urgency')) {
+            $urgency = $request->input('urgency');
+            $evaluations = $evaluations->filter(function ($assignment) use ($urgency) {
+                $endTime = optional($assignment->assignmentData)->end_time;
+                $status = optional($assignment->report)->status;
+
+                if (! $endTime || $status === 'Completed') {
+                    return $urgency === 'all';
+                }
+
+                $endDate = Carbon::parse($endTime)->endOfDay();
+                $today = now()->startOfDay();
+                $dueSoonLimit = now()->copy()->addDays(7)->endOfDay();
+
+                return match ($urgency) {
+                    'overdue' => $endDate->lt(now()),
+                    'due_soon' => $endDate->between($today, $dueSoonLimit),
+                    'normal' => $endDate->gt($dueSoonLimit),
+                    default => true,
+                };
             });
         }
 

@@ -15,39 +15,83 @@
         <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
             <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
             <form id="filterForm" method="get" class="space-y-1">
-                <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <div class="md:col-span-2 xl:col-span-1">
+                        <label class="block mb-1 text-gray-700 font-medium text-sm">ค้นหาชื่อ / รหัสพนักงาน / ชื่องาน</label>
+                        <input
+                            name="search"
+                            type="text"
+                            value="{{ request('search', '') }}"
+                            placeholder="พิมพ์เพื่อค้นหา"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
+                    </div>
                     <div>
                         <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่เริ่มต้น</label>
-                        <input name="start_time" type="date" value="{{ request('start_time', '') }}"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                        <input
+                            name="start_time"
+                            type="date"
+                            value="{{ request('start_time', '') }}"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
                     </div>
                     <div>
                         <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่สิ้นสุด</label>
-                        <input name="end_time" type="date" value="{{ request('end_time', '') }}"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                        <input
+                            name="end_time"
+                            type="date"
+                            value="{{ request('end_time', '') }}"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
                     </div>
                     <div>
-                        <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
-                        <div class="relative">
-                            <select name="department_name"
-                                class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
-                                <option value="">ทุกหน่วยงาน</option>
-                                @foreach ($departments ?? [] as $dept)
-                                    <option value="{{ $dept->department_name }}"
-                                        {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                        {{ $dept->department_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
-                        </div>
+                        <label class="block mb-1 text-gray-700 font-medium text-sm">หน่วยงาน / แผนก</label>
+                        <select
+                            name="department_name"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                            <option value="">ทุกหน่วยงาน</option>
+                            @foreach ($departments ?? [] as $dept)
+                                <option value="{{ $dept->department_name }}" {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                    {{ $dept->department_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-gray-700 font-medium text-sm">สถานะ</label>
+                        <select
+                            name="status"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                            <option value="">ทั้งหมด</option>
+                            <option value="director_waiting" {{ request('status') === 'director_waiting' ? 'selected' : '' }}>รอกรรมการพิจารณา</option>
+                            <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>กำลังพิจารณา</option>
+                            <option value="forwarded" {{ request('status') === 'forwarded' ? 'selected' : '' }}>ส่งต่อผู้บริหารแล้ว</option>
+                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-gray-700 font-medium text-sm">ความเร่งด่วน</label>
+                        <select
+                            name="urgency"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                            <option value="">ทั้งหมด</option>
+                            <option value="due_soon" {{ request('urgency') === 'due_soon' ? 'selected' : '' }}>ใกล้ครบกำหนด</option>
+                            <option value="overdue" {{ request('urgency') === 'overdue' ? 'selected' : '' }}>เลยกำหนด</option>
+                            <option value="normal" {{ request('urgency') === 'normal' ? 'selected' : '' }}>ยังไม่เร่งด่วน</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-gray-700 font-medium text-sm">ปีประเมิน</label>
+                        <select
+                            name="year"
+                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                            <option value="">ทั้งหมด</option>
+                            @foreach ($years as $year)
+                                <option value="{{ $year }}" {{ (string) request('year') === (string) $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
-                <div class="flex md:justify-end lg:justify-end space-x-2 pt-2">
+                <div class="flex flex-col md:flex-row md:justify-end lg:justify-end gap-2 pt-3">
                     <button type="button" onclick="resetFilters()"
                         class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
                     <button type="submit"
@@ -211,9 +255,13 @@
 @push('scripts')
     <script>
         function resetFilters() {
+            document.querySelector('input[name="search"]').value = '';
             document.querySelector('input[name="start_time"]').value = '';
             document.querySelector('input[name="end_time"]').value = '';
             document.querySelector('select[name="department_name"]').value = '';
+            document.querySelector('select[name="status"]').value = '';
+            document.querySelector('select[name="urgency"]').value = '';
+            document.querySelector('select[name="year"]').value = '';
             document.getElementById('filterForm').submit();
         }
 

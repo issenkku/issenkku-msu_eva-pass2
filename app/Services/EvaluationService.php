@@ -103,6 +103,45 @@ class EvaluationService
             });
         }
 
+        if (! empty($filters['status'])) {
+            $statusGroups = [
+                'waiting' => ['Assigned', 'Draft', 'Pending'],
+                'in_progress' => ['Evaluator_draft', 'Director_draft', 'Manager_draft'],
+                'director_waiting' => ['Director_assigned'],
+                'manager_waiting' => ['Manager_assign'],
+                'forwarded' => ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
+                'completed' => ['Completed'],
+            ];
+
+            if (isset($statusGroups[$filters['status']])) {
+                $evaluations = $evaluations->filter(function ($assignment) use ($filters, $statusGroups) {
+                    return in_array(optional($assignment->report)->status, $statusGroups[$filters['status']], true);
+                });
+            }
+        }
+
+        if (! empty($filters['urgency'])) {
+            $evaluations = $evaluations->filter(function ($assignment) use ($filters) {
+                $endTime = optional($assignment->assignmentData)->end_time;
+                $status = optional($assignment->report)->status;
+
+                if (! $endTime || $status === 'Completed') {
+                    return false;
+                }
+
+                $endDate = Carbon::parse($endTime)->endOfDay();
+                $today = now()->startOfDay();
+                $dueSoonLimit = now()->copy()->addDays(7)->endOfDay();
+
+                return match ($filters['urgency']) {
+                    'overdue' => $endDate->lt(now()),
+                    'due_soon' => $endDate->between($today, $dueSoonLimit),
+                    'normal' => $endDate->gt($dueSoonLimit),
+                    default => true,
+                };
+            });
+        }
+
         return $evaluations;
     }
 

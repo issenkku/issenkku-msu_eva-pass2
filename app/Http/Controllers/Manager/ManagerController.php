@@ -42,7 +42,7 @@ class ManagerController extends Controller
             'department',
         ]);
 
-        $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']);
+        $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name', 'status', 'urgency']);
         $departments = Departments::all();
 
         // Get ALL reports with complete data (Director has access to everything)
