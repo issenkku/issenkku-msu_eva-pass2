@@ -562,7 +562,12 @@
                                         data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}"
                                         data-search="{{ mb_strtolower(trim(($subject->code ?? '') . ' ' . ($subject->name_th ?? '') . ' ' . ($subject->name_en ?? ''))) }}"
                                     >
-                                        {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }} (รวม {{ $subject->credits ?? '-' }} หน่วยกิต | บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }})
+                                        <span class="workload-subject-option-name">
+                                            {{ $subject->code }} {{ $subject->name_th }}{{ $subject->name_en ? ' ' . $subject->name_en : '' }}
+                                        </span>
+                                        <span class="workload-subject-option-credit">
+                                            (รวม {{ $subject->credits ?? '-' }} หน่วยกิต | บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }})
+                                        </span>
                                     </button>
                                 @endforeach
                             </div>
@@ -1277,11 +1282,15 @@
         border: none;
         border-bottom: 1px solid #e5e7eb;
         background: #ffffff;
-        text-align: left;
         padding: 10px 12px;
         font-size: 13px;
         line-height: 1.5;
         color: #0f172a;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        text-align: left;
     }
 
     .workload-subject-option:last-child {
@@ -1290,6 +1299,19 @@
 
     .workload-subject-option:hover {
         background: #eff6ff;
+    }
+
+    .workload-subject-option-name {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .workload-subject-option-credit {
+        flex: 0 0 auto;
+        margin-left: auto;
+        text-align: right;
+        white-space: nowrap;
+        color: #334155;
     }
 
     .workload-subject-empty {
@@ -2521,8 +2543,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
 
 
 
