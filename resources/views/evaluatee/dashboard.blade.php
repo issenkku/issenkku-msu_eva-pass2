@@ -73,21 +73,60 @@
     </div>
 
     <div class="px-10">
+        @php
+            $statusTotal = max($actionRequiredAssignments + $inReviewAssignments + $completedAssignments, 1);
+            $actionPercent = round(($actionRequiredAssignments / $statusTotal) * 100, 1);
+            $reviewPercent = round(($inReviewAssignments / $statusTotal) * 100, 1);
+            $completedPercent = round(($completedAssignments / $statusTotal) * 100, 1);
+        @endphp
+
         <div class="rounded-2xl border bg-white p-6 shadow-md">
             <h3 class="text-xl font-bold text-gray-900">สถานะของฉัน</h3>
-            <div class="mt-4 space-y-3 text-sm">
-                <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                    <span class="text-gray-600">ยังไม่เริ่ม / กำลังกรอก</span>
-                    <span class="font-semibold text-red-600">{{ $actionRequiredAssignments }}</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                    <span class="text-gray-600">รอการพิจารณา</span>
-                    <span class="font-semibold text-yellow-600">{{ $inReviewAssignments }}</span>
-                </div>
-                <div class="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
-                    <span class="text-gray-600">เสร็จสิ้นแล้ว</span>
-                    <span class="font-semibold text-green-600">{{ $completedAssignments }}</span>
-                </div>
+
+            <div class="mt-6 space-y-6">
+                <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                    <div class="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                            <h4 class="text-base font-bold text-slate-800">แบบที่ 1: แถบสัดส่วน</h4>
+                            <p class="text-sm text-slate-500">เห็นภาพรวมจำนวนงานแต่ละสถานะในแถบเดียว</p>
+                        </div>
+                        <span class="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-600 shadow-sm">
+                            ทั้งหมด {{ $actionRequiredAssignments + $inReviewAssignments + $completedAssignments }} รายการ
+                        </span>
+                    </div>
+
+                    <div class="overflow-hidden rounded-full bg-white shadow-inner">
+                        <div class="flex h-4 w-full">
+                            <div class="bg-red-500" style="width: {{ $actionPercent }}%"></div>
+                            <div class="bg-amber-400" style="width: {{ $reviewPercent }}%"></div>
+                            <div class="bg-emerald-500" style="width: {{ $completedPercent }}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+                        <div class="rounded-xl bg-white p-4 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-red-500">ยังไม่เริ่ม / กำลังกรอก</span>
+                                <span class="text-xs font-semibold text-slate-400">{{ $actionPercent }}%</span>
+                            </div>
+                            <div class="mt-2 text-2xl font-extrabold text-red-600">{{ $actionRequiredAssignments }}</div>
+                        </div>
+                        <div class="rounded-xl bg-white p-4 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-amber-500">รอการพิจารณา</span>
+                                <span class="text-xs font-semibold text-slate-400">{{ $reviewPercent }}%</span>
+                            </div>
+                            <div class="mt-2 text-2xl font-extrabold text-amber-600">{{ $inReviewAssignments }}</div>
+                        </div>
+                        <div class="rounded-xl bg-white p-4 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-emerald-500">เสร็จสิ้นแล้ว</span>
+                                <span class="text-xs font-semibold text-slate-400">{{ $completedPercent }}%</span>
+                            </div>
+                            <div class="mt-2 text-2xl font-extrabold text-emerald-600">{{ $completedAssignments }}</div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
