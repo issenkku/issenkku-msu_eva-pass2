@@ -161,6 +161,8 @@
                                             <div class="formula-action">
                                                 <button class="btn btn-outline-primary btn-sm workload-add-variable"
                                                     type="button">เพิ่มตัวแปร</button>
+                                                <button class="btn btn-outline-secondary btn-sm workload-cancel-variable-edit"
+                                                    type="button" style="display:none;">ยกเลิก</button>
                                             </div>
                                         </div>
 
@@ -669,6 +671,7 @@
         .formula-action {
             display: flex;
             justify-content: flex-end;
+            gap: 8px;
         }
 
         .formula-list {
@@ -679,7 +682,7 @@
 
         .formula-item {
             display: grid;
-            grid-template-columns: 1fr 120px 40px;
+            grid-template-columns: 1fr 120px 40px 40px;
             gap: 10px;
             align-items: center;
             background: #f9fafb;
@@ -710,6 +713,12 @@
             color: #2563eb;
             font-weight: 600;
             text-align: right;
+        }
+
+        .formula-item.is-editing {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 1px #bfdbfe inset;
+            background: #eff6ff;
         }
 
         .formula-text {
@@ -803,7 +812,7 @@
             }
 
             .formula-item {
-                grid-template-columns: 1fr 1fr auto;
+                grid-template-columns: 1fr 1fr auto auto;
             }
         }
     </style>
@@ -1010,11 +1019,62 @@
                 const formulaText = card.querySelector('.workload-formula-text');
                 const addItemButton = card.querySelector('.workload-add-item');
                 const addVariableButton = card.querySelector('.workload-add-variable');
+                const cancelVariableEditButton = card.querySelector('.workload-cancel-variable-edit');
                 const variableLabelInput = card.querySelector('.workload-variable-label');
                 const variableNoteInput = card.querySelector('.workload-variable-note');
                 const variableTypeSelect = card.querySelector('.workload-variable-type');
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
+                let editingFormulaRow = null;
+
+                const resetVariableForm = () => {
+                    if (variableLabelInput) {
+                        variableLabelInput.value = '';
+                    }
+                    if (variableNoteInput) {
+                        variableNoteInput.value = '';
+                    }
+                    if (variableTypeSelect) {
+                        variableTypeSelect.value = '';
+                    }
+                    if (addVariableButton) {
+                        addVariableButton.textContent = 'เพิ่มตัวแปร';
+                    }
+                    if (cancelVariableEditButton) {
+                        cancelVariableEditButton.style.display = 'none';
+                    }
+                    if (editingFormulaRow) {
+                        editingFormulaRow.classList.remove('is-editing');
+                    }
+                    editingFormulaRow = null;
+                };
+
+                const enterVariableEditMode = (row) => {
+                    if (!row) {
+                        return;
+                    }
+                    if (editingFormulaRow) {
+                        editingFormulaRow.classList.remove('is-editing');
+                    }
+                    editingFormulaRow = row;
+                    editingFormulaRow.classList.add('is-editing');
+
+                    if (variableLabelInput) {
+                        variableLabelInput.value = row.querySelector('.formula-item-label')?.textContent.trim() || '';
+                    }
+                    if (variableNoteInput) {
+                        variableNoteInput.value = row.dataset.note || '';
+                    }
+                    if (variableTypeSelect) {
+                        variableTypeSelect.value = row.dataset.fieldType || '';
+                    }
+                    if (addVariableButton) {
+                        addVariableButton.textContent = 'อัปเดตตัวแปร';
+                    }
+                    if (cancelVariableEditButton) {
+                        cancelVariableEditButton.style.display = '';
+                    }
+                };
 
                 // ฟังก์ชันย่อย: syncVariableChips
                 const syncVariableChips = () => {
@@ -1111,20 +1171,33 @@
                     valueSpan.className = 'formula-value';
                     valueSpan.textContent = variableName || '';
 
+                    const editButton = document.createElement('button');
+                    editButton.className = 'icon-btn workload-variable-edit';
+                    editButton.type = 'button';
+                    editButton.textContent = '✎';
+                    editButton.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        enterVariableEditMode(row);
+                    });
+
                     const button = document.createElement('button');
                     button.className = 'icon-btn is-danger workload-variable-remove';
                     button.type = 'button';
                     button.textContent = '×';
                     button.addEventListener('click', () => {
+                        if (editingFormulaRow === row) {
+                            resetVariableForm();
+                        }
                         row.remove();
                         syncVariableChips();
                     });
 
                     row.appendChild(meta);
                     row.appendChild(valueSpan);
+                    row.appendChild(editButton);
                     row.appendChild(button);
                     row.addEventListener('click', (event) => {
-                        if (event.target.closest('.workload-variable-remove')) {
+                        if (event.target.closest('.workload-variable-remove') || event.target.closest('.workload-variable-edit')) {
                             return;
                         }
                         if (formulaText) {
@@ -1245,22 +1318,45 @@
                             fieldType = 'number';
                         }
 
+                        if (editingFormulaRow) {
+                            const labelEl = editingFormulaRow.querySelector('.formula-item-label');
+                            const noteEl = editingFormulaRow.querySelector('.formula-item-note');
+                            if (labelEl) {
+                                labelEl.textContent = label;
+                            }
+                            editingFormulaRow.dataset.fieldType = fieldType;
+                            editingFormulaRow.dataset.note = note;
+
+                            if (note) {
+                                if (noteEl) {
+                                    noteEl.textContent = note;
+                                } else {
+                                    const newNoteEl = document.createElement('span');
+                                    newNoteEl.className = 'formula-item-note';
+                                    newNoteEl.textContent = note;
+                                    editingFormulaRow.querySelector('.formula-item-meta')?.appendChild(newNoteEl);
+                                }
+                            } else if (noteEl) {
+                                noteEl.remove();
+                            }
+
+                            resetVariableForm();
+                            return;
+                        }
+
                         const variableName = fieldType === 'number'
                             ? `num_${getNextVariableIndex('num')}`
                             : fieldType === 'item'
                                 ? `item_${getNextItemSequence()}`
                                 : `text_${getNextVariableIndex('text')}`;
                         addFormulaItem(label, variableName, fieldType, note);
+                        resetVariableForm();
+                    });
+                }
 
-                        if (currentLabelInput) {
-                            currentLabelInput.value = '';
-                        }
-                        if (currentNoteInput) {
-                            currentNoteInput.value = '';
-                        }
-                        if (currentTypeSelect) {
-                            currentTypeSelect.value = '';
-                        }
+                if (cancelVariableEditButton) {
+                    cancelVariableEditButton.addEventListener('click', () => {
+                        resetVariableForm();
                     });
                 }
 
