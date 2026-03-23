@@ -66,12 +66,11 @@
                     @php
                         $firstItem = $group->items->first();
                     @endphp
-                    <details class="workload-dropdown">
-                        <summary class="workload-toolbar">
+                    <div class="workload-toolbar">
                             <span class="workload-select">
                                 <span>{{ $group->name ?? '' }}</span>
-                                <span class="workload-select-hint">เลือกดูรายละเอียด</span>
-                                <span class="workload-select-icon" aria-hidden="true"></span>
+                                {{-- <span class="workload-select-hint">เลือกดูรายละเอียด</span>
+                                <span class="workload-select-icon" aria-hidden="true"></span> --}}
                             </span>
                     @php
                         $groupFormIds = $group->items
@@ -117,7 +116,7 @@
                                     <span>-</span>
                                 @endforelse
                             </div>
-                        </summary>
+                    </div>
 
                         @php
                             $fieldColumnCount = max(1, $fieldDefinitions->count());
@@ -436,7 +435,6 @@
                                 </div>
                             </div>
                         @endforelse
-                    </details>
 
                     @php
                         $groupTotalScore = 0;
