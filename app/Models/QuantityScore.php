@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
 
 class QuantityScore extends Model
 {
@@ -20,6 +21,8 @@ class QuantityScore extends Model
         'score_C',
         'score_D',
         'description',
+        'modifier_user_id',
+        'modifier_role',
     ];
 
     protected $casts = [
@@ -35,5 +38,10 @@ class QuantityScore extends Model
     public function report(): BelongsTo
     {
         return $this->belongsTo(Report::class);
+    }
+
+    public function modifierUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'modifier_user_id');
     }
 }

@@ -74,7 +74,8 @@ class ReportDataService
         $criteriaVersion = $assignment->report->reportData->criteriaVersion ?? null;
         $quantityMainCriterias = $criteriaVersion ? $criteriaVersion->quantityMainCriterias : collect();
 
-        $quantityScores = QuantityScore::where('report_id', $id)
+        $quantityScores = QuantityScore::with('modifierUser:id,name,prefix')
+            ->where('report_id', $id)
             ->get()
             ->keyBy('quantity_sub_criteria_id');
 
@@ -281,6 +282,8 @@ class ReportDataService
                             'tor_compliant' => $quantityScore?->score_C ?? '',
                             'score_d' => $quantityScore?->score_D ?? '',
                             'score_description' => $quantityScore->description ?? '',
+                            'score_modified_by_name' => $quantityScore?->modifierUser?->display_name ?? $quantityScore?->modifierUser?->name ?? '',
+                            'score_modified_by_role' => $quantityScore?->modifier_role ?? '',
                             'evidence' => $evidenceLinks,
                         ];
                     }

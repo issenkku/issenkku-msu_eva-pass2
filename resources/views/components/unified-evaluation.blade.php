@@ -207,6 +207,22 @@
                                                             $workloadData['evidenceLinksByEntryId'] ?? collect();
                                                     @endphp
                                                     <div class="border-t border-gray-200 px-4 py-4 bg-gray-50">
+                                                        @if (!empty($subCriteria['score_description']) || !empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
+                                                            <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                                                                @if (!empty($subCriteria['score_description']))
+                                                                    <div class="font-medium">หมายเหตุการแก้ไขค่า C</div>
+                                                                    <div class="mt-1 whitespace-pre-line">{{ $subCriteria['score_description'] }}</div>
+                                                                @endif
+                                                                @if (!empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
+                                                                    <div class="mt-2 text-xs text-amber-800">
+                                                                        ล่าสุดแก้ไขโดย {{ $subCriteria['score_modified_by_name'] ?: '-' }}
+                                                                        @if (!empty($subCriteria['score_modified_by_role']))
+                                                                            ({{ $subCriteria['score_modified_by_role'] }})
+                                                                        @endif
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        @endif
                                                         @if (!empty($subCriteria['require_evidence']))
                                                             <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                                                                 เกณฑ์นี้กำหนดให้แนบหลักฐานก่อนบันทึกภาระงาน

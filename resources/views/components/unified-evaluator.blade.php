@@ -237,6 +237,33 @@
                                                                         placeholder="0">
                                                                 </div>
                                                             </div>
+                                                            @if(!$readonly || !empty($subCriteria['score_description']) || !empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
+                                                                <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
+                                                                    <label class="mb-2 block text-sm font-semibold leading-6 text-slate-700">
+                                                                        หมายเหตุการแก้ไขค่า C
+                                                                    </label>
+                                                                    @if(!$readonly)
+                                                                        <textarea
+                                                                            name="quantity_list[{{ $subCriteria['id'] }}][description]"
+                                                                            rows="3"
+                                                                            class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-amber-400 focus:ring-amber-300"
+                                                                            placeholder="ระบุเหตุผลที่แก้ไขหน่วยภาระงานที่ทำได้ (C)">{{ $subCriteria['score_description'] ?? '' }}</textarea>
+                                                                    @else
+                                                                        <textarea
+                                                                            rows="3"
+                                                                            readonly
+                                                                            class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">{{ $subCriteria['score_description'] ?? '' }}</textarea>
+                                                                    @endif
+                                                                    @if(!empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
+                                                                        <div class="mt-2 text-xs text-slate-600">
+                                                                            ล่าสุดแก้ไขโดย {{ $subCriteria['score_modified_by_name'] ?: '-' }}
+                                                                            @if(!empty($subCriteria['score_modified_by_role']))
+                                                                                ({{ $subCriteria['score_modified_by_role'] }})
+                                                                            @endif
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                            @endif
                                                         </div>
                                                         </div>
                                                     @php
@@ -706,6 +733,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-
 

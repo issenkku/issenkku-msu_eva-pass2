@@ -108,6 +108,7 @@ class EvaluatorScoreController extends Controller
                 'quantity_list' => 'nullable|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric',
+                'quantity_list.*.description' => 'nullable|string',
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
@@ -118,6 +119,7 @@ class EvaluatorScoreController extends Controller
             ]);
 
             DB::beginTransaction();
+            $modifierRole = $request->user()?->getRoleNames()->first() ?: 'ผู้ประเมิน';
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
             $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
@@ -135,6 +137,7 @@ class EvaluatorScoreController extends Controller
 
                     $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
+                    $description = isset($item['description']) ? trim((string) $item['description']) : null;
 
                     if ($scoreC === null) {
                         continue;
@@ -150,8 +153,11 @@ class EvaluatorScoreController extends Controller
                         'report_id' => $reportId,
                         'score_C' => $scoreC,
                         'score_D' => $scoreD,
+                        'description' => $description !== '' ? $description : null,
+                        'modifier_user_id' => $request->user()?->id,
+                        'modifier_role' => $modifierRole,
                     ]);
-                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD');
+                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
             }
 

@@ -189,6 +189,8 @@ class EvaluationScoreController extends Controller
                         'score_C' => $scoreC,
                         'score_D' => $scoreD,
                         'description' => $description,
+                        'modifier_user_id' => null,
+                        'modifier_role' => null,
                     ]);
                     $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
