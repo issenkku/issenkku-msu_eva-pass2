@@ -31,7 +31,7 @@ class EvaluateeWorkloadEntryController extends Controller
             $validated['workload_form_id'] = $item->workload_form_id;
         }
 
-        $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria'])->findOrFail($validated['workload_form_id']);
+        $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria', 'subCriteriaItem.group'])->findOrFail($validated['workload_form_id']);
         $validated['subject_id'] = $this->resolveSubjectIdForForm(
             $form,
             array_key_exists('subject_id', $validated) ? $validated['subject_id'] : null
@@ -52,6 +52,7 @@ class EvaluateeWorkloadEntryController extends Controller
         }
 
         $fieldValues = $this->mergeSubjectCreditFieldValues(
+            $form,
             $fieldValues,
             isset($validated['subject_id']) ? (int) $validated['subject_id'] : null
         );
@@ -111,12 +112,13 @@ class EvaluateeWorkloadEntryController extends Controller
                 }
             }
 
-            $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria'])->findOrFail($workloadFormId);
+            $form = WorkloadForm::with(['fields', 'items', 'quantitySubCriteria', 'subCriteriaItem.group'])->findOrFail($workloadFormId);
             $validated['subject_id'] = $this->resolveSubjectIdForForm(
                 $form,
                 array_key_exists('subject_id', $validated) ? $validated['subject_id'] : null
             );
             $fieldValues = $this->mergeSubjectCreditFieldValues(
+                $form,
                 (array) $fieldValues,
                 $validated['subject_id'] !== null ? (int) $validated['subject_id'] : null
             );
@@ -212,7 +214,7 @@ class EvaluateeWorkloadEntryController extends Controller
         return $normalizedSubjectId;
     }
 
-    private function mergeSubjectCreditFieldValues(array $fieldValues, ?int $subjectId): array
+    private function mergeSubjectCreditFieldValues(WorkloadForm $form, array $fieldValues, ?int $subjectId): array
     {
         $normalized = [];
         foreach ($fieldValues as $key => $value) {
@@ -228,12 +230,55 @@ class EvaluateeWorkloadEntryController extends Controller
             return $normalized;
         }
 
-        $normalized['credits'] = (float) ($subject->credits ?? 0);
-        $normalized['lecture_credits'] = (float) ($subject->lecture_credits ?? 0);
-        $normalized['lab_credits'] = (float) ($subject->lab_credits ?? 0);
-        $normalized['self_study_credits'] = (float) ($subject->self_study_credits ?? 0);
+        $creditType = $this->resolvePreferredCreditType($form);
+        $lectureCredits = (float) ($subject->lecture_credits ?? 0);
+        $labCredits = (float) ($subject->lab_credits ?? 0);
+        $selfStudyCredits = (float) ($subject->self_study_credits ?? 0);
+
+        $normalized['credits'] = match ($creditType) {
+            'lecture_credits' => $lectureCredits,
+            'lab_credits' => $labCredits,
+            default => (float) ($subject->credits ?? 0),
+        };
+        $normalized['lecture_credits'] = $lectureCredits;
+        $normalized['lab_credits'] = $labCredits;
+        $normalized['self_study_credits'] = $selfStudyCredits;
 
         return $normalized;
+    }
+
+    private function resolvePreferredCreditType(WorkloadForm $form): string
+    {
+        $form->loadMissing(['fields', 'subCriteriaItem.group', 'quantitySubCriteria']);
+
+        $context = collect([
+            optional($form->subCriteriaItem)->name,
+            optional(optional($form->subCriteriaItem)->group)->name,
+            optional($form->quantitySubCriteria)->name,
+        ])->filter()->implode(' ');
+
+        foreach ($form->fields as $field) {
+            $name = strtolower(trim((string) $field->variable_name));
+            if ($name === 'lecture_credits') {
+                return 'lecture_credits';
+            }
+            if ($name === 'lab_credits') {
+                return 'lab_credits';
+            }
+
+            $context .= ' ' . trim((string) ($field->label ?? ''));
+            $context .= ' ' . trim((string) ($field->note ?? ''));
+        }
+
+        $normalizedContext = mb_strtolower($context);
+        if (str_contains($normalizedContext, 'ปฏิบัติ') || str_contains($normalizedContext, 'lab')) {
+            return 'lab_credits';
+        }
+        if (str_contains($normalizedContext, 'บรรยาย') || str_contains($normalizedContext, 'lecture')) {
+            return 'lecture_credits';
+        }
+
+        return 'credits';
     }
 
     private function resolveItemFieldValues(WorkloadForm $form, array $fieldValues): array

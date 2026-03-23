@@ -1897,6 +1897,44 @@ document.addEventListener('DOMContentLoaded', function () {
         return null;
     }
 
+    function getCreditContextText() {
+        const scope = getActiveFormScope() || document;
+        const parts = [];
+
+        if (groupLabelInput && groupLabelInput.value) {
+            parts.push(groupLabelInput.value);
+        }
+
+        if (itemSelect) {
+            const selectedItem = itemSelect.selectedOptions[0];
+            if (selectedItem) {
+                parts.push(selectedItem.textContent || '');
+            }
+        }
+
+        scope.querySelectorAll('.workload-modal-sub-label, .workload-modal-sub-note').forEach(function (node) {
+            parts.push(node.textContent || '');
+        });
+
+        return parts.join(' ').toLowerCase();
+    }
+
+    function getPreferredSubjectCreditValue(selected) {
+        if (!selected || !selected.dataset) {
+            return '';
+        }
+
+        const context = getCreditContextText();
+        if (context.includes('ปฏิบัติ') || context.includes('lab')) {
+            return selected.dataset.labCredits ?? '';
+        }
+        if (context.includes('บรรยาย') || context.includes('lecture')) {
+            return selected.dataset.lectureCredits ?? '';
+        }
+
+        return selected.dataset.credits ?? '';
+    }
+
     function updateCreditsFromSubject() {
         if (!subjectIdField || !requiresSubject()) {
             return;
@@ -1926,7 +1964,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 ],
             },
             {
-                value: selected.dataset ? selected.dataset.credits : '',
+                value: getPreferredSubjectCreditValue(selected),
                 candidates: [
                     { name: 'credits', labels: ['หน่วยกิต', 'credit'] },
                 ],
@@ -2570,7 +2608,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
 
 
 
