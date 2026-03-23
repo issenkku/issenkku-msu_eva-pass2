@@ -77,18 +77,12 @@
                                             คะแนน{{ $evaluationList['sum_score'] }}
                                         </span>
                                     @endif
-                                    @php
-                                        $showSelectedQualitySum =
-                                            $readonly ||
-                                            (isset($report->status) && $report->status === 'Completed');
-                                    @endphp
-                                    @if ($showSelectedQualitySum)
-                                        <span
-                                            class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                            คะแนนที่ได้
-                                            {{ number_format($listSelectedQualitySum, 2) }}
-                                        </span>
-                                    @endif
+                                    <span
+                                        id="quality-list-total-{{ $evaluationList['id'] }}"
+                                        class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                        คะแนนที่ได้
+                                        {{ number_format($listSelectedQualitySum, 2) }}
+                                    </span>
                                 @endif
                             </div>
                             @if (!empty($evaluationList['annotation']))
@@ -301,6 +295,19 @@
                                                         $sub['score'] !== null;
                                                     return $hasScore || ($sub['user_selected'] ?? false);
                                                 });
+                                                $selectedScore = 0;
+                                                foreach ($mainSorted as $sub) {
+                                                    $hasScore =
+                                                        !empty($sub['score']) &&
+                                                        $sub['score'] !== '' &&
+                                                        $sub['score'] !== null;
+                                                    $isSelected = $hasScore || ($sub['user_selected'] ?? false);
+                                                    if ($isSelected) {
+                                                        $selectedScore += $hasScore
+                                                            ? (float) $sub['score']
+                                                            : (float) ($sub['num_score'] ?? 0);
+                                                    }
+                                                }
                                             @endphp
                                             <details class="group border border-gray-300 rounded-lg bg-white mb-6">
                                                 <summary
@@ -313,6 +320,11 @@
                                                             class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
                                                             {{ $mainHasChecked ? 'มีการเลือกแล้ว' : 'ยังไม่เลือก' }}
                                                         </span>
+                                                        {{-- <span
+                                                            id="quality-main-total-{{ $mainCriteria['id'] }}"
+                                                            class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                            คะแนนที่ได้ {{ number_format($selectedScore, 2) }}
+                                                        </span> --}}
                                                     </div>
                                                     <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
@@ -343,6 +355,9 @@
                                                                 $shouldBeChecked =
                                                                     $hasScore ||
                                                                     ($subCriteria['user_selected'] ?? false);
+                                                                $displayScore = $hasScore
+                                                                    ? (float) $subCriteria['score']
+                                                                    : ($shouldBeChecked ? (float) ($subCriteria['num_score'] ?? 0) : 0);
                                                             @endphp
 
                                                             <div
@@ -389,15 +404,13 @@
                                                                             </span>
                                                                         @endif
                                                                     </div>
-                                                                    {{-- Score (readonly, only when completed) --}}
-                                                                    @if ($readonly && isset($report->status) && $report->status === 'Completed')
-                                                                        {{-- <div class="w-full md:w-60">
-                                                                            <div
-                                                                                class="text-base text-gray-800 p-2 rounded border text-center">
-                                                                                {{ $subCriteria['score'] ?: '0.00' }}
-                                                                            </div>
-                                                                        </div> --}}
-                                                                    @endif
+                                                                    {{-- <div class="w-full md:w-60">
+                                                                        <div
+                                                                            id="quality-display-score-{{ $subCriteria['id'] }}"
+                                                                            class="text-base text-gray-800 p-2 rounded border text-center bg-slate-50">
+                                                                            {{ number_format($displayScore, 2) }}
+                                                                        </div>
+                                                                    </div> --}}
                                                                     {{-- Hidden Score Input for edit mode --}}
                                                                     @if (!$readonly)
                                                                         <input type="hidden"
@@ -416,16 +429,14 @@
                                                                 </div>
                                                             </div>
                                                         @endforeach
-                                                        @if ($readonly)
-                                                            {{-- บล็อกเนื้อหา --}}
-                                                            <div
-                                                                class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                                                <span
-                                                                    class="text-lg font-semibold text-blue-700">คะแนนที่ได้</span>
-                                                                <span
-                                                                    class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
-                                                            </div>
-                                                        @endif
+                                                        {{-- <div
+                                                            class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                            <span
+                                                                class="text-lg font-semibold text-blue-700">คะแนนที่ได้</span>
+                                                            <span
+                                                                id="quality-main-score-card-{{ $mainCriteria['id'] }}"
+                                                                class="text-lg font-semibold text-blue-900">{{ number_format($selectedScore, 2) }}</span>
+                                                        </div> --}}
                                                     </div>
 
                                                     {{-- Evidence Section for Quality Main Criteria --}}

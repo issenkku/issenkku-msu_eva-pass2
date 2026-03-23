@@ -111,8 +111,7 @@
             $totalScore = $totalQuantityScore + $totalQualityScore;
         @endphp
 
-        {{-- Comments Section - Only show when status is Completed --}}
-        @if(isset($report->status) && $report->status === 'Completed')
+        {{-- Summary Score and Comments --}}
             <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
                 <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -160,7 +159,6 @@
                     </div>
                 @endif
             </div>
-        @endif
 
         <input type="hidden" name="status" id="formStatus" value="Draft">
 
