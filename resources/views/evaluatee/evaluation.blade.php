@@ -54,13 +54,24 @@
             <fieldset disabled>
         @endif
 
-        <x-unified-evaluator
-            :categoryItems="$categoryItems"
-            :readonly="$readonly"
-            :evidenceMap="$evidenceMap"
-            :qualityEvidenceMap="$qualityEvidenceMap"
-            :workloadMap="$workloadMap"
-        />
+        @if($readonly)
+            <x-unified-evaluator
+                :categoryItems="$categoryItems"
+                :readonly="$readonly"
+                :evidenceMap="$evidenceMap"
+                :qualityEvidenceMap="$qualityEvidenceMap"
+                :workloadMap="$workloadMap"
+            />
+        @else
+            <x-unified-evaluation
+                :categoryItems="$categoryItems"
+                :readonly="$readonly"
+                :evidenceMap="$evidenceMap"
+                :qualityEvidenceMap="$qualityEvidenceMap"
+                :report="$report"
+                :workloadMap="$workloadMap"
+            />
+        @endif
 
         <!-- summary score -->
         @php
