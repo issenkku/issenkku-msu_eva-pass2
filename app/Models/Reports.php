@@ -16,6 +16,9 @@ class Reports extends Model
         'report_data_id',
         'status',
         'comment',
+        'evaluator_comment',
+        'director_comment',
+        'manager_comment',
     ];
 
     protected $casts = [
@@ -51,5 +54,24 @@ class Reports extends Model
     public function assignments()
     {
         return $this->hasOne(Assignments::class, 'report_id');
+    }
+
+    public function syncCombinedComment(): void
+    {
+        $parts = [];
+
+        if (filled($this->evaluator_comment)) {
+            $parts[] = "ผู้ประเมิน:\n{$this->evaluator_comment}";
+        }
+
+        if (filled($this->director_comment)) {
+            $parts[] = "กรรมการ:\n{$this->director_comment}";
+        }
+
+        if (filled($this->manager_comment)) {
+            $parts[] = "ผู้บริหาร:\n{$this->manager_comment}";
+        }
+
+        $this->comment = ! empty($parts) ? implode("\n\n", $parts) : null;
     }
 }

@@ -180,15 +180,16 @@ class ManagerScoreController extends Controller
             ];
 
             $oldStatus = $report->status;
-            $oldComment = $report->comment;
+            $oldComment = $report->manager_comment;
 
             $status = $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {
-                $report->comment = $validated['comment'];
+                $report->manager_comment = $validated['comment'];
             }
-            $newComment = $report->comment;
+            $report->syncCombinedComment();
+            $newComment = $report->manager_comment;
 
             $report->save();
             if ($status === 'Completed') {

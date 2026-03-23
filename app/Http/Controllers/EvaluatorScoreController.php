@@ -242,15 +242,16 @@ class EvaluatorScoreController extends Controller
             ];
 
             $oldStatus = $report->status;
-            $oldComment = $report->comment;
+            $oldComment = $report->evaluator_comment;
 
             $status = $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {
-                $report->comment = $validated['comment'];
+                $report->evaluator_comment = $validated['comment'];
             }
-            $newComment = $report->comment;
+            $report->syncCombinedComment();
+            $newComment = $report->evaluator_comment;
 
             $report->save();
             // if ($report->save() && $status === 'Pending') {

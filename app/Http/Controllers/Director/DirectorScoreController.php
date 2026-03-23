@@ -178,15 +178,16 @@ class DirectorScoreController extends Controller
             ];
 
             $oldStatus = $report->status;
-            $oldComment = $report->comment;
+            $oldComment = $report->director_comment;
 
             $status = $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {
-                $report->comment = $validated['comment'];
+                $report->director_comment = $validated['comment'];
             }
-            $newComment = $report->comment;
+            $report->syncCombinedComment();
+            $newComment = $report->director_comment;
 
             $report->save();
             // if ($report->save() && $status === 'Pending') {
