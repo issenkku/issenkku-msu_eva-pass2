@@ -160,7 +160,7 @@
                                                     <option value="">กรุณาเลือกประเภทอินพุต</option>
                                                     <option value="number" >Number (ตัวเลข)</option>
                                                     <option value="text">Text (ข้อความ)</option>
-                                                    <option value="item">Item (รายการภาระงาน)</option>
+                                                  
                                                 </select>
                                             </div>
                                             <div class="formula-action">
