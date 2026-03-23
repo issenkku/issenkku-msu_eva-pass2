@@ -28,26 +28,32 @@ class UpdateWorkloadEntryRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator) {
-            if (!$this->has('field_values')) {
+            if (! $this->has('field_values')) {
                 return;
             }
 
             $formId = $this->input('workload_form_id');
-            if (!$formId) {
+            if (! $formId) {
                 $entryId = $this->route('id');
                 if ($entryId) {
                     $entry = WorkloadEntry::find($entryId);
                     $formId = $entry?->workload_form_id;
                 }
             }
-            if (!$formId) {
+
+            if (! $formId) {
                 return;
             }
 
-            $form = WorkloadForm::with('fields')->find($formId);
-            if (!$form) {
+            $form = WorkloadForm::with(['fields', 'quantitySubCriteria'])->find($formId);
+            if (! $form) {
                 return;
             }
+
+            if (! empty($form->quantitySubCriteria?->require_subject) && ! $this->filled('subject_id')) {
+                $validator->errors()->add('subject_id', 'กรุณาเลือกรายวิชาก่อนบันทึกข้อมูลภาระงาน');
+            }
+
             $this->validateFieldValues($validator, $form->fields, (array) $this->input('field_values', []));
         });
     }
@@ -62,24 +68,33 @@ class UpdateWorkloadEntryRequest extends FormRequest
         foreach ($fields as $field) {
             $name = strtolower((string) $field->variable_name);
             $type = strtolower((string) ($field->field_type ?? 'number'));
+
             if ($name === '') {
                 continue;
             }
-            if (!array_key_exists($name, $normalized)) {
-                if ($type !== 'text' && $type !== 'item') {
-                    $validator->errors()->add('field_values', "กรุณากรอกค่าตัวแปร: {$name}");
-                }
+
+            if (! array_key_exists($name, $normalized)) {
+                $validator->errors()->add('field_values', "กรุณากรอกข้อมูลให้ครบ: {$name}");
                 continue;
             }
+
             $value = $normalized[$name];
+
             if ($type === 'number' || $type === 'item') {
-                if ($value === null || $value === '' || !is_numeric($value)) {
-                    $validator->errors()->add('field_values', "ค่าตัวแปรต้องเป็นตัวเลข: {$name}");
+                if ($value === null || $value === '' || ! is_numeric($value)) {
+                    $validator->errors()->add('field_values', "กรุณากรอกข้อมูลตัวเลขให้ครบ: {$name}");
                 }
-            } else {
-                if ($value !== null && $value !== '' && !is_string($value) && !is_numeric($value)) {
-                    $validator->errors()->add('field_values', "ค่าตัวแปรต้องเป็นข้อความ: {$name}");
-                }
+
+                continue;
+            }
+
+            if ($value === null || $value === '') {
+                $validator->errors()->add('field_values', "กรุณากรอกข้อมูลให้ครบ: {$name}");
+                continue;
+            }
+
+            if (! is_string($value) && ! is_numeric($value)) {
+                $validator->errors()->add('field_values', "ข้อมูลไม่ถูกต้อง: {$name}");
             }
         }
     }

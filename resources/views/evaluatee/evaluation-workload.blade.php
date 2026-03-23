@@ -1581,6 +1581,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const formFieldBlocks = document.querySelectorAll('.workload-form-fields');
     const workloadModalEl = document.getElementById('workloadAddModal');
     const workloadForm = document.getElementById('workloadEntryForm');
+    const workloadSubmitButton = workloadForm ? workloadForm.querySelector('.modal-footer .workload-save-btn[type="submit"]') : null;
     const methodField = document.getElementById('workloadFormMethod');
     const modalTitle = document.getElementById('workloadAddModalLabel');
     const subjectIdField = document.getElementById('workloadSubjectId');
@@ -1805,6 +1806,8 @@ document.addEventListener('DOMContentLoaded', function () {
             updateSubjectTriggerText();
             closeSubjectDropdown();
         }
+
+        updateWorkloadSubmitState();
     }
 
     function updateFormFields() {
@@ -1814,6 +1817,9 @@ document.addEventListener('DOMContentLoaded', function () {
             block.style.display = isActive ? 'block' : 'none';
             block.querySelectorAll('input, select, textarea').forEach(function (input) {
                 input.disabled = !isActive;
+                if (input.type !== 'hidden') {
+                    input.required = isActive;
+                }
             });
         });
 
@@ -1843,6 +1849,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         updateSelectedItemField();
         updateCreditsFromSubject();
+        updateWorkloadSubmitState();
     }
 
     function updateSelectedItemField() {
@@ -2204,18 +2211,81 @@ document.addEventListener('DOMContentLoaded', function () {
         updateSubjectRequirementState();
     }
 
-    function validateWorkloadEvidence() {
-        if (!workloadRequireEvidenceFlag || workloadRequireEvidenceFlag.value !== '1') {
+    function getActiveRequiredDetailInputs() {
+        const formId = getActiveFormId();
+        if (!detailFieldsContainer || !formId) {
+            return [];
+        }
+
+        const activeBlock = detailFieldsContainer.querySelector('.workload-form-fields[data-form-id="' + formId + '"]');
+        if (!activeBlock) {
+            return [];
+        }
+
+        return Array.from(activeBlock.querySelectorAll('input[name^="field_values["], select[name^="field_values["], textarea[name^="field_values["]')).filter(function (input) {
+            return !input.disabled && input.type !== 'hidden';
+        });
+    }
+
+    function isFilledInput(input) {
+        if (!input || input.disabled) {
             return true;
         }
 
-        const evidenceInputs = evidenceContainer
-            ? Array.from(evidenceContainer.querySelectorAll('input[name="evidence_links[]"]'))
-            : [];
+        if (input.tagName === 'SELECT') {
+            return input.value !== '';
+        }
 
-        return evidenceInputs.some(function (input) {
-            return input.value.trim() !== '';
+        if (input.type === 'number') {
+            return input.value !== '' && !Number.isNaN(Number(input.value));
+        }
+
+        return input.value.trim() !== '';
+    }
+
+    function getMissingWorkloadFields(markInvalid) {
+        const shouldMarkInvalid = !!markInvalid;
+        const missing = [];
+
+        if (itemSelect && !itemSelect.disabled && itemSelect.value === '') {
+            if (shouldMarkInvalid) {
+                itemSelect.classList.add('is-invalid');
+            }
+            missing.push('ภาระงาน');
+        } else if (itemSelect) {
+            itemSelect.classList.remove('is-invalid');
+        }
+
+        if (requiresSubject() && subjectIdField && !subjectIdField.disabled && subjectIdField.value === '') {
+            missing.push('รายวิชา');
+        }
+
+        getActiveRequiredDetailInputs().forEach(function (input) {
+            if (isFilledInput(input)) {
+                input.classList.remove('is-invalid');
+                return;
+            }
+
+            if (shouldMarkInvalid) {
+                input.classList.add('is-invalid');
+            }
+            const field = input.closest('.workload-modal-subfield');
+            const label = field ? field.querySelector('.workload-modal-sub-label') : null;
+            const labelText = label ? label.textContent.trim() : (input.getAttribute('name') || 'รายละเอียด');
+            if (!missing.includes(labelText)) {
+                missing.push(labelText);
+            }
         });
+
+        return missing;
+    }
+
+    function updateWorkloadSubmitState() {
+        if (!workloadSubmitButton) {
+            return;
+        }
+
+        workloadSubmitButton.disabled = false;
     }
 
     if (itemSelect) {
@@ -2254,12 +2324,14 @@ document.addEventListener('DOMContentLoaded', function () {
             if (subjectSearchInput) {
                 subjectSearchInput.focus();
             }
+            updateWorkloadSubmitState();
         });
     }
 
     subjectOptions.forEach(function (option) {
         option.addEventListener('click', function () {
             selectSubjectOption(option, false);
+            updateWorkloadSubmitState();
         });
     });
 
@@ -2286,12 +2358,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+
+        detailFieldsContainer.addEventListener('input', function (event) {
+            const target = event.target;
+            if (!target || typeof target.matches !== 'function' || !target.matches('input, select, textarea')) {
+                return;
+            }
+
+            if (target.classList.contains('is-invalid') && isFilledInput(target)) {
+                target.classList.remove('is-invalid');
+            }
+
+            updateWorkloadSubmitState();
+        });
     }
 
     if (formSelect) {
         formSelect.addEventListener('change', function () {
             setActiveFormId(formSelect.value);
             updateFormFields();
+        });
+    }
+
+    if (evidenceContainer) {
+        evidenceContainer.addEventListener('input', function () {
+            updateWorkloadSubmitState();
         });
     }
 
@@ -2326,6 +2417,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 fillFields(fieldValues, formId, true);
                 setEvidenceLinks(evidenceLinks);
                 pendingEditPayload = { fieldValues: fieldValues, evidenceLinks: evidenceLinks, formId: formId };
+                updateWorkloadSubmitState();
                 return;
             }
 
@@ -2354,6 +2446,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 itemSelect.value = presetItemId;
                 updateSelectedItemField();
             }
+            updateWorkloadSubmitState();
         });
 
         workloadModalEl.addEventListener('shown.bs.modal', function () {
@@ -2362,23 +2455,20 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             fillFields(pendingEditPayload.fieldValues || {}, pendingEditPayload.formId, true);
             setEvidenceLinks(pendingEditPayload.evidenceLinks || []);
+            updateWorkloadSubmitState();
         });
     }
 
     if (workloadForm) {
         workloadForm.addEventListener('submit', function (event) {
-            if (requiresSubject() && subjectIdField && !subjectIdField.value) {
-                event.preventDefault();
-                alert('กรุณาเลือกรายวิชาสำหรับเกณฑ์นี้ก่อนบันทึกภาระงาน');
-                return;
-            }
-
-            if (validateWorkloadEvidence()) {
+            const missingFields = getMissingWorkloadFields(true);
+            if (missingFields.length === 0) {
                 return;
             }
 
             event.preventDefault();
-            alert('กรุณาแนบหลักฐานอย่างน้อย 1 รายการก่อนบันทึกข้อมูลภาระงาน');
+            updateWorkloadSubmitState();
+            alert('��سҡ�͡���������ú��͹�ѹ�֡: ' + missingFields.join(', '));
         });
     }
 
@@ -2386,6 +2476,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSubjectRequirementState();
     updateSubjectTriggerText();
     filterSubjectOptions();
+    updateWorkloadSubmitState();
 });
 </script>
 <script>
@@ -2670,3 +2761,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
+
+
+
