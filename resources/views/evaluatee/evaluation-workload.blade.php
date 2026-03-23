@@ -182,7 +182,6 @@
                                                     @php
                                                         $fieldLabel = $field->label ?? $field->variable_name;
                                                         if ($isGroupField($field)) {
-                                                            $fieldLabel = preg_replace('/\\d+$/', '', (string) $fieldLabel);
                                                             $fieldLabel = trim($fieldLabel) !== '' ? trim($fieldLabel) : 'กลุ่ม';
                                                         }
                                                     @endphp
@@ -2765,6 +2764,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
+
 
 
 
