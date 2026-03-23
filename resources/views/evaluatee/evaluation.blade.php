@@ -54,12 +54,11 @@
             <fieldset disabled>
         @endif
 
-        <x-unified-evaluation
+        <x-unified-evaluator
             :categoryItems="$categoryItems"
             :readonly="$readonly"
             :evidenceMap="$evidenceMap"
             :qualityEvidenceMap="$qualityEvidenceMap"
-            :report="$report"
             :workloadMap="$workloadMap"
         />
 
