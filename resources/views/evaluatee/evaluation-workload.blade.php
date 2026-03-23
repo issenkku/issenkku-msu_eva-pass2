@@ -630,11 +630,11 @@
                             <i class="fas fa-link"></i> เพิ่มลิงก์หลักฐาน
                         </button>
                     </div>
-                    <div class="workload-modal-field workload-modal-field-group">
+                    {{-- <div class="workload-modal-field workload-modal-field-group">
                         <label class="workload-modal-label">หมวดย่อย</label>
                         <input type="text" class="workload-modal-input" id="workloadGroupLabel" value="-" readonly />
                         <span class="workload-modal-hint">ระบบจะกำหนดตามปุ่ม “เพิ่มข้อมูล” ที่กดจากแต่ละหมวดย่อย</span>
-                    </div>
+                    </div> --}}
                     <div class="workload-modal-note workload-modal-note-box">
                         <h6>หมายเหตุ:</h6>
                         <ul>
@@ -644,7 +644,8 @@
                         </ul>
                     </div>
                     <div class="workload-modal-field workload-modal-field-credit" id="workload-detail-fields">
-                        <label class="workload-modal-label">รายละเอียดที่ต้องกรอก</label>
+                        {{-- <label class="workload-modal-label">รายละเอียดที่ต้องกรอก</label> --}}
+                        <label class="workload-modal-label"></label>
                         @foreach($workloadForms as $form)
                             <div class="workload-form-fields" data-form-id="{{ $form->id }}" style="display:none;">
                                 <div class="workload-modal-subfields">
@@ -664,9 +665,6 @@
                                         @else
                                             <div class="workload-modal-subfield">
                                                 <label class="workload-modal-sub-label">{{ $field->label ?? $field->variable_name }}</label>
-                                                @if(!empty($field->note))
-                                                    <div class="workload-modal-sub-note">{{ $field->note }}</div>
-                                                @endif
                                                 <input
                                                     type="{{ $fieldType === 'text' ? 'text' : 'number' }}"
                                                     class="workload-modal-input"
@@ -674,6 +672,9 @@
                                                     value=""
                                                     data-default-value=""
                                                 />
+                                                @if(!empty($field->note))
+                                                    <div class="workload-modal-sub-note">{{ $field->note }}</div>
+                                                @endif
                                             </div>
                                         @endif
                                     @endif
@@ -1346,11 +1347,9 @@
         gap: 12px 16px;
         margin-top: 8px;
         grid-template-areas:
+            "credit link"
             "workload link"
-            "item link"
-            "group note"
-            "credit note"
-            "instructors note";
+            "note link";
     }
 
     .workload-modal-field {
@@ -1535,12 +1534,9 @@
         .workload-modal-grid {
             grid-template-columns: 1fr;
             grid-template-areas:
-                "workload"
-                "item"
-                "link"
-                "group"
                 "credit"
-                "instructors"
+                "workload"
+                "link"
                 "note";
         }
 
@@ -1597,13 +1593,37 @@ document.addEventListener('DOMContentLoaded', function () {
         lastDefaultGroupName = btn.dataset.groupName || '';
     });
 
-    if (itemSelect) {
-        const placeholderOption = Array.from(itemSelect.options).find(function (opt) {
-            return !opt.value;
-        });
-        if (placeholderOption) {
-            itemSelect.insertBefore(placeholderOption, itemSelect.firstChild);
+    function sortItemOptionsAlphabetically() {
+        if (!itemSelect) {
+            return;
         }
+
+        const options = Array.from(itemSelect.options);
+        const placeholderOption = options.find(function (opt) {
+            return !opt.value;
+        }) || null;
+        const sortedOptions = options
+            .filter(function (opt) {
+                return !!opt.value;
+            })
+            .sort(function (a, b) {
+                return (a.textContent || '').trim().localeCompare((b.textContent || '').trim(), 'th', {
+                    numeric: true,
+                    sensitivity: 'base',
+                });
+            });
+
+        itemSelect.innerHTML = '';
+        if (placeholderOption) {
+            itemSelect.appendChild(placeholderOption);
+        }
+        sortedOptions.forEach(function (opt) {
+            itemSelect.appendChild(opt);
+        });
+    }
+
+    if (itemSelect) {
+        sortItemOptionsAlphabetically();
     }
 
     function getActiveFormId() {
@@ -2627,6 +2647,3 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
