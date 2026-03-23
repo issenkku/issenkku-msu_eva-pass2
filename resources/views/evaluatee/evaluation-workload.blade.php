@@ -867,7 +867,8 @@
     .workload-table-wrap {
         border-radius: 14px;
         border: 1px solid #e5e7eb;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 
     
@@ -962,7 +963,9 @@
 
     .workload-table {
         width: 100%;
+        min-width: 1100px;
         border-collapse: collapse;
+        table-layout: fixed;
     }
 
     .workload-table thead {
@@ -987,6 +990,28 @@
         padding-left: 16px;
         font-weight: 600;
         color: #1f2937;
+    }
+
+    .workload-table th:nth-last-child(2),
+    .workload-table td:nth-last-child(2) {
+        width: 18rem;
+    }
+
+    .workload-table td:nth-last-child(2) {
+        vertical-align: top;
+    }
+
+    .workload-table td:nth-last-child(2) a {
+        display: block;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    .workload-table th:last-child,
+    .workload-table td:last-child {
+        width: 9rem;
+        white-space: nowrap;
     }
 
     .workload-mini-btn {
