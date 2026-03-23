@@ -66,6 +66,7 @@ class EvaluationWorkloadController extends Controller
 
         $workloadEntriesByFormId = collect();
         $workloadTotalScore = 0.0;
+        $savedWorkloadScoreC = null;
         if ($reportId && $workloadForms->isNotEmpty()) {
             $formIds = $workloadForms->pluck('id')->filter()->unique()->values();
             if ($formIds->isNotEmpty()) {
@@ -82,6 +83,13 @@ class EvaluationWorkloadController extends Controller
                         return (float) ($entry->calculated_score ?? 0);
                     });
             }
+        }
+
+        if ($reportId && $quantitySubCriteriaId) {
+            $savedWorkloadScoreC = QuantityScore::query()
+                ->where('report_id', $reportId)
+                ->where('quantity_sub_criteria_id', $quantitySubCriteriaId)
+                ->value('score_C');
         }
 
         $evidenceLinksByEntryId = collect();
@@ -104,6 +112,7 @@ class EvaluationWorkloadController extends Controller
             'workloadForms' => $workloadForms,
             'workloadEntriesByFormId' => $workloadEntriesByFormId,
             'workloadTotalScore' => $workloadTotalScore,
+            'savedWorkloadScoreC' => $savedWorkloadScoreC,
             'subjects' => $subjects,
             'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
         ]);

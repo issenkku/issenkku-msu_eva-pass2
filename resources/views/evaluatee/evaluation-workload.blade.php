@@ -489,6 +489,13 @@
     </section>
 
     {{-- บล็อกเนื้อหา --}}
+    @unless($readonly)
+    <div id="workloadSaveState" data-current-total="{{ (float) ($workloadTotalScore ?? 0) }}" data-saved-total="{{ $savedWorkloadScoreC !== null ? (float) $savedWorkloadScoreC : "" }}"></div>
+    <div class="workload-save-reminder" id="workloadSaveReminder" hidden>
+        <div class="workload-save-reminder-title">มีข้อมูลที่ยังไม่ได้บันทึก</div>
+        <div class="workload-save-reminder-text" id="workloadSaveReminderText">กรุณากดบันทึกด้านล่างเพื่อยืนยันคะแนนภาระงานล่าสุด</div>
+    </div>
+    @endunless
     <div class="workload-actions">
         <a href="{{ route('evaluation.show', ['id' => $reportId, 'readonly' => !empty($readonly) ? 1 : null]) }}" class="workload-back-btn">
             <i class="fas fa-arrow-left"></i>
@@ -496,7 +503,7 @@
         </a>
         {{-- ฟอร์ม --}}
         @unless($readonly)
-        <form method="POST" action="{{ route('evaluatee.workload-score.store') }}">
+        <form method="POST" id="workloadScoreForm" action="{{ route('evaluatee.workload-score.store') }}">
             @csrf
             <input type="hidden" name="report_id" value="{{ $reportId }}">
             <input type="hidden" name="quantity_sub_criteria_id" value="{{ $quantitySubCriteriaId }}">
@@ -1157,7 +1164,39 @@
         display: flex;
         justify-content: center;
         gap: 16px;
-        padding-bottom: 10px;
+        position: sticky;
+        bottom: 16px;
+        z-index: 40;
+        width: fit-content;
+        margin: 0 auto;
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
+    }
+
+    .workload-save-reminder {
+        margin: 0 auto 14px;
+        max-width: 760px;
+        background: #fff7ed;
+        border: 1px solid #fdba74;
+        color: #9a3412;
+        border-radius: 14px;
+        padding: 12px 16px;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .workload-save-reminder-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .workload-save-reminder-text {
+        font-size: 13px;
+        line-height: 1.5;
     }
 
     .workload-back-btn {
@@ -2471,7 +2510,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
             updateWorkloadSubmitState();
-            alert('��سҡ�͡���������ú��͹�ѹ�֡: ' + missingFields.join(', '));
+            alert('กรุณากรอกข้อมูลให้ครบก่อนบันทึก: ' + missingFields.join(', '));
         });
     }
 
@@ -2763,7 +2802,83 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stateEl = document.getElementById('workloadSaveState');
+        const reminderEl = document.getElementById('workloadSaveReminder');
+        const reminderTextEl = document.getElementById('workloadSaveReminderText');
+        const workloadScoreForm = document.getElementById('workloadScoreForm');
+        const backLinks = document.querySelectorAll('.workload-back-btn');
+
+        if (!stateEl || !reminderEl) {
+            return;
+        }
+
+        const parseScore = function (value) {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const currentTotal = parseScore(stateEl.dataset.currentTotal || '0');
+        const savedTotalRaw = stateEl.dataset.savedTotal || '';
+        const hasSavedTotal = savedTotalRaw !== '';
+        const savedTotal = hasSavedTotal ? parseScore(savedTotalRaw) : 0;
+        let hasUnsavedChanges = hasSavedTotal
+            ? Math.abs(currentTotal - savedTotal) > 0.0001
+            : currentTotal > 0;
+        let allowPageExit = false;
+
+        function updateReminder() {
+            reminderEl.hidden = !hasUnsavedChanges;
+            if (!hasUnsavedChanges || !reminderTextEl) {
+                return;
+            }
+
+            reminderTextEl.textContent = 'กรุณากดบันทึกด้านล่างเพื่อยืนยันคะแนนภาระงานล่าสุด';
+        }
+
+        if (workloadScoreForm) {
+            workloadScoreForm.addEventListener('submit', function () {
+                allowPageExit = true;
+                hasUnsavedChanges = false;
+                updateReminder();
+            });
+        }
+
+        document.addEventListener('submit', function () {
+            allowPageExit = true;
+        }, true);
+
+        backLinks.forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                if (!hasUnsavedChanges) {
+                    return;
+                }
+
+                const confirmed = window.confirm('มีข้อมูลภาระงานที่ยังไม่ได้บันทึก ต้องการย้อนกลับหรือไม่?');
+                if (!confirmed) {
+                    event.preventDefault();
+                    return;
+                }
+
+                allowPageExit = true;
+            });
+        });
+
+        window.addEventListener('beforeunload', function (event) {
+            if (!hasUnsavedChanges || allowPageExit) {
+                return;
+            }
+
+            event.preventDefault();
+            event.returnValue = '';
+        });
+
+        updateReminder();
+    });
+</script>
 @endsection
+
 
 
 
