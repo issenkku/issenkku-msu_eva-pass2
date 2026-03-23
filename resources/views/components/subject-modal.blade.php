@@ -30,6 +30,12 @@
                         <input type="text" id="name_en" name="name_en" class="form-control" placeholder="กรุณาระบุชื่อรายวิชาภาษาอังกฤษ (ถ้ามี)">
                     </div>
 
+                    <div class="mb-3">
+                        <label for="credits" class="form-label">หน่วยกิต <span class="text-danger">*</span></label>
+                        <input type="number" id="credits" name="credits" class="form-control" min="0" required placeholder="0">
+                        <div class="text-red-500 text-sm mt-1 hidden" id="creditsError">กรุณากรอกหน่วยกิต</div>
+                    </div>
+
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label for="lecture_credits" class="form-label">หน่วยกิตบรรยาย <span class="text-danger">*</span></label>
@@ -46,11 +52,6 @@
                             <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" required placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="selfStudyCreditsError">กรุณากรอกหน่วยกิตศึกษาด้วยตนเอง</div>
                         </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <label for="credits" class="form-label">หน่วยกิตรวม</label>
-                        <input type="number" id="credits" name="credits" class="form-control bg-light" min="0" readonly placeholder="0">
                     </div>
                 </form>
             </div>

@@ -2400,6 +2400,16 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const creditsLabel = document.querySelector('#subjectModal label[for="credits"]');
+        if (creditsLabel) {
+            creditsLabel.innerHTML = 'หน่วยกิต <span class="text-danger">*</span>';
+        }
+
+        const creditsError = document.getElementById('creditsError');
+        if (creditsError) {
+            creditsError.textContent = 'กรุณากรอกหน่วยกิต';
+        }
+
         if (typeof window.submitForm === 'function') {
             return;
         }
@@ -2434,7 +2444,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const lectureCreditsValue = lectureCreditsInput.value.trim();
             const labCreditsValue = labCreditsInput.value.trim();
             const selfStudyCreditsValue = selfStudyCreditsInput.value.trim();
-            updateSubjectCreditTotal();
             const creditsValue = creditsInput.value.trim();
 
             let isValid = true;
@@ -2515,7 +2524,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (creditsValue === '' || Number.isNaN(Number(creditsValue))) {
+                creditsInput.classList.add('is-invalid');
+                const creditsError = document.getElementById('creditsError');
+                if (creditsError) {
+                    creditsError.style.display = 'block';
+                }
                 isValid = false;
+            } else {
+                creditsInput.classList.remove('is-invalid');
+                const creditsError = document.getElementById('creditsError');
+                if (creditsError) {
+                    creditsError.style.display = 'none';
+                }
             }
 
             return isValid;
@@ -2530,7 +2550,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 redirectInput.value = window.location.href;
             }
             form.action = "{{ route('subjects.store.evaluatee') }}?redirect_to=" + encodeURIComponent(window.location.href);
-            updateSubjectCreditTotal();
 
             if (!validateSubjectForm()) {
                 return;
@@ -2608,11 +2627,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
-
-
-
-
-
 
 
 

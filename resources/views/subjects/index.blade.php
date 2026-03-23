@@ -423,7 +423,7 @@
                                     <td>
                                         <div class="fw-semibold">{{ $subject->credits }}</div>
                                         <div class="text-muted text-sm">
-                                            บ {{ $subject->lecture_credits ?? 0 }} / ป {{ $subject->lab_credits ?? 0 }} / ศ {{ $subject->self_study_credits ?? 0 }}
+                                            ( {{ $subject->lecture_credits ?? 0 }} /  {{ $subject->lab_credits ?? 0 }} / {{ $subject->self_study_credits ?? 0 }}) 
                                         </div>
                                     </td>
                                     <td>
@@ -535,9 +535,10 @@
             const lectureCreditsError = document.getElementById('lectureCreditsError');
             const labCreditsError = document.getElementById('labCreditsError');
             const selfStudyCreditsError = document.getElementById('selfStudyCreditsError');
+            const creditsError = document.getElementById('creditsError');
             const submitBtn = document.getElementById('subjectSubmitBtn');
 
-            if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput || !codeError || !nameThError || !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !submitBtn) {
+            if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput || !codeError || !nameThError || !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !creditsError || !submitBtn) {
                 return false;
             }
 
@@ -546,7 +547,6 @@
             const lectureCreditsValue = lectureCreditsInput.value.trim();
             const labCreditsValue = labCreditsInput.value.trim();
             const selfStudyCreditsValue = selfStudyCreditsInput.value.trim();
-            updateTotalCredits();
             const creditsValue = creditsInput.value.trim();
             let isValid = true;
 
@@ -601,7 +601,12 @@
             }
 
             if (creditsValue === '' || Number.isNaN(Number(creditsValue))) {
+                creditsInput.classList.add('is-invalid');
+                creditsError.style.display = 'block';
                 isValid = false;
+            } else {
+                creditsInput.classList.remove('is-invalid');
+                creditsError.style.display = 'none';
             }
 
             updateSubmitButton(isValid);
@@ -671,7 +676,6 @@
             document.getElementById('lab_credits').value = labCredits ?? 0;
             document.getElementById('self_study_credits').value = selfStudyCredits ?? 0;
             document.getElementById('credits').value = credits ?? '';
-            updateTotalCredits();
             modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขรายวิชา';
 
             setTimeout(() => {
@@ -730,7 +734,7 @@
                     input.classList.remove('is-invalid');
                 });
 
-                const errors = ['codeError', 'nameThError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError'];
+                const errors = ['codeError', 'nameThError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError', 'creditsError'];
                 errors.forEach((errorId) => {
                     const errorEl = document.getElementById(errorId);
                     if (errorEl) {
@@ -738,7 +742,6 @@
                     }
                 });
 
-                updateTotalCredits();
                 updateSubmitButton(false);
                 isFormValid = false;
             }
@@ -767,6 +770,15 @@
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
             clearModalBackdrop();
+            const creditsLabel = document.querySelector('#subjectModal label[for="credits"]');
+            if (creditsLabel) {
+                creditsLabel.innerHTML = 'หน่วยกิต <span class="text-danger">*</span>';
+            }
+
+            const creditsError = document.getElementById('creditsError');
+            if (creditsError) {
+                creditsError.textContent = 'กรุณากรอกหน่วยกิต';
+            }
 
             document.querySelectorAll('[data-role="subject-edit-trigger"]').forEach((button) => {
                 button.addEventListener('click', function() {
@@ -788,8 +800,8 @@
             const lectureCreditsInput = document.getElementById('lecture_credits');
             const labCreditsInput = document.getElementById('lab_credits');
             const selfStudyCreditsInput = document.getElementById('self_study_credits');
+            const creditsInput = document.getElementById('credits');
 
-            updateTotalCredits();
 
             if (codeInput) {
                 codeInput.addEventListener('input', function() {
@@ -817,12 +829,10 @@
                 }
 
                 input.addEventListener('input', function() {
-                    updateTotalCredits();
                     validateForm();
                 });
 
                 input.addEventListener('blur', function() {
-                    updateTotalCredits();
                     validateForm();
                 });
 
@@ -835,6 +845,16 @@
                     }
                 });
             });
+
+            if (creditsInput) {
+                creditsInput.addEventListener('input', function() {
+                    validateForm();
+                });
+
+                creditsInput.addEventListener('blur', function() {
+                    validateForm();
+                });
+            }
 
             const form = document.getElementById('subjectForm');
             if (form) {
