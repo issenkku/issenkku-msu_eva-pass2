@@ -117,6 +117,7 @@
                     <option value="">เลือกประเภทบุคลากร</option>
                     <option value="สนับสนุน" {{ old('personnel_type', $user->personnel_type) == 'สนับสนุน' ? 'selected' : '' }}>สนับสนุน</option>
                     <option value="วิชาการ" {{ old('personnel_type', $user->personnel_type) == 'วิชาการ' ? 'selected' : '' }}>วิชาการ</option>
+                    <option value="บริหาร" {{ old('personnel_type', $user->personnel_type) == 'บริหาร' ? 'selected' : '' }}>บริหาร</option>
                 </select>
                 @error('personnel_type')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
