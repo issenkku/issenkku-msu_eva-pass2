@@ -679,7 +679,7 @@
                                 @empty
                                     <div class="workload-modal-subfield">
                                         <label class="workload-modal-sub-label">หน่วยกิต</label>
-                                        <input type="number" class="workload-modal-input" name="field_values[credits]" value="1" />
+                                        <input type="number" class="workload-modal-input" name="field_values[credits]" value="0" />
                                     </div>
                                 @endforelse
                                 </div>
@@ -1605,6 +1605,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let lastDefaultGroupId = '';
     let lastDefaultGroupName = '';
     let activeGroupId = '';
+    let activeGroupName = '';
     let pendingEditPayload = null;
 
     document.addEventListener('click', function (event) {
@@ -1671,6 +1672,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function setActiveGroup(groupId, groupName) {
         activeGroupId = groupId || '';
+        activeGroupName = groupName || '';
         if (groupLabelInput) {
             groupLabelInput.value = groupName || (activeGroupId ? 'หมวดย่อย #' + activeGroupId : '-');
         }
@@ -1951,7 +1953,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const scope = getActiveFormScope() || document;
         const parts = [];
 
-        if (groupLabelInput && groupLabelInput.value) {
+        if (activeGroupName) {
+            parts.push(activeGroupName);
+        } else if (groupLabelInput && groupLabelInput.value) {
             parts.push(groupLabelInput.value);
         }
 
@@ -1982,7 +1986,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return selected.dataset.lectureCredits ?? '';
         }
 
-        return selected.dataset.credits ?? '';
+        return selected.dataset.lectureCredits ?? '0';
     }
 
     function updateCreditsFromSubject() {
@@ -2761,6 +2765,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 </script>
 @endsection
+
+
 
 
 
