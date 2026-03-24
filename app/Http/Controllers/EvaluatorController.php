@@ -108,6 +108,11 @@ class EvaluatorController extends Controller
                 'in_progress' => ['Evaluator_draft'],
                 'forwarded' => ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
                 'completed' => ['Completed'],
+                'รอการกรอกข้อมูล' => ['Assigned', 'Draft'],
+                'ยังไม่ประเมิน' => ['Pending'],
+                'กำลังดำเนินการ' => ['Evaluator_draft'],
+                'รอผลการประเมิน' => ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
+                'ประเมินเสร็จสิ้น' => ['Completed'],
             ];
 
             if (isset($statusGroups[$status])) {

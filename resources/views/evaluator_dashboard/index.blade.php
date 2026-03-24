@@ -88,11 +88,20 @@
         </div>
 
         @php
+            $activeEvaluatorFilters = collect(request()->only(['search', 'start_time', 'end_time', 'status', 'urgency', 'year']))
+                ->filter(fn ($value) => filled($value));
             $overviewChart = [
                 'id' => 'evaluatorOverviewChart',
                 'labels' => ['รอการกรอกข้อมูล', 'รอคุณประเมิน', 'กำลังประเมิน', 'ส่งต่อแล้ว', 'เสร็จสิ้น'],
                 'data' => [$waitingForSubmissionCount, $pendingEvaluatorCount, $inProgressCount, $forwardedCount, $completedCount],
                 'colors' => ['#f97316', '#ef4444', '#3b82f6', '#f59e0b', '#22c55e'],
+                'filters' => [
+                    request()->fullUrlWithQuery(['status' => 'รอการกรอกข้อมูล']),
+                    request()->fullUrlWithQuery(['status' => 'ยังไม่ประเมิน']),
+                    request()->fullUrlWithQuery(['status' => 'กำลังดำเนินการ']),
+                    request()->fullUrlWithQuery(['status' => 'รอผลการประเมิน']),
+                    request()->fullUrlWithQuery(['status' => 'ประเมินเสร็จสิ้น']),
+                ],
                 'centerValue' => $progressPercent.'%',
                 'centerLabel' => 'ความคืบหน้ารวม',
                 'centerMeta' => "เสร็จสิ้นแล้ว {$completedCount} จาก {$totalEvaluations} รายการ",
@@ -106,10 +115,6 @@
                         <h3 class="text-2xl font-bold text-gray-900">ภาพรวมความคืบหน้างานประเมิน</h3>
                         <p class="mt-1 text-sm text-gray-500">ใช้ติดตามงานที่ต้องดำเนินการและงานที่ส่งต่อไปยังขั้นตอนถัดไปแล้ว</p>
                     </div>
-                    {{-- <div class="text-right">
-                        <div class="text-4xl font-extrabold text-gray-900">{{ $progressPercent }}%</div>
-                        <div class="text-sm text-gray-500">เสร็จสิ้นแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
-                    </div> --}}
                 </div>
 
                 {{-- <div class="mt-6 h-4 w-full overflow-hidden rounded-full bg-gray-100">
@@ -152,6 +157,22 @@
                                     <div id="{{ $overviewChart['id'] }}Meta" class="overview-chart-meta">{{ $overviewChart['centerMeta'] }}</div>
                                 </div>
                             </div>
+
+                            @if ($activeEvaluatorFilters->isNotEmpty())
+                                <div class="flex flex-wrap items-center justify-center gap-2 xl:justify-start">
+                                    @if (request('status'))
+                                        <div class="rounded-full bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700 ring-1 ring-orange-100">
+                                            กรองอยู่: {{ request('status') }}
+                                        </div>
+                                    @endif
+                                    <button
+                                        type="button"
+                                        onclick="resetFilters()"
+                                        class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50">
+                                        ล้างการกรอง
+                                    </button>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="space-y-2.5">
@@ -332,6 +353,7 @@
                 };
                 const overviewChartLabels = @json($overviewChart['labels']);
                 const overviewChartData = @json($overviewChart['data']);
+                const overviewChartFilters = @json($overviewChart['filters']);
 
                 const setOverviewCenter = function(value, label, meta) {
                     overviewChartValue.textContent = value;
@@ -388,6 +410,19 @@
                                 overviewChartLabels[index],
                                 'จำนวน ' + count + ' รายการ'
                             );
+                        },
+                        onClick: function(event, activeElements) {
+                            if (!activeElements.length) {
+                                return;
+                            }
+
+                            const index = activeElements[0].index;
+                            const targetUrl = overviewChartFilters[index];
+                            if (!targetUrl) {
+                                return;
+                            }
+
+                            applyEvaluatorDashboardRequest(targetUrl);
                         }
                     }
                 });
