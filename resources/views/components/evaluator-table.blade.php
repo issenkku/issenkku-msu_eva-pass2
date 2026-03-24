@@ -111,6 +111,7 @@
             @endphp
 
             <a href="{{ $url }}"
+            data-evaluator-ajax-link
             class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </a>

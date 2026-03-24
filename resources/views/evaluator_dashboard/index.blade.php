@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-8xl mx-auto space-y-6">
+<div id="evaluatorDashboardRoot" class="max-w-8xl mx-auto space-y-6">
     <x-profile-card
         :user="$user"
         title="ข้อมูลผู้ประเมิน" />
@@ -87,6 +87,18 @@
             </form>
         </div>
 
+        @php
+            $overviewChart = [
+                'id' => 'evaluatorOverviewChart',
+                'labels' => ['รอการกรอกข้อมูล', 'รอคุณประเมิน', 'กำลังประเมิน', 'ส่งต่อแล้ว', 'เสร็จสิ้น'],
+                'data' => [$waitingForSubmissionCount, $pendingEvaluatorCount, $inProgressCount, $forwardedCount, $completedCount],
+                'colors' => ['#f97316', '#ef4444', '#3b82f6', '#f59e0b', '#22c55e'],
+                'centerValue' => $progressPercent.'%',
+                'centerLabel' => 'ความคืบหน้ารวม',
+                'centerMeta' => "เสร็จสิ้นแล้ว {$completedCount} จาก {$totalEvaluations} รายการ",
+            ];
+        @endphp
+
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div class="xl:col-span-2 rounded-2xl bg-white p-6 shadow-md border border-gray-100">
                 <div class="flex items-start justify-between gap-4">
@@ -94,66 +106,93 @@
                         <h3 class="text-2xl font-bold text-gray-900">ภาพรวมความคืบหน้างานประเมิน</h3>
                         <p class="mt-1 text-sm text-gray-500">ใช้ติดตามงานที่ต้องดำเนินการและงานที่ส่งต่อไปยังขั้นตอนถัดไปแล้ว</p>
                     </div>
-                    <div class="text-right">
+                    {{-- <div class="text-right">
                         <div class="text-4xl font-extrabold text-gray-900">{{ $progressPercent }}%</div>
                         <div class="text-sm text-gray-500">เสร็จสิ้นแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
-                    </div>
+                    </div> --}}
                 </div>
 
-                <div class="mt-6 h-4 w-full overflow-hidden rounded-full bg-gray-100">
+                {{-- <div class="mt-6 h-4 w-full overflow-hidden rounded-full bg-gray-100">
                     <div class="h-full rounded-full bg-green-500" style="width: {{ min($progressPercent, 100) }}%;"></div>
-                </div>
+                </div> --}}
 
-                <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <x-summary-score
-                        title="จำนวนคนที่มีในระบบ"
-                        :value="$totalEvaluations"
-                        subtitle="จำนวนผู้ใช้งานทั้งหมดในระบบ"
-                        color="blue"
-                        icon="fas fa-users"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
+                <div class="mt-6 rounded-2xl border border-gray-100 bg-slate-50/60 p-5 lg:p-6">
+                    <div class="grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-center">
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
+                                <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white px-4 py-3 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-base font-bold leading-tight text-blue-600">งานทั้งหมด</div>
+                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluations }}</div>
+                                        </div>
+                                        <div class="shrink-0 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-bold text-blue-700">
+                                            รายการ
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white px-4 py-3 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-base font-bold leading-tight text-emerald-600">ผู้เข้าประเมิน</div>
+                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluatees }}</div>
+                                        </div>
+                                        <div class="shrink-0 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-bold text-emerald-700">
+                                            คน
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <x-summary-score
-                        title="จำนวนผู้เข้าประเมิน"
-                        :value="$totalEvaluatees"
-                        subtitle="จำนวนผู้ที่อยู่ในรอบประเมินตามเงื่อนไขที่เลือก"
-                        color="blue"
-                        icon="fas fa-user-check"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
+                            <div class="overview-chart-wrap mx-auto xl:mx-0">
+                                <canvas id="{{ $overviewChart['id'] }}"></canvas>
+                                <div class="overview-chart-center">
+                                    <div id="{{ $overviewChart['id'] }}Value" class="overview-chart-value">{{ $overviewChart['centerValue'] }}</div>
+                                    <div id="{{ $overviewChart['id'] }}Label" class="overview-chart-label">{{ $overviewChart['centerLabel'] }}</div>
+                                    <div id="{{ $overviewChart['id'] }}Meta" class="overview-chart-meta">{{ $overviewChart['centerMeta'] }}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <x-summary-score
-                        title="จำนวนคนที่ประเมินเสร็จ"
-                        :value="$completedCount"
-                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($completedCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
-                        color="green"
-                        icon="fas fa-check-circle"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
+                        <div class="space-y-2.5">
+                            @foreach ($overviewChart['labels'] as $index => $label)
+                                @php
+                                    $count = $overviewChart['data'][$index];
+                                    $percent = $totalEvaluations > 0 ? round(($count / $totalEvaluations) * 100, 1) : 0;
+                                    $cardColor = $overviewChart['colors'][$index];
+                                @endphp
+                                <div
+                                    class="rounded-xl border px-4 py-3.5 shadow-sm"
+                                    style="border-color: {{ $cardColor }}22; background: linear-gradient(135deg, {{ $cardColor }}12 0%, #ffffff 55%); box-shadow: inset 4px 0 0 {{ $cardColor }};">
+                                    <div class="flex items-start justify-between gap-4">
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex min-w-0 items-center gap-3">
+                                                <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ $cardColor }}"></span>
+                                                <div class="truncate text-[15px] font-semibold text-gray-900">{{ $label }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="shrink-0 rounded-2xl px-3 py-2 text-center" style="min-width: 86px; background-color: {{ $cardColor }}14;">
+                                            <div class="text-2xl font-extrabold leading-none" style="color: {{ $cardColor }}">{{ $count }}</div>
+                                            <div class="mt-1 text-xs font-semibold" style="color: {{ $cardColor }}">รายการ</div>
+                                        </div>
+                                    </div>
 
-                    <x-summary-score
-                        title="จำนวนคนที่ยังไม่เริ่ม"
-                        :value="$pendingEvaluatorCount"
-                        subtitle="ผู้ที่ยังไม่มีการกรอกข้อมูลประเมิน"
-                        color="red"
-                        icon="fas fa-hourglass-end"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
+                                    <div class=" flex items-center justify-between gap-4 text-sm">
+                                        <div class="text-gray-600">
+                                            คิดเป็น <span class="font-semibold" style="color: {{ $cardColor }}">{{ $percent }}%</span> ของงานทั้งหมด {{ $totalEvaluations }} รายการ
+                                        </div>
+                                        {{-- <div class="shrink-0 text-xs text-gray-500">
+                                            จากทั้งหมด {{ $totalEvaluations }} รายการ
+                                        </div> --}}
+                                    </div>
 
-                    <x-summary-score
-                        title="จำนวนคนที่เริ่มดำเนินการแล้ว"
-                        :value="$inProgressCount"
-                        :subtitle="$totalEvaluatees > 0 ? 'คิดเป็น '.round(($inProgressCount / $totalEvaluatees) * 100, 1).'% ของผู้เข้ารับการประเมินทั้งหมด' : 'ยังไม่มีผู้เข้ารับการประเมินในรอบนี้'"
-                        color="yellow"
-                        icon="fas fa-spinner"
-                        iconSize="text-3xl"
-                        class="h-full"
-                    />
+                                    <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/80">
+                                        <div class="h-full rounded-full" style="width: {{ min($percent, 100) }}%; background-color: {{ $cardColor }};"></div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -231,22 +270,235 @@
         padding: 0 1rem;
     }
 }
+
+.overview-chart-wrap {
+    position: relative;
+    width: min(100%, 280px);
+    aspect-ratio: 1 / 1;
+}
+
+.overview-chart-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.overview-chart-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+.overview-chart-value {
+    color: #0f172a;
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.overview-chart-label {
+    margin-top: 0.5rem;
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.overview-chart-meta {
+    margin-top: 0.35rem;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
 </style>
 @endsection
 
 @push('scripts')
     <script>
+        function initEvaluatorOverviewChart(root = document) {
+            const overviewChartCanvas = root.getElementById(@json($overviewChart['id']));
+            if (overviewChartCanvas && typeof Chart !== 'undefined') {
+                const overviewChartValue = root.getElementById(@json($overviewChart['id'].'Value'));
+                const overviewChartLabel = root.getElementById(@json($overviewChart['id'].'Label'));
+                const overviewChartMeta = root.getElementById(@json($overviewChart['id'].'Meta'));
+                const overviewChartDefaults = {
+                    value: @json($overviewChart['centerValue']),
+                    label: @json($overviewChart['centerLabel']),
+                    meta: @json($overviewChart['centerMeta']),
+                };
+                const overviewChartLabels = @json($overviewChart['labels']);
+                const overviewChartData = @json($overviewChart['data']);
+
+                const setOverviewCenter = function(value, label, meta) {
+                    overviewChartValue.textContent = value;
+                    overviewChartLabel.textContent = label;
+                    overviewChartMeta.textContent = meta;
+                };
+
+                new Chart(overviewChartCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: overviewChartLabels,
+                        datasets: [{
+                            data: overviewChartData,
+                            backgroundColor: @json($overviewChart['colors']),
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '72%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        },
+                        onHover: function(event, activeElements) {
+                            const target = event?.native?.target;
+                            if (target) {
+                                target.style.cursor = activeElements.length ? 'pointer' : 'default';
+                            }
+
+                            if (!activeElements.length) {
+                                setOverviewCenter(
+                                    overviewChartDefaults.value,
+                                    overviewChartDefaults.label,
+                                    overviewChartDefaults.meta
+                                );
+                                return;
+                            }
+
+                            const index = activeElements[0].index;
+                            const count = overviewChartData[index] || 0;
+                            const total = overviewChartData.reduce((sum, item) => sum + item, 0);
+                            const percent = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
+
+                            setOverviewCenter(
+                                percent + '%',
+                                overviewChartLabels[index],
+                                'จำนวน ' + count + ' รายการ'
+                            );
+                        }
+                    }
+                });
+            }
+        }
+
+        function applyEvaluatorDashboardRequest(url, pushState = true) {
+            const root = document.getElementById('evaluatorDashboardRoot');
+            if (!root) {
+                return Promise.resolve();
+            }
+
+            root.classList.add('opacity-70', 'pointer-events-none');
+
+            return fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(function(response) {
+                    return response.text();
+                })
+                .then(function(html) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const incomingRoot = doc.getElementById('evaluatorDashboardRoot');
+
+                    if (!incomingRoot) {
+                        window.location.href = url;
+                        return;
+                    }
+
+                    root.innerHTML = incomingRoot.innerHTML;
+                    root.className = incomingRoot.className;
+
+                    if (pushState) {
+                        window.history.pushState({}, '', url);
+                    }
+
+                    initEvaluatorOverviewChart(document);
+                    initEvaluatorDashboardAjax();
+                })
+                .catch(function() {
+                    window.location.href = url;
+                })
+                .finally(function() {
+                    const currentRoot = document.getElementById('evaluatorDashboardRoot');
+                    if (currentRoot) {
+                        currentRoot.classList.remove('opacity-70', 'pointer-events-none');
+                    }
+                });
+        }
+
         function resetFilters() {
-            document.querySelector('input[name="search"]').value = '';
-            document.querySelector('input[name="start_time"]').value = '';
-            document.querySelector('input[name="end_time"]').value = '';
-            document.querySelector('select[name="status"]').value = '';
-            document.querySelector('select[name="urgency"]').value = '';
-            document.querySelector('select[name="year"]').value = '';
-            document.getElementById('filterForm').submit();
+            const form = document.getElementById('filterForm');
+            if (!form) {
+                return;
+            }
+
+            form.querySelector('input[name="search"]').value = '';
+            form.querySelector('input[name="start_time"]').value = '';
+            form.querySelector('input[name="end_time"]').value = '';
+            form.querySelector('select[name="status"]').value = '';
+            form.querySelector('select[name="urgency"]').value = '';
+            form.querySelector('select[name="year"]').value = '';
+
+            applyEvaluatorDashboardRequest(window.location.pathname);
+        }
+
+        function initEvaluatorDashboardAjax() {
+            const root = document.getElementById('evaluatorDashboardRoot');
+            if (!root || root.dataset.ajaxReady === '1') {
+                return;
+            }
+
+            root.dataset.ajaxReady = '1';
+
+            root.addEventListener('submit', function(event) {
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement) || (form.method || '').toUpperCase() !== 'GET') {
+                    return;
+                }
+
+                event.preventDefault();
+                const action = form.getAttribute('action') || window.location.pathname;
+                const targetUrl = new URL(action, window.location.origin);
+                const params = new URLSearchParams(new FormData(form));
+                params.forEach(function(value, key) {
+                    if (value !== '') {
+                        targetUrl.searchParams.append(key, value);
+                    }
+                });
+
+                applyEvaluatorDashboardRequest(targetUrl.toString());
+            });
+
+            root.addEventListener('click', function(event) {
+                const link = event.target.closest('[data-evaluator-ajax-link]');
+                if (!link) {
+                    return;
+                }
+
+                event.preventDefault();
+                applyEvaluatorDashboardRequest(link.href);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            initEvaluatorOverviewChart(document);
+            initEvaluatorDashboardAjax();
+
             const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
             messages.forEach(function(message) {
                 setTimeout(function() {
@@ -259,6 +511,10 @@
                         }, 300);
                     }
                 }, 5000);
+            });
+
+            window.addEventListener('popstate', function() {
+                applyEvaluatorDashboardRequest(window.location.href, false);
             });
         });
     </script>
