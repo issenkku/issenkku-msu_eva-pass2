@@ -149,9 +149,7 @@
                             <p class="text-sm text-slate-500">ดูสัดส่วนของงานแต่ละสถานะในภาพรวมเดียว</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
-                            <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-600 shadow-sm">
-                                ทั้งหมด {{ $totalAssignments }} รายการ
-                            </div>
+                          
                             <button
                             type="button"
                             id="evaluationClearFilter"
