@@ -9,6 +9,7 @@ use App\Models\QualitySubCriteria;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
+use App\Support\AssignmentFlow;
 use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
@@ -305,6 +306,10 @@ class EvaluationScoreController extends Controller
 
             $oldStatus = $report->status;
             $status = $validated['status'];
+            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            if ($status === 'Pending') {
+                $status = AssignmentFlow::statusForStage(AssignmentFlow::stagesFor($assignment?->assignmentData)[0] ?? null) ?? 'Completed';
+            }
             $report->status = $status;
             $report->save();
 
@@ -325,7 +330,7 @@ class EvaluationScoreController extends Controller
                 ])
                 ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
-            if ($status === 'Pending') {
+            if (in_array($status, ['Pending', 'Director_assigned', 'Manager_assign', 'Completed'], true)) {
                 $this->sendEvaluationCompletedMail($reportId);
             }
 
@@ -365,9 +370,18 @@ class EvaluationScoreController extends Controller
             return;
         }
 
-        $evaluators = $assignment->getEvaluatorUsers();
+        $assignment->load('assignmentData.evaluatorUser', 'assignmentData.directorUser', 'assignmentData.managerUser');
         $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
-        foreach ($evaluators as $user) {
+        $targetUser = match ($report->status) {
+            'Pending' => $assignment->assignmentData->evaluatorUser,
+            'Director_assigned' => $assignment->assignmentData->directorUser,
+            'Manager_assign' => $assignment->assignmentData->managerUser,
+            'Completed' => $evaluatee,
+            default => null,
+        };
+
+        $targetUsers = collect([$targetUser])->filter();
+        foreach ($targetUsers as $user) {
             if (! $user || ! $user->email) {
                 continue;
             }

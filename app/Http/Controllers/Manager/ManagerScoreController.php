@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
 use App\Support\QuantityScoreHistoryRecorder;
+use App\Support\AssignmentFlow;
 
 class ManagerScoreController extends Controller
 {
@@ -60,6 +61,11 @@ class ManagerScoreController extends Controller
 
         $data = $this->reportDataService->getReportData($id);
         $report = $data['report'];
+        $assignmentData = optional($data['assignment'])->assignmentData;
+
+        if ($assignmentData?->manager_id && (int) $assignmentData->manager_id !== (int) $user->id) {
+            abort(403, 'Unauthorized manager');
+        }
 
         if (in_array($report->status, ['Assigned', 'Draft',
             'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'])) {
@@ -197,7 +203,10 @@ class ManagerScoreController extends Controller
             $oldStatus = $report->status;
             $oldComment = $report->manager_comment;
 
-            $status = $validated['status'];
+            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $status = $validated['status'] === 'Completed'
+                ? AssignmentFlow::nextStatusAfter('manager', $assignment?->assignmentData)
+                : $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {

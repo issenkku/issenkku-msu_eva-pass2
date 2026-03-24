@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Support\AssignmentFlow;
 
 class EvaluatorController extends Controller
 {
@@ -657,9 +658,12 @@ class EvaluatorController extends Controller
             );
         }
 
+        $assignment = Assignments::with('assignmentData')->where('report_id', $id)->first();
+        $nextStatus = AssignmentFlow::nextStatusAfter('evaluator', $assignment?->assignmentData);
+
         Reports::where('id', $id)->update([
             'comment' => $request->input('comment'),
-            'status' => $request->has('change_status') ? 'Director_assigned' : DB::raw('status'),
+            'status' => $request->has('change_status') ? $nextStatus : DB::raw('status'),
         ]);
 
         // ส่งอีเมลแจ้งเตือนเมื่อประเมินเสร็จ

@@ -17,6 +17,11 @@ class AssignmentData extends Model
     protected $fillable = [
         'evaluator_id',
         'evaluator_position_id',
+        'director_id',
+        'director_position_id',
+        'manager_id',
+        'manager_position_id',
+        'evaluation_flow',
         'start_time',
         'end_time',
     ];
@@ -24,6 +29,11 @@ class AssignmentData extends Model
     protected $casts = [
         'evaluator_id' => 'integer',
         'evaluator_position_id' => 'integer',
+        'director_id' => 'integer',
+        'director_position_id' => 'integer',
+        'manager_id' => 'integer',
+        'manager_position_id' => 'integer',
+        'evaluation_flow' => 'array',
         'start_time' => 'date',
         'end_time' => 'date',
     ];
@@ -52,6 +62,16 @@ class AssignmentData extends Model
     public function evaluatorUser()
     {
         return $this->belongsTo(User::class, 'evaluator_id', 'id');
+    }
+
+    public function directorUser()
+    {
+        return $this->belongsTo(User::class, 'director_id', 'id');
+    }
+
+    public function managerUser()
+    {
+        return $this->belongsTo(User::class, 'manager_id', 'id');
     }
 
     // ดึง user ที่เกี่ยวข้องกับ assignment data (เช่น evaluator หรือ evaluatee)

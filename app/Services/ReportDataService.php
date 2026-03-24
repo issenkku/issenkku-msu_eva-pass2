@@ -34,6 +34,9 @@ class ReportDataService
         $report = Reports::with([
             'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
             'assignments.assignmentData',
+            'assignments.assignmentData.evaluatorUser.position',
+            'assignments.assignmentData.directorUser.position',
+            'assignments.assignmentData.managerUser.position',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
             'assignments',
@@ -48,6 +51,10 @@ class ReportDataService
         $assignment->evaluateePosition = $assignment->evaluateeUser?->position?->name ?? '-';
         $assignment->evaluatorName = $assignment->assignmentData->evaluatorUser?->name ?? '-';
         $assignment->evaluatorPosition = $assignment->assignmentData->evaluatorUser?->position?->name ?? '-';
+        $assignment->directorName = $assignment->assignmentData->directorUser?->name ?? '-';
+        $assignment->directorPosition = $assignment->assignmentData->directorUser?->position?->name ?? '-';
+        $assignment->managerName = $assignment->assignmentData->managerUser?->name ?? '-';
+        $assignment->managerPosition = $assignment->assignmentData->managerUser?->position?->name ?? '-';
 
         $formatThai = function ($datetime) {
             if (! $datetime) {

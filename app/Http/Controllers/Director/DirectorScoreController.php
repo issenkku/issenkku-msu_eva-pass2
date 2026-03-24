@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
 use App\Support\QuantityScoreHistoryRecorder;
+use App\Support\AssignmentFlow;
 
 class DirectorScoreController extends Controller
 {
@@ -59,6 +60,11 @@ class DirectorScoreController extends Controller
 
         $data = $this->reportDataService->getReportData($id);
         $report = $data['report'];
+        $assignmentData = optional($data['assignment'])->assignmentData;
+
+        if ($assignmentData?->director_id && (int) $assignmentData->director_id !== (int) $user->id) {
+            abort(403, 'Unauthorized director');
+        }
 
         if (in_array($report->status, ['Assigned', 'Draft', 'Pending', 'Evaluator_draft'])) {
             abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
@@ -195,7 +201,10 @@ class DirectorScoreController extends Controller
             $oldStatus = $report->status;
             $oldComment = $report->director_comment;
 
-            $status = $validated['status'];
+            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $status = $validated['status'] === 'Manager_assign'
+                ? AssignmentFlow::nextStatusAfter('director', $assignment?->assignmentData)
+                : $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {

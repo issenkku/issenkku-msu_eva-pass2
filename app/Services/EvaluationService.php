@@ -15,6 +15,8 @@ class EvaluationService
         return Reports::with([
             'reportData',
             'assignments.assignmentData.evaluatorUser',
+            'assignments.assignmentData.directorUser',
+            'assignments.assignmentData.managerUser',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
         ])->get();

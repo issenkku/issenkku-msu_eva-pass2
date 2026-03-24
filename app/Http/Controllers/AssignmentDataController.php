@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\User;
+use App\Support\AssignmentFlow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -17,12 +17,7 @@ use Spatie\Permission\Models\Role;
 class AssignmentDataController extends Controller
 {
     /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า assignment-data.index
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า assignment-data.index
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * แสดงรายการรอบการประเมิน
      */
     public function index()
     {
@@ -30,53 +25,39 @@ class AssignmentDataController extends Controller
             'assignments.evaluateeUser.position',
             'assignments.report.reportData',
             'evaluatorUser',
-        ])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            'directorUser',
+            'managerUser',
+        ])->orderBy('created_at', 'desc')->paginate(10);
 
         return view('assignment-data.index', compact('assignmentData'));
     }
 
     /**
-     * เมธอด: create
-     * จุดประสงค์: แสดงหน้า assignment-data.create
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า assignment-data.create
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * แสดงหน้าสร้างรอบการประเมินใหม่
      */
     public function create()
     {
         $report_data = ReportData::all();
-        $users = User::all();
+        $users = User::with(['roles', 'position'])->get();
+        $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
+        $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
+        $managerUsers = $users->filter(fn ($user) => $user->hasRole('ผู้บริหาร'))->values();
 
-        return view('assignment-data.create', compact('report_data', 'users'));
+        return view('assignment-data.create', compact(
+            'report_data',
+            'users',
+            'evaluatorUsers',
+            'directorUsers',
+            'managerUsers'
+        ));
     }
 
     /**
-     * เมธอด: store
-     * จุดประสงค์: บันทึกข้อมูล AssignmentData, Reports, Assignments และเปลี่ยนเส้นทางไปที่ route assignment-data.create
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: Redirect ไปที่ route assignment-data.create
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * สร้างรอบการประเมินใหม่ พร้อม assignment ของผู้รับการประเมินแต่ละคน
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after_or_equal:start_time',
-            'report_data_id' => 'required|exists:report_datas,id',
-            'evaluator_id' => 'required|exists:users,id',
-            'evaluatees' => 'required|array|min:1',
-            'evaluatees.*' => 'required|exists:users,id',
-        ]);
-
-        $validator->after(function ($validator) use ($request) {
-            if (in_array($request->evaluator_id, $request->evaluatees ?? [])) {
-                $validator->errors()->add('evaluatees', 'ผู้ประเมินไม่สามารถเป็นผู้รับการประเมินได้');
-            }
-        });
+        $validator = $this->buildValidator($request);
 
         if ($validator->fails()) {
             return redirect()
@@ -88,42 +69,33 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
-            $evaluator = User::find($request->evaluator_id);
-            if (!$evaluator) {
-                throw new \Exception('Evaluator not found');
-            }
+            $payload = $this->preparePayload($request);
 
-            // Create assignment data
-            $assignmentData = AssignmentData::create([
-                'evaluator_id' => $request->evaluator_id,
-                'evaluator_position_id' => $evaluator->position_id,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
-            ]);
-            
-            // Assign role to evaluator
-            $this->assignUserRole($evaluator, 'ผู้ประเมิน');
+            // สร้างข้อมูลรอบการประเมินหลัก
+            $assignmentData = AssignmentData::create($payload['assignment_data']);
 
-            // Create assignments for each evaluatee
+            // กำหนด role ให้ reviewer ที่ถูกเลือกในรอบนี้
+            $this->assignSelectedRoles($payload['reviewers']);
+
             foreach ($request->evaluatees as $evaluateeId) {
-                $evaluatee = User::find($evaluateeId);
-                
-                // Assign role to evaluatee
+                $evaluatee = User::findOrFail($evaluateeId);
                 $this->assignUserRole($evaluatee, 'ผู้รับการประเมิน');
 
+                // สร้างรายงานสำหรับผู้รับการประเมินแต่ละคน
                 $report = Reports::create([
                     'report_data_id' => $request->report_data_id,
                     'status' => 'Assigned',
                 ]);
 
+                // ผูกผู้รับการประเมินเข้ากับรอบการประเมิน
                 Assignments::create([
                     'assignment_data_id' => $assignmentData->id,
                     'report_id' => $report->id,
                     'evaluatee_id' => $evaluateeId,
                 ]);
 
-                // Send email notification
-                $this->sendEvaluationNotification($report->id, $evaluatee, $evaluator);
+                // ส่งอีเมลแจ้งเตือนโดยใช้ reviewer คนแรกใน flow
+                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['first_reviewer']);
             }
 
             DB::commit();
@@ -146,12 +118,7 @@ class AssignmentDataController extends Controller
     }
 
     /**
-     * เมธอด: show
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: โมเดล AssignmentData
-     * เอาต์พุต: ข้อมูล JSON
-     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * แสดงรายละเอียดรอบการประเมินในรูปแบบ JSON
      */
     public function show(AssignmentData $assignmentData)
     {
@@ -159,66 +126,52 @@ class AssignmentDataController extends Controller
             'assignments.evaluateeUser',
             'assignments.report',
             'evaluatorUser',
+            'directorUser',
+            'managerUser',
         ]);
 
         return response()->json($assignmentData);
     }
 
     /**
-     * เมธอด: edit
-     * จุดประสงค์: แสดงหน้า assignment-data.edit
-     * อินพุต: โมเดล AssignmentData
-     * เอาต์พุต: หน้า assignment-data.edit
-     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * แสดงหน้าแก้ไขรอบการประเมิน
      */
     public function edit(AssignmentData $assignmentData)
     {
         $report_data = ReportData::all();
-        $users = User::all();
+        $users = User::with(['roles', 'position'])->get();
+        $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
+        $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
+        $managerUsers = $users->filter(fn ($user) => $user->hasRole('ผู้บริหาร'))->values();
 
         $assignmentData->load([
             'assignments.evaluateeUser',
             'assignments.report.reportData',
             'evaluatorUser',
+            'directorUser',
+            'managerUser',
         ]);
 
-        // Get selected evaluatees
+        // ดึงรายชื่อผู้รับการประเมินเดิมเพื่อแสดงในฟอร์ม
         $selectedEvaluatees = $assignmentData->assignments->pluck('evaluatee_id')->toArray();
 
         return view('assignment-data.edit', compact(
             'assignmentData',
             'report_data',
             'users',
-            'selectedEvaluatees'
+            'selectedEvaluatees',
+            'evaluatorUsers',
+            'directorUsers',
+            'managerUsers'
         ));
     }
 
     /**
-     * เมธอด: update
-     * จุดประสงค์: บันทึกข้อมูล Reports, Assignments อัปเดตข้อมูล ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route assignment-data.index
-     * อินพุต: ข้อมูลจากคำขอ, โมเดล AssignmentData
-     * เอาต์พุต: Redirect ไปที่ route assignment-data.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * อัปเดตรอบการประเมินและสร้าง assignment ใหม่ตามข้อมูลล่าสุด
      */
     public function update(Request $request, AssignmentData $assignmentData)
     {
-        $validator = Validator::make($request->all(), [
-            'start_time' => 'required|date',
-            'end_time' => 'required|date|after_or_equal:start_time',
-            'report_data_id' => 'required|exists:report_datas,id',
-            'evaluator_id' => 'required|exists:users,id',
-            'evaluatees' => 'required|array|min:1',
-            'evaluatees.*' => 'required|exists:users,id',
-        ]);
-
-        $validator->after(function ($validator) use ($request) {
-            if (in_array($request->evaluator_id, $request->evaluatees ?? [])) {
-                $validator->errors()->add('evaluatees', 'ผู้ประเมินไม่สามารถเป็นผู้รับการประเมินได้');
-            }
-        });
+        $validator = $this->buildValidator($request);
 
         if ($validator->fails()) {
             return redirect()->back()
@@ -229,19 +182,12 @@ class AssignmentDataController extends Controller
         DB::beginTransaction();
 
         try {
-            $evaluator = User::find($request->evaluator_id);
-            if (!$evaluator) {
-                throw new \Exception('Evaluator not found');
-            }
+            $payload = $this->preparePayload($request);
 
-            $assignmentData->update([
-                'evaluator_id' => $request->evaluator_id,
-                'evaluator_position_id' => $evaluator->position_id,
-                'start_time' => $request->start_time,
-                'end_time' => $request->end_time,
-            ]);
+            // อัปเดตข้อมูลหลักของรอบการประเมิน
+            $assignmentData->update($payload['assignment_data']);
 
-            // Delete old assignments and their reports
+            // ลบ assignment และ report เดิมก่อนสร้างใหม่
             foreach ($assignmentData->assignments as $assignment) {
                 if ($assignment->report) {
                     $assignment->report->delete();
@@ -249,13 +195,14 @@ class AssignmentDataController extends Controller
             }
             $assignmentData->assignments()->delete();
 
-            $this->assignUserRole($evaluator, 'ผู้ประเมิน');
+            // อัปเดต role ของ reviewer ตามชุดข้อมูลล่าสุด
+            $this->assignSelectedRoles($payload['reviewers']);
 
-            // Create new assignments
             foreach ($request->evaluatees as $evaluateeId) {
-                $evaluatee = User::find($evaluateeId);
+                $evaluatee = User::findOrFail($evaluateeId);
                 $this->assignUserRole($evaluatee, 'ผู้รับการประเมิน');
 
+                // สร้างรายงานและ assignment ใหม่ให้ผู้รับการประเมินแต่ละคน
                 $report = Reports::create([
                     'report_data_id' => $request->report_data_id,
                     'status' => 'Assigned',
@@ -267,8 +214,7 @@ class AssignmentDataController extends Controller
                     'evaluatee_id' => $evaluateeId,
                 ]);
 
-                // Send email notification
-                $this->sendEvaluationNotification($report->id, $evaluatee, $evaluator);
+                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['first_reviewer']);
             }
 
             DB::commit();
@@ -283,35 +229,28 @@ class AssignmentDataController extends Controller
             ]);
 
             return redirect()->back()
-                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: '.$e->getMessage()])
+                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: ' . $e->getMessage()])
                 ->withInput();
         }
     }
 
     /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: โมเดล AssignmentData
-     * เอาต์พุต: ข้อมูล JSON
-     * @param AssignmentData $assignmentData ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * ลบรอบการประเมินพร้อมข้อมูลลูกที่เกี่ยวข้อง
      */
     public function destroy(AssignmentData $assignmentData)
     {
         try {
             DB::beginTransaction();
 
-            // Delete reports associated with assignments
+            // ลบ report ที่ผูกอยู่กับ assignment แต่ละรายการก่อน
             foreach ($assignmentData->assignments as $assignment) {
                 if ($assignment->report) {
                     $assignment->report->delete();
                 }
             }
 
-            // Delete assignments
+            // ลบ assignment และตัวรอบการประเมิน
             $assignmentData->assignments()->delete();
-            
-            // Delete assignment data
             $assignmentData->delete();
 
             DB::commit();
@@ -329,15 +268,118 @@ class AssignmentDataController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'เกิดข้อผิดพลาดในการลบ: '.$e->getMessage(),
+                'message' => 'เกิดข้อผิดพลาดในการลบ: ' . $e->getMessage(),
             ], 500);
         }
     }
 
-    private function sendEvaluationNotification($reportId, $evaluatee, $evaluator)
+    /**
+     * สร้าง validator กลางสำหรับหน้า create และ edit
+     */
+    private function buildValidator(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'start_time' => 'required|date',
+            'end_time' => 'required|date|after_or_equal:start_time',
+            'report_data_id' => 'required|exists:report_datas,id',
+            'evaluator_id' => 'nullable|exists:users,id',
+            'director_id' => 'nullable|exists:users,id',
+            'manager_id' => 'nullable|exists:users,id',
+            'stage_order' => 'nullable|array',
+            'stage_order.*' => 'nullable|integer|min:1|max:3',
+            'evaluatees' => 'required|array|min:1',
+            'evaluatees.*' => 'required|exists:users,id',
+        ]);
+
+        $validator->after(function ($validator) use ($request) {
+            // รวบรวมผู้ที่ถูกเลือกในแต่ละขั้นของ flow
+            $selectedActors = array_filter(AssignmentFlow::selectedActorsFromRequest($request->all()));
+
+            if (empty($selectedActors)) {
+                $validator->errors()->add('evaluation_flow', 'กรุณากำหนดผู้ประเมินอย่างน้อย 1 ขั้นตอน');
+            }
+
+            // reviewer ต้องไม่ซ้ำกับผู้รับการประเมิน
+            foreach ($selectedActors as $userId) {
+                if (in_array($userId, $request->evaluatees ?? [])) {
+                    $validator->errors()->add('evaluatees', 'ผู้ประเมิน/กรรมการ/ผู้บริหารต้องไม่ซ้ำกับผู้รับการประเมิน');
+                }
+            }
+
+            // หนึ่งคนต้องไม่ถูกเลือกซ้ำหลายบทบาท
+            if (count($selectedActors) !== count(array_unique($selectedActors))) {
+                $validator->errors()->add('evaluation_flow', 'บุคคลในแต่ละบทบาทต้องไม่ซ้ำกัน');
+            }
+
+            // ตรวจว่าลำดับ flow ครบทุกบทบาทที่เลือก
+            $flow = AssignmentFlow::normalize($request->input('stage_order', []), $selectedActors);
+            if (count($flow) !== count($selectedActors)) {
+                $validator->errors()->add('evaluation_flow', 'กรุณาระบุลำดับการประเมินให้ครบทุกบทบาทที่เลือก');
+            }
+        });
+
+        return $validator;
+    }
+
+    /**
+     * แปลงข้อมูลจาก request ให้พร้อมสำหรับ insert/update
+     */
+    private function preparePayload(Request $request): array
+    {
+        // ดึงผู้ใช้ตามบทบาทที่ถูกเลือกในฟอร์ม
+        $selectedActors = AssignmentFlow::selectedActorsFromRequest($request->all());
+        $reviewers = [
+            'evaluator' => $request->filled('evaluator_id') ? User::find($request->evaluator_id) : null,
+            'director' => $request->filled('director_id') ? User::find($request->director_id) : null,
+            'manager' => $request->filled('manager_id') ? User::find($request->manager_id) : null,
+        ];
+
+        // เรียงลำดับ flow ตาม stage_order ที่ผู้ใช้กำหนด
+        $flow = AssignmentFlow::normalize($request->input('stage_order', []), array_filter($selectedActors));
+        $firstReviewer = collect($flow)->map(fn ($stage) => $reviewers[$stage] ?? null)->first();
+
+        return [
+            'assignment_data' => [
+                'evaluator_id' => $request->evaluator_id,
+                'evaluator_position_id' => $reviewers['evaluator']?->position_id,
+                'director_id' => $request->director_id,
+                'director_position_id' => $reviewers['director']?->position_id,
+                'manager_id' => $request->manager_id,
+                'manager_position_id' => $reviewers['manager']?->position_id,
+                'evaluation_flow' => $flow,
+                'start_time' => $request->start_time,
+                'end_time' => $request->end_time,
+            ],
+            'reviewers' => $reviewers,
+            'first_reviewer' => $firstReviewer,
+        ];
+    }
+
+    /**
+     * กำหนด role ให้ reviewer ตามบทบาทที่ถูกเลือก
+     */
+    private function assignSelectedRoles(array $reviewers): void
+    {
+        if ($reviewers['evaluator']) {
+            $this->assignUserRole($reviewers['evaluator'], 'ผู้ประเมิน');
+        }
+
+        if ($reviewers['director']) {
+            $this->assignUserRole($reviewers['director'], 'กรรมการ');
+        }
+
+        if ($reviewers['manager']) {
+            $this->assignUserRole($reviewers['manager'], 'ผู้บริหาร');
+        }
+    }
+
+    /**
+     * ส่งอีเมลแจ้งเตือนให้ผู้รับการประเมิน
+     */
+    private function sendEvaluationNotification($reportId, $evaluatee, $reviewer)
     {
         $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
-        if (!$report || !$evaluatee->email) {
+        if (! $report || ! $evaluatee->email) {
             return;
         }
 
@@ -346,7 +388,7 @@ class AssignmentDataController extends Controller
             'report_title' => optional($report->reportData)->report_title,
             'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
             'status' => $report->status,
-            'evaluator_name' => $evaluator->name,
+            'evaluator_name' => $reviewer?->name ?? '-',
         ];
 
         try {
@@ -363,19 +405,22 @@ class AssignmentDataController extends Controller
         }
     }
 
+    /**
+     * เพิ่ม role ให้ผู้ใช้ เมื่อยังไม่มี role ดังกล่าว
+     */
     private function assignUserRole($user, $roleName)
     {
-        if (!$user) {
-            throw new \Exception("ไม่พบผู้ใช้");
+        if (! $user) {
+            throw new \Exception('ไม่พบผู้ใช้');
         }
 
         $role = Role::where('name', $roleName)->first();
 
-        if (!$role) {
+        if (! $role) {
             throw new \Exception("ไม่พบ role: {$roleName}");
         }
 
-        if (!$user->hasRole($roleName)) {
+        if (! $user->hasRole($roleName)) {
             $user->assignRole($role);
         }
     }

@@ -48,6 +48,11 @@ class DirectorController extends Controller
         // Get ALL reports with complete data (Director has access to everything)
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
+        $evaluations = $evaluations->filter(function ($assignment) use ($user) {
+            $directorId = optional($assignment->assignmentData)->director_id;
+
+            return ! $directorId || (int) $directorId === (int) $user->id;
+        })->values();
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
         if ($request->filled('status')) {
             $status = $request->input('status');

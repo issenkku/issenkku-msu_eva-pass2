@@ -48,6 +48,11 @@ class ManagerController extends Controller
         // Get ALL reports with complete data (Director has access to everything)
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
+        $evaluations = $evaluations->filter(function ($assignment) use ($user) {
+            $managerId = optional($assignment->assignmentData)->manager_id;
+
+            return ! $managerId || (int) $managerId === (int) $user->id;
+        })->values();
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
         if ($request->filled('status')) {
             $status = $request->input('status');

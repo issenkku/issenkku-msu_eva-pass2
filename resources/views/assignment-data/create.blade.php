@@ -1,10 +1,7 @@
-@extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views\assignment-data\create.blade.php --}}
+﻿@extends('layouts.app')
 @section('content')
     @if(session('success'))
-    {{--  --}}
     <div id="successMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
-        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -20,7 +17,6 @@
     @endif
     
     @if ($errors->any())
-        {{--  --}}
         <div class="alert alert-danger">
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
@@ -31,9 +27,7 @@
     @endif
 
     <body class="bg-gray-50 min-h-screen py-8">
-        {{-- บล็อกเนื้อหา --}}
         <div class="py-12 max-w-6xl mx-auto px-4">
-            {{-- ฟอร์ม --}}
             <form id="evaluation-form" action="{{ route('assignment-data.store') }}" method="POST">
                 @csrf
                 
@@ -50,14 +44,14 @@
                             <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันเริ่มต้นประเมิน:
                             </label>
-                            <input type="text" name="start_time" id="start_time"
+                            <input type="text" name="start_time" id="start_time" value="{{ old('start_time') }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
                         </div>
                         <div>
                             <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
                                 <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันสิ้นสุดประเมิน:
                             </label>
-                            <input type="text" name="end_time" id="end_time"
+                            <input type="text" name="end_time" id="end_time" value="{{ old('end_time') }}"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
                         </div>
                     </div>
@@ -79,8 +73,8 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
                             <option value="">-- กรุณาเลือกเกณฑ์การประเมิน --</option>
                             @foreach ($report_data as $item)
-                                <option value="{{ $item->id }}"
-                                    data-assessment-type="{{ $item->assessment_type }}">
+                                <option value="{{ $item->id }}" data-assessment-type="{{ $item->assessment_type }}"
+                                    {{ old('report_data_id') == $item->id ? 'selected' : '' }}>
                                     {{ $item->report_title }}
                                 </option>
                             @endforeach
@@ -95,6 +89,10 @@
                             3
                         </div>
                         <h2 class="text-xl font-semibold text-gray-800">กำหนดผู้ประเมิน / ผู้รับการประเมิน</h2>
+                    </div>
+
+                    <div class="mb-6 rounded-lg border border-purple-200 bg-purple-50 p-4 text-sm text-purple-800">
+                        กำหนดผู้ประเมิน กรรมการ และผู้บริหารแยกกันได้ โดยแต่ละช่องจะแสดงเฉพาะรายชื่อที่มี role นั้น ๆ
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -121,7 +119,8 @@
                                     <option value="{{ $user->id }}"
                                         data-user-name="{{ $user->name }}"
                                         data-user-email="{{ $user->position->name }}"
-                                        data-personnel-type="{{ $user->personnel_type }}">
+                                        data-personnel-type="{{ $user->personnel_type }}"
+                                        @selected(collect(old('evaluatees', []))->contains($user->id))>
                                         {{ $user->name }} ({{ $user->position->name }})
                                     </option>
                                 @endforeach
@@ -139,45 +138,120 @@
                             </div>
                         </div>
 
-                        <!-- ผู้ประเมิน Section -->
-                        <div class="bg-green-50 rounded-lg p-6 position-card">
-                            <div class="flex items-center mb-4">
-                                <div class="flex items-center justify-center w-6 h-6 bg-green-600 text-white rounded-full mr-2 text-xs font-semibold">
-                                    B
-                                </div>
-                                <h3 class="text-lg font-medium text-gray-700">ผู้ประเมิน</h3>
-                            </div>
-                            <div class="flex items-center justify-between mb-4">
-                                <label for="evaluator_id" class="block text-sm font-medium text-gray-700">
-                                    รายชื่อผู้ประเมิน:
-                                </label>
-                                <div class="text-sm text-gray-500">
-                                    <span id="evaluators-available-count">{{ $users->count() }}</span> คนที่แสดง จาก
-                                    <span id="evaluators-total-count">{{ $users->count() }}</span> คนทั้งหมด
-                                </div>
-                            </div>
-                            <select id="evaluator_id" name="evaluator_id" required
-                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-green-500">
-                                <option value="">-- เลือกผู้ประเมิน --</option>
-                                @foreach ($users as $user)
-                                    <option value="{{ $user->id }}" 
-                                        data-user-name="{{ $user->name }}"
-                                        data-user-email="{{ $user->position->name }}">
-                                        {{ $user->name }} ({{ $user->position->name }})
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="space-y-5">
+                            @php
+                                $reviewerCards = [
+                                    [
+                                        'key' => 'evaluator',
+                                        'id' => 'evaluator_id',
+                                        'badge' => 'B',
+                                        'title' => 'ผู้ประเมิน',
+                                        'count_id' => 'evaluators',
+                                        'placeholder' => '-- เลือกผู้ประเมิน --',
+                                        'empty_text' => 'ยังไม่ได้เลือกผู้ประเมิน',
+                                        'selected_label' => 'ผู้ประเมินที่เลือก',
+                                        'available_count' => $evaluatorUsers->count(),
+                                        'order' => old('stage_order.evaluator', 1),
+                                        'wrapper_class' => 'bg-green-50 border-green-200',
+                                        'badge_class' => 'bg-green-600',
+                                        'focus_class' => 'focus:ring-green-500',
+                                        'text_class' => 'text-green-600',
+                                        'icon_class' => 'text-green-500',
+                                        'tag_class' => 'bg-green-100 text-green-800',
+                                        'options' => $evaluatorUsers,
+                                    ],
+                                    [
+                                        'key' => 'director',
+                                        'id' => 'director_id',
+                                        'badge' => 'C',
+                                        'title' => 'กรรมการ',
+                                        'count_id' => 'directors',
+                                        'placeholder' => '-- เลือกกรรมการ --',
+                                        'empty_text' => 'ยังไม่ได้เลือกกรรมการ',
+                                        'selected_label' => 'กรรมการที่เลือก',
+                                        'available_count' => $directorUsers->count(),
+                                        'order' => old('stage_order.director', 2),
+                                        'wrapper_class' => 'bg-amber-50 border-amber-200',
+                                        'badge_class' => 'bg-amber-600',
+                                        'focus_class' => 'focus:ring-amber-500',
+                                        'text_class' => 'text-amber-600',
+                                        'icon_class' => 'text-amber-500',
+                                        'tag_class' => 'bg-amber-100 text-amber-800',
+                                        'options' => $directorUsers,
+                                    ],
+                                    [
+                                        'key' => 'manager',
+                                        'id' => 'manager_id',
+                                        'badge' => 'D',
+                                        'title' => 'ผู้บริหาร',
+                                        'count_id' => 'managers',
+                                        'placeholder' => '-- เลือกผู้บริหาร --',
+                                        'empty_text' => 'ยังไม่ได้เลือกผู้บริหาร',
+                                        'selected_label' => 'ผู้บริหารที่เลือก',
+                                        'available_count' => $managerUsers->count(),
+                                        'order' => old('stage_order.manager', 3),
+                                        'wrapper_class' => 'bg-rose-50 border-rose-200',
+                                        'badge_class' => 'bg-rose-600',
+                                        'focus_class' => 'focus:ring-rose-500',
+                                        'text_class' => 'text-rose-600',
+                                        'icon_class' => 'text-rose-500',
+                                        'tag_class' => 'bg-rose-100 text-rose-800',
+                                        'options' => $managerUsers,
+                                    ],
+                                ];
+                            @endphp
 
-                            <!-- Selected Display for Evaluators -->
-                            <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border border-green-200">
-                                <p class="text-sm font-medium text-gray-700 mb-2">
-                                    <i class="fas fa-check-circle mr-2 text-green-500"></i>ผู้ประเมินที่เลือก:
-                                    <span id="evaluators-selected-count" class="text-green-600 font-semibold">0</span> คน
-                                </p>
-                                <div id="selected-evaluators" class="flex flex-col gap-2">
-                                    <span class="text-sm text-gray-500">ยังไม่ได้เลือกผู้ประเมิน</span>
+                            @foreach ($reviewerCards as $card)
+                                <div class="{{ $card['wrapper_class'] }} rounded-lg p-6 position-card border">
+                                    <div class="flex items-center justify-between mb-4 gap-3">
+                                        <div class="flex items-center">
+                                            <div class="flex items-center justify-center w-6 h-6 {{ $card['badge_class'] }} text-white rounded-full mr-2 text-xs font-semibold">
+                                                {{ $card['badge'] }}
+                                            </div>
+                                            <h3 class="text-lg font-medium text-gray-700">{{ $card['title'] }}</h3>
+                                        </div>
+                                        <div class="w-24">
+                                            <label for="stage_order_{{ $card['key'] }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                                ลำดับ
+                                            </label>
+                                            <input type="number" id="stage_order_{{ $card['key'] }}" name="stage_order[{{ $card['key'] }}]"
+                                                min="1" max="3" value="{{ $card['order'] }}"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between mb-4 gap-2">
+                                        <label for="{{ $card['id'] }}" class="block text-sm font-medium text-gray-700">
+                                            รายชื่อ{{ $card['title'] }}:
+                                        </label>
+                                        <div class="text-sm text-gray-500">
+                                            <span id="{{ $card['count_id'] }}-available-count">{{ $card['available_count'] }}</span> คนที่แสดง จาก
+                                            <span id="{{ $card['count_id'] }}-total-count">{{ $card['available_count'] }}</span> คนทั้งหมด
+                                        </div>
+                                    </div>
+                                    <select id="{{ $card['id'] }}" name="{{ $card['id'] }}"
+                                        class="form-select w-full focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                        <option value="">{{ $card['placeholder'] }}</option>
+                                        @foreach ($card['options'] as $user)
+                                            <option value="{{ $user->id }}"
+                                                data-user-name="{{ $user->name }}"
+                                                data-user-email="{{ $user->position->name }}"
+                                                @selected(old($card['id']) == $user->id)>
+                                                {{ $user->name }} ({{ $user->position->name }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <div class="mt-4 p-4 bg-white rounded-lg min-h-[60px] border">
+                                        <p class="text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-check-circle mr-2 {{ $card['icon_class'] }}"></i>{{ $card['selected_label'] }}:
+                                            <span id="{{ $card['count_id'] }}-selected-count" class="{{ $card['text_class'] }} font-semibold">0</span> คน
+                                        </p>
+                                        <div id="selected-{{ $card['count_id'] }}" class="flex flex-col gap-2">
+                                            <span class="text-sm text-gray-500">{{ $card['empty_text'] }}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -241,6 +315,30 @@
                     return $(this).clone();
                 }).get();
 
+                const reviewerConfigs = [
+                    {
+                        selectId: 'evaluator_id',
+                        displayId: 'selected-evaluators',
+                        countId: 'evaluators-selected-count',
+                        emptyText: 'ยังไม่ได้เลือกผู้ประเมิน',
+                        className: 'bg-green-100 text-green-800',
+                    },
+                    {
+                        selectId: 'director_id',
+                        displayId: 'selected-directors',
+                        countId: 'directors-selected-count',
+                        emptyText: 'ยังไม่ได้เลือกกรรมการ',
+                        className: 'bg-amber-100 text-amber-800',
+                    },
+                    {
+                        selectId: 'manager_id',
+                        displayId: 'selected-managers',
+                        countId: 'managers-selected-count',
+                        emptyText: 'ยังไม่ได้เลือกผู้บริหาร',
+                        className: 'bg-rose-100 text-rose-800',
+                    }
+                ];
+
                 function formatOption(option) {
                     if (!option.id) return option.text;
 
@@ -284,7 +382,7 @@
                         updateDisplayAndCounts();
                     });
 
-                    updateAvailableCount($select, availableCountId);
+                    updateAvailableCount($select, availableCountId, false);
                 }
 
                 function setupSelect2Single(selectId, displayId, selectedCountId, availableCountId) {
@@ -317,9 +415,10 @@
                     updateAvailableCount($select, availableCountId);
                 }
 
-                function updateAvailableCount($select, countId) {
+                function updateAvailableCount($select, countId, hasPlaceholder = true) {
                     if (!$select || !$select.length) return;
-                    const availableCount = $select.find('option:not(:disabled)').length - 1; // exclude placeholder
+                    const totalOptions = $select.find('option:not(:disabled)').length;
+                    const availableCount = hasPlaceholder ? Math.max(totalOptions - 1, 0) : totalOptions;
                     const $countElement = $(`#${countId}`);
                     if ($countElement.length) {
                         $countElement.text(availableCount);
@@ -328,46 +427,29 @@
 
                 function normalizePersonnelType(value) {
                     const text = String(value || '').trim();
-
-                    if (!text) {
-                        return '';
-                    }
-
-                    if (text.includes('วิชาการ')) {
-                        return 'วิชาการ';
-                    }
-
-                    if (text.includes('สนับสนุน')) {
-                        return 'สนับสนุน';
-                    }
-
-                    if (text.includes('บริหาร') || text.includes('ผู้บริหาร')) {
-                        return 'บริหาร';
-                    }
-
+                    if (!text) return '';
+                    if (text.includes('วิชาการ')) return 'วิชาการ';
+                    if (text.includes('สนับสนุน')) return 'สนับสนุน';
+                    if (text.includes('บริหาร') || text.includes('ผู้บริหาร')) return 'บริหาร';
                     return text;
                 }
 
                 function filterEvaluateesByCriteria() {
-                    const $criteria = $('#report_data_id');
+                    const selectedAssessmentType = normalizePersonnelType($('#report_data_id').find('option:selected').data('assessment-type'));
                     const $evaluatees = $('#evaluatees');
-                    const selectedAssessmentType = normalizePersonnelType(
-                        $criteria.find('option:selected').data('assessment-type')
-                    );
                     const currentSelected = $evaluatees.val() || [];
-                    const matchedOptions = evaluateeOptionTemplate
-                        .filter(option => {
-                            const userType = normalizePersonnelType($(option).data('personnel-type'));
-                            return !selectedAssessmentType || userType === selectedAssessmentType;
-                        })
-                        .map(option => $(option).clone());
+                    const matchedOptions = evaluateeOptionTemplate.filter(option => {
+                        const userType = normalizePersonnelType($(option).data('personnel-type'));
+                        return !selectedAssessmentType || userType === selectedAssessmentType;
+                    }).map(option => $(option).clone());
+
                     const nextSelected = matchedOptions
                         .map(option => String(option.val()))
                         .filter(value => currentSelected.includes(value));
 
                     $evaluatees.empty().append(matchedOptions);
                     $evaluatees.val(nextSelected).trigger('change.select2');
-                    updateAvailableCount($evaluatees, 'evaluatees-available-count');
+                    $('#evaluatees-available-count').text(matchedOptions.length);
                     $('#evaluatees-total-count').text(evaluateeOptionTemplate.length);
                 }
 
@@ -394,24 +476,23 @@
                         $('#selected-evaluatees').html(html);
                     }
 
-                    // Update evaluator
-                    const $evaluator = $('#evaluator_id');
-                    const selectedEvaluator = $evaluator.val();
-                    const evaluatorCount = selectedEvaluator ? 1 : 0;
-                    
-                    $('#evaluators-selected-count').text(evaluatorCount);
+                    reviewerConfigs.forEach(config => {
+                        const $select = $(`#${config.selectId}`);
+                        const selectedValue = $select.val();
+                        $(`#${config.countId}`).text(selectedValue ? 1 : 0);
 
-                    if (!selectedEvaluator || selectedEvaluator === '') {
-                        $('#selected-evaluators').html(
-                            '<span class="text-sm text-gray-500">ยังไม่ได้เลือกผู้ประเมิน</span>');
-                    } else {
-                        const selectedOption = $evaluator.find(':selected');
+                        if (!selectedValue) {
+                            $(`#${config.displayId}`).html(`<span class="text-sm text-gray-500">${config.emptyText}</span>`);
+                            return;
+                        }
+
+                        const selectedOption = $select.find(':selected');
                         const userName = selectedOption.data('user-name') || selectedOption.text() || 'ไม่ระบุ';
-                        const tag = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        const tag = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${config.className}">
                             ${userName}
                         </span>`;
-                        $('#selected-evaluators').html(tag);
-                    }
+                        $(`#${config.displayId}`).html(tag);
+                    });
 
                     // Update summary
                     updateSummary();
@@ -459,22 +540,25 @@
                         'evaluatees-available-count');
                     setupSelect2Single('evaluator_id', 'selected-evaluators', 'evaluators-selected-count',
                         'evaluators-available-count');
+                    setupSelect2Single('director_id', 'selected-directors', 'directors-selected-count',
+                        'directors-available-count');
+                    setupSelect2Single('manager_id', 'selected-managers', 'managers-selected-count',
+                        'managers-available-count');
                 } catch (error) {
                     console.error('Error initializing Select2:', error);
                 }
 
-                // Initialize display
+                filterEvaluateesByCriteria();
                 updateDisplayAndCounts();
 
                 // Event listeners
                 $('#start_time, #end_time').on('change', updateSummary);
                 $('#report_data_id').on('change', function() {
                     filterEvaluateesByCriteria();
-                    updateSummary();
+                    updateDisplayAndCounts();
                 });
 
                 // Update summary initially
-                filterEvaluateesByCriteria();
                 updateSummary();
 
                 // Reset button
@@ -483,6 +567,9 @@
                         $('#evaluation-form')[0].reset();
                         $('#evaluatees').val(null).trigger('change');
                         $('#evaluator_id').val(null).trigger('change');
+                        $('#director_id').val(null).trigger('change');
+                        $('#manager_id').val(null).trigger('change');
+                        filterEvaluateesByCriteria();
                         updateDisplayAndCounts();
                         updateSummary();
                         alert('ล้างข้อมูลในฟอร์มเรียบร้อยแล้ว');
@@ -495,7 +582,9 @@
                     const loadingOverlay = $('#loading-overlay');
 
                     const evaluateesSelected = $('#evaluatees').val() || [];
-                    const evaluatorSelected = $('#evaluator_id').val();
+                    const selectedReviewers = ['#evaluator_id', '#director_id', '#manager_id']
+                        .map(id => $(id).val())
+                        .filter(Boolean);
                     const reportDataId = $('#report_data_id').val();
                     const startTime = $('#start_time').val();
                     const endTime = $('#end_time').val();
@@ -525,16 +614,15 @@
                         return false;
                     }
 
-                    if (!evaluatorSelected) {
+                    if (selectedReviewers.length === 0) {
                         e.preventDefault();
-                        alert('กรุณาเลือกผู้ประเมิน');
+                        alert('กรุณาเลือกผู้ประเมินอย่างน้อย 1 บทบาท');
                         return false;
                     }
 
-                    // Check if evaluator is in evaluatees
-                    if (evaluateesSelected.includes(evaluatorSelected)) {
+                    if (selectedReviewers.some(id => evaluateesSelected.includes(id))) {
                         e.preventDefault();
-                        alert('ผู้ประเมินไม่สามารถเป็นผู้รับการประเมินได้');
+                        alert('ผู้ประเมิน กรรมการ หรือผู้บริหาร ไม่สามารถเป็นผู้รับการประเมินได้');
                         return false;
                     }
 
@@ -641,9 +729,7 @@
         }
     </style>
 
-    {{-- บล็อกเนื้อหา --}}
     <div id="loading-overlay" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden z-50">
-        {{-- บล็อกเนื้อหา --}}
         <div class="flex items-center justify-center h-full">
             <div class="text-center text-white">
                 <!-- Spinner -->
