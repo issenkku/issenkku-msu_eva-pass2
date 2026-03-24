@@ -108,6 +108,7 @@
             @endphp
 
             <a href="{{ $url }}"
+            data-director-ajax-link
             class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </a>

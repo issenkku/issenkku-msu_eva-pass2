@@ -49,6 +49,26 @@ class DirectorController extends Controller
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            $statusGroups = [
+                'director_waiting' => ['Director_assigned'],
+                'in_progress' => ['Director_draft'],
+                'forwarded' => ['Manager_assign', 'Manager_draft'],
+                'completed' => ['Completed'],
+                'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft'],
+                'ยังไม่ประเมิน' => ['Director_assigned'],
+                'กำลังดำเนินการ' => ['Director_draft'],
+                'รอผลการประเมิน' => ['Manager_assign', 'Manager_draft'],
+                'ประเมินเสร็จสิ้น' => ['Completed'],
+            ];
+
+            if (isset($statusGroups[$status])) {
+                $evaluations = $evaluations->filter(function ($assignment) use ($statusGroups, $status) {
+                    return in_array(optional($assignment->report)->status, $statusGroups[$status], true);
+                });
+            }
+        }
         $evaluations = $evaluationService->sortEvaluations($evaluations);
 
         $userAsEvaluatee = $evaluationService->getUserAsEvaluatee($user);

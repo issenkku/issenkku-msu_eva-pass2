@@ -49,6 +49,24 @@ class ManagerController extends Controller
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
         $evaluations = $evaluationService->mapAssignments($allReportsData);
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            $statusGroups = [
+                'manager_waiting' => ['Manager_assign'],
+                'in_progress' => ['Manager_draft'],
+                'completed' => ['Completed'],
+                'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'],
+                'ยังไม่ประเมิน' => ['Manager_assign'],
+                'กำลังดำเนินการ' => ['Manager_draft'],
+                'ประเมินเสร็จสิ้น' => ['Completed'],
+            ];
+
+            if (isset($statusGroups[$status])) {
+                $evaluations = $evaluations->filter(function ($assignment) use ($statusGroups, $status) {
+                    return in_array(optional($assignment->report)->status, $statusGroups[$status], true);
+                });
+            }
+        }
         $evaluations = $evaluationService->sortEvaluations($evaluations);
 
         // Get user's assignments as evaluatee (where user is being evaluated)
