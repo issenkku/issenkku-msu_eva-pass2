@@ -150,22 +150,7 @@
                     : 0);
         })->values(); // Reset array keys to ensure proper numbering
 
-        $filteredStatus = request('status');
-        if ($filteredStatus) {
-            // Map display names back to DB status (including multiple statuses)
-            $reverseMap = [
-                'มอบหมาย' => ['Assigned'],
-                'เริ่มกรอกข้อมูล' => ['Draft'],
-                'กำลังดำเนินการ' => ['Pending','Evaluator_draft','Director_assigned', 'Director_draft', 'Manager_draft', 'Manager_assign'],
-                'ประเมินเสร็จสิ้น' => ['Completed'],
-            ];
-
-            $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
-
-            $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
-                return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
-            })->values(); // Reset keys
-        }
+        $filteredStatus = null;
 
         $progressMap = [
             'Assigned' => 0,
@@ -557,19 +542,17 @@
                         @foreach($statusCounts as $status => $count)
                             @php
                                 $isShowAll = $status === $firstStatus;
-                                $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
+                                $isActive = $isShowAll;
                                 $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
                                 $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
-
-                                $url = $isShowAll
-                                    ? request()->url() 
-                                    : request()->fullUrlWithQuery(['status' => $status]);
                             @endphp
 
-                            <a href="{{ $url }}"
-                            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+                            <button
+                            type="button"
+                            data-status-filter="{{ $isShowAll ? 'all' : $status }}"
+                            class="dashboard-status-filter inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                                 {{ $status }} ({{ $count }})
-                            </a>
+                            </button>
                         @endforeach
                     </div>
                 </div>
@@ -612,6 +595,18 @@
                                     ];
                                     $prettyStatus = $statusMapping[$status] ?? $status;
                                     $progressPercentPerRow = $progressMap[$status] ?? 0;
+                                    $statusGroupMapping = [
+                                        'Assigned' => 'มอบหมาย',
+                                        'Draft' => 'เริ่มกรอกข้อมูล',
+                                        'Pending' => 'กำลังดำเนินการ',
+                                        'Evaluator_draft' => 'กำลังดำเนินการ',
+                                        'Director_assigned' => 'กำลังดำเนินการ',
+                                        'Director_draft' => 'กำลังดำเนินการ',
+                                        'Manager_assign' => 'กำลังดำเนินการ',
+                                        'Manager_draft' => 'กำลังดำเนินการ',
+                                        'Completed' => 'ประเมินเสร็จสิ้น',
+                                    ];
+                                    $statusGroup = $statusGroupMapping[$status] ?? $prettyStatus;
 
                                     $statusClass = match ($status) {
                                         'Completed' => 'bg-green-100 text-green-800',
@@ -621,7 +616,7 @@
                                     };
                                 @endphp
 
-                                <tr class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
+                                <tr data-dashboard-row data-status-group="{{ $statusGroup }}" class="hover:bg-gray-50 text-gray-900 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         {{ $loop->iteration }}
                                     </td>
@@ -729,10 +724,55 @@
     </script>
 @endsection
 
-@push('scripts')
+    @push('scripts')
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const statusFilterButtons = Array.from(document.querySelectorAll('.dashboard-status-filter'));
+            const tableRows = Array.from(document.querySelectorAll('[data-dashboard-row]'));
+            const searchInput = document.getElementById('searchInput');
+            const emptyState = document.getElementById('empty-state');
+            let activeStatusFilter = 'all';
+
+            const clearStatusQuery = () => {
+                const url = new URL(window.location.href);
+                if (url.searchParams.has('status')) {
+                    url.searchParams.delete('status');
+                    window.history.replaceState({}, '', url);
+                }
+            };
+
+            const setActiveStatusButton = (status) => {
+                statusFilterButtons.forEach((button) => {
+                    const isActive = button.dataset.statusFilter === status;
+                    button.classList.toggle('ring-2', isActive);
+                    button.classList.toggle('ring-offset-2', isActive);
+                    button.classList.toggle('ring-blue-300', isActive);
+                });
+            };
+
+            const applyDashboardFilters = () => {
+                const searchTerm = (searchInput?.value || '').trim().toLowerCase();
+                let hasMatch = false;
+
+                tableRows.forEach((row) => {
+                    const statusMatches = activeStatusFilter === 'all' || row.dataset.statusGroup === activeStatusFilter;
+                    const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
+                    const userName = nameCell ? nameCell.textContent.toLowerCase() : '';
+                    const searchMatches = !searchTerm || userName.includes(searchTerm);
+                    const matches = statusMatches && searchMatches;
+
+                    row.style.display = matches ? '' : 'none';
+                    if (matches) {
+                        hasMatch = true;
+                    }
+                });
+
+                if (emptyState) {
+                    emptyState.style.display = hasMatch ? 'none' : 'block';
+                }
+            };
+
             const overviewChart = @json($overviewChart);
             const canvas = document.getElementById(overviewChart.id);
             const centerValueEl = document.getElementById('overviewChartCenterValue');
@@ -805,27 +845,24 @@
                 });
             }
 
-            // Search functionality
-            document.getElementById('searchInput').addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('#userTableBody tr');
-                let hasMatch = false;
-
-                rows.forEach(row => {
-                    const userName = row.querySelector('td:nth-child(2) .text-sm.font-medium')
-                        .textContent.toLowerCase();
-
-                    if (userName.includes(searchTerm)) {
-                        row.style.display = '';
-                        hasMatch = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
+            statusFilterButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    clearStatusQuery();
+                    activeStatusFilter = button.dataset.statusFilter || 'all';
+                    setActiveStatusButton(activeStatusFilter);
+                    applyDashboardFilters();
                 });
-
-                // Show empty state if no matches
-                document.getElementById('empty-state').style.display = hasMatch ? 'none' : 'block';
             });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    applyDashboardFilters();
+                });
+            }
+
+            clearStatusQuery();
+            setActiveStatusButton(activeStatusFilter);
+            applyDashboardFilters();
         });
 
         function openReportDetails(reportId) {
