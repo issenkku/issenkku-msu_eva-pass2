@@ -218,6 +218,42 @@ class EvaluateeTest extends TestCase
         ]);
     }
 
+    public function test_evaluatee_score_change_creates_quantity_score_history(): void
+    {
+        $report = $this->createReportWithStatus('Draft');
+
+        QuantityScore::create([
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'score_C' => 5,
+            'score_D' => 10,
+            'description' => 'ค่าเดิม',
+        ]);
+
+        $payload = [
+            'quantity_list' => [[
+                'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+                'score_C' => 8,
+                'description' => 'ปรับตามผลงานล่าสุด',
+            ]],
+            'status' => 'Draft',
+        ];
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/evaluatee-dashboard');
+
+        $this->assertDatabaseHas('quantity_score_histories', [
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'previous_score_c' => '5.00',
+            'new_score_c' => '8.00',
+            'previous_description' => 'ค่าเดิม',
+            'new_description' => 'ปรับตามผลงานล่าสุด',
+            'modifier_user_id' => null,
+        ]);
+    }
+
     public function test_evaluatee_cannot_edit_evaluator_phase_report(): void
     {
         $report = $this->createReportWithStatus('Pending');

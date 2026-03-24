@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
+use App\Support\QuantityScoreHistoryRecorder;
 
 class EvaluatorScoreController extends Controller
 {
@@ -160,6 +161,14 @@ class EvaluatorScoreController extends Controller
                     $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
             }
+
+            QuantityScoreHistoryRecorder::record(
+                $reportId,
+                $oldQuantityScores,
+                $newQuantityScores,
+                $request->user()?->id,
+                $modifierRole
+            );
 
             // ✅ Quality loop with check
             $newQualityScores = [];

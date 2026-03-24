@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\Assignments;
 use App\Models\Reports;
 use App\Models\QuantityScore;
+use App\Models\QuantityScoreHistory;
 use App\Models\QuantitySubCriteria;
 use App\Models\QualityScore;
 use App\Models\EvidenceAnswer;
@@ -79,6 +80,12 @@ class ReportDataService
             ->get()
             ->keyBy('quantity_sub_criteria_id');
 
+        $quantityScoreHistories = QuantityScoreHistory::with('modifierUser:id,name,prefix')
+            ->where('report_id', $id)
+            ->latest()
+            ->get()
+            ->groupBy('quantity_sub_criteria_id');
+
         $qualityScores = QualityScore::where('report_id', $id)
             ->get()
             ->keyBy('quality_sub_criteria_id');
@@ -100,7 +107,7 @@ class ReportDataService
             });
 
         // Process categories and their evaluation lists
-        $categoryItems = $this->processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap);
+        $categoryItems = $this->processCategoryItems($report, $quantityScores, $quantityScoreHistories, $qualityScores, $evidenceMap);
         $workloadMap = $this->buildWorkloadMap($categoryItems, $id);
 
         return [
@@ -192,7 +199,7 @@ class ReportDataService
         return $workloadMap;
     }
 
-    private function processCategoryItems($report, $quantityScores, $qualityScores, $evidenceMap)
+    private function processCategoryItems($report, $quantityScores, $quantityScoreHistories, $qualityScores, $evidenceMap)
     {
         $categoryItems = [];
 
@@ -228,7 +235,7 @@ class ReportDataService
                     ];
 
                     // Process quantity items
-                    $evaluationListData['quantity_items'] = $this->processQuantityItems($list, $quantityScores, $evidenceMap);
+                    $evaluationListData['quantity_items'] = $this->processQuantityItems($list, $quantityScores, $quantityScoreHistories, $evidenceMap);
                     
                     // Process quality items
                     $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $evidenceMap);
@@ -243,7 +250,7 @@ class ReportDataService
         return $categoryItems;
     }
 
-    private function processQuantityItems($list, $quantityScores, $evidenceMap)
+    private function processQuantityItems($list, $quantityScores, $quantityScoreHistories, $evidenceMap)
     {
         $quantityItems = [];
 
@@ -269,6 +276,17 @@ class ReportDataService
 
                     foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                         $quantityScore = $quantityScores[$subCriteria->id] ?? null;
+                        $scoreHistories = ($quantityScoreHistories[$subCriteria->id] ?? collect())->map(function ($history) {
+                            return [
+                                'previous_score_c' => $history->previous_score_c,
+                                'new_score_c' => $history->new_score_c,
+                                'previous_description' => $history->previous_description,
+                                'new_description' => $history->new_description,
+                                'modified_by_name' => $history->modifierUser?->display_name ?? $history->modifierUser?->name ?? '',
+                                'modified_by_role' => $history->modifier_role ?? '',
+                                'created_at' => optional($history->created_at)->format('d/m/Y H:i'),
+                            ];
+                        })->values()->all();
                         $evidenceLinks = $evidenceMap[$list->id] ?? [];
 
                         $mainCriteriaData['sub_criterias'][] = [
@@ -284,6 +302,7 @@ class ReportDataService
                             'score_description' => $quantityScore->description ?? '',
                             'score_modified_by_name' => $quantityScore?->modifierUser?->display_name ?? $quantityScore?->modifierUser?->name ?? '',
                             'score_modified_by_role' => $quantityScore?->modifier_role ?? '',
+                            'score_histories' => $scoreHistories,
                             'evidence' => $evidenceLinks,
                         ];
                     }

@@ -219,6 +219,44 @@ class EvaluatorTest extends TestCase
         ]);
     }
 
+    public function test_evaluator_score_change_creates_quantity_score_history(): void
+    {
+        $report = $this->createReportWithStatus('Pending');
+
+        QuantityScore::create([
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'score_C' => 6,
+            'score_D' => 12,
+            'description' => 'ก่อนตรวจ',
+        ]);
+
+        $payload = [
+            'quantity_list' => [[
+                'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+                'score_C' => 7,
+                'description' => 'ผู้ประเมินปรับคะแนน',
+            ]],
+            'status' => 'Evaluator_draft',
+            'comment' => 'updated',
+        ];
+
+        $this->actingAs($this->evaluator, 'web')
+            ->post(route('evaluator.evaluator_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/evaluator-dashboard');
+
+        $this->assertDatabaseHas('quantity_score_histories', [
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'previous_score_c' => '6.00',
+            'new_score_c' => '7.00',
+            'previous_description' => 'ก่อนตรวจ',
+            'new_description' => 'ผู้ประเมินปรับคะแนน',
+            'modifier_user_id' => $this->evaluator->id,
+            'modifier_role' => 'เธเธนเนเธเธฃเธฐเน€เธกเธดเธ',
+        ]);
+    }
+
     public function test_evaluator_cannot_access_report_with_assigned_status(): void
     {
         $report = $this->createReportWithStatus('Assigned'); // Still with evaluatee

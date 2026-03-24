@@ -219,6 +219,44 @@ class ManagerTest extends TestCase
         ]);
     }
 
+    public function test_manager_score_change_creates_quantity_score_history(): void
+    {
+        $report = $this->createReportWithStatus('Manager_assign');
+
+        QuantityScore::create([
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'score_C' => 7,
+            'score_D' => 14,
+            'description' => 'ก่อนผู้บริหารแก้',
+        ]);
+
+        $payload = [
+            'quantity_list' => [[
+                'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+                'score_C' => 9,
+                'description' => 'ผู้บริหารปรับคะแนน',
+            ]],
+            'status' => 'Manager_draft',
+            'comment' => 'updated',
+        ];
+
+        $this->actingAs($this->manager, 'web')
+            ->post(route('manager_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/manager-dashboard');
+
+        $this->assertDatabaseHas('quantity_score_histories', [
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'previous_score_c' => '7.00',
+            'new_score_c' => '9.00',
+            'previous_description' => 'ก่อนผู้บริหารแก้',
+            'new_description' => 'ผู้บริหารปรับคะแนน',
+            'modifier_user_id' => $this->manager->id,
+            'modifier_role' => 'เธเธนเนเธเธฃเธดเธซเธฒเธฃ',
+        ]);
+    }
+
     public function test_manager_can_access_report_with_manager_assigned_status(): void
     {
         $report = $this->createReportWithStatus('Manager_assign');

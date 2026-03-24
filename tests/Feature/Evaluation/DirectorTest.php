@@ -274,6 +274,44 @@ class DirectorTest extends TestCase
         ]);
     }
 
+    public function test_director_score_change_creates_quantity_score_history(): void
+    {
+        $report = $this->createReportWithStatus('Director_assigned');
+
+        QuantityScore::create([
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'score_C' => 6,
+            'score_D' => 12,
+            'description' => 'ก่อนกรรมการแก้',
+        ]);
+
+        $payload = [
+            'quantity_list' => [[
+                'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+                'score_C' => 8,
+                'description' => 'กรรมการปรับคะแนน',
+            ]],
+            'status' => 'Director_draft',
+            'comment' => 'updated',
+        ];
+
+        $this->actingAs($this->director, 'web')
+            ->post(route('director_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/director-dashboard');
+
+        $this->assertDatabaseHas('quantity_score_histories', [
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+            'previous_score_c' => '6.00',
+            'new_score_c' => '8.00',
+            'previous_description' => 'ก่อนกรรมการแก้',
+            'new_description' => 'กรรมการปรับคะแนน',
+            'modifier_user_id' => $this->director->id,
+            'modifier_role' => 'เธเธฃเธฃเธกเธเธฒเธฃ',
+        ]);
+    }
+
     // Test director can submit to manager
     public function test_director_can_submit_evaluation_to_manager(): void
     {

@@ -233,9 +233,9 @@
                                                                         placeholder="0">
                                                                 </div>
                                                             </div>
-                                                            @if(!$readonly || !empty($subCriteria['score_description']) || !empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
+                                                            @if(!$readonly || !empty($subCriteria['score_histories']))
                                                                 <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-                                                                    <label class="mb-2 block text-sm font-semibold leading-6 text-slate-700">
+                                                                    <label class="@if($readonly) hidden @else mb-2 block text-sm font-semibold leading-6 text-slate-700 @endif">
                                                                         หมายเหตุการแก้ไขค่า C
                                                                     </label>
                                                                     @if(!$readonly)
@@ -248,14 +248,29 @@
                                                                         <textarea
                                                                             rows="3"
                                                                             readonly
-                                                                            class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">{{ $subCriteria['score_description'] ?? '' }}</textarea>
+                                                                            class="hidden w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">{{ $subCriteria['score_description'] ?? '' }}</textarea>
                                                                     @endif
                                                                     @if(!empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role']))
-                                                                        <div class="mt-2 text-xs text-slate-600">
+                                                                        <div class="@if($readonly) hidden @else mt-2 text-xs text-slate-600 @endif">
                                                                             ล่าสุดแก้ไขโดย {{ $subCriteria['score_modified_by_name'] ?: '-' }}
                                                                             @if(!empty($subCriteria['score_modified_by_role']))
                                                                                 ({{ $subCriteria['score_modified_by_role'] }})
                                                                             @endif
+                                                                        </div>
+                                                                    @endif
+                                                                    @if(!empty($subCriteria['score_histories']))
+                                                                        <div class="@if(!$readonly) mt-3 border-t border-amber-200 pt-3 @endif space-y-2">
+                                                                            <div class="text-xs font-semibold text-slate-700">ประวัติการแก้ไข</div>
+                                                                            @foreach($subCriteria['score_histories'] as $history)
+                                                                                <div class="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
+                                                                                    <div>ค่าก่อนแก้: {{ $history['previous_score_c'] ?? '-' }} | หลังแก้: {{ $history['new_score_c'] ?? '-' }}</div>
+                                                                                    <div>ผู้แก้: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
+                                                                                    <div>หมายเหตุ: {{ $history['new_description'] ?? '-' }}</div>
+                                                                                    @if(!empty($history['created_at']))
+                                                                                        <div class="text-slate-500">เมื่อ {{ $history['created_at'] }}</div>
+                                                                                    @endif
+                                                                                </div>
+                                                                            @endforeach
                                                                         </div>
                                                                     @endif
                                                                 </div>

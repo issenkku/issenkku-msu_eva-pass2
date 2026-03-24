@@ -9,6 +9,7 @@ use App\Models\QualitySubCriteria;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\Reports;
+use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -195,6 +196,14 @@ class EvaluationScoreController extends Controller
                     $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
                 }
             }
+
+            QuantityScoreHistoryRecorder::record(
+                $reportId,
+                $oldQuantityScores,
+                $newQuantityScores,
+                null,
+                null
+            );
 
             // ✅ Quality loop with check
             $newQualityScores = [];
