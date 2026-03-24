@@ -48,6 +48,58 @@
             animation: loading 1.5s infinite;
         }
 
+        .overview-main-chart {
+            position: relative;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            padding: 1.5rem;
+        }
+
+        .overview-chart-wrap {
+            position: relative;
+            width: min(100%, 240px);
+            height: 240px;
+            margin: 0 auto;
+        }
+
+        .overview-chart-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .overview-chart-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #0f172a;
+        }
+
+        .overview-chart-label {
+            margin-top: 0.4rem;
+            max-width: 7.5rem;
+            font-size: 0.78rem;
+            line-height: 1rem;
+            color: #6b7280;
+        }
+
+        .overview-progress-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.95rem;
+            background: #ffffff;
+            padding: 1rem;
+        }
+
+        .overview-progress-row + .overview-progress-row {
+            margin-top: 1rem;
+        }
+
         @keyframes loading {
             0% {
                 background-position: 200% 0;
@@ -141,6 +193,63 @@
 
         $urgentFollowUps = collect($followUpEvaluations ?? [])
             ->take(3);
+
+        $overviewChart = [
+            'id' => 'overallCompletionChart',
+            'labels' => ['เสร็จสิ้นแล้ว', 'คงค้าง'],
+            'data' => [$completedCount, max($totalEvaluations - $completedCount, 0)],
+            'colors' => ['#16a34a', '#dbe2ea'],
+            'centerValue' => $progressPercent.'%',
+            'centerLabel' => 'ความคืบหน้ารวม',
+        ];
+
+        $overviewSections = [
+            [
+                'title' => 'สัดส่วนผู้ใช้ในระบบ',
+                'items' => [
+                    [
+                        'label' => 'อยู่ในรอบประเมิน',
+                        'value' => $totalEvaluatees,
+                        'note' => 'จากผู้ใช้ทั้งหมดในระบบ',
+                        'percent' => $totalUsers > 0 ? round(($totalEvaluatees / $totalUsers) * 100, 1) : 0,
+                        'color' => 'bg-blue-600',
+                    ],
+                    [
+                        'label' => 'นอกขอบเขตรอบนี้',
+                        'value' => max($totalUsers - $totalEvaluatees, 0),
+                        'note' => 'ผู้ใช้ที่ยังไม่อยู่ในรอบนี้',
+                        'percent' => $totalUsers > 0 ? round((max($totalUsers - $totalEvaluatees, 0) / $totalUsers) * 100, 1) : 0,
+                        'color' => 'bg-slate-300',
+                    ],
+                ],
+            ],
+            [
+                'title' => 'สถานะผู้เข้ารับประเมิน',
+                'items' => [
+                    [
+                        'label' => 'ประเมินเสร็จ',
+                        'value' => $completedEvaluatees,
+                        'note' => 'เสร็จสิ้นครบถ้วน',
+                        'percent' => $totalEvaluatees > 0 ? round(($completedEvaluatees / $totalEvaluatees) * 100, 1) : 0,
+                        'color' => 'bg-green-600',
+                    ],
+                    [
+                        'label' => 'กำลังดำเนินการ',
+                        'value' => $startedEvaluatees,
+                        'note' => 'อยู่ระหว่างการกรอก/ประเมิน',
+                        'percent' => $totalEvaluatees > 0 ? round(($startedEvaluatees / $totalEvaluatees) * 100, 1) : 0,
+                        'color' => 'bg-amber-600',
+                    ],
+                    [
+                        'label' => 'ยังไม่เริ่ม',
+                        'value' => $notStartedEvaluatees,
+                        'note' => 'ยังไม่มีการเริ่มต้นข้อมูล',
+                        'percent' => $totalEvaluatees > 0 ? round(($notStartedEvaluatees / $totalEvaluatees) * 100, 1) : 0,
+                        'color' => 'bg-rose-600',
+                    ],
+                ],
+            ],
+        ];
     @endphp
 
     {{-- บล็อกเนื้อหา --}}
@@ -241,19 +350,80 @@
                                 <h3 class="text-lg font-semibold text-gray-900">ภาพรวมความคืบหน้าการกรอกข้อมูล</h3>
                                 <p class="text-sm text-gray-500 mt-1">ใช้ติดตามว่าผู้เข้ารับการประเมินอยู่ขั้นตอนไหน และเหลืองานค้างเท่าไร</p>
                             </div>
-                            <div class="text-left md:text-right">
+                            {{-- <div class="text-left md:text-right">
                                 <div class="text-3xl font-bold text-gray-900">{{ $progressPercent }}%</div>
                                 <div class="text-sm text-gray-500">เสร็จสิ้นแล้ว {{ $completedCount }} จาก {{ $totalEvaluations }} รายการ</div>
-                            </div>
+                            </div> --}}
                         </div>
 
-                        <div class="mt-5">
+                        {{-- <div class="mt-5">
                             <div class="h-4 w-full overflow-hidden rounded-full bg-gray-100">
                                 <div class="h-full rounded-full bg-green-500 transition-all duration-500" style="width: {{ min($progressPercent, 100) }}%"></div>
                             </div>
+                        </div> --}}
+
+                        <div class="mt-6 grid grid-cols-1 xl:grid-cols-[280px,1fr] gap-6">
+                            <div class="overview-main-chart">
+                                <div class="overview-chart-wrap">
+                                    <canvas id="{{ $overviewChart['id'] }}"></canvas>
+                                    <div class="overview-chart-center">
+                                        <div id="overviewChartCenterValue" class="overview-chart-value">{{ $overviewChart['centerValue'] }}</div>
+                                        <div id="overviewChartCenterLabel" class="overview-chart-label">{{ $overviewChart['centerLabel'] }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 space-y-3">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center gap-2 text-slate-700">
+                                            <span class="h-2.5 w-2.5 rounded-full bg-green-600"></span>
+                                            <span>เสร็จสิ้นแล้ว</span>
+                                        </div>
+                                        <span class="font-semibold text-slate-900">{{ $completedCount }}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center gap-2 text-slate-700">
+                                            <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
+                                            <span>คงค้าง</span>
+                                        </div>
+                                        <span class="font-semibold text-slate-900">{{ max($totalEvaluations - $completedCount, 0) }}</span>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach ($overviewSections as $section)
+                                        <div class="overview-progress-card">
+                                            <h4 class="text-sm font-semibold text-slate-900">{{ $section['title'] }}</h4>
+                                            @if ($section['title'] === 'สัดส่วนผู้ใช้ในระบบ')
+                                                <div class="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
+                                                    <span class="text-xs font-medium text-slate-500">จำนวนคนทั้งหมดในระบบ</span>
+                                                    <span class="text-sm font-semibold text-slate-900">{{ $totalUsers }}</span>
+                                                </div>
+                                            @endif
+                                            <div class="mt-4">
+                                                @foreach ($section['items'] as $item)
+                                                    <div class="overview-progress-row">
+                                                        <div class="flex items-center justify-between text-sm">
+                                                            <div class="font-medium text-slate-700">{{ $item['label'] }}</div>
+                                                            <div class="font-semibold text-slate-900">{{ $item['value'] }}</div>
+                                                        </div>
+                                                        <div class="mt-1 flex items-center justify-between text-xs text-slate-500">
+                                                            <span>{{ $item['note'] }}</span>
+                                                            <span>{{ $item['percent'] }}%</span>
+                                                        </div>
+                                                        <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                                            <div class="h-full rounded-full {{ $item['color'] }}" style="width: {{ min($item['percent'], 100) }}%"></div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                            </div>
                         </div>
 
-                        <div class="mt-6 grid grid-cols-1 md:grid-cols-2  lg:grid-cols-2 gap-6">
+                        <div class="hidden mt-6 grid grid-cols-1 md:grid-cols-2  lg:grid-cols-2 gap-6">
                             <x-summary-score
                                 title="จำนวนคนที่มีในระบบ"
                                 :value="$totalUsers"
@@ -560,10 +730,81 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const overviewChart = @json($overviewChart);
+            const canvas = document.getElementById(overviewChart.id);
+            const centerValueEl = document.getElementById('overviewChartCenterValue');
+            const centerLabelEl = document.getElementById('overviewChartCenterLabel');
+
+            const resetOverviewCenter = () => {
+                if (centerValueEl) {
+                    centerValueEl.textContent = overviewChart.centerValue;
+                }
+
+                if (centerLabelEl) {
+                    centerLabelEl.textContent = overviewChart.centerLabel;
+                }
+            };
+
+            const updateOverviewCenter = (chart, element) => {
+                if (!centerValueEl || !centerLabelEl || !element) {
+                    return;
+                }
+
+                const index = element.index;
+                const value = chart.data.datasets[0].data[index];
+                const total = chart.data.datasets[0].data.reduce((sum, item) => sum + item, 0);
+                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+                centerValueEl.textContent = `${percent}%`;
+                centerLabelEl.textContent = `${chart.data.labels[index]} ${value} รายการ`;
+            };
+
+            if (canvas) {
+                new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: overviewChart.labels,
+                        datasets: [{
+                            data: overviewChart.data,
+                            backgroundColor: overviewChart.colors,
+                            hoverBackgroundColor: overviewChart.colors,
+                            hoverOffset: 8,
+                            borderColor: '#ffffff',
+                            borderWidth: 3,
+                            spacing: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '74%',
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        },
+                        animation: {
+                            animateRotate: true,
+                            duration: 900
+                        },
+                        onHover(event, elements, chart) {
+                            chart.canvas.style.cursor = elements.length ? 'pointer' : 'default';
+                            if (elements.length) {
+                                updateOverviewCenter(chart, elements[0]);
+                            } else {
+                                resetOverviewCenter();
+                            }
+                        }
+                    }
+                });
+            }
+
             // Search functionality
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
