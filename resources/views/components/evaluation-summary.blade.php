@@ -6,79 +6,62 @@
 
     function formatThaiDate($date)
     {
-        if (!$date) return '-';
+        if (!$date) {
+            return '-';
+        }
 
-        Carbon::setLocale('th'); 
+        Carbon::setLocale('th');
         setlocale(LC_TIME, 'th_TH.UTF-8');
 
-        $thaiMonth = $date->translatedFormat('j F'); 
+        $thaiMonth = $date->translatedFormat('j F');
         $buddhistYear = $date->year + 543;
         $time = $date->format('H:i');
 
         return [
             'date' => "{$thaiMonth} {$buddhistYear}",
-            'time' => "{$time} น."
+            'time' => "{$time} น.",
         ];
     }
 
     // Sort evaluations by most recent first
-    $sortedEvaluations = $evaluations->sortByDesc(function($assignment) {
-        // Primary sort: by end_time (most recent first)
+    $sortedEvaluations = $evaluations->sortByDesc(function ($assignment) {
         $endTime = optional($assignment->assignmentData)->end_time;
         if ($endTime) {
             return Carbon::parse($endTime)->timestamp;
         }
-        
-        // Secondary sort: by start_time if no end_time
+
         $startTime = optional($assignment->assignmentData)->start_time;
         if ($startTime) {
             return Carbon::parse($startTime)->timestamp;
         }
-        
-        // Tertiary sort: by created_at or updated_at
-        return optional($assignment->report)->updated_at 
+
+        return optional($assignment->report)->updated_at
             ? Carbon::parse($assignment->report->updated_at)->timestamp
-            : (optional($assignment)->created_at 
-                ? Carbon::parse($assignment->created_at)->timestamp 
+            : (optional($assignment)->created_at
+                ? Carbon::parse($assignment->created_at)->timestamp
                 : 0);
-    })->values(); // Reset array keys to ensure proper numbering
+    })->values();
 
-    $filteredStatus = request('status');
-    if ($filteredStatus) {
-        // Map display name back to DB status
-        $reverseMap = [
-            'ยังไม่ประเมิน' => ['Assigned'],
-            'กำลังดำเนินการ' => ['Draft'],
-            'รอผลการประเมิน' => ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'],
-            'ประเมินเสร็จสิ้น' => ['Completed'],
-        ];
-
-        $statusCode = $reverseMap[$filteredStatus] ?? $filteredStatus;
-
-        $sortedEvaluations = $sortedEvaluations->filter(function($assignment) use ($statusCode) {
-            return in_array(optional($assignment->report)->status, $statusCode);
-        })->values(); // Reset keys
-    }
+    $filteredStatus = null;
 @endphp
 
-{{-- บล็อกเนื้อหา --}}
-<div class="bg-white rounded-lg p-6">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
-    {{-- บล็อกเนื้อหา --}}
-    <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
-        <x-search-bar  
+<div id="evaluationSummary" class="bg-white rounded-lg p-6" data-initial-status="{{ $filteredStatus ?? '' }}">
+    <h3 class="mb-4 text-lg font-semibold text-gray-800">ภาพรวมสถานะการประเมิน</h3>
+
+    <div class="mb-4 flex flex-wrap justify-between gap-4 border-b pb-4 pl-3 pr-3">
+        <x-search-bar
             placeholder="ค้นหาชื่อ, รายงาน..."
-        /> 
-        <x-filter-badge-single 
+        />
+        <x-filter-badge-single
             name="year"
             placeholder="ปีการประเมินทั้งหมด"
             :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
         />
     </div>
 
-    <!-- Status Badges -->
     @php
         $statusStyles = [
+            'ทั้งหมด' => 'bg-gray-100 text-gray-800 hover:bg-gray-200',
             'ยังไม่ประเมิน' => 'bg-red-100 text-red-800 hover:bg-red-200',
             'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800 hover:bg-blue-200',
             'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -88,48 +71,39 @@
         $firstStatus = array_key_first($statusCounts);
     @endphp
 
-    {{-- บล็อกเนื้อหา --}}
-    <div class="flex gap-3 mb-6 flex-wrap">
+    <div class="mb-6 flex flex-wrap items-center gap-3">
         @foreach($statusCounts as $status => $count)
             @php
                 $isShowAll = $status === $firstStatus;
                 $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
                 $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
                 $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
-
-                $url = $isShowAll
-                    ? request()->url() 
-                    : request()->fullUrlWithQuery(['status' => $status]);
             @endphp
 
-            <a href="{{ $url }}"
-            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+            <button
+                type="button"
+                data-status-filter="{{ $isShowAll ? 'all' : $status }}"
+                class="evaluation-status-filter inline-block rounded-full px-3 py-1 text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
-            </a>
+            </button>
         @endforeach
     </div>
 
-    <!-- Table Format -->
-    {{-- บล็อกเนื้อหา --}}
     <div class="relative overflow-x-auto">
-        {{-- บล็อกเนื้อหา --}}
-        <div class="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent pointer-events-none z-10"></div>
-        {{-- บล็อกเนื้อหา --}}
-        <div class="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"></div>
+        <div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-white to-transparent"></div>
+        <div class="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-white to-transparent"></div>
 
-        {{-- บล็อกเนื้อหา --}}
         <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            {{-- ตารางข้อมูล --}}
             <table class="min-w-[900px] w-full border-collapse text-sm">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">อันดับ</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้ประเมิน</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">อันดับ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">รายการประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">วันที่เริ่มประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">วันที่สิ้นสุดประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">ผู้ประเมิน</th>
+                        <th class="min-w-[180px] whitespace-nowrap border-b p-4 text-center font-medium text-gray-800">สถานะ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-center font-medium text-gray-800">การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -154,7 +128,19 @@
                                 'Manager_draft' => 'คณบดีเริ่มรับรองผล',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
+                            $statusGroupMapping = [
+                                'Assigned' => 'ยังไม่ประเมิน',
+                                'Draft' => 'กำลังดำเนินการ',
+                                'Pending' => 'รอผลการประเมิน',
+                                'Evaluator_draft' => 'รอผลการประเมิน',
+                                'Director_assigned' => 'รอผลการประเมิน',
+                                'Director_draft' => 'รอผลการประเมิน',
+                                'Manager_assign' => 'รอผลการประเมิน',
+                                'Manager_draft' => 'รอผลการประเมิน',
+                                'Completed' => 'ประเมินเสร็จสิ้น',
+                            ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
+                            $statusGroup = $statusGroupMapping[$statusFromDB] ?? $status;
 
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
@@ -162,7 +148,6 @@
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
 
-                            // Add visual indicator for recent items
                             $isRecent = false;
                             if ($end && $end->gt(Carbon::now()->subDays(3))) {
                                 $isRecent = true;
@@ -171,22 +156,22 @@
                             }
                         @endphp
 
-                        <tr class="hover:bg-gray-50 transition-colors {{ $isRecent ? 'bg-blue-50' : '' }}">
-                            <td class="p-4 border-b text-gray-500">
+                        <tr data-evaluation-row data-status-group="{{ $statusGroup }}" class="transition-colors hover:bg-gray-50 {{ $isRecent ? 'bg-blue-50' : '' }}">
+                            <td class="border-b p-4 text-gray-500">
                                 {{ $index + 1 }}
                                 @if($isRecent)
-                                    <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2" title="รายการล่าสุด"></span>
+                                    <span class="ml-2 inline-block h-2 w-2 rounded-full bg-blue-500" title="รายการล่าสุด"></span>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b">
+                            <td class="border-b p-4">
                                 <div class="font-medium text-gray-800">{{ $reportTitle }}</div>
                                 @if($isRecent)
-                                    <div class="text-xs text-blue-600 mt-1">รายการล่าสุด</div>
+                                    <div class="mt-1 text-xs text-blue-600">รายการล่าสุด</div>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
+                            <td class="border-b p-4 text-gray-500">
                                 @if($startFormatted !== '-')
                                     <div class="font-medium">{{ $startFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $startFormatted['time'] }}</div>
@@ -195,7 +180,7 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
+                            <td class="border-b p-4 text-gray-500">
                                 @if($endFormatted !== '-')
                                     <div class="font-medium">{{ $endFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $endFormatted['time'] }}</div>
@@ -204,11 +189,11 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500 min-w-[150px]">
-                                 {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
+                            <td class="min-w-[150px] border-b p-4 text-gray-500">
+                                {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
                             </td>
 
-                            <td class="py-4 px-2 border-b text-center min-w-[180px]">
+                            <td class="min-w-[180px] border-b px-2 py-4 text-center">
                                 @php
                                     $statusClasses = [
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
@@ -223,25 +208,25 @@
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
                                 @endphp
-                                <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusClass }}">
+                                <span class="rounded-full px-3 py-1 text-sm font-medium {{ $statusClass }}">
                                     {{ $status }}
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center \">
+                            <td class="border-b p-4 text-center">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
                                             'label' => 'เริ่มประเมิน',
-                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white'
+                                            'classes' => 'bg-red-500 hover:bg-red-600 text-white',
                                         ],
                                         'กำลังดำเนินการ' => [
                                             'label' => 'ประเมินต่อ',
-                                            'classes' => 'bg-blue-500 hover:bg-blue-600 text-white'
+                                            'classes' => 'bg-blue-500 hover:bg-blue-600 text-white',
                                         ],
                                         'รอผู้ประเมินประเมิน' => [
                                             'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
                                         'ผู้ประเมินเริ่มประเมิน' => [
                                             'label' => 'ดูการกรอกข้อมูล',
@@ -265,21 +250,21 @@
                                         ],
                                         'ประเมินเสร็จสิ้น' => [
                                             'label' => 'ดูผล',
-                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white'
+                                            'classes' => 'bg-green-500 hover:bg-green-600 text-white',
                                         ],
                                     ];
                                     $action = $actions[$status] ?? null;
 
                                     $url = route('evaluation.show', ['id' => $report->id ?? 0]);
-
-                                    if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
+                                    if ($statusGroup === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';
                                     }
                                 @endphp
 
                                 @if($action)
-                                    <a href="{{ $url }}"
-                                    class="min-w-[140px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
+                                    <a
+                                        href="{{ $url }}"
+                                        class="inline-block min-w-[140px] rounded-xl px-4 py-2 text-sm font-medium shadow transition duration-200 {{ $action['classes'] }}">
                                         {{ $action['label'] }}
                                     </a>
                                 @else
@@ -289,17 +274,93 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-gray-500">
-                                <i class="fas fa-inbox text-3xl mb-2 block"></i>
+                            <td colspan="7" class="py-8 text-center text-gray-500">
+                                <i class="fas fa-inbox mb-2 block text-3xl"></i>
                                 <p>ไม่มีข้อมูลการประเมิน</p>
                             </td>
                         </tr>
                     @endforelse
+
+                    <tr id="evaluationSummaryEmptyState" class="hidden">
+                        <td colspan="7" class="py-8 text-center text-gray-500">
+                            <i class="fas fa-filter mb-2 block text-3xl"></i>
+                            <p>ไม่มีข้อมูลที่ตรงกับการค้นหา</p>
+                        </td>
+                    </tr>
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
-    {{-- บล็อกเนื้อหา --}}
+
     <div class="mt-6">
         {{ $evaluations->links() }}
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const summaryRoot = document.getElementById('evaluationSummary');
+        if (!summaryRoot) {
+            return;
+        }
+
+        const filterButtons = Array.from(summaryRoot.querySelectorAll('.evaluation-status-filter'));
+        const clearFilterButton = document.getElementById('evaluationClearFilter');
+        const rows = Array.from(summaryRoot.querySelectorAll('[data-evaluation-row]'));
+        const emptyState = document.getElementById('evaluationSummaryEmptyState');
+        const initialStatus = 'all';
+
+        const clearStatusQuery = () => {
+            const url = new URL(window.location.href);
+            if (url.searchParams.has('status')) {
+                url.searchParams.delete('status');
+                window.history.replaceState({}, '', url);
+            }
+        };
+
+        const setActiveButton = (status) => {
+            filterButtons.forEach((button) => {
+                const isActive = button.dataset.statusFilter === status;
+                button.classList.toggle('ring-2', isActive);
+                button.classList.toggle('ring-offset-2', isActive);
+                button.classList.toggle('ring-blue-300', isActive);
+            });
+        };
+
+        const applyFilter = (status = 'all') => {
+            let visibleCount = 0;
+
+            rows.forEach((row) => {
+                const matches = status === 'all' || row.dataset.statusGroup === status;
+                row.classList.toggle('hidden', !matches);
+                if (matches) {
+                    visibleCount += 1;
+                }
+            });
+
+            if (emptyState) {
+                emptyState.classList.toggle('hidden', visibleCount > 0);
+            }
+
+            setActiveButton(status);
+        };
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                clearStatusQuery();
+                applyFilter(button.dataset.statusFilter || 'all');
+            });
+        });
+
+        if (clearFilterButton) {
+            clearFilterButton.addEventListener('click', () => {
+                clearStatusQuery();
+                applyFilter('all');
+            });
+        }
+
+        window.applyEvaluationStatusFilter = applyFilter;
+        clearStatusQuery();
+        applyFilter(initialStatus);
+    });
+</script>

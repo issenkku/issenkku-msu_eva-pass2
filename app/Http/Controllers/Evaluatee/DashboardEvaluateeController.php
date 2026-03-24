@@ -98,7 +98,7 @@ class DashboardEvaluateeController extends Controller
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
-        $unfinishedAssignments = $evaluations->filter(function ($assignment) {
+        $openAssignments = $evaluations->filter(function ($assignment) {
             $status = optional($assignment->report)->status ?? 'Assigned';
 
             // unfinished statuses only
@@ -126,13 +126,21 @@ class DashboardEvaluateeController extends Controller
                 'deadline' => $endTime ? $formatThai($endTime) : '-',
                 'daysLeft' => $daysLeft,
             ];
-        })->filter(function ($assignment) {
+        });
+
+        $unfinishedAssignments = $openAssignments->filter(function ($assignment) {
             // keep only > 0 days left, or exactly 0 (deadline today)
             return $assignment['daysLeft'] !== null && $assignment['daysLeft'] >= 0;
         });
 
+        $overdueAssignments = $openAssignments->filter(function ($assignment) {
+            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] < 0;
+        });
+
         $totalAssignments = $evaluations->count();
         $completedAssignments = $this->countByStatus($evaluations, ['Completed']);
+        $notStartedAssignments = $this->countByStatus($evaluations, ['Assigned']);
+        $inProgressAssignments = $this->countByStatus($evaluations, ['Draft']);
         $actionRequiredAssignments = $this->countByStatus($evaluations, ['Assigned', 'Draft']);
         $inReviewAssignments = $this->countByStatus($evaluations, [
             'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft',
@@ -163,11 +171,15 @@ class DashboardEvaluateeController extends Controller
             'scatterData' => $scatterData,
             'latestCompletedScore' => round((float) $latestCompletedScore, 2),
             'unfinishedAssignments' => $unfinishedAssignments,
+            'overdueAssignments' => $overdueAssignments,
             'totalAssignments' => $totalAssignments,
+            'notStartedAssignments' => $notStartedAssignments,
+            'inProgressAssignments' => $inProgressAssignments,
             'completedAssignments' => $completedAssignments,
             'actionRequiredAssignments' => $actionRequiredAssignments,
             'inReviewAssignments' => $inReviewAssignments,
             'dueSoonAssignments' => $dueSoonAssignments,
+            'overdueCount' => $overdueAssignments->count(),
         ]);
     }
 

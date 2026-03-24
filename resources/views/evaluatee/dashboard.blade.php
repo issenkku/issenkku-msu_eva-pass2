@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 px-10 md:grid-cols-2 xl:grid-cols-4">
+    {{-- <div class="grid grid-cols-1 gap-6 px-10 md:grid-cols-2 xl:grid-cols-4">
         <x-summary-score
             title="งานประเมินทั้งหมด"
             :value="$totalAssignments"
@@ -70,20 +70,217 @@
             icon="fas fa-check-circle"
             iconSize="text-3xl"
         />
-    </div>
+    </div> --}}
 
     <div class="px-10">
         @php
-            $statusTotal = max($actionRequiredAssignments + $inReviewAssignments + $completedAssignments, 1);
+            $statusTotal = max($notStartedAssignments + $inProgressAssignments + $inReviewAssignments + $completedAssignments, 1);
+            $notStartedPercent = round(($notStartedAssignments / $statusTotal) * 100, 1);
+            $inProgressPercent = round(($inProgressAssignments / $statusTotal) * 100, 1);
             $actionPercent = round(($actionRequiredAssignments / $statusTotal) * 100, 1);
             $reviewPercent = round(($inReviewAssignments / $statusTotal) * 100, 1);
             $completedPercent = round(($completedAssignments / $statusTotal) * 100, 1);
+            $dueSoonList = collect($unfinishedAssignments)
+                ->filter(fn ($assignment) => $assignment['daysLeft'] !== null && $assignment['daysLeft'] <= 3)
+                ->take(5)
+                ->values();
+            $overdueList = collect($overdueAssignments)
+                ->take(5)
+                ->values();
+            $statusChart = [
+                'id' => 'evaluateeStatusChart',
+                'labels' => ['ยังไม่ประเมิน', 'กำลังดำเนินการ', 'รอผลการประเมิน', 'ประเมินเสร็จสิ้น'],
+                'data' => [$notStartedAssignments, $inProgressAssignments, $inReviewAssignments, $completedAssignments],
+                'colors' => ['#ef4444', '#3b82f6', '#eab308', '#22c55e'],
+                'filters' => [
+                    'ยังไม่ประเมิน',
+                    'กำลังดำเนินการ',
+                    'รอผลการประเมิน',
+                    'ประเมินเสร็จสิ้น',
+                ],
+                'centerValue' => $totalAssignments,
+                'centerLabel' => 'งานประเมินทั้งหมด',
+            ];
         @endphp
 
         <div class="rounded-2xl border bg-white p-6 shadow-md">
             <h3 class="text-xl font-bold text-gray-900">สถานะของฉัน</h3>
 
-            <div class="mt-6 space-y-6">
+            {{-- <div class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div class="rounded-2xl border border-rose-100 bg-rose-50/70 p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-semibold text-rose-600">ยังไม่เริ่ม / กำลังกรอก</div>
+                            <div class="mt-3 text-4xl font-extrabold leading-none text-rose-700">{{ $actionRequiredAssignments }}</div>
+                        </div>
+                        <div class="rounded-full bg-white px-3 py-1 text-sm font-bold text-rose-500 shadow-sm">{{ $actionPercent }}%</div>
+                    </div>
+                    <div class="mt-4 text-xs leading-5 text-rose-500">งานที่ยังต้องลงมือทำหรืออยู่ระหว่างกรอกข้อมูล</div>
+                </div>
+
+                <div class="rounded-2xl border border-amber-100 bg-amber-50/70 p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-semibold text-amber-600">รอการพิจารณา</div>
+                            <div class="mt-3 text-4xl font-extrabold leading-none text-amber-700">{{ $inReviewAssignments }}</div>
+                        </div>
+                        <div class="rounded-full bg-white px-3 py-1 text-sm font-bold text-amber-500 shadow-sm">{{ $reviewPercent }}%</div>
+                    </div>
+                    <div class="mt-4 text-xs leading-5 text-amber-600">งานที่ส่งแล้วและกำลังรอขั้นตอนถัดไป</div>
+                </div>
+
+                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="text-sm font-semibold text-emerald-600">เสร็จสิ้นแล้ว</div>
+                            <div class="mt-3 text-4xl font-extrabold leading-none text-emerald-700">{{ $completedAssignments }}</div>
+                        </div>
+                        <div class="rounded-full bg-white px-3 py-1 text-sm font-bold text-emerald-500 shadow-sm">{{ $completedPercent }}%</div>
+                    </div>
+                    <div class="mt-4 text-xs leading-5 text-emerald-600">งานที่ประเมินเสร็จสมบูรณ์เรียบร้อยแล้ว</div>
+                </div>
+            </div> --}}
+
+            <section class="mt-5 grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1fr),340px,340px]">
+                <div class="h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h4 class="text-base font-bold text-slate-800">Pie Chart สรุปสถานะ</h4>
+                            <p class="text-sm text-slate-500">ดูสัดส่วนของงานแต่ละสถานะในภาพรวมเดียว</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-600 shadow-sm">
+                                ทั้งหมด {{ $totalAssignments }} รายการ
+                            </div>
+                            <button
+                            type="button"
+                            id="evaluationClearFilter"
+                            class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
+                                ล้างการกรอง
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px,minmax(0,360px)] lg:items-center lg:justify-between">
+                        <div class="relative mx-auto h-[260px] w-full max-w-[260px]">
+                            <canvas id="{{ $statusChart['id'] }}"></canvas>
+                            <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <div id="statusChartCenterValue" class="text-4xl font-extrabold leading-none text-slate-900">{{ $statusChart['centerValue'] }}</div>
+                                <div id="statusChartCenterLabel" class="mt-2 text-sm font-medium text-slate-500">{{ $statusChart['centerLabel'] }}</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3 lg:w-[360px]">
+                            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-rose-100">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+                                        <span class="text-sm font-semibold text-slate-700">ยังไม่ประเมิน</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-slate-400">{{ $notStartedPercent }}%</span>
+                                </div>
+                                <div class="mt-2 text-2xl font-extrabold leading-none text-rose-600">{{ $notStartedAssignments }}</div>
+                            </div>
+
+                            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-blue-100">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+                                        <span class="text-sm font-semibold text-slate-700">กำลังดำเนินการ</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-slate-400">{{ $inProgressPercent }}%</span>
+                                </div>
+                                <div class="mt-2 text-2xl font-extrabold leading-none text-blue-600">{{ $inProgressAssignments }}</div>
+                            </div>
+
+                            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-amber-100">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                                        <span class="text-sm font-semibold text-slate-700">รอผลการประเมิน</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-slate-400">{{ $reviewPercent }}%</span>
+                                </div>
+                                <div class="mt-2 text-2xl font-extrabold leading-none text-amber-600">{{ $inReviewAssignments }}</div>
+                            </div>
+
+                            <div class="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-emerald-100">
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2">
+                                        <span class="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                                        <span class="text-sm font-semibold text-slate-700">ประเมินเสร็จสิ้น</span>
+                                    </div>
+                                    <span class="text-sm font-semibold text-slate-400">{{ $completedPercent }}%</span>
+                                </div>
+                                <div class="mt-2 text-2xl font-extrabold leading-none text-emerald-600">{{ $completedAssignments }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-sm">
+                    
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h4 class="text-base font-bold text-amber-900">ใกล้ครบกำหนด</h4>
+                                <p class="mt-1 text-sm text-amber-700">รายการที่ครบกำหนดภายใน 3 วัน</p>
+                            </div>
+                            <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shadow-sm ring-1 ring-amber-200">
+                                {{ $dueSoonAssignments }} รายการ
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-1 flex-col justify-center">
+                            @forelse($dueSoonList as $assignment)
+                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-amber-100">
+                                    <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
+                                    <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                        <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
+                                        <span class="rounded-full bg-amber-100 px-2.5 py-1 font-semibold text-amber-700">
+                                            {{ $assignment['daysLeft'] === 0 ? 'วันนี้' : 'อีก '. $assignment['daysLeft'] . ' วัน' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm ring-1 ring-amber-100">
+                                    ไม่มีรายการที่ใกล้ครบกำหนด
+                                </div>
+                            @endforelse
+                        </div>
+                </div>
+
+                <div class="flex h-full flex-col rounded-2xl border border-rose-200 bg-rose-50/70 p-6 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h4 class="text-base font-bold text-rose-900">เลยกำหนดการส่ง</h4>
+                                <p class="mt-1 text-sm text-rose-700">รายการที่เลยวันครบกำหนดแล้ว</p>
+                            </div>
+                            <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-rose-700 shadow-sm ring-1 ring-rose-200">
+                                {{ $overdueCount }} รายการ
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex flex-1 flex-col justify-center">
+                            @forelse($overdueList as $assignment)
+                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-rose-100">
+                                    <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
+                                    <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                                        <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
+                                        <span class="rounded-full bg-rose-100 px-2.5 py-1 font-semibold text-rose-700">
+                                            {{ 'เลย ' . abs($assignment['daysLeft']) . ' วัน' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm ring-1 ring-rose-100">
+                                    ไม่มีรายการที่เลยกำหนด
+                                </div>
+                            @endforelse
+                        </div>
+                </div>
+            </section>
+
+            <div class="hidden mt-6 space-y-6">
                 <section class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
                     <div class="mb-4 flex items-center justify-between gap-3">
                         <div>
@@ -169,6 +366,89 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const statusChartConfig = @json($statusChart);
+        const statusChartCanvas = document.getElementById(statusChartConfig.id);
+        const statusChartCenterValue = document.getElementById('statusChartCenterValue');
+        const statusChartCenterLabel = document.getElementById('statusChartCenterLabel');
+
+        const resetStatusChartCenter = () => {
+            if (statusChartCenterValue) {
+                statusChartCenterValue.textContent = statusChartConfig.centerValue;
+            }
+            if (statusChartCenterLabel) {
+                statusChartCenterLabel.textContent = statusChartConfig.centerLabel;
+            }
+        };
+
+        const updateStatusChartCenter = (chart, element) => {
+            if (!statusChartCenterValue || !statusChartCenterLabel || !element) {
+                return;
+            }
+
+            const index = element.index;
+            const value = chart.data.datasets[0].data[index];
+            const total = chart.data.datasets[0].data.reduce((sum, item) => sum + item, 0);
+            const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+
+            statusChartCenterValue.textContent = `${percent}%`;
+            statusChartCenterLabel.textContent = `${chart.data.labels[index]} ${value} รายการ`;
+        };
+
+        if (statusChartCanvas) {
+            new Chart(statusChartCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: statusChartConfig.labels,
+                    datasets: [{
+                        data: statusChartConfig.data,
+                        filters: statusChartConfig.filters,
+                        backgroundColor: statusChartConfig.colors,
+                        hoverBackgroundColor: statusChartConfig.colors,
+                        hoverOffset: 8,
+                        borderColor: '#ffffff',
+                        borderWidth: 3,
+                        spacing: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: false
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 900
+                    },
+                    onClick(event, elements, chart) {
+                        if (!elements.length) {
+                            return;
+                        }
+
+                        const index = elements[0].index;
+                        const targetFilter = chart.data.datasets[0].filters?.[index];
+                        if (targetFilter && typeof window.applyEvaluationStatusFilter === 'function') {
+                            window.applyEvaluationStatusFilter(targetFilter);
+                        }
+                    },
+                    onHover(event, elements, chart) {
+                        chart.canvas.style.cursor = elements.length ? 'pointer' : 'default';
+                        if (elements.length) {
+                            updateStatusChartCenter(chart, elements[0]);
+                        } else {
+                            resetStatusChartCenter();
+                        }
+                    }
+                }
+            });
+        }
+
         const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
         messages.forEach(function(message) {
             setTimeout(function() {
