@@ -7,97 +7,97 @@
         title="ข้อมูลกรรมการ" />
 
     <div class="py-4 rounded-xl lg:mx-10 my-4 lg:px-13">
-        <div class="mb-4">
+        {{-- <div class="mb-4">
             <h2 class="text-2xl font-semibold text-gray-800">ภาพรวมงานพิจารณาของกรรมการ</h2>
             <p class="text-gray-600">เน้นดูว่างานไหนรอกรรมการพิจารณา งานไหนกำลังดำเนินการ และงานไหนส่งต่อผู้บริหารแล้ว</p>
-        </div>
+        </div> --}}
 
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
-            <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
-            <form id="filterForm" method="get" class="space-y-1">
-                <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    <div class="md:col-span-2 xl:col-span-1">
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">ค้นหาชื่อ / รหัสพนักงาน / ชื่องาน</label>
-                        <input
-                            name="search"
-                            type="text"
-                            value="{{ request('search', '') }}"
-                            placeholder="พิมพ์เพื่อค้นหา"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
+        @php
+            $hasDirectorFilters = collect(request()->only(['search', 'start_time', 'end_time', 'department_name', 'status', 'urgency', 'year']))
+                ->filter(fn ($value) => filled($value))
+                ->isNotEmpty();
+        @endphp
+        <div class="bg-white rounded-xl shadow-md mb-8 border border-gray-200 overflow-hidden">
+            <button type="button" id="directorFilterToggle" class="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50">
+                <div class="flex items-center gap-2.5">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                        <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2l-7 7v5l-4 2v-7L3 6V4z" />
+                        </svg>
                     </div>
                     <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่เริ่มต้น</label>
-                        <input
-                            name="start_time"
-                            type="date"
-                            value="{{ request('start_time', '') }}"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่สิ้นสุด</label>
-                        <input
-                            name="end_time"
-                            type="date"
-                            value="{{ request('end_time', '') }}"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">หน่วยงาน / แผนก</label>
-                        <select
-                            name="department_name"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                            <option value="">ทุกหน่วยงาน</option>
-                            @foreach ($departments ?? [] as $dept)
-                                <option value="{{ $dept->department_name }}" {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                    {{ $dept->department_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">สถานะ</label>
-                        <select
-                            name="status"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                            <option value="">ทั้งหมด</option>
-                            <option value="director_waiting" {{ request('status') === 'director_waiting' ? 'selected' : '' }}>รอกรรมการพิจารณา</option>
-                            <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>กำลังพิจารณา</option>
-                            <option value="forwarded" {{ request('status') === 'forwarded' ? 'selected' : '' }}>ส่งต่อผู้บริหารแล้ว</option>
-                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">ความเร่งด่วน</label>
-                        <select
-                            name="urgency"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                            <option value="">ทั้งหมด</option>
-                            <option value="due_soon" {{ request('urgency') === 'due_soon' ? 'selected' : '' }}>ใกล้ครบกำหนด</option>
-                            <option value="overdue" {{ request('urgency') === 'overdue' ? 'selected' : '' }}>เลยกำหนด</option>
-                            <option value="normal" {{ request('urgency') === 'normal' ? 'selected' : '' }}>ยังไม่เร่งด่วน</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-gray-700 font-medium text-sm">ปีประเมิน</label>
-                        <select
-                            name="year"
-                            class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
-                            <option value="">ทั้งหมด</option>
-                            @foreach ($years as $year)
-                                <option value="{{ $year }}" {{ (string) request('year') === (string) $year ? 'selected' : '' }}>
-                                    {{ $year }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <h2 class="text-lg font-bold text-gray-800 leading-tight">กรองข้อมูลการประเมิน</h2>
+                        <p class="mt-0.5 text-xs text-gray-500 sm:text-sm">{{ $hasDirectorFilters ? 'มีตัวกรองที่กำลังใช้งานอยู่ กดเพื่อแก้ไขหรือรีเซ็ต' : 'กดเพื่อแสดงตัวเลือกการกรองเพิ่มเติม' }}</p>
                     </div>
                 </div>
-                <div class="flex flex-col md:flex-row md:justify-end lg:justify-end gap-2 pt-3">
-                    <button type="button" onclick="resetFilters()"
-                        class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
-                    <button type="submit"
-                        class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">กรองข้อมูล</button>
+                <div class="flex items-center gap-2">
+                    @if ($hasDirectorFilters)
+                        <span class="hidden sm:inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">กำลังกรอง</span>
+                    @endif
+                    <svg id="directorFilterChevron" class="h-4.5 w-4.5 text-gray-500 transition-transform duration-200 {{ $hasDirectorFilters ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </div>
-            </form>
+            </button>
+            <div id="directorFilterPanel" class="{{ $hasDirectorFilters ? '' : 'hidden' }} border-t border-gray-100 px-5 pb-5 pt-2">
+                <form id="filterForm" method="get" class="space-y-1">
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        <div class="md:col-span-2 xl:col-span-1">
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">ค้นหาชื่อ / รหัสพนักงาน / ชื่องาน</label>
+                            <input name="search" type="text" value="{{ request('search', '') }}" placeholder="พิมพ์เพื่อค้นหา" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่เริ่มต้น</label>
+                            <input name="start_time" type="date" value="{{ request('start_time', '') }}" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่สิ้นสุด</label>
+                            <input name="end_time" type="date" value="{{ request('end_time', '') }}" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">หน่วยงาน / แผนก</label>
+                            <select name="department_name" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                                <option value="">ทุกหน่วยงาน</option>
+                                @foreach ($departments ?? [] as $dept)
+                                    <option value="{{ $dept->department_name }}" {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>{{ $dept->department_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">สถานะ</label>
+                            <select name="status" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                                <option value="">ทั้งหมด</option>
+                                <option value="director_waiting" {{ request('status') === 'director_waiting' ? 'selected' : '' }}>รอกรรมการพิจารณา</option>
+                                <option value="in_progress" {{ request('status') === 'in_progress' ? 'selected' : '' }}>กำลังพิจารณา</option>
+                                <option value="forwarded" {{ request('status') === 'forwarded' ? 'selected' : '' }}>ส่งต่อผู้บริหารแล้ว</option>
+                                <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>เสร็จสิ้น</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">ความเร่งด่วน</label>
+                            <select name="urgency" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                                <option value="">ทั้งหมด</option>
+                                <option value="due_soon" {{ request('urgency') === 'due_soon' ? 'selected' : '' }}>ใกล้ครบกำหนด</option>
+                                <option value="overdue" {{ request('urgency') === 'overdue' ? 'selected' : '' }}>เลยกำหนด</option>
+                                <option value="normal" {{ request('urgency') === 'normal' ? 'selected' : '' }}>ยังไม่เร่งด่วน</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-gray-700 font-medium text-sm">ปีประเมิน</label>
+                            <select name="year" class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full">
+                                <option value="">ทั้งหมด</option>
+                                @foreach ($years as $year)
+                                    <option value="{{ $year }}" {{ (string) request('year') === (string) $year ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:justify-end lg:justify-end gap-2 pt-3">
+                        <button type="button" onclick="resetFilters()" class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
+                        <button type="submit" class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">กรองข้อมูล</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         @php
@@ -437,6 +437,7 @@
                     }
                     initDirectorOverviewChart(document);
                     initDirectorDashboardAjax();
+                    initDirectorFilterToggle(document);
                 })
                 .catch(function() {
                     window.location.href = url;
@@ -462,6 +463,20 @@
             form.querySelector('select[name="urgency"]').value = '';
             form.querySelector('select[name="year"]').value = '';
             applyDirectorDashboardRequest(window.location.pathname);
+        }
+
+        function initDirectorFilterToggle(scope = document) {
+            const toggle = scope.getElementById ? scope.getElementById('directorFilterToggle') : scope.querySelector('#directorFilterToggle');
+            const panel = scope.getElementById ? scope.getElementById('directorFilterPanel') : scope.querySelector('#directorFilterPanel');
+            const chevron = scope.getElementById ? scope.getElementById('directorFilterChevron') : scope.querySelector('#directorFilterChevron');
+            if (!toggle || !panel || !chevron || toggle.dataset.bound === 'true') {
+                return;
+            }
+            toggle.dataset.bound = 'true';
+            toggle.addEventListener('click', function() {
+                panel.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
+            });
         }
 
         function initDirectorDashboardAjax() {
@@ -501,6 +516,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initDirectorOverviewChart(document);
             initDirectorDashboardAjax();
+            initDirectorFilterToggle(document);
 
             const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
             messages.forEach(function(message) {
