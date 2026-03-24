@@ -75,7 +75,7 @@
         }
 
         .overview-chart-value {
-            font-size: 2rem;
+            font-size: 1.45rem;
             font-weight: 700;
             line-height: 1;
             color: #0f172a;
@@ -84,9 +84,17 @@
         .overview-chart-label {
             margin-top: 0.4rem;
             max-width: 7.5rem;
-            font-size: 0.78rem;
-            line-height: 1rem;
+            font-size: 0.68rem;
+            line-height: 0.95rem;
             color: #6b7280;
+        }
+
+        .overview-chart-sub-label {
+            margin-top: 0.45rem;
+            max-width: 10rem;
+            font-size: 0.64rem;
+            line-height: 0.9rem;
+            color: #94a3b8;
         }
 
         .overview-progress-card {
@@ -94,6 +102,50 @@
             border-radius: 0.95rem;
             background: #ffffff;
             padding: 1rem;
+        }
+
+        .overview-panel-card {
+            height: 100%;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.25rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            padding: 1.25rem;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+        }
+
+        .overview-chart-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .overview-mini-card {
+            border: 1px solid #dbe4ee;
+            border-radius: 1.1rem;
+            background: #ffffff;
+            padding: 0.8rem 0.95rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        }
+
+        .overview-status-card {
+            width: 100%;
+            border: 1px solid #dbe4ee;
+            border-radius: 1.15rem;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            padding: 0.85rem 1rem;
+            text-align: left;
+            box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .overview-status-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .overview-status-card.is-active {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18), 0 14px 30px rgba(15, 23, 42, 0.08);
         }
 
         .overview-progress-row + .overview-progress-row {
@@ -181,11 +233,70 @@
 
         $overviewChart = [
             'id' => 'overallCompletionChart',
-            'labels' => ['เสร็จสิ้นแล้ว', 'คงค้าง'],
-            'data' => [$completedCount, max($totalEvaluations - $completedCount, 0)],
-            'colors' => ['#16a34a', '#dbe2ea'],
+            'labels' => ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'กำลังดำเนินการ', 'ประเมินเสร็จสิ้น'],
+            'data' => [
+                $statusCounts['มอบหมาย'] ?? 0,
+                $statusCounts['เริ่มกรอกข้อมูล'] ?? 0,
+                $statusCounts['กำลังดำเนินการ'] ?? 0,
+                $statusCounts['ประเมินเสร็จสิ้น'] ?? 0,
+            ],
+            'colors' => ['#ef4444', '#f97316', '#3b82f6', '#22c55e'],
+            'filters' => ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'กำลังดำเนินการ', 'ประเมินเสร็จสิ้น'],
             'centerValue' => $progressPercent.'%',
             'centerLabel' => 'ความคืบหน้ารวม',
+            'centerSubLabel' => 'เสร็จสิ้นแล้ว '.$completedCount.' จาก '.$totalEvaluations.' รายการ',
+        ];
+
+        $overviewMiniCards = [
+            [
+                'title' => 'งานทั้งหมด',
+                'value' => $totalEvaluations,
+                'unit' => 'รายการ',
+                'accent' => 'text-blue-600',
+                'badge' => 'bg-blue-100 text-blue-700',
+            ],
+            [
+                'title' => 'ผู้เข้าประเมิน',
+                'value' => $totalEvaluatees,
+                'unit' => 'คน',
+                'accent' => 'text-emerald-600',
+                'badge' => 'bg-emerald-100 text-emerald-700',
+            ],
+        ];
+
+        $overviewStatusCards = [
+            [
+                'label' => 'มอบหมาย',
+                'count' => $statusCounts['มอบหมาย'] ?? 0,
+                'percent' => $totalEvaluations > 0 ? round((($statusCounts['มอบหมาย'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'color' => '#ef4444',
+                'filter' => 'มอบหมาย',
+                'text' => 'ยังไม่ประเมิน',
+            ],
+            [
+                'label' => 'เริ่มกรอกข้อมูล',
+                'count' => $statusCounts['เริ่มกรอกข้อมูล'] ?? 0,
+                'percent' => $totalEvaluations > 0 ? round((($statusCounts['เริ่มกรอกข้อมูล'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'color' => '#f97316',
+                'filter' => 'เริ่มกรอกข้อมูล',
+                'text' => 'เริ่มกรอกข้อมูล',
+            ],
+            [
+                'label' => 'กำลังดำเนินการ',
+                'count' => $statusCounts['กำลังดำเนินการ'] ?? 0,
+                'percent' => $totalEvaluations > 0 ? round((($statusCounts['กำลังดำเนินการ'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'color' => '#3b82f6',
+                'filter' => 'กำลังดำเนินการ',
+                'text' => 'กำลังดำเนินการ',
+            ],
+            [
+                'label' => 'ประเมินเสร็จสิ้น',
+                'count' => $statusCounts['ประเมินเสร็จสิ้น'] ?? 0,
+                'percent' => $totalEvaluations > 0 ? round((($statusCounts['ประเมินเสร็จสิ้น'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'color' => '#22c55e',
+                'filter' => 'ประเมินเสร็จสิ้น',
+                'text' => 'ประเมินเสร็จสิ้น',
+            ],
         ];
 
         $overviewSections = [
@@ -376,67 +487,72 @@
                             </div>
                         </div> --}}
 
-                        <div class="mt-6 grid grid-cols-1 xl:grid-cols-[280px,1fr] gap-6">
-                            <div class="overview-main-chart">
-                                <div class="overview-chart-wrap">
-                                    <canvas id="{{ $overviewChart['id'] }}"></canvas>
-                                    <div class="overview-chart-center">
-                                        <div id="overviewChartCenterValue" class="overview-chart-value">{{ $overviewChart['centerValue'] }}</div>
-                                        <div id="overviewChartCenterLabel" class="overview-chart-label">{{ $overviewChart['centerLabel'] }}</div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-5 space-y-3">
-                                    <div class="flex items-center justify-between text-sm">
-                                        <div class="flex items-center gap-2 text-slate-700">
-                                            <span class="h-2.5 w-2.5 rounded-full bg-green-600"></span>
-                                            <span>เสร็จสิ้นแล้ว</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-900">{{ $completedCount }}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between text-sm">
-                                        <div class="flex items-center gap-2 text-slate-700">
-                                            <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-                                            <span>คงค้าง</span>
-                                        </div>
-                                        <span class="font-semibold text-slate-900">{{ max($totalEvaluations - $completedCount, 0) }}</span>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    @foreach ($overviewSections as $section)
-                                        <div class="overview-progress-card">
-                                            <h4 class="text-sm font-semibold text-slate-900">{{ $section['title'] }}</h4>
-                                            @if ($section['title'] === 'สัดส่วนผู้ใช้ในระบบ')
-                                                <div class="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                                                    <span class="text-xs font-medium text-slate-500">จำนวนคนทั้งหมดในระบบ</span>
-                                                    <span class="text-sm font-semibold text-slate-900">{{ $totalUsers }}</span>
+                        <div class="mt-6 grid grid-cols-1 xl:grid-cols-[300px,1fr] gap-6">
+                            <div class="overview-chart-panel">
+                                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                                    @foreach ($overviewMiniCards as $card)
+                                        <div class="overview-mini-card">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <div class="min-w-0">
+                                                    <div class="text-sm font-semibold {{ $card['accent'] }}">{{ $card['title'] }}</div>
+                                                    <div class="mt-2.5 text-[1.8rem] font-extrabold leading-none text-slate-900">{{ $card['value'] }}</div>
                                                 </div>
-                                            @endif
-                                            <div class="mt-4">
-                                                @foreach ($section['items'] as $item)
-                                                    <div class="overview-progress-row">
-                                                        <div class="flex items-center justify-between text-sm">
-                                                            <div class="font-medium text-slate-700">{{ $item['label'] }}</div>
-                                                            <div class="font-semibold text-slate-900">{{ $item['value'] }}</div>
-                                                        </div>
-                                                        <div class="mt-1 flex items-center justify-between text-xs text-slate-500">
-                                                            <span>{{ $item['note'] }}</span>
-                                                            <span>{{ $item['percent'] }}%</span>
-                                                        </div>
-                                                        <div class="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
-                                                            <div class="h-full rounded-full {{ $item['color'] }}" style="width: {{ min($item['percent'], 100) }}%"></div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
+                                                <span class="inline-flex rounded-full px-3 py-1 text-[11px] font-semibold {{ $card['badge'] }}">{{ $card['unit'] }}</span>
                                             </div>
                                         </div>
                                     @endforeach
+                                </div>
+
+                                <div class="overview-panel-card">
+                                    <div class="overview-chart-wrap">
+                                        <canvas id="{{ $overviewChart['id'] }}"></canvas>
+                                        <div class="overview-chart-center">
+                                            <div id="overviewChartCenterValue" class="overview-chart-value">{{ $overviewChart['centerValue'] }}</div>
+                                            <div id="overviewChartCenterLabel" class="overview-chart-label">{{ $overviewChart['centerLabel'] }}</div>
+                                            <div id="overviewChartCenterSubLabel" class="overview-chart-sub-label">{{ $overviewChart['centerSubLabel'] }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-4 flex items-center justify-center gap-2">
+                                        <span id="overviewFilterState" class="hidden rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"></span>
+                                        <button
+                                            id="overviewClearFilterButton"
+                                            type="button"
+                                            class="hidden rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800">
+                                            ล้างการกรอง
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                @foreach ($overviewStatusCards as $card)
+                                    <button
+                                        type="button"
+                                        data-overview-filter="{{ $card['filter'] }}"
+                                        class="overview-status-card">
+                                        <div class="flex items-start justify-between gap-4">
+                                            <div class="min-w-0">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="h-3.5 w-3.5 rounded-full" style="background-color: {{ $card['color'] }}"></span>
+                                                    <span class="text-lg font-semibold text-slate-900">{{ $card['text'] }}</span>
+                                                </div>
+                                                <div class="mt-4 text-sm text-slate-500">
+                                                    คิดเป็น <span class="font-bold" style="color: {{ $card['color'] }}">{{ $card['percent'] }}%</span> ของงานทั้งหมด {{ $totalEvaluations }} รายการ
+                                                </div>
+                                            </div>
+                                            <div class="min-w-[78px] rounded-2xl px-3.5 py-2.5 text-center" style="background-color: {{ $card['color'] }}14; color: {{ $card['color'] }}">
+                                                <div class="text-[2.1rem] font-extrabold leading-none">{{ $card['count'] }}</div>
+                                                <div class="mt-1.5 text-sm font-semibold leading-none">รายการ</div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                                            <div class="h-full rounded-full" style="width: {{ min($card['percent'], 100) }}%; background-color: {{ $card['color'] }}"></div>
+                                        </div>
+                                    </button>
+                                @endforeach
                             </div>
                         </div>
-
                         <div class="hidden mt-6 grid grid-cols-1 md:grid-cols-2  lg:grid-cols-2 gap-6">
                             <x-summary-score
                                 title="จำนวนคนที่มีในระบบ"
@@ -773,6 +889,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const statusFilterButtons = Array.from(document.querySelectorAll('.dashboard-status-filter'));
+            const overviewFilterButtons = Array.from(document.querySelectorAll('[data-overview-filter]'));
             const tableRows = Array.from(document.querySelectorAll('[data-dashboard-row]'));
             const searchInput = document.getElementById('searchInput');
             const emptyState = document.getElementById('empty-state');
@@ -792,6 +909,10 @@
                     button.classList.toggle('ring-2', isActive);
                     button.classList.toggle('ring-offset-2', isActive);
                     button.classList.toggle('ring-blue-300', isActive);
+                });
+
+                overviewFilterButtons.forEach((button) => {
+                    button.classList.toggle('is-active', button.dataset.overviewFilter === status);
                 });
             };
 
@@ -821,6 +942,43 @@
             const canvas = document.getElementById(overviewChart.id);
             const centerValueEl = document.getElementById('overviewChartCenterValue');
             const centerLabelEl = document.getElementById('overviewChartCenterLabel');
+            const centerSubLabelEl = document.getElementById('overviewChartCenterSubLabel');
+            const overviewFilterStateEl = document.getElementById('overviewFilterState');
+            const overviewClearFilterButton = document.getElementById('overviewClearFilterButton');
+            const overviewFilterStateClasses = {
+                'มอบหมาย': ['bg-red-50', 'text-red-700'],
+                'เริ่มกรอกข้อมูล': ['bg-orange-50', 'text-orange-700'],
+                'กำลังดำเนินการ': ['bg-blue-50', 'text-blue-700'],
+                'ประเมินเสร็จสิ้น': ['bg-green-50', 'text-green-700'],
+            };
+
+            const applyStatusFilter = (status) => {
+                clearStatusQuery();
+                activeStatusFilter = status || 'all';
+                setActiveStatusButton(activeStatusFilter);
+                applyDashboardFilters();
+
+                if (overviewFilterStateEl) {
+                    Object.values(overviewFilterStateClasses).flat().forEach((className) => {
+                        overviewFilterStateEl.classList.remove(className);
+                    });
+
+                    if (activeStatusFilter !== 'all') {
+                        overviewFilterStateEl.textContent = `กรองอยู่: ${activeStatusFilter}`;
+                        (overviewFilterStateClasses[activeStatusFilter] || ['bg-blue-50', 'text-blue-700']).forEach((className) => {
+                            overviewFilterStateEl.classList.add(className);
+                        });
+                        overviewFilterStateEl.classList.remove('hidden');
+                    } else {
+                        overviewFilterStateEl.textContent = '';
+                        overviewFilterStateEl.classList.add('hidden');
+                    }
+                }
+
+                if (overviewClearFilterButton) {
+                    overviewClearFilterButton.classList.toggle('hidden', activeStatusFilter === 'all');
+                }
+            };
 
             const resetOverviewCenter = () => {
                 if (centerValueEl) {
@@ -829,6 +987,10 @@
 
                 if (centerLabelEl) {
                     centerLabelEl.textContent = overviewChart.centerLabel;
+                }
+
+                if (centerSubLabelEl) {
+                    centerSubLabelEl.textContent = overviewChart.centerSubLabel || '';
                 }
             };
 
@@ -843,9 +1005,12 @@
                 const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
 
                 centerValueEl.textContent = `${percent}%`;
-                centerLabelEl.textContent = `${chart.data.labels[index]} ${value} รายการ`;
-            };
+                centerLabelEl.textContent = chart.data.labels[index];
 
+                if (centerSubLabelEl) {
+                    centerSubLabelEl.textContent = `${value} รายการ`;
+                }
+            };
             if (canvas) {
                 new Chart(canvas, {
                     type: 'doughnut',
@@ -884,6 +1049,18 @@
                             } else {
                                 resetOverviewCenter();
                             }
+                        },
+                        onClick(event, elements, chart) {
+                            if (!elements.length) {
+                                applyStatusFilter('all');
+                                resetOverviewCenter();
+                                return;
+                            }
+
+                            const index = elements[0].index;
+                            const nextFilter = overviewChart.filters?.[index] || 'all';
+                            applyStatusFilter(activeStatusFilter === nextFilter ? 'all' : nextFilter);
+                            updateOverviewCenter(chart, elements[0]);
                         }
                     }
                 });
@@ -891,12 +1068,23 @@
 
             statusFilterButtons.forEach((button) => {
                 button.addEventListener('click', () => {
-                    clearStatusQuery();
-                    activeStatusFilter = button.dataset.statusFilter || 'all';
-                    setActiveStatusButton(activeStatusFilter);
-                    applyDashboardFilters();
+                    applyStatusFilter(button.dataset.statusFilter || 'all');
                 });
             });
+
+            overviewFilterButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const nextFilter = button.dataset.overviewFilter || 'all';
+                    applyStatusFilter(activeStatusFilter === nextFilter ? 'all' : nextFilter);
+                });
+            });
+
+            if (overviewClearFilterButton) {
+                overviewClearFilterButton.addEventListener('click', () => {
+                    applyStatusFilter('all');
+                    resetOverviewCenter();
+                });
+            }
 
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
@@ -904,9 +1092,8 @@
                 });
             }
 
-            clearStatusQuery();
-            setActiveStatusButton(activeStatusFilter);
-            applyDashboardFilters();
+            applyStatusFilter(activeStatusFilter);
+            resetOverviewCenter();
         });
 
         function openReportDetails(reportId) {
