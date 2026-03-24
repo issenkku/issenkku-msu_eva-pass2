@@ -258,72 +258,101 @@
             </div>
 
             <!-- Filter Inputs -->
-            <div class="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fadeIn">
-                <h2 class="text-xl font-bold mb-6 text-gray-800">กรองข้อมูลการประเมิน</h2>
-                {{-- ฟอร์ม --}}
-                <form id="filterForm" method="get" class="space-y-1">
-                    <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
-                        <div>
-                            <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่เริ่มต้น</label>
-                            <input name="start_time" type="date" value="{{ request('start_time', '') }}"
-                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+            @php
+                $hasDashboardFilters = request('start_time') || request('end_time') || request('department_name') || request('position_name');
+            @endphp
+            <div class="bg-white rounded-xl shadow-lg mb-6 animate-fadeIn overflow-hidden">
+                <button
+                    type="button"
+                    id="dashboardFilterToggle"
+                    class="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                            <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2l-7 7v5l-4 2v-7L3 6V4z" />
+                            </svg>
                         </div>
                         <div>
-                            <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่สิ้นสุด</label>
-                            <input name="end_time" type="date" value="{{ request('end_time', '') }}"
-                                class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                            <h2 class="text-lg font-bold text-gray-800 leading-tight">กรองข้อมูลการประเมิน</h2>
+                            <p class="mt-0.5 text-xs text-gray-500 sm:text-sm">
+                                {{ $hasDashboardFilters ? 'มีตัวกรองที่กำลังใช้งานอยู่ กดเพื่อแก้ไขหรือรีเซ็ต' : 'กดเพื่อแสดงตัวเลือกการกรองเพิ่มเติม' }}
+                            </p>
                         </div>
-                        <div>
-                            <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
-                            <div class="relative">
-                                <select name="department_name"
-                                    class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
-                                    <option value="">ทุกหน่วยงาน</option>
-                                    @foreach ($departments ?? [] as $dept)
-                                        <option value="{{ $dept->department_name }}"
-                                            {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
-                                            {{ $dept->department_name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                
-                                <!-- Custom arrow icon -->
-                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block mb-1 text-gray-700 text-sm">ตำแหน่งงาน</label>
-                            <div class="relative">
-                                <select name="position_name"
-                                    class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
-                                    <option value="">ทุกตำแหน่งงาน</option>
-                                    @foreach ($positions ?? [] as $position)
-                                        <option value="{{ $position->name }}"
-                                            {{ request('position_name') == $position->name ? 'selected' : '' }}>
-                                            {{ $position->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if ($hasDashboardFilters)
+                            <span class="hidden sm:inline-flex rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-100">
+                                กำลังกรอง
+                            </span>
+                        @endif
+                        <svg id="dashboardFilterChevron" class="h-4.5 w-4.5 text-gray-500 transition-transform duration-200 {{ $hasDashboardFilters ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </button>
 
-                                <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
+                <div id="dashboardFilterPanel" class="{{ $hasDashboardFilters ? '' : 'hidden' }} border-t border-gray-100 px-5 pb-5 pt-2">
+                    <form id="filterForm" method="get" class="space-y-1">
+                        <div class="flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0">
+                            <div>
+                                <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่เริ่มต้น</label>
+                                <input name="start_time" type="date" value="{{ request('start_time', '') }}"
+                                    class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-gray-700 font-medium text-sm">วันที่สิ้นสุด</label>
+                                <input name="end_time" type="date" value="{{ request('end_time', '') }}"
+                                    class="text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-48" />
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-gray-700 text-sm">หน่วยงาน/แผนก</label>
+                                <div class="relative">
+                                    <select name="department_name"
+                                        class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                        <option value="">ทุกหน่วยงาน</option>
+                                        @foreach ($departments ?? [] as $dept)
+                                            <option value="{{ $dept->department_name }}"
+                                                {{ request('department_name') == $dept->department_name ? 'selected' : '' }}>
+                                                {{ $dept->department_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block mb-1 text-gray-700 text-sm">ตำแหน่งงาน</label>
+                                <div class="relative">
+                                    <select name="position_name"
+                                        class="appearance-none text-black bg-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 px-4 py-2 w-full pr-10">
+                                        <option value="">ทุกตำแหน่งงาน</option>
+                                        @foreach ($positions ?? [] as $position)
+                                            <option value="{{ $position->name }}"
+                                                {{ request('position_name') == $position->name ? 'selected' : '' }}>
+                                                {{ $position->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0">
-                        <button type="button" onclick="resetFilters()"
-                            class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
-                        <button type="submit"
-                            class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">กรองข้อมูล</button>
-                    </div>
-                </form>
+                        <div class="flex md:justify-end lg:justify-end space-x-2 pt-2 flex-col md:flex-row space-y-3 md:space-y-0">
+                            <button type="button" onclick="resetFilters()"
+                                class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">ล้างค่า</button>
+                            <button type="submit"
+                                class="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">กรองข้อมูล</button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Statistics Cards -->
@@ -721,6 +750,21 @@
             document.querySelector('select[name="position_name"]').value = '';
             document.getElementById('filterForm').submit();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggle = document.getElementById('dashboardFilterToggle');
+            const panel = document.getElementById('dashboardFilterPanel');
+            const chevron = document.getElementById('dashboardFilterChevron');
+
+            if (!toggle || !panel || !chevron) {
+                return;
+            }
+
+            toggle.addEventListener('click', function() {
+                panel.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
+            });
+        });
     </script>
 @endsection
 
