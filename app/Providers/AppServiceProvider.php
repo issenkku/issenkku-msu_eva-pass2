@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Assignments;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\View;
@@ -34,5 +36,16 @@ class AppServiceProvider extends ServiceProvider
         if (filter_var(env('FORCE_HTTPS', false), FILTER_VALIDATE_BOOL)) {
             $url->forceScheme('https');
         }
+
+        View::composer('layouts.app', function ($view) {
+            $user = Auth::user();
+            $showEvaluateeNavigation = false;
+
+            if ($user && $user->hasRole('ผู้รับการประเมิน')) {
+                $showEvaluateeNavigation = Assignments::where('evaluatee_id', $user->id)->exists();
+            }
+
+            $view->with('showEvaluateeNavigation', $showEvaluateeNavigation);
+        });
     }
 }

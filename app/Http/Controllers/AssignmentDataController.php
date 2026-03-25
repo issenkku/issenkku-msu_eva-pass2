@@ -299,13 +299,6 @@ class AssignmentDataController extends Controller
                 $validator->errors()->add('evaluation_flow', 'กรุณากำหนดผู้ประเมินอย่างน้อย 1 ขั้นตอน');
             }
 
-            // reviewer ต้องไม่ซ้ำกับผู้รับการประเมิน
-            foreach ($selectedActors as $userId) {
-                if (in_array($userId, $request->evaluatees ?? [])) {
-                    $validator->errors()->add('evaluatees', 'ผู้ประเมิน/กรรมการ/ผู้บริหารต้องไม่ซ้ำกับผู้รับการประเมิน');
-                }
-            }
-
             // หนึ่งคนต้องไม่ถูกเลือกซ้ำหลายบทบาท
             if (count($selectedActors) !== count(array_unique($selectedActors))) {
                 $validator->errors()->add('evaluation_flow', 'บุคคลในแต่ละบทบาทต้องไม่ซ้ำกัน');

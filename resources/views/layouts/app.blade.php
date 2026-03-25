@@ -474,7 +474,7 @@
                                 <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
                             </li> -->
                             <li class="nav-item">
-                                <a class="nav-link text-white " href="/manager-dashboard">หน้าการรับรอง</a>
+                                <a class="nav-link text-white " href="/manager-dashboard">แดชบอร์ด</a>
                             </li>
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
@@ -485,7 +485,7 @@
 
                         @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/evaluator-dashboard">หน้าตรวจประเมิน</a>
+                                <a class="nav-link text-white" href="/evaluator-dashboard">แดชบอร์ด</a>
                             </li>
                         @endif
                         {{-- @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
@@ -495,12 +495,12 @@
                         @endif --}}
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/director-dashboard">หน้าการรับรอง</a>
+                                <a class="nav-link text-white" href="/director-dashboard">แดชบอร์ด</a>
                             </li>
                         @endif
-                        @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
+                        @if(auth()->user() && ($showEvaluateeNavigation ?? false))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าการประเมิน</a>
+                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าประเมินตัวเอง</a>
                             </li>
                         @endif
 
@@ -594,28 +594,28 @@
                     </a> -->
                     <a href="/manager-dashboard" class="mobile-nav-item">
                         <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าการรับรอง
+                        แดชบอร์ด
                     </a>
                 @endif
                 
                 @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                     <a href="/evaluator-dashboard" class="mobile-nav-item">
                         <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าการประเมิน
+                        แดชบอร์ด
                     </a>
                 @endif
 
                 @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                     <a href="/director-dashboard" class="mobile-nav-item">
                         <i class="fas fa-user-tie" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าการรับรอง
+                        แดชบอร์ด
                     </a>
                 @endif
                 
-                @if(auth()->user() && auth()->user()->hasRole('ผู้รับการประเมิน'))
+                @if(auth()->user() && ($showEvaluateeNavigation ?? false))
                     <a href="/evaluatee-dashboard" class="mobile-nav-item">
                         <i class="fas fa-user-check" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าการประเมิน
+                        หน้าประเมินตัวเอง
                     </a>
                 @endif
                 

@@ -679,12 +679,6 @@
                         return false;
                     }
 
-                    if (selectedReviewers.some(id => evaluateesSelected.includes(id))) {
-                        e.preventDefault();
-                        alert('ผู้ประเมิน กรรมการ หรือผู้บริหาร ไม่สามารถเป็นผู้รับการประเมินได้');
-                        return false;
-                    }
-
                     submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> กำลังบันทึก...');
                     if (loadingOverlay && loadingOverlay.length) {
                         loadingOverlay.removeClass('hidden');
