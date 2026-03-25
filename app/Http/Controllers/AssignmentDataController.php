@@ -38,7 +38,7 @@ class AssignmentDataController extends Controller
     public function create()
     {
         $report_data = ReportData::all();
-        $users = User::with(['roles', 'position'])->get();
+        $users = User::with(['roles', 'position', 'department'])->get();
         $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
         $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
         $managerUsers = $users->filter(fn ($user) => $user->hasRole('ผู้บริหาร'))->values();
@@ -139,7 +139,7 @@ class AssignmentDataController extends Controller
     public function edit(AssignmentData $assignmentData)
     {
         $report_data = ReportData::all();
-        $users = User::with(['roles', 'position'])->get();
+        $users = User::with(['roles', 'position', 'department'])->get();
         $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
         $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
         $managerUsers = $users->filter(fn ($user) => $user->hasRole('ผู้บริหาร'))->values();

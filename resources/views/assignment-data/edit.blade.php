@@ -151,13 +151,67 @@
                                     <span id="evaluatees-total-count">{{ $users->count() }}</span> คนทั้งหมด
                                 </div>
                             </div>
+                            @php
+                                $departmentOptions = $users->pluck('department.department_name')->filter()->unique()->sort()->values();
+                                $positionOptions = $users->pluck('position.name')->filter()->unique()->sort()->values();
+                            @endphp
+                            <div class="mb-4" id="evaluatees-dropdown-wrapper">
+                                <button type="button" id="toggle-evaluatees-dropdown"
+                                    class="flex w-full items-center justify-between rounded-md border border-blue-300 bg-white px-4 py-3 text-left text-sm text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <span id="evaluatees-dropdown-label">เลือกผู้รับการประเมิน</span>
+                                    <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                                </button>
+
+                                <div id="evaluatees-dropdown-panel" class="mt-3 hidden rounded-lg border border-blue-200 bg-white p-4 shadow-sm">
+                                    <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                                        <div>
+                                            <label for="evaluatees-department-filter" class="mb-1 block text-sm font-medium text-gray-700">หน่วยงาน/คณะ</label>
+                                            <select id="evaluatees-department-filter"
+                                                class="form-select w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">ทั้งหมด</option>
+                                                @foreach ($departmentOptions as $departmentName)
+                                                    <option value="{{ $departmentName }}">{{ $departmentName }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="evaluatees-position-filter" class="mb-1 block text-sm font-medium text-gray-700">ตำแหน่งงาน</label>
+                                            <select id="evaluatees-position-filter"
+                                                class="form-select w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                <option value="">ทั้งหมด</option>
+                                                @foreach ($positionOptions as $positionName)
+                                                    <option value="{{ $positionName }}">{{ $positionName }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4">
+                                        <label for="evaluatees-search-filter" class="mb-1 block text-sm font-medium text-gray-700">ค้นหารายชื่อ</label>
+                                        <input type="text" id="evaluatees-search-filter"
+                                            class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            placeholder="พิมพ์ชื่อหรือตำแหน่งงาน">
+                                    </div>
+
+                                    <label class="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-blue-700">
+                                        <input type="checkbox" id="evaluatees-select-all"
+                                            class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
+                                        เลือกทั้งหมด
+                                    </label>
+
+                                    <div id="evaluatees-checkbox-list" class="max-h-72 space-y-2 overflow-y-auto rounded-md border border-blue-100 bg-blue-50/40 p-3">
+                                    </div>
+                                </div>
+                            </div>
                             <select id="evaluatees" name="evaluatees[]" multiple required
-                                class="form-select w-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                class="hidden">
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}"
                                         data-user-name="{{ $user->name }}"
                                         data-user-email="{{ $user->position->name }}"
                                         data-personnel-type="{{ $user->personnel_type }}"
+                                        data-user-department="{{ $user->department->department_name ?? '' }}"
+                                        data-user-position="{{ $user->position->name ?? '' }}"
                                         @selected(in_array($user->id, old('evaluatees', $selectedEvaluatees)))>
                                         {{ $user->name }} ({{ $user->position->name }})
                                     </option>
@@ -276,13 +330,63 @@
                                             <span id="{{ $card['count_id'] }}-total-count">{{ $card['available_count'] }}</span> คนทั้งหมด
                                         </div>
                                     </div>
-                                    <select id="{{ $card['id'] }}" name="{{ $card['id'] }}"
-                                        class="form-select w-full focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                    @php
+                                        $cardDepartmentOptions = $card['options']->pluck('department.department_name')->filter()->unique()->sort()->values();
+                                        $cardPositionOptions = $card['options']->pluck('position.name')->filter()->unique()->sort()->values();
+                                    @endphp
+                                    <div class="mb-4" id="{{ $card['count_id'] }}-dropdown-wrapper">
+                                        <button type="button" id="{{ $card['count_id'] }}-dropdown-toggle"
+                                            class="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                            <span id="{{ $card['count_id'] }}-dropdown-label">{{ $card['placeholder'] }}</span>
+                                            <i class="fas fa-chevron-down text-xs text-slate-500"></i>
+                                        </button>
+
+                                        <div id="{{ $card['count_id'] }}-dropdown-panel" class="mt-3 hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                                            <div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                                                <div>
+                                                    <label for="{{ $card['count_id'] }}-department-filter" class="mb-1 block text-sm font-medium text-gray-700">
+                                                        หน่วยงาน/คณะ
+                                                    </label>
+                                                    <select id="{{ $card['count_id'] }}-department-filter"
+                                                        class="form-select w-full text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                                        <option value="">ทั้งหมด</option>
+                                                        @foreach ($cardDepartmentOptions as $departmentName)
+                                                            <option value="{{ $departmentName }}">{{ $departmentName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label for="{{ $card['count_id'] }}-position-filter" class="mb-1 block text-sm font-medium text-gray-700">
+                                                        ตำแหน่งงาน
+                                                    </label>
+                                                    <select id="{{ $card['count_id'] }}-position-filter"
+                                                        class="form-select w-full text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}">
+                                                        <option value="">ทั้งหมด</option>
+                                                        @foreach ($cardPositionOptions as $positionName)
+                                                            <option value="{{ $positionName }}">{{ $positionName }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label for="{{ $card['count_id'] }}-search-filter" class="mb-1 block text-sm font-medium text-gray-700">ค้นหารายชื่อ</label>
+                                                <input type="text" id="{{ $card['count_id'] }}-search-filter"
+                                                    class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
+                                                    placeholder="พิมพ์ชื่อหรือตำแหน่งงาน">
+                                            </div>
+
+                                            <div id="{{ $card['count_id'] }}-checkbox-list" class="max-h-72 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                        </div>
+                                    </div>
+                                    <select id="{{ $card['id'] }}" name="{{ $card['id'] }}" class="hidden">
                                         <option value="">{{ $card['placeholder'] }}</option>
                                         @foreach ($card['options'] as $user)
                                             <option value="{{ $user->id }}"
                                                 data-user-name="{{ $user->name }}"
                                                 data-user-email="{{ $user->position->name }}"
+                                                data-user-department="{{ $user->department->department_name ?? '' }}"
+                                                data-user-position="{{ $user->position->name ?? '' }}"
                                                 @selected(old($card['id'], $card['value']) == $user->id)>
                                                 {{ $user->name }} ({{ $user->position->name }})
                                             </option>
@@ -379,6 +483,17 @@
                         selectId: 'evaluator_id',
                         displayId: 'selected-evaluators',
                         countId: 'evaluators-selected-count',
+                        availableCountId: 'evaluators-available-count',
+                        totalCountId: 'evaluators-total-count',
+                        dropdownWrapperId: 'evaluators-dropdown-wrapper',
+                        dropdownToggleId: 'evaluators-dropdown-toggle',
+                        dropdownPanelId: 'evaluators-dropdown-panel',
+                        dropdownLabelId: 'evaluators-dropdown-label',
+                        checkboxListId: 'evaluators-checkbox-list',
+                        departmentFilterId: 'evaluators-department-filter',
+                        positionFilterId: 'evaluators-position-filter',
+                        searchFilterId: 'evaluators-search-filter',
+                        placeholder: '-- เลือกผู้ประเมิน --',
                         emptyText: 'ยังไม่ได้เลือกผู้ประเมิน',
                         className: 'bg-green-100 text-green-800',
                     },
@@ -386,6 +501,17 @@
                         selectId: 'director_id',
                         displayId: 'selected-directors',
                         countId: 'directors-selected-count',
+                        availableCountId: 'directors-available-count',
+                        totalCountId: 'directors-total-count',
+                        dropdownWrapperId: 'directors-dropdown-wrapper',
+                        dropdownToggleId: 'directors-dropdown-toggle',
+                        dropdownPanelId: 'directors-dropdown-panel',
+                        dropdownLabelId: 'directors-dropdown-label',
+                        checkboxListId: 'directors-checkbox-list',
+                        departmentFilterId: 'directors-department-filter',
+                        positionFilterId: 'directors-position-filter',
+                        searchFilterId: 'directors-search-filter',
+                        placeholder: '-- เลือกกรรมการ --',
                         emptyText: 'ยังไม่ได้เลือกกรรมการ',
                         className: 'bg-amber-100 text-amber-800',
                     },
@@ -393,96 +519,29 @@
                         selectId: 'manager_id',
                         displayId: 'selected-managers',
                         countId: 'managers-selected-count',
+                        availableCountId: 'managers-available-count',
+                        totalCountId: 'managers-total-count',
+                        dropdownWrapperId: 'managers-dropdown-wrapper',
+                        dropdownToggleId: 'managers-dropdown-toggle',
+                        dropdownPanelId: 'managers-dropdown-panel',
+                        dropdownLabelId: 'managers-dropdown-label',
+                        checkboxListId: 'managers-checkbox-list',
+                        departmentFilterId: 'managers-department-filter',
+                        positionFilterId: 'managers-position-filter',
+                        searchFilterId: 'managers-search-filter',
+                        placeholder: '-- เลือกผู้บริหาร --',
                         emptyText: 'ยังไม่ได้เลือกผู้บริหาร',
                         className: 'bg-rose-100 text-rose-800',
                     }
                 ];
-
-                function formatOption(option) {
-                    if (!option.id) return option.text;
-
-                    const $option = $(option.element);
-                    if (!$option.length) return option.text;
-
-                    const userName = $option.data('user-name') || option.text || '';
-                    const userEmail = $option.data('user-email') || '';
-
-                    return $(`<div class="flex items-center justify-between" style="padding: 4px 0;">
-                     <div class="flex items-center"> 
-                        <span>${userName} ${userEmail ? '(' + userEmail + ')' : ''}</span>
-                    </div>
-                    </div>`);
-                }
-
-                function setupSelect2Multiple(selectId, displayId, selectedCountId, availableCountId) {
-                    const $select = $(`#${selectId}`);
-                    
-                    if (!$select.length) {
-                        console.warn(`Element with ID ${selectId} not found`);
-                        return;
-                    }
-
-                    $select.select2({
-                        placeholder: "เลือกผู้ใช้...",
-                        width: '100%',
-                        allowClear: true,
-                        templateResult: formatOption,
-                        language: {
-                            noResults: function() {
-                                return "ไม่พบผู้ใช้ที่ตรงกับการค้นหา";
-                            },
-                            searching: function() {
-                                return "กำลังค้นหา...";
-                            }
-                        }
-                    });
-
-                    $select.on('change', function() {
-                        updateDisplayAndCounts();
-                    });
-
-                    updateAvailableCount($select, availableCountId, false);
-                }
-
-                function setupSelect2Single(selectId, displayId, selectedCountId, availableCountId) {
-                    const $select = $(`#${selectId}`);
-                    
-                    if (!$select.length) {
-                        console.warn(`Element with ID ${selectId} not found`);
-                        return;
-                    }
-
-                    $select.select2({
-                        placeholder: "เลือกผู้ประเมิน...",
-                        width: '100%',
-                        allowClear: true,
-                        templateResult: formatOption,
-                        language: {
-                            noResults: function() {
-                                return "ไม่พบผู้ใช้ที่ตรงกับการค้นหา";
-                            },
-                            searching: function() {
-                                return "กำลังค้นหา...";
-                            }
-                        }
-                    });
-
-                    $select.on('change', function() {
-                        updateDisplayAndCounts();
-                    });
-
-                    updateAvailableCount($select, availableCountId);
-                }
-
-                function updateAvailableCount($select, countId, hasPlaceholder = true) {
-                    if (!$select || !$select.length) return;
-                    const totalOptions = $select.find('option:not(:disabled)').length;
-                    const availableCount = hasPlaceholder ? Math.max(totalOptions - 1, 0) : totalOptions;
-                    const $countElement = $(`#${countId}`);
-                    if ($countElement.length) {
-                        $countElement.text(availableCount);
-                    }
-                }
+                const reviewerOptionTemplates = Object.fromEntries(
+                    reviewerConfigs.map(config => [
+                        config.selectId,
+                        $(`#${config.selectId} option`).map(function() {
+                            return $(this).clone();
+                        }).get()
+                    ])
+                );
 
                 function normalizePersonnelType(value) {
                     const text = String(value || '').trim();
@@ -492,24 +551,176 @@
                     if (text.includes('บริหาร') || text.includes('ผู้บริหาร')) return 'บริหาร';
                     return text;
                 }
+                let filteredEvaluateeOptions = [];
+
+                function updateEvaluateesDropdownLabel() {
+                    const selectedCount = ($('#evaluatees').val() || []).length;
+                    const label = selectedCount > 0
+                        ? `เลือกผู้รับการประเมิน (${selectedCount} คน)`
+                        : 'เลือกผู้รับการประเมิน';
+                    $('#evaluatees-dropdown-label').text(label);
+                }
+
+                function renderEvaluateeCheckboxList() {
+                    const selectedValues = new Set(($('#evaluatees').val() || []).map(String));
+                    const $list = $('#evaluatees-checkbox-list');
+
+                    if (!$list.length) {
+                        return;
+                    }
+
+                    if (filteredEvaluateeOptions.length === 0) {
+                        $list.html('<div class="text-sm text-gray-500">ไม่พบรายชื่อผู้รับการประเมิน</div>');
+                        return;
+                    }
+
+                    let html = '';
+                    filteredEvaluateeOptions.forEach(option => {
+                        const $option = $(option);
+                        const value = String($option.val());
+                        const userName = $option.data('user-name') || $option.text() || 'ไม่ระบุ';
+                        const userEmail = $option.data('user-email') || '';
+                        const checked = selectedValues.has(value) ? 'checked' : '';
+
+                        html += `
+                            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-transparent bg-white px-3 py-2 text-sm text-gray-700 hover:border-blue-200 hover:bg-blue-50">
+                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
+                                <span class="flex-1">
+                                    <span class="block font-medium text-gray-800">${userName}</span>
+                                    <span class="block text-xs text-gray-500">${userEmail}</span>
+                                </span>
+                            </label>
+                        `;
+                    });
+
+                    $list.html(html);
+                }
 
                 function filterEvaluateesByCriteria() {
                     const selectedAssessmentType = normalizePersonnelType($('#report_data_id').find('option:selected').data('assessment-type'));
+                    const selectedDepartment = String($('#evaluatees-department-filter').val() || '').trim();
+                    const selectedPosition = String($('#evaluatees-position-filter').val() || '').trim();
+                    const searchKeyword = String($('#evaluatees-search-filter').val() || '').trim().toLowerCase();
                     const $evaluatees = $('#evaluatees');
                     const currentSelected = $evaluatees.val() || [];
-                    const matchedOptions = evaluateeOptionTemplate.filter(option => {
+
+                    filteredEvaluateeOptions = evaluateeOptionTemplate.filter(option => {
+                        const $option = $(option);
                         const userType = normalizePersonnelType($(option).data('personnel-type'));
-                        return !selectedAssessmentType || userType === selectedAssessmentType;
+                        const userName = String($option.data('user-name') || '').trim();
+                        const userDepartment = String($option.data('user-department') || '').trim();
+                        const userPosition = String($option.data('user-position') || '').trim();
+                        const matchedAssessmentType = !selectedAssessmentType || userType === selectedAssessmentType;
+                        const matchedDepartment = !selectedDepartment || userDepartment === selectedDepartment;
+                        const matchedPosition = !selectedPosition || userPosition === selectedPosition;
+                        const searchHaystack = `${userName} ${userPosition}`.toLowerCase();
+                        const matchedSearch = !searchKeyword || searchHaystack.includes(searchKeyword);
+
+                        return matchedAssessmentType && matchedDepartment && matchedPosition && matchedSearch;
                     }).map(option => $(option).clone());
 
-                    const nextSelected = matchedOptions
+                    const nextSelected = filteredEvaluateeOptions
                         .map(option => String(option.val()))
                         .filter(value => currentSelected.includes(value));
 
-                    $evaluatees.empty().append(matchedOptions);
-                    $evaluatees.val(nextSelected).trigger('change.select2');
-                    $('#evaluatees-available-count').text(matchedOptions.length);
+                    $evaluatees.empty().append(filteredEvaluateeOptions);
+                    $evaluatees.val(nextSelected);
+                    $('#evaluatees-available-count').text(filteredEvaluateeOptions.length);
                     $('#evaluatees-total-count').text(evaluateeOptionTemplate.length);
+                    renderEvaluateeCheckboxList();
+                    updateEvaluateesSelectAllState();
+                }
+
+                function filterReviewerOptions(config) {
+                    const $select = $(`#${config.selectId}`);
+                    const currentSelected = $select.val();
+                    const selectedDepartment = String($(`#${config.departmentFilterId}`).val() || '').trim();
+                    const selectedPosition = String($(`#${config.positionFilterId}`).val() || '').trim();
+                    const searchKeyword = String($(`#${config.searchFilterId}`).val() || '').trim().toLowerCase();
+                    const optionTemplate = reviewerOptionTemplates[config.selectId] || [];
+
+                    const matchedOptions = optionTemplate.filter(option => {
+                        const $option = $(option);
+                        const value = String($option.val() || '').trim();
+                        if (!value) {
+                            return true;
+                        }
+
+                        const userName = String($option.data('user-name') || '').trim();
+                        const userDepartment = String($option.data('user-department') || '').trim();
+                        const userPosition = String($option.data('user-position') || '').trim();
+                        const matchedDepartment = !selectedDepartment || userDepartment === selectedDepartment;
+                        const matchedPosition = !selectedPosition || userPosition === selectedPosition;
+                        const searchHaystack = `${userName} ${userPosition}`.toLowerCase();
+                        const matchedSearch = !searchKeyword || searchHaystack.includes(searchKeyword);
+
+                        return matchedDepartment && matchedPosition && matchedSearch;
+                    }).map(option => $(option).clone());
+
+                    const hasSelected = matchedOptions.some(option => String(option.val()) === String(currentSelected || ''));
+                    const nextSelected = hasSelected ? currentSelected : '';
+
+                    $select.empty().append(matchedOptions);
+                    $select.val(nextSelected);
+
+                    const availableCount = Math.max(matchedOptions.length - 1, 0);
+                    $(`#${config.availableCountId}`).text(availableCount);
+                    $(`#${config.totalCountId}`).text(Math.max(optionTemplate.length - 1, 0));
+                    renderReviewerCheckboxList(config, matchedOptions);
+                    updateReviewerDropdownLabel(config);
+                }
+
+                function renderReviewerCheckboxList(config, matchedOptions) {
+                    const $list = $(`#${config.checkboxListId}`);
+                    const selectedValue = String($(`#${config.selectId}`).val() || '');
+
+                    if (!$list.length) {
+                        return;
+                    }
+
+                    if (matchedOptions.length <= 1) {
+                        $list.html('<div class="text-sm text-gray-500">ไม่พบรายชื่อ</div>');
+                        return;
+                    }
+
+                    let html = '';
+                    matchedOptions.forEach(option => {
+                        const $option = $(option);
+                        const value = String($option.val() || '').trim();
+                        if (!value) {
+                            return;
+                        }
+
+                        const checked = selectedValue === value ? 'checked' : '';
+                        const userName = $option.data('user-name') || $option.text() || 'ไม่ระบุ';
+                        const userEmail = $option.data('user-email') || '';
+
+                        html += `
+                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
+                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
+                                <span class="flex-1">
+                                    <span class="block font-semibold leading-5 text-slate-800">${userName}</span>
+                                    <span class="mt-1 block text-xs leading-4 text-slate-500">${userEmail}</span>
+                                </span>
+                            </label>
+                        `;
+                    });
+
+                    $list.html(html || '<div class="text-sm text-gray-500">ไม่พบรายชื่อ</div>');
+                }
+
+                function updateReviewerDropdownLabel(config) {
+                    const $select = $(`#${config.selectId}`);
+                    const selectedValue = $select.val();
+
+                    if (!selectedValue) {
+                        $(`#${config.dropdownLabelId}`).text(config.placeholder);
+                        return;
+                    }
+
+                    const selectedOption = $select.find(`option[value="${selectedValue}"]`);
+                    const userName = selectedOption.data('user-name') || selectedOption.text() || config.placeholder;
+                    $(`#${config.dropdownLabelId}`).text(userName);
                 }
 
                 function updateDisplayAndCounts() {
@@ -535,10 +746,14 @@
                         $('#selected-evaluatees').html(html);
                     }
 
+                    updateEvaluateesDropdownLabel();
+                    updateEvaluateesSelectAllState();
+
                     reviewerConfigs.forEach(config => {
                         const $select = $(`#${config.selectId}`);
                         const selectedValue = $select.val();
                         $(`#${config.countId}`).text(selectedValue ? 1 : 0);
+                        updateReviewerDropdownLabel(config);
 
                         if (!selectedValue) {
                             $(`#${config.displayId}`).html(`<span class="text-sm text-gray-500">${config.emptyText}</span>`);
@@ -555,6 +770,35 @@
 
                     // Update summary
                     updateSummary();
+                }
+
+                function updateEvaluateesSelectAllState() {
+                    const $selectAll = $('#evaluatees-select-all');
+                    const selectedValues = new Set(($('#evaluatees').val() || []).map(String));
+                    const totalVisible = filteredEvaluateeOptions.length;
+                    const selectedVisibleCount = filteredEvaluateeOptions.filter(option => selectedValues.has(String($(option).val()))).length;
+
+                    if (!$selectAll.length) {
+                        return;
+                    }
+
+                    if (totalVisible === 0) {
+                        $selectAll.prop({
+                            checked: false,
+                            indeterminate: false,
+                            disabled: true,
+                        });
+                        return;
+                    }
+
+                    const allSelected = selectedVisibleCount === totalVisible;
+                    const partiallySelected = selectedVisibleCount > 0 && selectedVisibleCount < totalVisible;
+
+                    $selectAll.prop({
+                        checked: allSelected,
+                        indeterminate: partiallySelected,
+                        disabled: false,
+                    });
                 }
 
                 function updateSummary() {
@@ -593,20 +837,6 @@
                     }
                 }
 
-                // Initialize Select2
-                try {
-                    setupSelect2Multiple('evaluatees', 'selected-evaluatees', 'evaluatees-selected-count',
-                        'evaluatees-available-count');
-                    setupSelect2Single('evaluator_id', 'selected-evaluators', 'evaluators-selected-count',
-                        'evaluators-available-count');
-                    setupSelect2Single('director_id', 'selected-directors', 'directors-selected-count',
-                        'directors-available-count');
-                    setupSelect2Single('manager_id', 'selected-managers', 'managers-selected-count',
-                        'managers-available-count');
-                } catch (error) {
-                    console.error('Error initializing Select2:', error);
-                }
-
                 filterEvaluateesByCriteria();
                 updateDisplayAndCounts();
 
@@ -617,6 +847,104 @@
                     updateDisplayAndCounts();
                 });
 
+                $('#evaluatees-department-filter, #evaluatees-position-filter').on('change', function() {
+                    filterEvaluateesByCriteria();
+                    updateDisplayAndCounts();
+                });
+
+                $('#evaluatees-search-filter').on('input', function() {
+                    filterEvaluateesByCriteria();
+                    updateDisplayAndCounts();
+                });
+
+                $('#toggle-evaluatees-dropdown').on('click', function() {
+                    $('#evaluatees-dropdown-panel').toggleClass('hidden');
+                    $(this).find('i').toggleClass('fa-chevron-down fa-chevron-up');
+                });
+
+                reviewerConfigs.forEach(config => {
+                    $(`#${config.dropdownToggleId}`).on('click', function() {
+                        const $panel = $(`#${config.dropdownPanelId}`);
+                        $panel.toggleClass('hidden');
+                        $(this).find('i').toggleClass('fa-chevron-down fa-chevron-up');
+                    });
+                });
+
+                $(document).on('click', function(event) {
+                    const $wrapper = $('#evaluatees-dropdown-wrapper');
+                    if ($wrapper.length && !$wrapper.is(event.target) && !$wrapper.has(event.target).length) {
+                        $('#evaluatees-dropdown-panel').addClass('hidden');
+                        $('#toggle-evaluatees-dropdown').find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    }
+
+                    reviewerConfigs.forEach(config => {
+                        const $reviewerWrapper = $(`#${config.dropdownWrapperId}`);
+                        if ($reviewerWrapper.length && !$reviewerWrapper.is(event.target) && !$reviewerWrapper.has(event.target).length) {
+                            $(`#${config.dropdownPanelId}`).addClass('hidden');
+                            $(`#${config.dropdownToggleId}`).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                        }
+                    });
+                });
+
+                reviewerConfigs.forEach(config => {
+                    $(`#${config.departmentFilterId}, #${config.positionFilterId}`).on('change', function() {
+                        filterReviewerOptions(config);
+                        updateDisplayAndCounts();
+                    });
+
+                    $(`#${config.searchFilterId}`).on('input', function() {
+                        filterReviewerOptions(config);
+                        updateDisplayAndCounts();
+                    });
+                });
+
+                $('#evaluatees').on('change', function() {
+                    updateDisplayAndCounts();
+                });
+
+                $(document).on('change', '.evaluatee-checkbox', function() {
+                    const selectedValues = $('.evaluatee-checkbox:checked').map(function() {
+                        return String($(this).val());
+                    }).get();
+
+                    $('#evaluatees').val(selectedValues);
+                    updateDisplayAndCounts();
+                });
+
+                $(document).on('change', '.reviewer-checkbox', function() {
+                    const selectId = $(this).data('select-id');
+                    const config = reviewerConfigs.find(item => item.selectId === selectId);
+                    if (!config) {
+                        return;
+                    }
+
+                    const selectedValue = $(this).is(':checked') ? String($(this).val()) : '';
+                    $(`#${config.selectId}`).val(selectedValue);
+                    renderReviewerCheckboxList(config, ($(`#${config.selectId} option`).map(function() {
+                        return $(this).clone();
+                    }).get()));
+                    updateDisplayAndCounts();
+                });
+
+                $('#evaluatees-select-all').on('change', function() {
+                    const selectedValues = new Set(($('#evaluatees').val() || []).map(String));
+                    const visibleValues = filteredEvaluateeOptions.map(option => String($(option).val()));
+
+                    if ($(this).is(':checked')) {
+                        visibleValues.forEach(value => selectedValues.add(value));
+                    } else {
+                        visibleValues.forEach(value => selectedValues.delete(value));
+                    }
+
+                    $('#evaluatees').val(Array.from(selectedValues));
+                    renderEvaluateeCheckboxList();
+                    updateDisplayAndCounts();
+                });
+
+                reviewerConfigs.forEach(config => {
+                    filterReviewerOptions(config);
+                });
+
                 // Update summary initially
                 updateSummary();
 
@@ -624,10 +952,21 @@
                 $('#reset-btn').on('click', function() {
                     if (confirm('คุณต้องการล้างข้อมูลในฟอร์มทั้งหมดใช่หรือไม่?')) {
                         $('#evaluation-form')[0].reset();
-                        $('#evaluatees').val(null).trigger('change');
+                        $('#evaluatees').val(null);
+                        $('#evaluatees-search-filter').val('');
                         $('#evaluator_id').val(null).trigger('change');
-                        $('#director_id').val(null).trigger('change');
-                        $('#manager_id').val(null).trigger('change');
+                        $('#director_id').val(null);
+                        $('#manager_id').val(null);
+                        reviewerConfigs.forEach(config => {
+                            $(`#${config.departmentFilterId}`).val('');
+                            $(`#${config.positionFilterId}`).val('');
+                            $(`#${config.searchFilterId}`).val('');
+                            filterReviewerOptions(config);
+                            $(`#${config.dropdownPanelId}`).addClass('hidden');
+                            $(`#${config.dropdownToggleId}`).find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                        });
+                        $('#evaluatees-dropdown-panel').addClass('hidden');
+                        $('#toggle-evaluatees-dropdown').find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
                         filterEvaluateesByCriteria();
                         updateDisplayAndCounts();
                         updateSummary();
