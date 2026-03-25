@@ -6,6 +6,7 @@
 @section('content')
 @php
         use Carbon\Carbon;
+        use App\Support\AssignmentFlow;
 
         function formatThaiDate($date)
         {
@@ -125,6 +126,31 @@
                                     $now = now();
                                     $startTime = \Carbon\Carbon::parse($assignment->start_time);
                                     $endTime = \Carbon\Carbon::parse($assignment->end_time);
+                                    $stageLabels = [
+                                        'evaluator' => 'ผู้ประเมิน',
+                                        'director' => 'กรรมการ',
+                                        'manager' => 'ผู้บริหาร',
+                                    ];
+                                    $reviewers = collect(AssignmentFlow::stagesFor($assignment))
+                                        ->map(function ($stage) use ($assignment, $stageLabels) {
+                                            $user = match ($stage) {
+                                                'evaluator' => $assignment->evaluatorUser,
+                                                'director' => $assignment->directorUser,
+                                                'manager' => $assignment->managerUser,
+                                                default => null,
+                                            };
+
+                                            if (! $user) {
+                                                return null;
+                                            }
+
+                                            return [
+                                                'label' => $stageLabels[$stage] ?? 'ผู้ประเมิน',
+                                                'user' => $user,
+                                            ];
+                                        })
+                                        ->filter()
+                                        ->values();
                                 @endphp
 
                                 <tr class="hover:bg-gray-50 transition-all">
@@ -152,19 +178,24 @@
 
                                     <!-- ผู้ประเมิน -->
                                     <td class="px-4 py-3 align-top">
-                                        @if($assignment->evaluatorUser)
-                                        <div class="flex items-center space-x-2">
-                                            <div class="bg-blue-100 px-3 py-1.5 rounded-xl flex items-center">
+                                        @if($reviewers->isNotEmpty())
+                                        <div class="space-y-2">
+                                            @foreach($reviewers as $reviewer)
+                                            <div class="bg-blue-100 px-3 py-2 rounded-xl flex items-center">
                                                 <i class="fas fa-user-check text-blue-500 mr-2"></i>
                                                 <div>
+                                                    <div class="text-xs font-semibold text-blue-600 leading-tight">
+                                                        {{ $reviewer['label'] }}
+                                                    </div>
                                                     <div class="text-sm font-semibold text-blue-700 leading-tight">
-                                                        {{ $assignment->evaluatorUser->name }}
+                                                        {{ $reviewer['user']->name }}
                                                     </div>
                                                     <div class="text-xs text-blue-600">
-                                                        {{ $assignment->evaluatorUser->position?->name ?? '-' }}
+                                                        {{ $reviewer['user']->position?->name ?? '-' }}
                                                     </div>
                                                 </div>
                                             </div>
+                                            @endforeach
                                         </div>
                                         @else
                                         <span class="text-sm text-gray-500">-</span>

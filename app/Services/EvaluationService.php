@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Reports;
 use App\Models\User;
+use App\Support\AssignmentFlow;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -14,9 +15,9 @@ class EvaluationService
     {
         return Reports::with([
             'reportData',
-            'assignments.assignmentData.evaluatorUser',
-            'assignments.assignmentData.directorUser',
-            'assignments.assignmentData.managerUser',
+            'assignments.assignmentData.evaluatorUser.position',
+            'assignments.assignmentData.directorUser.position',
+            'assignments.assignmentData.managerUser.position',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
         ])->get();
@@ -36,9 +37,10 @@ class EvaluationService
             $assignment->evaluateeName       = $assignment->evaluateeUser?->name ?? '-';
             $assignment->evaluateeDepartment = $assignment->evaluateeUser?->department?->department_name ?? '-';
             $assignment->evaluateePosition   = $assignment->evaluateeUser?->position?->name ?? '-';
-            $assignment->evaluatorPosition   = $assignment->assignmentData->evaluatorUser?->position?->name ?? '-';
+            $assignment->reviewerEntries     = $this->reviewerEntries($assignment->assignmentData)->all();
+            $assignment->evaluatorPosition   = $this->buildReviewerPositionText($assignment->assignmentData);
             $assignment->evaluateeAssignedPosition = $assignment->assignmentData?->evaluateePosition?->name ?? '-';
-            $assignment->evaluatorName       = $assignment->assignmentData->evaluatorUser?->name ?? '-';;
+            $assignment->evaluatorName       = $this->buildReviewerText($assignment->assignmentData);
             $assignment->startTime = $assignment->assignmentData?->start_time ?? null;
             $assignment->endTime   = $assignment->assignmentData?->end_time ?? null;
 
@@ -60,7 +62,7 @@ class EvaluationService
             $searchTerm = strtolower($filters['search']);
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
                 $evaluateeName = strtolower($assignment->evaluateeUser?->name ?? '');
-                $evaluatorName = strtolower($assignment->assignmentData->evaluatorUser?->name ?? '-');
+                $evaluatorName = strtolower($this->buildReviewerText($assignment->assignmentData));
                 $reportTitle   = strtolower($assignment->report?->reportData?->report_title ?? '');
 
                 return Str::contains($evaluateeName, $searchTerm)
@@ -165,7 +167,9 @@ class EvaluationService
             $query->where('evaluator_id', $user->id);
         })->with([
             'reportData',
-            'assignments.assignmentData',
+            'assignments.assignmentData.evaluatorUser.position',
+            'assignments.assignmentData.directorUser.position',
+            'assignments.assignmentData.managerUser.position',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
         ])->get();
@@ -194,5 +198,57 @@ class EvaluationService
         });
 
         return $direction === 'desc' ? $sorted->reverse()->values() : $sorted->values();
+    }
+
+    private function buildReviewerText($assignmentData): string
+    {
+        $reviewers = $this->reviewerEntries($assignmentData)
+            ->map(fn (array $reviewer) => "{$reviewer['label']}: {$reviewer['name']}");
+
+        return $reviewers->isNotEmpty() ? $reviewers->implode(', ') : '-';
+    }
+
+    private function buildReviewerPositionText($assignmentData): string
+    {
+        $positions = $this->reviewerEntries($assignmentData)
+            ->pluck('position')
+            ->filter();
+
+        return $positions->isNotEmpty() ? $positions->implode(', ') : '-';
+    }
+
+    private function reviewerEntries($assignmentData): Collection
+    {
+        if (! $assignmentData) {
+            return collect();
+        }
+
+        $stageLabels = [
+            'evaluator' => 'ผู้ประเมิน',
+            'director' => 'กรรมการ',
+            'manager' => 'ผู้บริหาร',
+        ];
+
+        return collect(AssignmentFlow::stagesFor($assignmentData))
+            ->map(function (string $stage) use ($assignmentData, $stageLabels) {
+                $user = match ($stage) {
+                    'evaluator' => $assignmentData->evaluatorUser,
+                    'director' => $assignmentData->directorUser,
+                    'manager' => $assignmentData->managerUser,
+                    default => null,
+                };
+
+                if (! $user) {
+                    return null;
+                }
+
+                return [
+                    'label' => $stageLabels[$stage] ?? 'ผู้ประเมิน',
+                    'name' => $user->name,
+                    'position' => $user->position?->name ?? null,
+                ];
+            })
+            ->filter()
+            ->values();
     }
 }

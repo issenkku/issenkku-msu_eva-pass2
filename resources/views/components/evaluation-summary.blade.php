@@ -141,6 +141,9 @@
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
                             $statusGroup = $statusGroupMapping[$statusFromDB] ?? $status;
+                            $reviewerEntries = collect($assignment->reviewerEntries ?? []);
+                            $primaryReviewer = $reviewerEntries->first();
+                            $additionalReviewerCount = max($reviewerEntries->count() - 1, 0);
 
                             $start = optional($assignmentData)->start_time ? Carbon::parse($assignmentData->start_time) : null;
                             $end = optional($assignmentData)->end_time ? Carbon::parse($assignmentData->end_time) : null;
@@ -189,8 +192,25 @@
                                 @endif
                             </td>
 
-                            <td class="min-w-[150px] border-b p-4 text-gray-500">
-                                {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
+                            <td class="min-w-[150px] border-b p-4 text-gray-500 align-top">
+                                <div class="max-w-[280px]">
+                                    @if($primaryReviewer)
+                                        <div class="break-words font-medium text-gray-700">
+                                          {{ $primaryReviewer['name'] }}
+                                        </div>
+                                        @if($additionalReviewerCount > 0)
+                                            <button
+                                                type="button"
+                                                class="mt-1 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+                                                onclick='window.openEvaluateeReviewerModal(@json($reviewerEntries->values()))'
+                                            >
+                                                เพิ่มเติม ({{ $additionalReviewerCount }} คน)
+                                            </button>
+                                        @endif
+                                    @else
+                                        -
+                                    @endif
+                                </div>
                             </td>
 
                             <td class="min-w-[180px] border-b px-2 py-4 text-center">
@@ -297,6 +317,25 @@
     </div>
 </div>
 
+<div id="evaluateeReviewerModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 px-4 py-6">
+    <div class="flex min-h-full items-center justify-center">
+        <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <div>
+                    <h3 class="text-lg font-semibold text-slate-900">รายชื่อผู้ประเมิน</h3>
+                    <p class="text-sm text-slate-500">แสดงผู้ประเมินทั้งหมดตามลำดับที่กำหนด</p>
+                </div>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="window.closeEvaluateeReviewerModal()">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="evaluateeReviewerModalBody" class="space-y-3 px-5 py-5"></div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const summaryRoot = document.getElementById('evaluationSummary');
@@ -363,4 +402,47 @@
         clearStatusQuery();
         applyFilter(initialStatus);
     });
+
+    window.closeEvaluateeReviewerModal = window.closeEvaluateeReviewerModal || function () {
+        const modal = document.getElementById('evaluateeReviewerModal');
+        const body = document.getElementById('evaluateeReviewerModalBody');
+        if (modal) modal.classList.add('hidden');
+        if (body) body.innerHTML = '';
+    };
+
+    window.openEvaluateeReviewerModal = window.openEvaluateeReviewerModal || function (reviewers) {
+        const modal = document.getElementById('evaluateeReviewerModal');
+        const body = document.getElementById('evaluateeReviewerModalBody');
+        if (!modal || !body) return;
+
+        body.innerHTML = (reviewers || []).map((reviewer, index) => `
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">ลำดับที่ ${index + 1}</div>
+                <div class="mt-1 text-sm font-semibold text-slate-900">${reviewer.label}: ${reviewer.name}</div>
+                <div class="mt-1 text-xs text-slate-500">${reviewer.position ?? '-'}</div>
+            </div>
+        `).join('');
+
+        modal.classList.remove('hidden');
+    };
+
+    window.bindEvaluateeReviewerModal = window.bindEvaluateeReviewerModal || function () {
+        const modal = document.getElementById('evaluateeReviewerModal');
+        if (!modal || modal.dataset.bound === 'true') return;
+
+        modal.dataset.bound = 'true';
+        modal.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                window.closeEvaluateeReviewerModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                window.closeEvaluateeReviewerModal();
+            }
+        });
+    };
+
+    window.bindEvaluateeReviewerModal();
 </script>

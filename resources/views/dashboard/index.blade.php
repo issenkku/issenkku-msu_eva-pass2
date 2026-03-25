@@ -724,6 +724,9 @@
                                     // Format score and date
                                     $evaluateeName = $evaluation->evaluateeName ?? '-';
                                     $evaluatorName = $evaluation->evaluatorName ?? '-';
+                                    $reviewerEntries = collect($evaluation->reviewerEntries ?? []);
+                                    $primaryReviewer = $reviewerEntries->first();
+                                    $additionalReviewerCount = max($reviewerEntries->count() - 1, 0);
                                     $score = $evaluation->report->score ?? 0;
 
                                     $status = $evaluation->report->report_status ?? ($evaluation->report->status ?? 'UNKNOWN');
@@ -772,11 +775,27 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="text-sm font-medium text-gray-900">
-                                                {{ $evaluatorName }}
-                                            </div>
+                                    <td class="px-6 py-4 align-top">
+                                        <div class="max-w-[280px]">
+                                            @if($primaryReviewer)
+                                                <div class="text-sm font-medium text-gray-900 break-words">
+                                                     {{ $primaryReviewer['name'] }}
+                                                </div>
+                                                @if($additionalReviewerCount > 0)
+                                                    <button
+                                                        type="button"
+                                                        class="mt-1 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
+                                                        data-reviewer-modal-button
+                                                        data-reviewers='@json($reviewerEntries->values())'
+                                                    >
+                                                        เพิ่มเติม ({{ $additionalReviewerCount }} คน)
+                                                    </button>
+                                                @endif
+                                            @else
+                                                <div class="text-sm font-medium text-gray-900 break-words">
+                                                    {{ $evaluatorName }}
+                                                </div>
+                                            @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center align-middle">
@@ -858,6 +877,25 @@
         </div>
     </div>
 
+    <div id="reviewerModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 px-4 py-6">
+        <div class="flex min-h-full items-center justify-center">
+            <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+                <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-slate-900">รายชื่อผู้ประเมิน</h3>
+                        <p class="text-sm text-slate-500">แสดงผู้ประเมินทั้งหมดตามลำดับที่กำหนด</p>
+                    </div>
+                    <button type="button" id="closeReviewerModal" class="text-slate-400 hover:text-slate-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="reviewerModalBody" class="space-y-3 px-5 py-5"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function resetFilters() {
             document.querySelector('input[name="start_time"]').value = '';
@@ -888,6 +926,10 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const reviewerModal = document.getElementById('reviewerModal');
+            const reviewerModalBody = document.getElementById('reviewerModalBody');
+            const closeReviewerModal = document.getElementById('closeReviewerModal');
+            const reviewerButtons = Array.from(document.querySelectorAll('[data-reviewer-modal-button]'));
             const statusFilterButtons = Array.from(document.querySelectorAll('.dashboard-status-filter'));
             const overviewFilterButtons = Array.from(document.querySelectorAll('[data-overview-filter]'));
             const tableRows = Array.from(document.querySelectorAll('[data-dashboard-row]'));
@@ -937,6 +979,57 @@
                     emptyState.style.display = hasMatch ? 'none' : 'block';
                 }
             };
+
+            const closeReviewerDialog = () => {
+                if (!reviewerModal) {
+                    return;
+                }
+
+                reviewerModal.classList.add('hidden');
+                if (reviewerModalBody) {
+                    reviewerModalBody.innerHTML = '';
+                }
+            };
+
+            const openReviewerDialog = (reviewers) => {
+                if (!reviewerModal || !reviewerModalBody) {
+                    return;
+                }
+
+                reviewerModalBody.innerHTML = reviewers.map((reviewer, index) => `
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">ลำดับที่ ${index + 1}</div>
+                        <div class="mt-1 text-sm font-semibold text-slate-900">${reviewer.label}: ${reviewer.name}</div>
+                        <div class="mt-1 text-xs text-slate-500">${reviewer.position ?? '-'}</div>
+                    </div>
+                `).join('');
+
+                reviewerModal.classList.remove('hidden');
+            };
+
+            reviewerButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    try {
+                        const reviewers = JSON.parse(button.dataset.reviewers || '[]');
+                        openReviewerDialog(reviewers);
+                    } catch (error) {
+                        console.error('Failed to parse reviewer list', error);
+                    }
+                });
+            });
+
+            closeReviewerModal?.addEventListener('click', closeReviewerDialog);
+            reviewerModal?.addEventListener('click', (event) => {
+                if (event.target === reviewerModal) {
+                    closeReviewerDialog();
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    closeReviewerDialog();
+                }
+            });
 
             const overviewChart = @json($overviewChart);
             const canvas = document.getElementById(overviewChart.id);

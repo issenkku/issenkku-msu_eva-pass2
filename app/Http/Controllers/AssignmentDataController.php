@@ -24,9 +24,9 @@ class AssignmentDataController extends Controller
         $assignmentData = AssignmentData::with([
             'assignments.evaluateeUser.position',
             'assignments.report.reportData',
-            'evaluatorUser',
-            'directorUser',
-            'managerUser',
+            'evaluatorUser.position',
+            'directorUser.position',
+            'managerUser.position',
         ])->orderBy('created_at', 'desc')->paginate(10);
 
         return view('assignment-data.index', compact('assignmentData'));

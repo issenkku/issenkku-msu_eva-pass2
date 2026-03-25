@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Evaluatee;
 
 
 use App\Http\Controllers\Controller;
+use App\Support\AssignmentFlow;
 use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
@@ -34,13 +35,17 @@ class DashboardEvaluateeController extends Controller
         $user = $request->user()->load([
             'position',
             'department',
-            'assignment.assignmentData', // Load nested relationships
+            'assignment.assignmentData.evaluatorUser.position',
+            'assignment.assignmentData.directorUser.position',
+            'assignment.assignmentData.managerUser.position',
             'assignment.report.reportData',
         ]);
 
         // $evaluations = $user->assignment->pluck('report')->filter();
 
         $evaluations = $user->assignment->map(function ($assignment) {
+            $assignment->reviewerEntries = $this->reviewerEntries($assignment->assignmentData)->all();
+            $assignment->evaluatorName = $this->buildReviewerText($assignment->assignmentData);
             return $assignment;
         });
 
@@ -61,8 +66,7 @@ class DashboardEvaluateeController extends Controller
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
             $evaluations = $evaluations->filter(function ($assignment) use ($searchTerm) {
-                $evaluatorName = $assignment->getEvaluatorUsers()->pluck('name')->implode(' ');
-                $evaluatorName = strtolower($evaluatorName);
+                $evaluatorName = strtolower($assignment->evaluatorName ?? $this->buildReviewerText($assignment->assignmentData));
                 $reportTitle = optional(optional($assignment->report)->reportData)->report_title ?? '';
 
                 return str_contains(strtolower($evaluatorName), strtolower($searchTerm))
@@ -190,6 +194,49 @@ class DashboardEvaluateeController extends Controller
 
             return in_array($reportStatus, $statuses);
         })->count();
+    }
+
+    private function buildReviewerText($assignmentData): string
+    {
+        $reviewers = $this->reviewerEntries($assignmentData)
+            ->map(fn (array $reviewer) => "{$reviewer['label']}: {$reviewer['name']}");
+
+        return $reviewers->isNotEmpty() ? $reviewers->implode(', ') : '-';
+    }
+
+    private function reviewerEntries($assignmentData): Collection
+    {
+        if (! $assignmentData) {
+            return collect();
+        }
+
+        $stageLabels = [
+            'evaluator' => 'ผู้ประเมิน',
+            'director' => 'กรรมการ',
+            'manager' => 'ผู้บริหาร',
+        ];
+
+        return collect(AssignmentFlow::stagesFor($assignmentData))
+            ->map(function (string $stage) use ($assignmentData, $stageLabels) {
+                $user = match ($stage) {
+                    'evaluator' => $assignmentData->evaluatorUser,
+                    'director' => $assignmentData->directorUser,
+                    'manager' => $assignmentData->managerUser,
+                    default => null,
+                };
+
+                if (! $user) {
+                    return null;
+                }
+
+                return [
+                    'label' => $stageLabels[$stage] ?? 'ผู้ประเมิน',
+                    'name' => $user->name,
+                    'position' => $user->position?->name ?? null,
+                ];
+            })
+            ->filter()
+            ->values();
     }
 
     /**
