@@ -228,9 +228,9 @@
                             </div>
                         </div>
 
-                        <div class="mt-6 flex flex-1 flex-col justify-center">
+                        <div class="mt-6">
                             @forelse($dueSoonList as $assignment)
-                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-amber-100">
+                                <div class="w-full border-b border-amber-100 py-4 last:border-b-0">
                                     <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
                                     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                         <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
@@ -240,7 +240,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm ring-1 ring-amber-100">
+                                <div class="w-full py-8 text-center text-sm text-slate-500">
                                     ไม่มีรายการที่ใกล้ครบกำหนด
                                 </div>
                             @endforelse
@@ -258,9 +258,9 @@
                             </div>
                         </div>
 
-                        <div class="mt-6 flex flex-1 flex-col justify-center">
+                        <div class="mt-6">
                             @forelse($overdueList as $assignment)
-                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-5 shadow-sm ring-1 ring-rose-100">
+                                <div class="w-full border-b border-rose-100 py-4 last:border-b-0">
                                     <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
                                     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                         <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
@@ -270,7 +270,7 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="mx-auto w-full  rounded-xl bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm ring-1 ring-rose-100">
+                                <div class="w-full py-8 text-center text-sm text-slate-500">
                                     ไม่มีรายการที่เลยกำหนด
                                 </div>
                             @endforelse
