@@ -18,12 +18,12 @@
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
                 <span class="text-gray-700">{{ $user->name ?? '-' }}</span>
             </div>
-            <div class="flex">
+            {{-- <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อผู้ประเมิน:</span>
                 <span class="text-gray-700">
                     {{ $assignment?->assignmentData?->evaluatorUser?->name ?? '-' }}
                 </span>
-            </div>
+            </div> --}}
             <div class="flex">
                 <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
                 <span class="text-gray-700">{{ $user->position->name ?? '-' }}</span>
