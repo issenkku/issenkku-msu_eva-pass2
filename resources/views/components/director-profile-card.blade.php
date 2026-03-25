@@ -1,42 +1,76 @@
-{{-- ไฟล์มุมมอง: resources/views\components\director-profile-card.blade.php --}}
 @props([
     'startTimeFormatted' => '-',
     'endTimeFormatted' => '-',
-    'reportName' => 'ไม่พบชื่อรายงาน',
+    'reportName' => '-',
     'report' => null,
     'user' => null,
     'assignment' => null,
-    'assessmentType' => null
+    'assessmentType' => null,
 ])
 
-{{-- บล็อกเนื้อหา --}}
+@php
+    $assignmentData = $assignment?->assignmentData;
+    $stageLabels = [
+        'evaluator' => 'หัวหน้างาน',
+        'director' => 'กรรมการ',
+        'manager' => 'ผู้บริหาร',
+    ];
+
+    $participants = collect(\App\Support\AssignmentFlow::stagesFor($assignmentData))
+        ->filter(fn (string $stage) => in_array($stage, ['evaluator', 'director', 'manager'], true))
+        ->map(function (string $stage) use ($assignmentData, $assignment, $stageLabels) {
+            $user = match ($stage) {
+                'evaluator' => $assignmentData?->evaluatorUser,
+                'director' => $assignmentData?->directorUser,
+                'manager' => $assignmentData?->managerUser,
+                default => null,
+            };
+
+            if (! $user) {
+                return null;
+            }
+
+            $position = match ($stage) {
+                'evaluator' => $assignment->evaluatorPosition ?? null,
+                'director' => $assignment->directorPosition ?? null,
+                'manager' => $assignment->managerPosition ?? null,
+                default => null,
+            };
+
+            return [
+                'label' => $stageLabels[$stage] ?? 'ผู้เกี่ยวข้อง',
+                'name' => trim(collect([$user->prefix ?? null, $user->name ?? null])->filter()->implode(' ')) ?: '-',
+                'position' => $position ?: ($user->position->name ?? '-'),
+            ];
+        })
+        ->filter()
+        ->values();
+@endphp
+
 <div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-md">
-    <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">ข้อมูลผู้ประเมิน</h3>
+    <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">ข้อมูลผู้เกี่ยวข้องในการประเมิน</h3>
 
-    {{--  --}}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Left Column -->
-        {{-- บล็อกเนื้อหา --}}
-        <div class="space-y-3">
-            <div class="flex">
-                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
-                <span class="text-gray-700">
-                    {{ $assignment->assignmentData->evaluatorUser?->name ?? '-' }}
-                 </span>
-            </div>
-            <div class="flex">
-                <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
-                <span class="text-gray-700">{{ $assignment->evaluatorPosition }}</span>
-            </div>
+    @if($participants->isNotEmpty())
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            @foreach($participants as $participant)
+                <div class="rounded-xl border border-purple-200 bg-white/70 px-4 py-4">
+                    <div class="text-sm font-semibold text-purple-700">{{ $participant['label'] }}</div>
+                    <div class="mt-3 space-y-2">
+                        <div class="flex">
+                            <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
+                            <span class="text-gray-700">{{ $participant['name'] }}</span>
+                        </div>
+                        <div class="flex">
+                            <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
+                            <span class="text-gray-700">{{ $participant['position'] }}</span>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-
-        <!-- Right Column -->
-        {{-- บล็อกเนื้อหา --}}
-        <div class="space-y-3">
-            <div class="flex">
-                <span class="font-bold text-gray-800 w-36 flex-shrink-0">หน่วยงาน/คณะ:</span>
-                <span class="text-gray-700">{{ $assignment->evaluateeDepartment }}</span>
-            </div>
+    @else
+        <div class="rounded-xl border border-dashed border-purple-200 bg-white/60 px-4 py-6 text-sm text-gray-500">
+            ไม่พบข้อมูลผู้เกี่ยวข้องในการประเมินในรอบนี้
         </div>
-    </div>
+    @endif
 </div>
