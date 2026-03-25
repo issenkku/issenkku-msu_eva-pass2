@@ -148,23 +148,34 @@
                             <h4 class="text-base font-bold text-slate-800">Pie Chart สรุปสถานะ</h4>
                             <p class="text-sm text-slate-500">ดูสัดส่วนของงานแต่ละสถานะในภาพรวมเดียว</p>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2">
+                        <div class="hidden flex flex-wrap items-center gap-2">
                           
                             <button
                             type="button"
-                            id="evaluationClearFilter"
+                            id="evaluationClearFilterTop"
                             class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
                                 ล้างการกรอง
                             </button>
                         </div>
                     </div>
 
-                    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px,minmax(0,360px)] lg:items-center lg:justify-between">
-                        <div class="relative mx-auto h-[260px] w-full max-w-[260px]">
-                            <canvas id="{{ $statusChart['id'] }}"></canvas>
-                            <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-                                <div id="statusChartCenterValue" class="text-4xl font-extrabold leading-none text-slate-900">{{ $statusChart['centerValue'] }}</div>
-                                <div id="statusChartCenterLabel" class="mt-2 text-sm font-medium text-slate-500">{{ $statusChart['centerLabel'] }}</div>
+                    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px,minmax(0,360px)] lg:items-start lg:justify-between">
+                        <div>
+                            <div class="relative mx-auto h-[260px] w-full max-w-[260px]">
+                                <canvas id="{{ $statusChart['id'] }}"></canvas>
+                                <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+                                    <div id="statusChartCenterValue" class="text-4xl font-extrabold leading-none text-slate-900">{{ $statusChart['centerValue'] }}</div>
+                                    <div id="statusChartCenterLabel" class="mt-2 text-sm font-medium text-slate-500">{{ $statusChart['centerLabel'] }}</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 text-center">
+                                <button
+                                    type="button"
+                                    id="evaluationClearFilter"
+                                    class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
+                                    ล้างการกรอง
+                                </button>
                             </div>
                         </div>
 
@@ -211,6 +222,15 @@
                                     <span class="text-sm font-semibold text-slate-400">{{ $completedPercent }}%</span>
                                 </div>
                                 <div class="mt-2 text-2xl font-extrabold leading-none text-emerald-600">{{ $completedAssignments }}</div>
+                            </div>
+
+                            <div class="hidden pt-1 text-right">
+                                <button
+                                    type="button"
+                                    id="evaluationClearFilterBottom"
+                                    class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
+                                    ล้างการกรอง
+                                </button>
                             </div>
                         </div>
                     </div>
