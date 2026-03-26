@@ -160,14 +160,6 @@ class EvaluatorController extends Controller
         ];
 
         $totalEvaluations = $evaluations->count();
-        $waitingForSubmissionCount = $this->countByStatus($evaluations, ['Assigned', 'Draft']);
-        $pendingEvaluatorCount = $this->countByStatus($evaluations, ['Pending']);
-        $inProgressCount = $this->countByStatus($evaluations, ['Evaluator_draft']);
-        $forwardedCount = $this->countByStatus($evaluations, ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft']);
-        $completedCount = $this->countByStatus($evaluations, ['Completed']);
-        $progressPercent = $totalEvaluations > 0
-            ? round(($completedCount / $totalEvaluations) * 100, 1)
-            : 0;
         $dueSoonCount = $evaluations->filter(function ($assignment) {
             $endTime = optional($assignment->assignmentData)->end_time;
             $status = optional($assignment->report)->status;
@@ -213,6 +205,16 @@ class EvaluatorController extends Controller
             ->filter(fn ($assignment) => $assignment->evaluateeUser)
             ->groupBy('evaluatee_id')
             ->count();
+        $totalUsers = User::count();
+        $overviewEvaluateeStatusCounts = $this->summarizeEvaluateeOverviewStatuses($evaluations);
+        $waitingForSubmissionCount = $overviewEvaluateeStatusCounts['รอการกรอกข้อมูล'] ?? 0;
+        $pendingEvaluatorCount = $overviewEvaluateeStatusCounts['รอคุณประเมิน'] ?? 0;
+        $inProgressCount = $overviewEvaluateeStatusCounts['กำลังประเมิน'] ?? 0;
+        $forwardedCount = $overviewEvaluateeStatusCounts['ส่งต่อแล้ว'] ?? 0;
+        $completedCount = $overviewEvaluateeStatusCounts['เสร็จสิ้น'] ?? 0;
+        $progressPercent = $totalEvaluatees > 0
+            ? round(($completedCount / $totalEvaluatees) * 100, 1)
+            : 0;
 
         // Get reports for statistics
         $userReports = $evaluations->map(function ($assignment) {
@@ -240,6 +242,8 @@ class EvaluatorController extends Controller
             'averageScore' => $averageScore,
             'totalEvaluations' => $totalEvaluations,
             'totalEvaluatees' => $totalEvaluatees,
+            'totalUsers' => $totalUsers,
+            'overviewEvaluateeStatusCounts' => $overviewEvaluateeStatusCounts,
             'waitingForSubmissionCount' => $waitingForSubmissionCount,
             'pendingEvaluatorCount' => $pendingEvaluatorCount,
             'inProgressCount' => $inProgressCount,
@@ -258,6 +262,48 @@ class EvaluatorController extends Controller
         return $evaluations->filter(function ($assignment) use ($statuses) {
             return in_array(optional($assignment->report)->status, $statuses);
         })->count();
+    }
+
+    private function summarizeEvaluateeOverviewStatuses($evaluations): array
+    {
+        $counts = [
+            'รอการกรอกข้อมูล' => 0,
+            'รอคุณประเมิน' => 0,
+            'กำลังประเมิน' => 0,
+            'ส่งต่อแล้ว' => 0,
+            'เสร็จสิ้น' => 0,
+        ];
+
+        $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser)
+            ->groupBy('evaluatee_id')
+            ->each(function ($assignments) use (&$counts) {
+                $statuses = $assignments
+                    ->map(fn ($assignment) => optional($assignment->report)->status ?? 'Assigned')
+                    ->filter()
+                    ->values();
+
+                if ($statuses->isEmpty()) {
+                    $counts['รอการกรอกข้อมูล']++;
+                    return;
+                }
+
+                $allCompleted = $statuses->every(fn ($status) => $status === 'Completed');
+
+                if ($allCompleted) {
+                    $counts['เสร็จสิ้น']++;
+                } elseif ($statuses->contains(fn ($status) => in_array($status, ['Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft'], true))) {
+                    $counts['ส่งต่อแล้ว']++;
+                } elseif ($statuses->contains('Evaluator_draft')) {
+                    $counts['กำลังประเมิน']++;
+                } elseif ($statuses->contains('Pending')) {
+                    $counts['รอคุณประเมิน']++;
+                } else {
+                    $counts['รอการกรอกข้อมูล']++;
+                }
+            });
+
+        return $counts;
     }
 
     private function getStatusMeta(?string $status): array

@@ -25,6 +25,45 @@ class ManagerController extends Controller
         })->count();
     }
 
+    private function summarizeEvaluateeOverviewStatuses($evaluations): array
+    {
+        $counts = [
+            'รอการกรอกข้อมูล' => 0,
+            'ยังไม่ประเมิน' => 0,
+            'กำลังดำเนินการ' => 0,
+            'ประเมินเสร็จสิ้น' => 0,
+        ];
+
+        $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser)
+            ->groupBy('evaluateeUser.id')
+            ->each(function ($assignments) use (&$counts) {
+                $statuses = $assignments
+                    ->map(fn ($assignment) => optional($assignment->report)->status ?? 'Assigned')
+                    ->filter()
+                    ->values();
+
+                if ($statuses->isEmpty()) {
+                    $counts['รอการกรอกข้อมูล']++;
+                    return;
+                }
+
+                $allCompleted = $statuses->every(fn ($status) => $status === 'Completed');
+
+                if ($allCompleted) {
+                    $counts['ประเมินเสร็จสิ้น']++;
+                } elseif ($statuses->contains('Manager_draft')) {
+                    $counts['กำลังดำเนินการ']++;
+                } elseif ($statuses->contains('Manager_assign')) {
+                    $counts['ยังไม่ประเมิน']++;
+                } else {
+                    $counts['รอการกรอกข้อมูล']++;
+                }
+            });
+
+        return $counts;
+    }
+
     /**
      * เมธอด: dashboard
      * จุดประสงค์: แสดงหน้า manager_dashboard.index บันทึกข้อมูล LengthAwarePaginator
@@ -98,22 +137,6 @@ class ManagerController extends Controller
         });
 
         $totalEvaluations = $evaluations->count();
-        $awaitingManagerCount = $this->countByStatus($evaluations, ['Manager_assign']);
-        $managerInProgressCount = $this->countByStatus($evaluations, ['Manager_draft']);
-        $completedCount = $this->countByStatus($evaluations, ['Completed']);
-        $beforeManagerCount = $evaluations->filter(function ($assignment) {
-            return in_array(optional($assignment->report)->status, [
-                'Assigned',
-                'Draft',
-                'Pending',
-                'Evaluator_draft',
-                'Director_assigned',
-                'Director_draft',
-            ]);
-        })->count();
-        $progressPercent = $totalEvaluations > 0
-            ? round(($completedCount / $totalEvaluations) * 100, 1)
-            : 0;
         $dueSoonCount = $evaluations->filter(function ($assignment) {
             $endTime = optional($assignment->assignmentData)->end_time;
             $status = optional($assignment->report)->status;
@@ -158,6 +181,15 @@ class ManagerController extends Controller
             ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
+        $totalUsers = \App\Models\User::count();
+        $overviewEvaluateeStatusCounts = $this->summarizeEvaluateeOverviewStatuses($evaluations);
+        $beforeManagerCount = $overviewEvaluateeStatusCounts['รอการกรอกข้อมูล'] ?? 0;
+        $awaitingManagerCount = $overviewEvaluateeStatusCounts['ยังไม่ประเมิน'] ?? 0;
+        $managerInProgressCount = $overviewEvaluateeStatusCounts['กำลังดำเนินการ'] ?? 0;
+        $completedCount = $overviewEvaluateeStatusCounts['ประเมินเสร็จสิ้น'] ?? 0;
+        $progressPercent = $totalEvaluatees > 0
+            ? round(($completedCount / $totalEvaluatees) * 100, 1)
+            : 0;
 
         $userReports = $evaluations->map(function ($assignment) {
             return $assignment->report;
@@ -187,6 +219,8 @@ class ManagerController extends Controller
             'averageScore' => $averageScore,
             'totalEvaluations' => $totalEvaluations,
             'totalEvaluatees' => $totalEvaluatees,
+            'totalUsers' => $totalUsers,
+            'overviewEvaluateeStatusCounts' => $overviewEvaluateeStatusCounts,
             'departments' => $departments,
             'awaitingManagerCount' => $awaitingManagerCount,
             'managerInProgressCount' => $managerInProgressCount,

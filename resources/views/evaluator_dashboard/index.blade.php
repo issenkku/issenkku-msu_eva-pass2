@@ -108,7 +108,7 @@
                 ],
                 'centerValue' => $progressPercent.'%',
                 'centerLabel' => 'ความคืบหน้ารวม',
-                'centerMeta' => "เสร็จสิ้นแล้ว {$completedCount} จาก {$totalEvaluations} รายการ",
+                'centerMeta' => "เสร็จสิ้นแล้ว {$completedCount} จาก {$totalEvaluatees} คน",
             ];
         @endphp
 
@@ -132,18 +132,18 @@
                                 <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white px-4 py-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <div class="text-base font-bold leading-tight text-blue-600">งานทั้งหมด</div>
-                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluations }}</div>
+                                            <div class="text-base font-bold leading-tight text-blue-600">บุคลากรทั้งหมด</div>
+                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalUsers }}</div>
                                         </div>
                                         <div class="shrink-0 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-bold text-blue-700">
-                                            รายการ
+                                            คน
                                         </div>
                                     </div>
                                 </div>
                                 <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white px-4 py-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <div class="text-base font-bold leading-tight text-emerald-600">ผู้เข้าประเมิน</div>
+                                            <div class="text-base font-bold leading-tight text-emerald-600">ผู้เข้ารับการประเมิน</div>
                                             <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluatees }}</div>
                                         </div>
                                         <div class="shrink-0 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-bold text-emerald-700">
@@ -183,7 +183,7 @@
                             @foreach ($overviewChart['labels'] as $index => $label)
                                 @php
                                     $count = $overviewChart['data'][$index];
-                                    $percent = $totalEvaluations > 0 ? round(($count / $totalEvaluations) * 100, 1) : 0;
+                                    $percent = $totalEvaluatees > 0 ? round(($count / $totalEvaluatees) * 100, 1) : 0;
                                     $cardColor = $overviewChart['colors'][$index];
                                 @endphp
                                 <div
@@ -198,13 +198,13 @@
                                         </div>
                                         <div class="shrink-0 rounded-2xl px-3 py-2 text-center" style="min-width: 86px; background-color: {{ $cardColor }}14;">
                                             <div class="text-2xl font-extrabold leading-none" style="color: {{ $cardColor }}">{{ $count }}</div>
-                                            <div class="mt-1 text-xs font-semibold" style="color: {{ $cardColor }}">รายการ</div>
+                                            <div class="mt-1 text-xs font-semibold" style="color: {{ $cardColor }}">คน</div>
                                         </div>
                                     </div>
 
                                     <div class=" flex items-center justify-between gap-4 text-sm">
                                         <div class="text-gray-600">
-                                            คิดเป็น <span class="font-semibold" style="color: {{ $cardColor }}">{{ $percent }}%</span> ของงานทั้งหมด {{ $totalEvaluations }} รายการ
+                                            คิดเป็น <span class="font-semibold" style="color: {{ $cardColor }}">{{ $percent }}%</span> ของผู้เข้ารับการประเมินทั้งหมด {{ $totalEvaluatees }} คน
                                         </div>
                                         {{-- <div class="shrink-0 text-xs text-gray-500">
                                             จากทั้งหมด {{ $totalEvaluations }} รายการ
@@ -412,7 +412,7 @@
                             setOverviewCenter(
                                 percent + '%',
                                 overviewChartLabels[index],
-                                'จำนวน ' + count + ' รายการ'
+                                'จำนวน ' + count + ' คน'
                             );
                         },
                         onClick: function(event, activeElements) {

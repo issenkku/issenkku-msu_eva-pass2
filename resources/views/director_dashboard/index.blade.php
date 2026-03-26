@@ -107,7 +107,7 @@
                 'id' => 'directorOverviewChart',
                 'labels' => ['รอการกรอกข้อมูล', 'ยังไม่ประเมิน', 'กำลังดำเนินการ', 'รอผลการประเมิน', 'ประเมินเสร็จสิ้น'],
                 'data' => [
-                    $statusCounts['รอการกรอกข้อมูล'] ?? 0,
+                    $overviewEvaluateeStatusCounts['รอการกรอกข้อมูล'] ?? 0,
                     $awaitingDirectorCount,
                     $directorInProgressCount,
                     $forwardedToManagerCount,
@@ -123,7 +123,7 @@
                 ],
                 'centerValue' => $progressPercent.'%',
                 'centerLabel' => 'ความคืบหน้ารวม',
-                'centerMeta' => "ปิดงานแล้ว {$completedCount} จาก {$totalEvaluations} รายการ",
+                'centerMeta' => "ปิดงานแล้ว {$completedCount} จาก {$totalEvaluatees} คน",
             ];
         @endphp
 
@@ -143,16 +143,16 @@
                                 <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white px-4 py-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <div class="text-base font-bold leading-tight text-blue-600">งานทั้งหมด</div>
-                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluations }}</div>
+                                            <div class="text-base font-bold leading-tight text-blue-600">บุคลากรทั้งหมด</div>
+                                            <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalUsers }}</div>
                                         </div>
-                                        <div class="shrink-0 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-bold text-blue-700">รายการ</div>
+                                        <div class="shrink-0 rounded-full bg-blue-100 px-3 py-1.5 text-sm font-bold text-blue-700">คน</div>
                                     </div>
                                 </div>
                                 <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white px-4 py-3 shadow-sm">
                                     <div class="flex items-start justify-between gap-3">
                                         <div class="min-w-0">
-                                            <div class="text-base font-bold leading-tight text-emerald-600">ผู้เข้าประเมิน</div>
+                                            <div class="text-base font-bold leading-tight text-emerald-600">ผู้เข้ารับการประเมิน</div>
                                             <div class="mt-3 text-2xl font-extrabold leading-none text-slate-900">{{ $totalEvaluatees }}</div>
                                         </div>
                                         <div class="shrink-0 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-bold text-emerald-700">คน</div>
@@ -187,7 +187,7 @@
                             @foreach ($directorOverviewChart['labels'] as $index => $label)
                                 @php
                                     $count = $directorOverviewChart['data'][$index];
-                                    $percent = $totalEvaluations > 0 ? round(($count / $totalEvaluations) * 100, 1) : 0;
+                                    $percent = $totalEvaluatees > 0 ? round(($count / $totalEvaluatees) * 100, 1) : 0;
                                     $cardColor = $directorOverviewChart['colors'][$index];
                                 @endphp
                                 <div class="rounded-xl border px-4 py-3.5 shadow-sm" style="border-color: {{ $cardColor }}22; background: linear-gradient(135deg, {{ $cardColor }}12 0%, #ffffff 55%); box-shadow: inset 4px 0 0 {{ $cardColor }};">
@@ -200,13 +200,13 @@
                                         </div>
                                         <div class="shrink-0 rounded-2xl px-3 py-2 text-center" style="min-width: 86px; background-color: {{ $cardColor }}14;">
                                             <div class="text-2xl font-extrabold leading-none" style="color: {{ $cardColor }}">{{ $count }}</div>
-                                            <div class="mt-1 text-xs font-semibold" style="color: {{ $cardColor }}">รายการ</div>
+                                            <div class="mt-1 text-xs font-semibold" style="color: {{ $cardColor }}">คน</div>
                                         </div>
                                     </div>
 
                                     <div class="flex items-center justify-between gap-4 text-sm">
                                         <div class="text-gray-600">
-                                            คิดเป็น <span class="font-semibold" style="color: {{ $cardColor }}">{{ $percent }}%</span> ของงานทั้งหมด {{ $totalEvaluations }} รายการ
+                                            คิดเป็น <span class="font-semibold" style="color: {{ $cardColor }}">{{ $percent }}%</span> ของผู้เข้ารับการประเมินทั้งหมด {{ $totalEvaluatees }} คน
                                         </div>
                                     </div>
 
@@ -398,7 +398,7 @@
                             const count = overviewChartData[index] || 0;
                             const total = overviewChartData.reduce((sum, item) => sum + item, 0);
                             const percent = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
-                            setOverviewCenter(percent + '%', overviewChartLabels[index], 'จำนวน ' + count + ' รายการ');
+                            setOverviewCenter(percent + '%', overviewChartLabels[index], 'จำนวน ' + count + ' คน');
                         },
                         onClick: function(event, activeElements) {
                             if (!activeElements.length) {
