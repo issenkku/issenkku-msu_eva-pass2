@@ -59,6 +59,48 @@ class DashboardController extends Controller
         })->count();
     }
 
+    private function summarizeEvaluateeOverviewStatuses($evaluations): array
+    {
+        $counts = [
+            'มอบหมาย' => 0,
+            'เริ่มกรอกข้อมูล' => 0,
+            'กำลังดำเนินการ' => 0,
+            'ประเมินเสร็จสิ้น' => 0,
+        ];
+
+        $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser)
+            ->groupBy('evaluateeUser.id')
+            ->each(function ($assignments) use (&$counts) {
+                $statuses = $assignments
+                    ->map(fn ($assignment) => optional($assignment->report)->status ?? 'Assigned')
+                    ->filter()
+                    ->values();
+
+                if ($statuses->isEmpty()) {
+                    $counts['มอบหมาย']++;
+                    return;
+                }
+
+                $allCompleted = $statuses->every(fn ($status) => $status === 'Completed');
+                $allAssigned = $statuses->every(fn ($status) => in_array($status, ['Assigned', 'Manager_assign']));
+                $hasDraftOnly = $statuses->contains('Draft')
+                    && $statuses->every(fn ($status) => in_array($status, ['Assigned', 'Manager_assign', 'Draft']));
+
+                if ($allCompleted) {
+                    $counts['ประเมินเสร็จสิ้น']++;
+                } elseif ($allAssigned) {
+                    $counts['มอบหมาย']++;
+                } elseif ($hasDraftOnly) {
+                    $counts['เริ่มกรอกข้อมูล']++;
+                } else {
+                    $counts['กำลังดำเนินการ']++;
+                }
+            });
+
+        return $counts;
+    }
+
     private function statusToProgress(string $status): int
     {
         return match ($status) {
@@ -160,6 +202,11 @@ class DashboardController extends Controller
         $startedEvaluateesPercent = $totalEvaluatees > 0
             ? round(($startedEvaluatees / $totalEvaluatees) * 100, 1)
             : 0;
+        $overviewEvaluateeStatusCounts = $this->summarizeEvaluateeOverviewStatuses($evaluations);
+        $overviewCompletedEvaluatees = $overviewEvaluateeStatusCounts['ประเมินเสร็จสิ้น'] ?? 0;
+        $overviewCompletedEvaluateesPercent = $totalEvaluatees > 0
+            ? round(($overviewCompletedEvaluatees / $totalEvaluatees) * 100, 1)
+            : 0;
         $totalUsers = User::count();
 
         $userReports = $evaluations->map(function ($assignment) {
@@ -217,6 +264,9 @@ class DashboardController extends Controller
             'notStartedEvaluatees' => $notStartedEvaluatees,
             'startedEvaluatees' => $startedEvaluatees,
             'startedEvaluateesPercent' => $startedEvaluateesPercent,
+            'overviewEvaluateeStatusCounts' => $overviewEvaluateeStatusCounts,
+            'overviewCompletedEvaluatees' => $overviewCompletedEvaluatees,
+            'overviewCompletedEvaluateesPercent' => $overviewCompletedEvaluateesPercent,
             'notStartedCount' => $notStartedCount,
             'draftCount' => $draftCount,
             'inReviewCount' => $inReviewCount,

@@ -235,28 +235,28 @@
             'id' => 'overallCompletionChart',
             'labels' => ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'กำลังดำเนินการ', 'ประเมินเสร็จสิ้น'],
             'data' => [
-                $statusCounts['มอบหมาย'] ?? 0,
-                $statusCounts['เริ่มกรอกข้อมูล'] ?? 0,
-                $statusCounts['กำลังดำเนินการ'] ?? 0,
-                $statusCounts['ประเมินเสร็จสิ้น'] ?? 0,
+                $overviewEvaluateeStatusCounts['มอบหมาย'] ?? 0,
+                $overviewEvaluateeStatusCounts['เริ่มกรอกข้อมูล'] ?? 0,
+                $overviewEvaluateeStatusCounts['กำลังดำเนินการ'] ?? 0,
+                $overviewEvaluateeStatusCounts['ประเมินเสร็จสิ้น'] ?? 0,
             ],
             'colors' => ['#ef4444', '#f97316', '#3b82f6', '#22c55e'],
             'filters' => ['มอบหมาย', 'เริ่มกรอกข้อมูล', 'กำลังดำเนินการ', 'ประเมินเสร็จสิ้น'],
-            'centerValue' => $progressPercent.'%',
+            'centerValue' => $overviewCompletedEvaluateesPercent.'%',
             'centerLabel' => 'ความคืบหน้ารวม',
-            'centerSubLabel' => 'เสร็จสิ้นแล้ว '.$completedCount.' จาก '.$totalEvaluations.' รายการ',
+            'centerSubLabel' => 'เสร็จสิ้นแล้ว '.$overviewCompletedEvaluatees.' จาก '.$totalEvaluatees.' คน',
         ];
 
         $overviewMiniCards = [
             [
-                'title' => 'งานทั้งหมด',
-                'value' => $totalEvaluations,
-                'unit' => 'รายการ',
+                'title' => 'บุคลากรทั้งหมด',
+                'value' => $totalUsers,
+                'unit' => 'คน',
                 'accent' => 'text-blue-600',
                 'badge' => 'bg-blue-100 text-blue-700',
             ],
             [
-                'title' => 'ผู้เข้าประเมิน',
+                'title' => 'ผู้เข้ารับการประเมิน',
                 'value' => $totalEvaluatees,
                 'unit' => 'คน',
                 'accent' => 'text-emerald-600',
@@ -267,32 +267,32 @@
         $overviewStatusCards = [
             [
                 'label' => 'มอบหมาย',
-                'count' => $statusCounts['มอบหมาย'] ?? 0,
-                'percent' => $totalEvaluations > 0 ? round((($statusCounts['มอบหมาย'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'count' => $overviewEvaluateeStatusCounts['มอบหมาย'] ?? 0,
+                'percent' => $totalEvaluatees > 0 ? round((($overviewEvaluateeStatusCounts['มอบหมาย'] ?? 0) / $totalEvaluatees) * 100, 1) : 0,
                 'color' => '#ef4444',
                 'filter' => 'มอบหมาย',
                 'text' => 'ยังไม่ประเมิน',
             ],
             [
                 'label' => 'เริ่มกรอกข้อมูล',
-                'count' => $statusCounts['เริ่มกรอกข้อมูล'] ?? 0,
-                'percent' => $totalEvaluations > 0 ? round((($statusCounts['เริ่มกรอกข้อมูล'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'count' => $overviewEvaluateeStatusCounts['เริ่มกรอกข้อมูล'] ?? 0,
+                'percent' => $totalEvaluatees > 0 ? round((($overviewEvaluateeStatusCounts['เริ่มกรอกข้อมูล'] ?? 0) / $totalEvaluatees) * 100, 1) : 0,
                 'color' => '#f97316',
                 'filter' => 'เริ่มกรอกข้อมูล',
                 'text' => 'เริ่มกรอกข้อมูล',
             ],
             [
                 'label' => 'กำลังดำเนินการ',
-                'count' => $statusCounts['กำลังดำเนินการ'] ?? 0,
-                'percent' => $totalEvaluations > 0 ? round((($statusCounts['กำลังดำเนินการ'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'count' => $overviewEvaluateeStatusCounts['กำลังดำเนินการ'] ?? 0,
+                'percent' => $totalEvaluatees > 0 ? round((($overviewEvaluateeStatusCounts['กำลังดำเนินการ'] ?? 0) / $totalEvaluatees) * 100, 1) : 0,
                 'color' => '#3b82f6',
                 'filter' => 'กำลังดำเนินการ',
                 'text' => 'กำลังดำเนินการ',
             ],
             [
                 'label' => 'ประเมินเสร็จสิ้น',
-                'count' => $statusCounts['ประเมินเสร็จสิ้น'] ?? 0,
-                'percent' => $totalEvaluations > 0 ? round((($statusCounts['ประเมินเสร็จสิ้น'] ?? 0) / $totalEvaluations) * 100, 1) : 0,
+                'count' => $overviewEvaluateeStatusCounts['ประเมินเสร็จสิ้น'] ?? 0,
+                'percent' => $totalEvaluatees > 0 ? round((($overviewEvaluateeStatusCounts['ประเมินเสร็จสิ้น'] ?? 0) / $totalEvaluatees) * 100, 1) : 0,
                 'color' => '#22c55e',
                 'filter' => 'ประเมินเสร็จสิ้น',
                 'text' => 'ประเมินเสร็จสิ้น',
@@ -538,12 +538,12 @@
                                                     <span class="text-lg font-semibold text-slate-900">{{ $card['text'] }}</span>
                                                 </div>
                                                 <div class="mt-4 text-sm text-slate-500">
-                                                    คิดเป็น <span class="font-bold" style="color: {{ $card['color'] }}">{{ $card['percent'] }}%</span> ของงานทั้งหมด {{ $totalEvaluations }} รายการ
+                                                    คิดเป็น <span class="font-bold" style="color: {{ $card['color'] }}">{{ $card['percent'] }}%</span> ของผู้เข้าประเมินทั้งหมด {{ $totalEvaluatees }} คน
                                                 </div>
                                             </div>
                                             <div class="min-w-[78px] rounded-2xl px-3.5 py-2.5 text-center" style="background-color: {{ $card['color'] }}14; color: {{ $card['color'] }}">
                                                 <div class="text-[2.1rem] font-extrabold leading-none">{{ $card['count'] }}</div>
-                                                <div class="mt-1.5 text-sm font-semibold leading-none">รายการ</div>
+                                                <div class="mt-1.5 text-sm font-semibold leading-none">คน</div>
                                             </div>
                                         </div>
                                         <div class="mt-4 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -1101,7 +1101,7 @@
                 centerLabelEl.textContent = chart.data.labels[index];
 
                 if (centerSubLabelEl) {
-                    centerSubLabelEl.textContent = `${value} รายการ`;
+                    centerSubLabelEl.textContent = `${value} คน`;
                 }
             };
             if (canvas) {
