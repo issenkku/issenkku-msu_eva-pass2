@@ -688,18 +688,27 @@
             return;
         }
 
-        // Quantity: sum all score_D inputs (fallback to base if none)
+        // Quantity: compute score_D from score_A/B/C, matching backend save logic
         let quantitySum = 0;
-        const quantityInputs = document.querySelectorAll('input[name^=\"quantity_list\"][name$=\"[score_D]\"]');
-        if (quantityInputs.length > 0) {
-            quantityInputs.forEach(input => {
-                let val = parseFloat(input.value);
-                if (!isNaN(val)) quantitySum += val;
-            });
-        } else {
-            const baseInput = document.getElementById('quantity-base-score');
-            quantitySum = baseInput ? parseFloat(baseInput.value) || 0 : 0;
-        }
+        document.querySelectorAll('input[name^=\"quantity_list\"][name$=\"[score_C]\"]').forEach(input => {
+            const match = input.name.match(/^quantity_list\[(.+?)\]\[score_C\]$/);
+            if (!match) return;
+
+            const subCriteriaId = match[1];
+            const rawValue = input.value.trim();
+            if (rawValue === '') return;
+
+            const scoreC = parseFloat(rawValue);
+            if (isNaN(scoreC)) return;
+
+            const summaryRow = document.querySelector(`[data-summary-quantity-row][data-sub-id=\"${subCriteriaId}\"]`);
+            const scoreA = parseFloat(summaryRow?.dataset.scoreA || '0');
+            const scoreB = parseFloat(summaryRow?.dataset.scoreB || '0');
+
+            if (!isNaN(scoreA) && !isNaN(scoreB) && scoreB !== 0) {
+                quantitySum += (scoreA * scoreC) / scoreB;
+            }
+        });
 
         // Quality: sum selected sub-criteria scores, capped per evaluation list
         const listTotals = {};
