@@ -133,17 +133,17 @@
                 <div class="space-y-3 text-blue-800">
                     <div class="flex justify-between items-center">
                         <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
-                        <span class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
+                        <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                        <span class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
+                        <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
                     </div>
                 </div>
 
                 <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                     <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-                    <span class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
+                    <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
                 </div>
             </div>
     
@@ -215,13 +215,13 @@
 
 <!-- Confirmation Modal -->
 {{-- บล็อกเนื้อหา --}}
-<div id="confirmationModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden z-50 transition-opacity duration-300">
+<div id="confirmationModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-start justify-center overflow-y-auto p-3 pt-24 sm:p-6 sm:pt-28 hidden transition-opacity duration-300" style="z-index: 1200;">
     {{--  --}}
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-8 text-center transform transition-all duration-300 scale-95 opacity-0" id="modal-content">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] p-3 sm:p-4 text-center transform transition-all duration-300 scale-95 opacity-0 flex flex-col overflow-hidden" id="modal-content">
         <!-- Icon -->
         {{-- บล็อกเนื้อหา --}}
-        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-5">
-            <svg class="h-8 w-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="hidden">
+            <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9.049c.534-2.203 2.51-3.79 4.772-3.79s4.238 1.587 4.772 3.79M8.228 9.049L6.5 10.5m1.728-1.451L9.5 6.5m6.228 2.549L17.5 10.5m-1.728-1.451L14.5 6.5M12 21a9 9 0 110-18 9 9 0 010 18z"></path>
             </svg>
         </div>
@@ -231,19 +231,126 @@
         
         <!-- Description -->
         {{-- บล็อกเนื้อหา --}}
-        <div class="mt-2 mb-6">
-            <p class="text-sm text-gray-500 px-4">
-                เมื่อส่งแล้วจะไม่สามารถกลับมาแก้ไขได้อีก<br>คุณต้องการดำเนินการต่อหรือไม่?
+        <div class="mt-1 mb-2">
+            <p class="text-xs sm:text-sm text-gray-500 px-2 sm:px-4">
+                ตรวจสอบความครบถ้วนของข้อมูลก่อนส่งจริง
             </p>
+        </div>
+
+        <div class="text-left border border-gray-200 rounded-xl bg-gray-50 flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-3 sm:py-4 mb-3 sm:mb-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-3">
+                <div class="bg-white rounded-lg border border-blue-100 p-3">
+                    <div class="text-sm text-gray-500">คะแนนด้านปริมาณ</div>
+                    <div id="modal-quantity-summary" class="text-lg sm:text-xl font-bold text-blue-900 mt-1">0.00</div>
+                </div>
+                <div class="bg-white rounded-lg border border-purple-100 p-3">
+                    <div class="text-sm text-gray-500">คะแนนด้านคุณภาพ</div>
+                    <div id="modal-quality-summary" class="text-lg sm:text-xl font-bold text-purple-900 mt-1">0.00</div>
+                </div>
+                <div class="bg-white rounded-lg border border-emerald-100 p-3">
+                    <div class="text-sm text-gray-500">คะแนนรวม</div>
+                    <div id="modal-total-summary" class="text-lg sm:text-xl font-bold text-emerald-700 mt-1">0.00</div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                @foreach($categoryItems as $category)
+                    @foreach($category['evaluation_lists'] as $evaluationList)
+                        @php
+                            $qualitySubIds = collect($evaluationList['quality_items'])
+                                ->flatMap(fn($main) => collect($main['sub_criterias'])->pluck('id'))
+                                ->filter()
+                                ->implode(',');
+                        @endphp
+                        <div
+                            class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+                            data-summary-list
+                            data-list-id="{{ $evaluationList['id'] }}"
+                            data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}"
+                            data-quality-sub-ids="{{ $qualitySubIds }}">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ $evaluationList['name'] }}</div>
+                                    {{-- @if(!empty($evaluationList['annotation']))
+                                        <div class="text-xs text-gray-500 mt-1">{{ $evaluationList['annotation'] }}</div>
+                                    @endif --}}
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span id="summary-list-status-{{ $evaluationList['id'] }}" class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">
+                                        ยังไม่มีข้อมูล
+                                    </span>
+                                    <span class="text-sm font-semibold text-gray-700">
+                                        รวม <span id="summary-list-score-{{ $evaluationList['id'] }}">0.00</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            @if(count($evaluationList['quantity_items']) > 0)
+                                <div class="mb-3">
+                                    <div class="text-xs font-bold tracking-wide text-green-700 uppercase mb-2">Quantity</div>
+                                    <div class="space-y-2">
+                                        @foreach($evaluationList['quantity_items'] as $mainCriteria)
+                                            @foreach($mainCriteria['sub_criterias'] as $subCriteria)
+                                                <div
+                                                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-green-100 bg-green-50/60 px-3 py-2"
+                                                    data-summary-quantity-row
+                                                    data-list-id="{{ $evaluationList['id'] }}"
+                                                    data-sub-id="{{ $subCriteria['id'] }}"
+                                                    data-score-a="{{ $subCriteria['score_a'] ?? 0 }}"
+                                                    data-score-b="{{ $subCriteria['score_b'] ?? 0 }}">
+                                                    <div class="min-w-0">
+                                                        <div class="text-sm font-medium text-gray-800">{{ $subCriteria['name'] }}</div>
+                                                        <div id="summary-quantity-status-{{ $subCriteria['id'] }}" class="text-xs text-gray-500 mt-1">ยังไม่มีข้อมูล</div>
+                                                    </div>
+                                                    <div class="text-sm font-semibold text-green-800">
+                                                        <span id="summary-quantity-score-{{ $subCriteria['id'] }}">0.00</span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if(count($evaluationList['quality_items']) > 0)
+                                <div>
+                                    <div class="text-xs font-bold tracking-wide text-purple-700 uppercase mb-2">Quality</div>
+                                    <div class="space-y-2">
+                                        @foreach($evaluationList['quality_items'] as $mainCriteria)
+                                            @php
+                                                $subIds = collect($mainCriteria['sub_criterias'])->pluck('id')->implode(',');
+                                            @endphp
+                                            <div
+                                                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-purple-100 bg-purple-50/60 px-3 py-2"
+                                                data-summary-quality-main
+                                                data-list-id="{{ $evaluationList['id'] }}"
+                                                data-main-id="{{ $mainCriteria['id'] }}"
+                                                data-sub-ids="{{ $subIds }}">
+                                                <div class="min-w-0">
+                                                    <div class="text-sm font-medium text-gray-800">{{ $mainCriteria['name'] }}</div>
+                                                    <div id="summary-quality-status-{{ $mainCriteria['id'] }}" class="text-xs text-gray-500 mt-1">ยังไม่มีข้อมูล</div>
+                                                </div>
+                                                <div class="text-sm font-semibold text-purple-800">
+                                                    <span id="summary-quality-score-{{ $mainCriteria['id'] }}">0.00</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                @endforeach
+            </div>
         </div>
 
         <!-- Buttons -->
         {{-- บล็อกเนื้อหา --}}
-        <div class="flex flex-col space-y-3">
-            <button id="confirmSubmitBtn" class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-200">
+        <div class="flex flex-col space-y-2 pt-1 bg-white shrink-0">
+            <button id="confirmSubmitBtn" class="w-full px-4 py-2.5 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-200">
                 ยืนยัน
             </button>
-            <button id="cancelModalBtn" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200">
+            <button id="cancelModalBtn" class="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200">
                 ยกเลิก
             </button>
         </div>
@@ -425,6 +532,132 @@ document.addEventListener('DOMContentLoaded', function() {
         // Scroll to error
         errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    function setBadgeState(element, hasData, readyText = 'มีข้อมูลแล้ว', emptyText = 'ยังไม่มีข้อมูล') {
+        if (!element) return;
+        element.textContent = hasData ? readyText : emptyText;
+        element.className = hasData
+            ? 'inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700'
+            : 'inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700';
+    }
+
+    function updateSubmissionSummary() {
+        const quantitySummary = parseFloat(document.getElementById('quantity-summary')?.textContent || '0') || 0;
+        const qualitySummary = parseFloat(document.getElementById('quality-summary')?.textContent || '0') || 0;
+        const totalSummary = parseFloat(document.getElementById('total-summary')?.textContent || '0') || 0;
+
+        const modalQuantity = document.getElementById('modal-quantity-summary');
+        const modalQuality = document.getElementById('modal-quality-summary');
+        const modalTotal = document.getElementById('modal-total-summary');
+
+        if (modalQuantity) modalQuantity.textContent = quantitySummary.toFixed(2);
+        if (modalQuality) modalQuality.textContent = qualitySummary.toFixed(2);
+        if (modalTotal) modalTotal.textContent = totalSummary.toFixed(2);
+
+        document.querySelectorAll('[data-summary-quantity-row]').forEach(row => {
+            const subId = row.dataset.subId;
+            const scoreA = parseFloat(row.dataset.scoreA || '0') || 0;
+            const scoreB = parseFloat(row.dataset.scoreB || '0') || 0;
+            const scoreCInput = document.querySelector(`input[name="quantity_list[${subId}][score_C]"]`);
+            const descriptionInput = document.querySelector(`input[name="quantity_list[${subId}][description]"]`);
+            const scoreC = parseFloat(scoreCInput?.value || '') || 0;
+            const description = (descriptionInput?.value || '').trim();
+            const hasData = (scoreCInput?.value || '').trim() !== '' || description !== '';
+            const scoreD = hasData && scoreB !== 0 ? (scoreA * scoreC) / scoreB : 0;
+
+            const statusEl = document.getElementById(`summary-quantity-status-${subId}`);
+            const scoreEl = document.getElementById(`summary-quantity-score-${subId}`);
+
+            if (statusEl) {
+                statusEl.textContent = hasData ? 'มีข้อมูลแล้ว' : 'ยังไม่มีข้อมูล';
+                statusEl.className = hasData ? 'text-xs text-emerald-700 mt-1' : 'text-xs text-gray-500 mt-1';
+            }
+            if (scoreEl) {
+                scoreEl.textContent = scoreD.toFixed(2);
+            }
+        });
+
+        document.querySelectorAll('[data-summary-quality-main]').forEach(row => {
+            const mainId = row.dataset.mainId;
+            const subIds = (row.dataset.subIds || '')
+                .split(',')
+                .map(id => id.trim())
+                .filter(Boolean);
+
+            let total = 0;
+            let selectedCount = 0;
+            subIds.forEach(subId => {
+                const scoreInput = document.getElementById(`quality-score-${subId}`);
+                const value = parseFloat(scoreInput?.value || '');
+                if (!isNaN(value)) {
+                    total += value;
+                    selectedCount++;
+                }
+            });
+
+            const hasData = selectedCount > 0;
+            const statusEl = document.getElementById(`summary-quality-status-${mainId}`);
+            const scoreEl = document.getElementById(`summary-quality-score-${mainId}`);
+
+            if (statusEl) {
+                statusEl.textContent = hasData ? `มีข้อมูลแล้ว ${selectedCount} รายการ` : 'ยังไม่มีข้อมูล';
+                statusEl.className = hasData ? 'text-xs text-emerald-700 mt-1' : 'text-xs text-gray-500 mt-1';
+            }
+            if (scoreEl) {
+                scoreEl.textContent = total.toFixed(2);
+            }
+        });
+
+        document.querySelectorAll('[data-summary-list]').forEach(listEl => {
+            const listId = listEl.dataset.listId;
+            const listMax = parseFloat(listEl.dataset.listMax || '0') || 0;
+            const qualitySubIds = (listEl.dataset.qualitySubIds || '')
+                .split(',')
+                .map(id => id.trim())
+                .filter(Boolean);
+
+            let quantityTotal = 0;
+            let hasAnyData = false;
+
+            listEl.querySelectorAll('[data-summary-quantity-row]').forEach(row => {
+                const subId = row.dataset.subId;
+                const scoreA = parseFloat(row.dataset.scoreA || '0') || 0;
+                const scoreB = parseFloat(row.dataset.scoreB || '0') || 0;
+                const scoreCInput = document.querySelector(`input[name="quantity_list[${subId}][score_C]"]`);
+                const descriptionInput = document.querySelector(`input[name="quantity_list[${subId}][description]"]`);
+                const scoreC = parseFloat(scoreCInput?.value || '') || 0;
+                const description = (descriptionInput?.value || '').trim();
+                const hasData = (scoreCInput?.value || '').trim() !== '' || description !== '';
+                if (hasData) {
+                    hasAnyData = true;
+                    quantityTotal += scoreB !== 0 ? (scoreA * scoreC) / scoreB : 0;
+                }
+            });
+
+            let qualityTotal = 0;
+            qualitySubIds.forEach(subId => {
+                const scoreInput = document.getElementById(`quality-score-${subId}`);
+                const value = parseFloat(scoreInput?.value || '');
+                if (!isNaN(value)) {
+                    hasAnyData = true;
+                    qualityTotal += value;
+                }
+            });
+
+            if (listMax > 0 && qualityTotal > listMax) {
+                qualityTotal = listMax;
+            }
+
+            const total = quantityTotal + qualityTotal;
+            const statusEl = document.getElementById(`summary-list-status-${listId}`);
+            const scoreEl = document.getElementById(`summary-list-score-${listId}`);
+
+            setBadgeState(statusEl, hasAnyData);
+            if (scoreEl) {
+                scoreEl.textContent = total.toFixed(2);
+            }
+        });
+    }
     
     // ===== Modal Animation Functions =====
     function openModal(modal, content) {
@@ -479,6 +712,11 @@ document.addEventListener('DOMContentLoaded', function() {
             showValidationErrors(errors);
             return;
         }
+
+        if (typeof recalculateSummaryScores === 'function') {
+            recalculateSummaryScores();
+        }
+        updateSubmissionSummary();
         
         openModal(confirmationModal, modalContent);
     });
