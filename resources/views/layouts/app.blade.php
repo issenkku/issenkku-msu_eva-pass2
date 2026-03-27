@@ -66,30 +66,40 @@
             color: #495057;
         }
 
+        :root {
+            --navbar-bg: #0f172a;
+            --navbar-border: #334155;
+            --navbar-text: #e2e8f0;
+            --navbar-text-strong: #f8fafc;
+            --navbar-hover-bg: #1e293b;
+            --navbar-active-bg: #334155;
+            --navbar-shadow: rgba(15, 23, 42, 0.22);
+        }
+
         /* Custom Navbar */
         .navbar-custom {
-            background: #060606 !important;
-            border-bottom: 1px solid #dee2e6;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            background: var(--navbar-bg) !important;
+            border-bottom: 1px solid var(--navbar-border);
+            box-shadow: 0 8px 20px var(--navbar-shadow);
             padding: 15px 0;
         }
 
         .navbar-brand-custom {
             font-weight: 600;
             font-size: 1.5rem;
-            color: #ffffff !important;
+            color: var(--navbar-text-strong) !important;
             text-decoration: none;
         }
 
         .navbar-brand-custom:hover {
-            color: #eaeef2 !important;
+            color: #cbd5e1 !important;
         }
 
         .nav-link-custom {
-            color: #eaeef2 !important;
+            color: var(--navbar-text) !important;
             font-weight: 500;
             padding: 10px 20px !important;
-            border-radius: 4px;
+            border-radius: 8px;
             transition: all 0.2s ease;
             margin: 0 3px;
         }
@@ -101,13 +111,13 @@
         }
 
         .nav-link-custom:hover {
-            background: #f8f9fa;
-            color: #495057 !important;
+            background: var(--navbar-hover-bg);
+            color: var(--navbar-text-strong) !important;
         }
 
         .nav-link-custom.active {
-            background: #495057;
-            color: white !important;
+            background: var(--navbar-active-bg);
+            color: var(--navbar-text-strong) !important;
         }
 
         nav.d-none.d-xl-block a.nav-link[href="/evaluatee-dashboard"] {
@@ -150,8 +160,8 @@
         }
 
         .nav-link:hover {
-            background: #28292bff;
-            color: #495057;
+            background: var(--navbar-hover-bg);
+            color: var(--navbar-text-strong);
         }
 
         .navbar-toggler-icon-custom {
@@ -509,7 +519,7 @@
 <body class="bg-white font-sans antialiased">
     <div class="min-h-screen bg-gray-50">
         <!-- Header -->
-        <header class="bg-black shadow-sm">
+        <header class="shadow-sm" style="background: #0f172a; border-bottom: 1px solid #334155;">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center ">
                 <h1 class="text-lg font-semibold text-white">
                     ระบบประเมินบุคลากร
