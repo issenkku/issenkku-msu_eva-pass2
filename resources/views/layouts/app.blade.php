@@ -110,6 +110,33 @@
             color: white !important;
         }
 
+        nav.d-none.d-xl-block a.nav-link[href="/evaluatee-dashboard"] {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav.d-none.d-xl-block a.nav-link[href="/evaluatee-dashboard"]::before {
+            content: "\f4fc";
+            font: var(--fa-font-solid);
+        }
+
+        .header-user-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+            background: #ffffff;
+        }
+
         /* Custom Toggle Button */
         .navbar-toggler-custom {
             border: 1px solid #dee2e6;
@@ -565,8 +592,9 @@
 
                         @if(auth()->user())
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa fa-user"></i> {{ auth()->user()->name }}
+                            <a class="nav-link dropdown-toggle text-white header-user-link" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" class="header-user-avatar">
+                                <span>{{ auth()->user()->name }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="/profile"><i class="fas fa-user-cog me-2"></i>ตั้งค่าโปรไฟล์</a></li>
