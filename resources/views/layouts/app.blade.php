@@ -147,6 +147,22 @@
             background: #ffffff;
         }
 
+        .header-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.9rem;
+        }
+
+        .header-brand::before {
+            content: "";
+            width: 48px;
+            height: 48px;
+            border-radius: 9999px;
+            flex-shrink: 0;
+            background: #ffffff url('{{ asset('favicon-msu.png') }}?v=1') center/cover no-repeat;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14);
+        }
+
         /* Custom Toggle Button */
         .navbar-toggler-custom {
             border: 1px solid #dee2e6;
@@ -521,7 +537,7 @@
         <!-- Header -->
         <header class="shadow-sm" style="background: #0f172a; border-bottom: 1px solid #334155;">
             <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center ">
-                <h1 class="text-lg font-semibold text-white">
+                <h1 class="text-lg font-semibold text-white header-brand">
                     ระบบประเมินบุคลากร
                 </h1>
                 <nav class="d-none d-xl-block">
