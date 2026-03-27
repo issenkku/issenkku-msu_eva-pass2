@@ -40,16 +40,20 @@
                         <div class="card-head">
                             <div>
                                 <h3 class="card-title">หมวดหมู่การประเมิน</h3>
+                                <div class="workload-main-summary">หมวดหมู่หลัก</div>
                             </div>
                             <div class="card-actions">
-                                <button class="icon-btn is-muted" title="ยุบ" type="button">
+                                <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" title="ลากเพื่อจัดอันดับ" type="button">
+                                    <span class="workload-drag-icon" aria-hidden="true">⋮⋮</span>
+                                    <span class="workload-drag-label">ลากจัดลำดับ</span>
+                                </button>
+                                <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button">
                                     <span>˅</span>
                                 </button>
-                                <button class="icon-btn is-primary" title="ขยาย" type="button">
-                                    <span>˄</span>
-                                </button>
-                                <button class="icon-btn is-danger" title="ลบ" type="button">
-                                    <span>🗑</span>
+                                <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 workload-delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
                                 </button>
                             </div>
                         </div>
@@ -80,16 +84,22 @@
                             {{-- การ์ดแม่แบบของหมวดย่อย --}}
                             <div class="sub-card workload-sub-card">
                                 <div class="sub-card-head">
-                                    <div class="sub-card-title">รายการประเมิน</div>
+                                    <div>
+                                        <div class="sub-card-title">รายการประเมิน</div>
+                                        <div class="workload-sub-summary">หมวดย่อย</div>
+                                    </div>
                                     <div class="card-actions">
-                                        <button class="icon-btn is-muted" title="ยุบ" type="button">
+                                        <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" title="ลากเพื่อจัดอันดับ" type="button">
+                                            <span class="workload-drag-icon" aria-hidden="true">⋮⋮</span>
+                                            <span class="workload-drag-label">ลากจัดลำดับ</span>
+                                        </button>
+                                        <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button">
                                             <span>˅</span>
                                         </button>
-                                        <button class="icon-btn is-primary" title="ขยาย" type="button">
-                                            <span>˄</span>
-                                        </button>
-                                        <button class="icon-btn is-danger" title="ลบ" type="button">
-                                            <span>×</span>
+                                        <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 workload-delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
@@ -117,7 +127,10 @@
                                         <div></div>
                                     </div>
                                     <div class="subitem-row workload-item-row">
-                                        <div class="subitem-label">1</div>
+                                        <div class="subitem-label">
+                                            <button class="icon-btn is-drag workload-drag-handle workload-item-drag-handle" title="ลากเพื่อจัดอันดับ" type="button">⋮⋮</button>
+                                            <span class="subitem-sequence-text">1</span>
+                                        </div>
                                         <input type="text" class="form-control workload-item-name" value="">
                                         <input type="number" class="form-control workload-item-score" value=""
                                             min="0" step="0.01">
@@ -460,12 +473,86 @@
             margin: 0;
         }
 
+        .workload-main-summary {
+            display: none;
+            margin-top: 4px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .workload-card.is-collapsed .workload-main-summary {
+            display: block;
+        }
+
+        .workload-card.is-collapsed .card-title {
+            display: none;
+        }
+
+        .workload-card.is-collapsed .card-head,
+        .workload-sub-card.is-collapsed .sub-card-head {
+            cursor: pointer;
+        }
+
         .card-actions {
             display: flex;
             gap: 8px;
         }
 
-        .workload-card.is-collapsed .card-body > :not(.card-head) {
+        .workload-drag-handle {
+            cursor: grab;
+        }
+
+        .workload-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .icon-btn.is-drag {
+            color: #6b7280;
+            border-color: transparent;
+            background: transparent;
+        }
+
+        .workload-drag-handle-text {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .workload-drag-handle-text:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .workload-drag-icon {
+            font-size: 0.95rem;
+            letter-spacing: -1px;
+            color: #9ca3af;
+        }
+
+        .workload-drag-label {
+            white-space: nowrap;
+        }
+
+        .workload-card.is-dragging,
+        .workload-sub-card.is-dragging,
+        .workload-item-row.is-dragging {
+            opacity: 0.55;
+        }
+
+        .workload-card.is-drag-over,
+        .workload-sub-card.is-drag-over,
+        .workload-item-row.is-drag-over {
+            outline: 2px dashed #60a5fa;
+            outline-offset: 3px;
+        }
+
+        .workload-card.is-collapsed .card-body > :not(.card-head):not(.sub-footer:last-child) {
             display: none;
         }
 
@@ -491,26 +578,49 @@
             color: #94a3b8;
         }
 
+        .workload-card .card-actions .workload-drag-handle-text {
+            padding: 6px 8px;
+            font-size: 0.95rem;
+            color: #6b7280;
+        }
+
         .workload-card .card-actions .icon-btn:hover {
             color: #2563eb;
+        }
+
+        .workload-card .card-actions .workload-drag-handle-text:hover {
+            color: #374151;
         }
 
         .workload-card .card-actions .icon-btn.is-danger:hover {
             color: #dc2626;
         }
 
-        .workload-card .card-actions .icon-btn.is-primary {
-            color: #2563eb;
+        .workload-card .card-actions .workload-collapse-toggle {
+            color: #cbd5e1;
         }
 
-        .workload-card .card-actions .icon-btn.is-muted {
-            color: #cbd5e1;
+        .workload-card .card-actions .workload-collapse-toggle:hover {
+            color: #2563eb;
         }
 
         .icon-btn.is-danger {
             color: #dc2626;
             border-color: #fecaca;
             background: #fff5f5;
+        }
+
+        .delete_category_btn {
+            border: 0;
+            background: transparent;
+            padding: 2px 6px;
+            line-height: 1;
+        }
+
+        .workload-delete-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            display: block;
         }
 
         .form-grid {
@@ -618,6 +728,22 @@
             color: #111827;
         }
 
+        .workload-sub-summary {
+            display: none;
+            margin-top: 4px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .workload-sub-card.is-collapsed .workload-sub-summary {
+            display: block;
+        }
+
+        .workload-sub-card.is-collapsed .sub-card-title {
+            display: none;
+        }
+
         .subitem-table {
             display: grid;
             gap: 10px;
@@ -643,9 +769,18 @@
             background: #f3f4f6;
             border-radius: 8px;
             padding: 10px 12px;
-            text-align: center;
             color: #6b7280;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .workload-item-drag-handle {
+            padding: 2px 8px;
+            font-size: 0.95rem;
+            color: #9ca3af;
         }
 
         .subitem-actions {
@@ -851,6 +986,197 @@
             // อ้างอิง DOM หลักที่ใช้บ่อย
             const mainContainer = document.querySelector('.workload-card-list');
             const pageActions = document.querySelector('.page-actions');
+            let activeDragState = null;
+
+            const getDirectMatches = (container, selector) => {
+                if (!container) {
+                    return [];
+                }
+                return Array.from(container.children).filter((child) => child.matches(selector));
+            };
+
+            const clearDragOverState = (container, selector) => {
+                getDirectMatches(container, selector).forEach((item) => item.classList.remove('is-drag-over'));
+            };
+
+            const getDragAfterElement = (container, selector, pointerY, draggingItem) => {
+                const items = getDirectMatches(container, selector)
+                    .filter((item) => item !== draggingItem);
+
+                let closest = {
+                    offset: Number.NEGATIVE_INFINITY,
+                    element: null,
+                };
+
+                items.forEach((item) => {
+                    const rect = item.getBoundingClientRect();
+                    const offset = pointerY - rect.top - rect.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        closest = {
+                            offset,
+                            element: item,
+                        };
+                    }
+                });
+
+                return closest.element;
+            };
+
+            const bindSortableContainer = (container, options) => {
+                if (!container || container.dataset.sortableBound === 'true') {
+                    return;
+                }
+
+                container.dataset.sortableBound = 'true';
+
+                container.addEventListener('dragover', (event) => {
+                    if (!activeDragState || activeDragState.container !== container) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    const afterElement = getDragAfterElement(
+                        container,
+                        options.itemSelector,
+                        event.clientY,
+                        activeDragState.item
+                    );
+
+                    clearDragOverState(container, options.itemSelector);
+                    if (afterElement) {
+                        afterElement.classList.add('is-drag-over');
+                        container.insertBefore(activeDragState.item, afterElement);
+                        return;
+                    }
+
+                    const anchor = options.getAnchor ? options.getAnchor(container) : null;
+                    if (anchor) {
+                        container.insertBefore(activeDragState.item, anchor);
+                    } else {
+                        container.appendChild(activeDragState.item);
+                    }
+                });
+
+                container.addEventListener('drop', (event) => {
+                    if (!activeDragState || activeDragState.container !== container) {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    clearDragOverState(container, options.itemSelector);
+                    if (typeof options.onUpdate === 'function') {
+                        options.onUpdate();
+                    }
+                });
+
+                container.addEventListener('dragleave', (event) => {
+                    if (!container.contains(event.relatedTarget)) {
+                        clearDragOverState(container, options.itemSelector);
+                    }
+                });
+            };
+
+            const bindDragHandle = (item, handle, config) => {
+                if (!item || !handle || handle.dataset.dragBound === 'true') {
+                    return;
+                }
+
+                handle.dataset.dragBound = 'true';
+                handle.setAttribute('draggable', 'true');
+
+                handle.addEventListener('dragstart', (event) => {
+                    activeDragState = {
+                        item,
+                        container: config.container,
+                    };
+                    item.classList.add('is-dragging');
+                    if (event.dataTransfer) {
+                        event.dataTransfer.effectAllowed = 'move';
+                        event.dataTransfer.setData('text/plain', '');
+                    }
+                });
+
+                handle.addEventListener('dragend', () => {
+                    item.classList.remove('is-dragging');
+                    clearDragOverState(config.container, config.itemSelector);
+
+                    if (typeof config.onUpdate === 'function') {
+                        config.onUpdate();
+                    }
+                    activeDragState = null;
+                });
+            };
+
+            const initMainCardSort = (card) => {
+                if (!mainContainer || !card) {
+                    return;
+                }
+
+                bindSortableContainer(mainContainer, {
+                    itemSelector: '.workload-card',
+                    onUpdate: () => {
+                        updateMainSequences();
+                    },
+                });
+
+                bindDragHandle(card, card.querySelector('.card-head .workload-drag-handle'), {
+                    container: mainContainer,
+                    itemSelector: '.workload-card',
+                    onUpdate: () => {
+                        updateMainSequences();
+                    },
+                });
+            };
+
+            const initSubCardSort = (mainCardEl, subCardEl) => {
+                const subBlock = mainCardEl ? mainCardEl.querySelector('.sub-block') : null;
+                if (!subBlock || !subCardEl) {
+                    return;
+                }
+
+                bindSortableContainer(subBlock, {
+                    itemSelector: '.workload-sub-card',
+                    getAnchor: (container) => container.querySelector('.sub-footer'),
+                    onUpdate: () => {
+                        updateSubSequences(mainCardEl);
+                    },
+                });
+
+                bindDragHandle(subCardEl, subCardEl.querySelector('.sub-card-head .workload-drag-handle'), {
+                    container: subBlock,
+                    itemSelector: '.workload-sub-card',
+                    onUpdate: () => {
+                        updateSubSequences(mainCardEl);
+                    },
+                });
+            };
+
+            const initItemRowSort = (subCardEl) => {
+                const subitemTable = subCardEl ? subCardEl.querySelector('.subitem-table') : null;
+                const api = subCardEl ? subCardEl.__workload : null;
+                if (!subitemTable || !api) {
+                    return;
+                }
+
+                bindSortableContainer(subitemTable, {
+                    itemSelector: '.workload-item-row',
+                    getAnchor: (container) => container.querySelector('.subitem-actions'),
+                    onUpdate: () => {
+                        api.updateItemSequence(subCardEl);
+                    },
+                });
+
+                subCardEl.querySelectorAll('.workload-item-row').forEach((row) => {
+                    bindDragHandle(row, row.querySelector('.workload-item-drag-handle'), {
+                        container: subitemTable,
+                        itemSelector: '.workload-item-row',
+                        onUpdate: () => {
+                            api.updateItemSequence(subCardEl);
+                        },
+                    });
+                });
+            };
 
             // ฟังก์ชันย่อย: renderNav
             const renderNav = (items, activeId) => {
@@ -916,6 +1242,16 @@
                 } else {
                     card.classList.remove('is-collapsed');
                 }
+                const toggleButton = card.querySelector('.workload-collapse-toggle');
+                const toggleIcon = toggleButton ? toggleButton.querySelector('span') : null;
+                if (toggleButton) {
+                    const isCollapsed = card.classList.contains('is-collapsed');
+                    toggleButton.title = isCollapsed ? 'ขยาย' : 'ยุบ';
+                    toggleButton.setAttribute('aria-label', isCollapsed ? 'ขยาย' : 'ยุบ');
+                }
+                if (toggleIcon) {
+                    toggleIcon.textContent = card.classList.contains('is-collapsed') ? '˄' : '˅';
+                }
             };
 
             // ฟังก์ชันย่อย: bindCardActions
@@ -925,22 +1261,29 @@
                 }
                 const actions = actionsSelector ? card.querySelector(actionsSelector) : null;
                 const scope = actions || card;
-                const collapseBtn = scope.querySelector('.icon-btn.is-muted');
-                const expandBtn = scope.querySelector('.icon-btn.is-primary');
-                const deleteBtn = scope.querySelector('.icon-btn.is-danger');
+                const header = actions ? actions.parentElement : card;
+                const collapseToggleBtn = scope.querySelector('.workload-collapse-toggle');
+                const deleteBtn = scope.querySelector('.icon-btn.is-danger, .delete_category_btn');
 
-                if (collapseBtn && collapseBtn.dataset.bound !== 'true') {
-                    collapseBtn.dataset.bound = 'true';
-                    collapseBtn.addEventListener('click', () => {
-                        toggleCollapsed(card, true);
+                if (collapseToggleBtn && collapseToggleBtn.dataset.bound !== 'true') {
+                    collapseToggleBtn.dataset.bound = 'true';
+                    collapseToggleBtn.addEventListener('click', () => {
+                        toggleCollapsed(card, !card.classList.contains('is-collapsed'));
                     });
                 }
-                if (expandBtn && expandBtn.dataset.bound !== 'true') {
-                    expandBtn.dataset.bound = 'true';
-                    expandBtn.addEventListener('click', () => {
+                if (header && header.dataset.expandBound !== 'true') {
+                    header.dataset.expandBound = 'true';
+                    header.addEventListener('click', (event) => {
+                        if (!card.classList.contains('is-collapsed')) {
+                            return;
+                        }
+                        if (event.target.closest('button, a, input, textarea, select, label')) {
+                            return;
+                        }
                         toggleCollapsed(card, false);
                     });
                 }
+                toggleCollapsed(card, card.classList.contains('is-collapsed'));
                 if (deleteBtn && typeof options.onDelete === 'function' && deleteBtn.dataset.bound !== 'true') {
                     deleteBtn.dataset.bound = 'true';
                     deleteBtn.addEventListener('click', (event) => {
@@ -993,6 +1336,7 @@
                     if (input) {
                         input.value = index + 1;
                     }
+                    updateSubSequences(card);
                 });
                 ensurePageActionsPosition();
             };
@@ -1000,19 +1344,55 @@
             // ฟังก์ชันย่อย: updateSubSequences
             const updateSubSequences = (scope) => {
                 const root = scope || document;
+                const mainCardEl = root.classList && root.classList.contains('workload-card')
+                    ? root
+                    : root.closest ? root.closest('.workload-card') : null;
+                const mainSequenceInput = mainCardEl ? mainCardEl.querySelector('.workload-main-sequence') : null;
+                const mainSequence = mainSequenceInput ? mainSequenceInput.value : '';
                 root.querySelectorAll('.workload-sub-card').forEach((card, index) => {
                     const display = card.querySelector('.workload-sub-sequence-display');
                     const input = card.querySelector('.workload-sub-sequence');
                     if (display) {
-                        display.textContent = index + 1;
+                        display.textContent = mainSequence ? `${mainSequence}.${index + 1}` : `${index + 1}`;
                     }
                     if (input) {
                         input.value = index + 1;
+                    }
+                    if (card.__workload && typeof card.__workload.updateItemSequence === 'function') {
+                        card.__workload.updateItemSequence(card);
                     }
                 });
             };
 
             // ฟังก์ชันย่อย: initSubCard
+            const syncMainCardSummary = (card) => {
+                if (!card) {
+                    return;
+                }
+                const input = card.querySelector('.workload-main-category');
+                const summary = card.querySelector('.workload-main-summary');
+                if (!summary) {
+                    return;
+                }
+                summary.textContent = input && input.value.trim()
+                    ? input.value.trim()
+                    : 'หมวดหมู่หลัก';
+            };
+
+            const syncSubCardSummary = (card) => {
+                if (!card) {
+                    return;
+                }
+                const input = card.querySelector('.workload-sub-category');
+                const summary = card.querySelector('.workload-sub-summary');
+                if (!summary) {
+                    return;
+                }
+                summary.textContent = input && input.value.trim()
+                    ? input.value.trim()
+                    : 'หมวดย่อย';
+            };
+
             const initSubCard = (card) => {
                 if (card.dataset.initialized === 'true') {
                     return;
@@ -1036,7 +1416,16 @@
                 const variableTypeSelect = card.querySelector('.workload-variable-type');
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
+                const subCategoryInput = card.querySelector('.workload-sub-category');
                 let editingFormulaRow = null;
+
+                syncSubCardSummary(card);
+                if (subCategoryInput && subCategoryInput.dataset.summaryBound !== 'true') {
+                    subCategoryInput.dataset.summaryBound = 'true';
+                    subCategoryInput.addEventListener('input', () => {
+                        syncSubCardSummary(card);
+                    });
+                }
 
                 const resetVariableForm = () => {
                     if (variableLabelInput) {
@@ -1237,12 +1626,13 @@
                 // ฟังก์ชันย่อย: updateItemSequence
                 const updateItemSequence = (scope) => {
                     scope.querySelectorAll('.workload-item-row').forEach((row, index) => {
-                        const label = row.querySelector('.subitem-label');
+                        const label = row.querySelector('.subitem-sequence-text') || row.querySelector('.subitem-label');
                         if (label) {
                             label.textContent = index + 1;
                         }
                     });
                     syncVariableChips();
+                    initItemRowSort(card);
                 };
 
                 // ฟังก์ชันย่อย: getNextItemSequence
@@ -1424,6 +1814,7 @@
 
                 updateItemSequence(card);
                 syncVariableChips();
+                initItemRowSort(card);
 
                 card.__workload = {
                     addFormulaItem,
@@ -1438,6 +1829,9 @@
                 card.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
                 card.querySelectorAll('[data-bound]').forEach((node) => delete node.dataset.bound);
                 card.querySelectorAll('[data-remove-bound]').forEach((node) => delete node.dataset.removeBound);
+                card.querySelectorAll('[data-drag-bound]').forEach((node) => delete node.dataset.dragBound);
+                card.querySelectorAll('[data-sortable-bound]').forEach((node) => delete node.dataset.sortableBound);
+                card.querySelectorAll('[data-expand-bound]').forEach((node) => delete node.dataset.expandBound);
                 if (resetInit) {
                     card.dataset.initialized = 'false';
                 }
@@ -1462,6 +1856,7 @@
                     emptyChip.textContent = 'ยังไม่มีตัวแปร';
                     variableChips.appendChild(emptyChip);
                 }
+                syncSubCardSummary(card);
             };
 
             // ฟังก์ชันย่อย: sanitizeClonedMainCard
@@ -1473,6 +1868,9 @@
                 card.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
                 card.querySelectorAll('[data-bound]').forEach((node) => delete node.dataset.bound);
                 card.querySelectorAll('[data-remove-bound]').forEach((node) => delete node.dataset.removeBound);
+                card.querySelectorAll('[data-drag-bound]').forEach((node) => delete node.dataset.dragBound);
+                card.querySelectorAll('[data-sortable-bound]').forEach((node) => delete node.dataset.sortableBound);
+                card.querySelectorAll('[data-expand-bound]').forEach((node) => delete node.dataset.expandBound);
                 if (resetInit) {
                     card.dataset.mainInitialized = 'false';
                 }
@@ -1490,6 +1888,7 @@
                         subCard.remove();
                     }
                 });
+                syncMainCardSummary(card);
             };
 
             // ฟังก์ชันย่อย: addMainCard
@@ -1536,14 +1935,25 @@
                         toggleCollapsed(target, false);
                     },
                 });
+                initMainCardSort(card);
 
                 const subBlock = card.querySelector('.sub-block');
                 const subFooter = card.querySelector('.sub-footer');
                 const addSubButton = card.querySelector('.workload-add-sub');
                 const addMainButton = card.querySelector('.workload-add-main');
+                const mainNameInput = card.querySelector('.workload-main-category');
+
+                syncMainCardSummary(card);
+                if (mainNameInput && mainNameInput.dataset.summaryBound !== 'true') {
+                    mainNameInput.dataset.summaryBound = 'true';
+                    mainNameInput.addEventListener('input', () => {
+                        syncMainCardSummary(card);
+                    });
+                }
 
                 card.querySelectorAll('.workload-sub-card').forEach((subCard) => {
                     initSubCard(subCard);
+                    initSubCardSort(card, subCard);
                 });
 
                 if (addSubButton) {
@@ -1559,6 +1969,7 @@
                         sanitizeClonedSubCard(clone, true);
                         subBlock.insertBefore(clone, subFooter);
                         initSubCard(clone);
+                        initSubCardSort(card, clone);
                         updateSubSequences(card);
                     });
                 }
@@ -1607,6 +2018,7 @@
                     if (!subCard.__workload) {
                         initSubCard(subCard);
                     }
+                    initSubCardSort(card, subCard);
 
                     if (block?.item?.id) {
                         subCard.dataset.itemId = block.item.id;
@@ -1623,6 +2035,7 @@
                     if (subNameInput && block?.item?.name) {
                         subNameInput.value = block.item.name;
                     }
+                    syncSubCardSummary(subCard);
 
                     const form = block?.form;
                     const api = subCard.__workload;
@@ -1703,6 +2116,7 @@
                     if (mainNameInput && groupBlock?.group?.name) {
                         mainNameInput.value = groupBlock.group.name;
                     }
+                    syncMainCardSummary(card);
                     const mainSeqDisplay = card.querySelector('.workload-main-sequence-display');
                     const mainSeqInput = card.querySelector('.workload-main-sequence');
                     if (mainSeqDisplay && groupBlock?.group?.sequence) {
@@ -1854,13 +2268,13 @@
                             });
 
                             const subNameInput = subCard.querySelector('.workload-sub-category');
-                            const sequenceDisplay = subCard.querySelector('.workload-sub-sequence-display');
+                            const sequenceInput = subCard.querySelector('.workload-sub-sequence');
                             const formulaText = subCard.querySelector('.workload-formula-text');
 
                             items.push({
                                 id: subCard.dataset.itemId ? Number(subCard.dataset.itemId) : null,
                                 item_name: subNameInput ? subNameInput.value.trim() : '',
-                                sequence: sequenceDisplay ? Number(sequenceDisplay.textContent || 0) : (index + 1),
+                                sequence: sequenceInput ? Number(sequenceInput.value || 0) : (index + 1),
                                 formula_logic: formulaText ? formulaText.value.trim() : '',
                                 fields,
                                 form_items: formItems,
@@ -1868,13 +2282,13 @@
                         });
 
                         const mainNameInput = card.querySelector('.workload-main-category');
-                        const mainSequenceDisplay = card.querySelector('.workload-main-sequence-display');
+                        const mainSequenceInput = card.querySelector('.workload-main-sequence');
 
                         groups.push({
                             id: card.dataset.groupId ? Number(card.dataset.groupId) : null,
                             group_name: mainNameInput ? mainNameInput.value.trim() : '',
-                            sequence: mainSequenceDisplay
-                                ? Number(mainSequenceDisplay.textContent || 0)
+                            sequence: mainSequenceInput
+                                ? Number(mainSequenceInput.value || 0)
                                 : (groupIndex + 1),
                             items,
                         });
