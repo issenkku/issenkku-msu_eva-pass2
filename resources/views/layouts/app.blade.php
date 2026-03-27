@@ -279,6 +279,27 @@
             align-items: center;
         }
 
+        .mobile-menu-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: #111827;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .mobile-menu-brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #111827;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
+
         .mobile-menu-close {
             background: none;
             border: none;
@@ -474,18 +495,18 @@
                                 <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
                             </li> -->
                             <li class="nav-item">
-                                <a class="nav-link text-white " href="/manager-dashboard">แดชบอร์ด</a>
+                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/manager-dashboard"><i class="fas fa-home"></i><span>หน้าหลัก</span></a>
                             </li>
                         @endif
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
                             <li class="nav-item">
-                                <a class="nav-link text-white " href="/dashboard">แดชบอร์ด</a>
+                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/dashboard"><i class="fas fa-home"></i><span>หน้าหลัก</span></a>
                             </li>
                         @endif
 
                         @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/evaluator-dashboard">แดชบอร์ด</a>
+                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/evaluator-dashboard"><i class="fas fa-home"></i><span>หน้าหลัก</span></a>
                             </li>
                         @endif
                         {{-- @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
@@ -495,7 +516,7 @@
                         @endif --}}
                         @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/director-dashboard">แดชบอร์ด</a>
+                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/director-dashboard"><i class="fas fa-home"></i><span>หน้าหลัก</span></a>
                             </li>
                         @endif
                         @if(auth()->user() && ($showEvaluateeNavigation ?? false))
@@ -507,34 +528,37 @@
                         @if(auth()->user() && auth()->user()->hasRole('admin'))
                         <li class="nav-item dropdown">
                             <!-- <a class="nav-link text-white" href="{{ route('users.index') }}">จัดการสมาชิก</a> -->
-                             <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                ข้อมูลผู้ใช้
+                             <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-users"></i>
+                                <span>ข้อมูลผู้ใช้</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
-                                <li><a class="dropdown-item" href="{{ route('users.index') }}">จัดการสมาชิก</a></li>
-                                <li><a class="dropdown-item" href="{{ route('user.management.log') }}">ประวัติการเข้าใช้งาน</a></li>
+                                <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="fas fa-users me-2"></i>จัดการสมาชิก</a></li>
+                                <li><a class="dropdown-item" href="{{ route('user.management.log') }}"><i class="fas fa-history me-2"></i>ประวัติการเข้าใช้งาน</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                จัดการเกณฑ์
+                            <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-list-check"></i>
+                                <span>จัดการเกณฑ์</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
-                                <li><a class="dropdown-item" href="/criteria-config">จัดการโครงสร้างเกณฑ์</a></li>
-                                <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}">จัดการรอบการประเมิน</a></li>
+                                <li><a class="dropdown-item" href="/criteria-config"><i class="fas fa-sitemap me-2"></i>จัดการโครงสร้างเกณฑ์</a></li>
+                                <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}"><i class="fas fa-calendar-check me-2"></i>จัดการรอบการประเมิน</a></li>
                                 {{-- <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li> --}}
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                ตั้งค่า
+                            <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-2" href="#" id="settingDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog"></i>
+                                <span>ตั้งค่า</span>
                             </a>
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
-                                <li><a class="dropdown-item" href="{{ route('settings.index') }}">ตั้งค่าเว็บไซต์</a></li>
-                                <li><a class="dropdown-item" href="{{ route('departments.index') }}">ตั้งค่าหน่วยงาน/แผนก</a></li>
-                                <li><a class="dropdown-item" href="{{ route('positions.index') }}">ตั้งค่าตำแหน่งงาน</a></li>
-                                <li><a class="dropdown-item" href="{{ route('job-level.index') }}">ตั้งค่าระดับตำแหน่งงาน</a></li>
-                                <li><a class="dropdown-item" href="{{ route('subjects.index') }}">ตั้งค่ารายวิชา</a></li>
+                                <li><a class="dropdown-item" href="{{ route('settings.index') }}"><i class="fas fa-globe me-2"></i>ตั้งค่าเว็บไซต์</a></li>
+                                <li><a class="dropdown-item" href="{{ route('departments.index') }}"><i class="fas fa-building me-2"></i>ตั้งค่าหน่วยงาน/แผนก</a></li>
+                                <li><a class="dropdown-item" href="{{ route('positions.index') }}"><i class="fas fa-briefcase me-2"></i>ตั้งค่าตำแหน่งงาน</a></li>
+                                <li><a class="dropdown-item" href="{{ route('job-level.index') }}"><i class="fas fa-layer-group me-2"></i>ตั้งค่าระดับตำแหน่งงาน</a></li>
+                                <li><a class="dropdown-item" href="{{ route('subjects.index') }}"><i class="fas fa-book-open me-2"></i>ตั้งค่ารายวิชา</a></li>
                             </ul>
                         </li>
                         @endif
@@ -545,12 +569,12 @@
                                 <i class="fa fa-user"></i> {{ auth()->user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="/profile">ตั้งค่าโปรไฟล์</a></li>
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user-cog me-2"></i>ตั้งค่าโปรไฟล์</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
-                                        <button type="submit" class="dropdown-item">Logout</button>
+                                        <button type="submit" class="dropdown-item"><i class="fas fa-right-from-bracket me-2"></i>Logout</button>
                                     </form>
                                 </li>
                             </ul>
@@ -579,10 +603,15 @@
         <!-- Mobile Menu -->
         <div class="mobile-menu" id="mobileMenu">
             <div class="mobile-menu-header">
-                <span class="brand" style="color: #495057;">เมนู</span>
-                <button class="mobile-menu-close" onclick="closeMobileMenu()">
+                <span class="mobile-menu-brand">
+                    {{-- <span class="mobile-menu-brand-icon">
+                        <i class="fas fa-bars"></i>
+                    </span> --}}
+                    <span>ระบบประเมินบุคลากร</span>
+                </span>
+                {{-- <button class="mobile-menu-close" onclick="closeMobileMenu()">
                     <i class="fas fa-times"></i>
-                </button>
+                </button> --}}
             </div>
 
             <div class="mobile-menu-content">
@@ -593,22 +622,22 @@
                         แดชบอร์ด
                     </a> -->
                     <a href="/manager-dashboard" class="mobile-nav-item">
-                        <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
-                        แดชบอร์ด
+                        <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
+                        หน้าหลัก
                     </a>
                 @endif
                 
                 @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                     <a href="/evaluator-dashboard" class="mobile-nav-item">
-                        <i class="fas fa-clipboard-list" style="width: 20px; margin-right: 10px;"></i>
-                        แดชบอร์ด
+                        <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
+                        หน้าหลัก
                     </a>
                 @endif
 
                 @if(auth()->user() && auth()->user()->hasRole('กรรมการ'))
                     <a href="/director-dashboard" class="mobile-nav-item">
-                        <i class="fas fa-user-tie" style="width: 20px; margin-right: 10px;"></i>
-                        แดชบอร์ด
+                        <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
+                        หน้าหลัก
                     </a>
                 @endif
                 
@@ -659,6 +688,7 @@
                             <a href="{{ route('departments.index') }}" class="mobile-dropdown-item">ตั้งค่าหน่วยงาน/แผนก</a>
                             <a href="{{ route('positions.index') }}" class="mobile-dropdown-item">ตั้งค่าตำแหน่งงาน</a>
                             <a href="{{ route('job-level.index') }}" class="mobile-dropdown-item">ตั้งค่าระดับตำแหน่งงาน</a>
+                            <a href="{{ route('subjects.index') }}" class="mobile-dropdown-item">ตั้งค่ารายวิชา</a>
                         </div>
                     </div>
                 @endif
