@@ -516,77 +516,107 @@
             });
         }
 
-        // Initialize Summernote for rich text editors
-        function initializeSummernote(container = null) {
-            // If container is provided, only initialize editors in that container
-            const targetSelector = container ? $(container).find('.richtext-editor') : $('.richtext-editor');
-            
-            // Clean up existing instances in the target area
-            if (container) {
-                $(container).find('.richtext-editor').each(function() {
-                    const $editor = $(this);
-                    try {
-                        if ($editor.hasClass('note-editor') || $editor.next('.note-editor').length > 0) {
-                            $editor.summernote('destroy');
-                        }
-                    } catch (e) {
-                        // Ignore errors during cleanup
-                    }
-                });
-            } else {
-                cleanupSummernote();
-            }
-            
-            // Wait a moment for cleanup to complete
-            setTimeout(() => {
-                targetSelector.each(function() {
-                    const $editor = $(this);
-                    let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
-                    
-                    // Use specific placeholder for quality sub criteria description
-                    if ($editor.hasClass('qual_sub_description') || 
-                        $editor.attr('name')?.includes('qual_sub_description')) {
-                        placeholder = 'ใส่คำอธิบายการให้คะแนน';
-                    }
-                    
-                    // Double check that summernote is not already initialized
-                    if ($editor.next('.note-editor').length === 0 && !$editor.hasClass('note-editor')) {
-                        try {
-                            $editor.summernote({
-                                height: 250,
-                                toolbar: [
-                                    ['style', ['style']],
-                                    ['font', ['bold', 'italic', 'underline', 'clear']],
-                                    ['color', ['color']],
-                                    ['para', ['ul', 'ol', 'paragraph']],
-                                    ['table', ['table']],
-                                    ['insert', ['link', 'hr']],
-                                    ['view', ['fullscreen', 'codeview', 'help']]
-                                ],
-                                placeholder: placeholder,
-                                lang: 'th-TH',
-                                callbacks: {
-                                    onChange: function(contents, $editable) {
-                                        $editor.val(contents);
-                                    }
-                                }
-                            });
-                        } catch (e) {
-                            console.error('Error initializing summernote:', e);
-                        }
-                    }
-                });
-            }, 100);
-        }
-
         // Initialize Summernote when document is ready
         $(document).ready(function() {
             // Don't initialize here - let it be handled by populateForm after data is loaded
         });
+
+        function buildSummernoteOptions($editor) {
+            let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
+
+            if ($editor.hasClass('qual_sub_description') || $editor.attr('name')?.includes('qual_sub_description')) {
+                placeholder = 'ใส่คำอธิบายการให้คะแนน';
+            }
+
+            return {
+                height: 250,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'italic', 'underline', 'clear']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'hr']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ],
+                placeholder: placeholder,
+                lang: 'th-TH',
+                callbacks: {
+                    onChange: function(contents) {
+                        $editor.val(contents);
+                    }
+                }
+            };
+        }
+
+        function initializeSummernote(container = null) {
+            const targetSelector = container ? $(container).find('.richtext-editor') : $('.richtext-editor');
+
+            targetSelector.each(function() {
+                const $editor = $(this);
+
+                if ($editor.next('.note-editor').length > 0 || $editor.data('summernoteInitialized') === true) {
+                    return;
+                }
+
+                try {
+                    $editor.summernote(buildSummernoteOptions($editor));
+                    $editor.data('summernoteInitialized', true);
+                } catch (e) {
+                    console.error('Error initializing summernote:', e);
+                }
+            });
+        }
+
+        function setupLazySummernote() {
+            document.addEventListener('focusin', function (event) {
+                const editor = event.target.closest('.richtext-editor');
+                if (!editor) {
+                    return;
+                }
+
+                initializeSummernote(editor.parentElement || editor);
+            });
+        }
+
+        function observeVisibleSummernote() {
+            const editors = document.querySelectorAll('.richtext-editor');
+
+            if (!('IntersectionObserver' in window)) {
+                editors.forEach((editor) => initializeSummernote(editor.parentElement || editor));
+                return;
+            }
+
+            if (!window.richtextObserver) {
+                window.richtextObserver = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (!entry.isIntersecting) {
+                            return;
+                        }
+
+                        initializeSummernote(entry.target.parentElement || entry.target);
+                        window.richtextObserver.unobserve(entry.target);
+                    });
+                }, {
+                    root: null,
+                    rootMargin: '200px 0px',
+                    threshold: 0.01,
+                });
+            }
+
+            editors.forEach((editor) => {
+                if ($(editor).data('summernoteInitialized') === true || $(editor).next('.note-editor').length > 0) {
+                    return;
+                }
+
+                window.richtextObserver.observe(editor);
+            });
+        }
         
         document.addEventListener('DOMContentLoaded', function () {
             fetchVersionDetails();
             setupEventListeners();
+            setupLazySummernote();
         });
 
         function setupEventListeners() {
@@ -1050,29 +1080,6 @@
             const newBlock = cloneAndClear('.quant_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
-            
-            // Initialize Summernote for new rich text editors with specific targeting
-            setTimeout(function() {
-                $(newBlock).find('.richtext-editor').each(function() {
-                    if (!$(this).hasClass('note-editor')) {
-                        $(this).summernote({
-                            height: 250,
-                            toolbar: [
-                                ['style', ['style']],
-                                ['font', ['bold', 'italic', 'underline', 'clear']],
-                                ['color', ['color']],
-                                ['para', ['ul', 'ol', 'paragraph']],
-                                ['table', ['table']],
-                                ['insert', ['link', 'hr']],
-                                ['view', ['fullscreen', 'codeview', 'help']]
-                            ],
-                            placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
-                            lang: 'th-TH'
-                        });
-                    }
-                });
-            }, 100);
-            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -1100,7 +1107,7 @@
             if (container.querySelectorAll('.qual_criteria_block').length > 1) {
                 // Clean up Summernote instances before removing block
                 $(qualBlock).find('.richtext-editor').each(function() {
-                    if ($(this).hasClass('note-editor')) {
+                    if ($(this).next('.note-editor').length > 0) {
                         $(this).summernote('destroy');
                     }
                 });
@@ -1116,29 +1123,6 @@
             const newBlock = cloneAndClear('.qual_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
-            
-            // Initialize Summernote for new rich text editors with specific targeting
-            setTimeout(function() {
-                $(newBlock).find('.richtext-editor').each(function() {
-                    if (!$(this).hasClass('note-editor')) {
-                        $(this).summernote({
-                            height: 250,
-                            toolbar: [
-                                ['style', ['style']],
-                                ['font', ['bold', 'italic', 'underline', 'clear']],
-                                ['color', ['color']],
-                                ['para', ['ul', 'ol', 'paragraph']],
-                                ['table', ['table']],
-                                ['insert', ['link', 'hr']],
-                                ['view', ['fullscreen', 'codeview', 'help']]
-                            ],
-                            placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
-                            lang: 'th-TH'
-                        });
-                    }
-                });
-            }, 100);
-            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -1157,10 +1141,6 @@
             const newBlock = cloneAndClear('.qual_sub_criteria_block');
             container.appendChild(newBlock);
             updateSequences();
-            
-            // Initialize Summernote for new rich text editors in the new block
-            initializeSummernote(newBlock);
-            
             newBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
@@ -1186,11 +1166,7 @@
                     originalData = data.data;
                     populateForm(data.data);
                     isInitialDataLoaded = true;
-                    
-                    // Initialize Summernote for all rich text editors after populating data
-                    setTimeout(() => {
-                        initializeSummernote();
-                    }, 500);
+                    requestAnimationFrame(() => observeVisibleSummernote());
                 } else {
                     showError('ไม่พบข้อมูลเวอร์ชัน');
                 }
@@ -1280,11 +1256,6 @@
 
             updateSequences();
             updateButtonStates('.category_block:not([style*="display: none"])', '.move_category_up_btn', '.move_category_down_btn');
-            
-            // Initialize Summernote after all data is populated and DOM is ready
-            setTimeout(function() {
-                initializeSummernote();
-            }, 1500); // Increased timeout to ensure all DOM manipulation is complete
         }
 
         function createCategoryFromData(categoryData) {
