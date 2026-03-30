@@ -759,7 +759,15 @@ class ReportStructureController extends Controller
                                     $quantityMainCriteria = null;
 
                                     if (! empty($qMainId)) {
-                                        $quantityMainCriteria = $version->quantityMainCriterias()->where('id', $qMainId)->first();
+                                        $quantityMainCriteria = $version->quantityMainCriterias()
+                                            ->where('id', $qMainId)
+                                            ->whereHas('quantitySubCriterias', function ($query) use ($evaluationList) {
+                                                $query->where('evaluation_list_id', $evaluationList->id);
+                                            })
+                                            ->whereDoesntHave('quantitySubCriterias', function ($query) use ($evaluationList) {
+                                                $query->where('evaluation_list_id', '!=', $evaluationList->id);
+                                            })
+                                            ->first();
                                     }
 
                                     if ($quantityMainCriteria) {
@@ -840,7 +848,15 @@ class ReportStructureController extends Controller
                                     $qualityMainCriteria = null;
 
                                     if (! empty($qlMainId)) {
-                                        $qualityMainCriteria = $version->qualityMainCriterias()->where('id', $qlMainId)->first();
+                                        $qualityMainCriteria = $version->qualityMainCriterias()
+                                            ->where('id', $qlMainId)
+                                            ->whereHas('qualitySubCriterias', function ($query) use ($evaluationList) {
+                                                $query->where('evaluation_list_id', $evaluationList->id);
+                                            })
+                                            ->whereDoesntHave('qualitySubCriterias', function ($query) use ($evaluationList) {
+                                                $query->where('evaluation_list_id', '!=', $evaluationList->id);
+                                            })
+                                            ->first();
                                     }
 
                                     if ($qualityMainCriteria) {
