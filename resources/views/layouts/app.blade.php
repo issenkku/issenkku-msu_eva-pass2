@@ -536,7 +536,7 @@
     <div class="min-h-screen bg-gray-50">
         <!-- Header -->
         <header class="shadow-sm" style="background: #0f172a; border-bottom: 1px solid #334155;">
-            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center ">
+            <div class="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center ">
                 <h1 class="text-lg font-semibold text-white header-brand">
                     ระบบประเมินบุคลากร
                 </h1>
