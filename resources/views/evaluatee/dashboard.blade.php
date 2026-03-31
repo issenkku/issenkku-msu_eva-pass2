@@ -251,7 +251,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <h4 class="text-base font-bold text-amber-900">ใกล้ครบกำหนด</h4>
-                                <p class="mt-1 text-sm text-amber-700">รายการที่ครบกำหนดภายใน 3 วัน</p>
+                                <p class="mt-1 text-sm text-amber-700">รายการที่ครบกำหนดภายใน</p>
                             </div>
                             <div
                                 class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shadow-sm ring-1 ring-amber-200">
@@ -261,14 +261,27 @@
 
                         <div class="mt-6">
                             @forelse($dueSoonList as $assignment)
+                                @php
+                                    $action = match ($assignment['status'] ?? 'Assigned') {
+                                        'Draft' => [
+                                            'label' => 'ประเมินต่อ',
+                                            'classes' => 'bg-blue-500 text-white hover:bg-blue-600',
+                                        ],
+                                        default => [
+                                            'label' => 'เริ่มประเมิน',
+                                            'classes' => 'bg-red-500 text-white hover:bg-red-600',
+                                        ],
+                                    };
+                                @endphp
                                 <div class="w-full border-b border-amber-100 py-4 last:border-b-0">
                                     <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">
                                         {{ $assignment['title'] }}</div>
                                     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                         <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
-                                        <span class="rounded-full bg-amber-100 px-2.5 py-1 font-semibold text-amber-700">
-                                            {{ $assignment['daysLeft'] === 0 ? 'วันนี้' : 'อีก ' . $assignment['daysLeft'] . ' วัน' }}
-                                        </span>
+                                        <a href="{{ route('evaluation.show', $assignment['id']) }}"
+                                            class="inline-flex min-w-[116px] items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition {{ $action['classes'] }}">
+                                            {{ $action['label'] }}
+                                        </a>
                                     </div>
                                 </div>
                             @empty
@@ -293,14 +306,27 @@
 
                         <div class="mt-6">
                             @forelse($overdueList as $assignment)
+                                @php
+                                    $action = match ($assignment['status'] ?? 'Assigned') {
+                                        'Draft' => [
+                                            'label' => 'ประเมินต่อ',
+                                            'classes' => 'bg-blue-500 text-white hover:bg-blue-600',
+                                        ],
+                                        default => [
+                                            'label' => 'เริ่มประเมิน',
+                                            'classes' => 'bg-red-500 text-white hover:bg-red-600',
+                                        ],
+                                    };
+                                @endphp
                                 <div class="w-full border-b border-rose-100 py-4 last:border-b-0">
                                     <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">
                                         {{ $assignment['title'] }}</div>
                                     <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
                                         <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
-                                        <span class="rounded-full bg-rose-100 px-2.5 py-1 font-semibold text-rose-700">
-                                            {{ 'เลย ' . abs($assignment['daysLeft']) . ' วัน' }}
-                                        </span>
+                                        <a href="{{ route('evaluation.show', $assignment['id']) }}"
+                                            class="inline-flex min-w-[116px] items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition {{ $action['classes'] }}">
+                                            {{ $action['label'] }}
+                                        </a>
                                     </div>
                                 </div>
                             @empty

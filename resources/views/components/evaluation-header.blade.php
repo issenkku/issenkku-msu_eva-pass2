@@ -20,14 +20,12 @@
     <p class="text-sm text-gray-500 mb-1">{{ $period }}</p>
     <p class="text-sm text-gray-400 mb-2">กำหนดส่ง: {{ $deadline }}</p>
 
-    <p class="text-sm font-semibold 
-        {{ $daysLeft === 0 ? 'text-red-600' : ($daysLeft <= 3 ? 'text-yellow-600' : 'text-green-600') }}">
-        @if($daysLeft === 0)
-            วันนี้เป็นวันกำหนดส่ง
-        @else
-            เหลือเวลาอีก {{ $daysLeft }} วัน
-        @endif
-    </p>
+    <div class="mb-2">
+        <a href="{{ route('evaluation.show', $evaluationId) }}"
+           class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-200">
+            การดำเนินการ
+        </a>
+    </div>
 
     {{-- บล็อกเนื้อหา --}}
     <div class="mt-4">

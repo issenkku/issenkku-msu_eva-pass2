@@ -122,6 +122,7 @@ class DashboardEvaluateeController extends Controller
             };
 
             $daysLeft = $endTime ? now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($endTime)->startOfDay(), false) : null;
+            $status = optional($assignment->report)->status ?? 'Assigned';
 
             return [
                 'id'       => $assignment->report->id ?? null,
@@ -129,6 +130,7 @@ class DashboardEvaluateeController extends Controller
                 'period'   => ($startTime ? $formatThai($startTime) : '-') . ' - ' . ($endTime ? $formatThai($endTime) : '-'),
                 'deadline' => $endTime ? $formatThai($endTime) : '-',
                 'daysLeft' => $daysLeft,
+                'status'   => $status,
             ];
         });
 
