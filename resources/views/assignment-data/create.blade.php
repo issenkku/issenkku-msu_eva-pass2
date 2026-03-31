@@ -162,7 +162,7 @@
                                         เลือกทั้งหมด
                                     </label>
 
-                                    <div id="evaluatees-checkbox-list" class="max-h-72 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                    <div id="evaluatees-checkbox-list" class="max-h-72 overflow-y-auto rounded-md border border-blue-100 bg-white px-3 py-2"></div>
                                 </div>
                             </div>
                             <select id="evaluatees" name="evaluatees[]" multiple required class="hidden">
@@ -206,11 +206,11 @@
                                         'key' => 'evaluator',
                                         'id' => 'evaluator_id',
                                         'badge' => 'B',
-                                        'title' => 'ผู้ประเมิน',
+                                        'title' => 'ผู้ประเมิน/หัวหน้างาน',
                                         'count_id' => 'evaluators',
-                                        'placeholder' => '-- เลือกผู้ประเมิน --',
-                                        'empty_text' => 'ยังไม่ได้เลือกผู้ประเมิน',
-                                        'selected_label' => 'ผู้ประเมินที่เลือก',
+                                        'placeholder' => '-- เลือกผู้ประเมิน/หัวหน้างาน --',
+                                        'empty_text' => 'ยังไม่ได้เลือกผู้ประเมิน/หัวหน้างาน',
+                                        'selected_label' => 'ผู้ประเมิน/หัวหน้างานที่เลือก',
                                         'available_count' => $evaluatorUsers->count(),
                                         'order' => old('stage_order.evaluator', 1),
                                         'wrapper_class' => 'bg-green-50 border-green-200',
@@ -331,7 +331,7 @@
                                                     placeholder="พิมพ์ชื่อหรือตำแหน่งงาน">
                                             </div>
 
-                                            <div id="{{ $card['count_id'] }}-checkbox-list" class="max-h-72 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                            <div id="{{ $card['count_id'] }}-checkbox-list" class="max-h-72 overflow-y-auto rounded-md border border-slate-200 bg-white px-3 py-2"></div>
                                         </div>
                                     </div>
                                     <select id="{{ $card['id'] }}" name="{{ $card['id'] }}" class="hidden">
@@ -446,8 +446,8 @@
                         departmentFilterId: 'evaluators-department-filter',
                         positionFilterId: 'evaluators-position-filter',
                         searchFilterId: 'evaluators-search-filter',
-                        placeholder: '-- เลือกผู้ประเมิน --',
-                        emptyText: 'ยังไม่ได้เลือกผู้ประเมิน',
+                        placeholder: '-- เลือกผู้ประเมิน/หัวหน้างาน --',
+                        emptyText: 'ยังไม่ได้เลือกผู้ประเมิน/หัวหน้างาน',
                         className: 'bg-green-100 text-green-800',
                     },
                     {
@@ -536,12 +536,10 @@
                         const checked = selectedValues.has(value) ? 'checked' : '';
 
                         html += `
-                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
-                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
-                                <span class="flex-1">
-                                    <span class="block font-semibold leading-5 text-slate-800">${userName}</span>
-                                    <span class="mt-1 block text-xs leading-4 text-slate-500">${userEmail}</span>
-                                </span>
+                            <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-blue-50 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50/50">
+                                <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
+                                <span class="truncate font-semibold leading-5 text-slate-800">${userName}</span>
+                                <span class="truncate text-xs leading-4 text-slate-500">${userEmail}</span>
                             </label>
                         `;
                     });
@@ -649,12 +647,10 @@
                         const userEmail = $option.data('user-email') || '';
 
                         html += `
-                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
-                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
-                                <span class="flex-1">
-                                    <span class="block font-semibold leading-5 text-slate-800">${userName}</span>
-                                    <span class="mt-1 block text-xs leading-4 text-slate-500">${userEmail}</span>
-                                </span>
+                            <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-slate-100 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-slate-50">
+                                <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
+                                <span class="truncate font-semibold leading-5 text-slate-800">${userName}</span>
+                                <span class="truncate text-xs leading-4 text-slate-500">${userEmail}</span>
                             </label>
                         `;
                     });

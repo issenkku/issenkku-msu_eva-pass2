@@ -199,7 +199,7 @@
                                         เลือกทั้งหมด
                                     </label>
 
-                                    <div id="evaluatees-checkbox-list" class="max-h-72 space-y-2 overflow-y-auto rounded-md border border-blue-100 bg-blue-50/40 p-3">
+                                    <div id="evaluatees-checkbox-list" class="max-h-72 overflow-y-auto rounded-md border border-blue-100 bg-white px-3 py-2">
                                     </div>
                                 </div>
                             </div>
@@ -223,15 +223,15 @@
                                     <i class="fas fa-check-circle mr-2 text-blue-500"></i>ผู้รับการประเมินที่เลือก:
                                     <span id="evaluatees-selected-count" class="text-blue-600 font-semibold">{{ count($selectedEvaluatees) }}</span> คน
                                 </p>
-                                <div id="selected-evaluatees" class="flex flex-col gap-2">
+                                <div id="selected-evaluatees" class="overflow-hidden rounded-md border border-blue-100 bg-white">
                                     @if(count($selectedEvaluatees) > 0)
                                         @foreach($assignmentData->assignments as $assignment)
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            <span class="block border-b border-blue-50 px-3 py-2 text-sm text-gray-700 last:border-b-0">
                                                 {{ $assignment->evaluateeUser->name }}
                                             </span>
                                         @endforeach
                                     @else
-                                        <span class="text-sm text-gray-500">ยังไม่ได้เลือกผู้รับการประเมิน</span>
+                                        <span class="block px-3 py-2 text-sm text-gray-500">ยังไม่ได้เลือกผู้รับการประเมิน</span>
                                     @endif
                                 </div>
                             </div>
@@ -376,7 +376,7 @@
                                                     placeholder="พิมพ์ชื่อหรือตำแหน่งงาน">
                                             </div>
 
-                                            <div id="{{ $card['count_id'] }}-checkbox-list" class="max-h-72 space-y-3 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                            <div id="{{ $card['count_id'] }}-checkbox-list" class="max-h-72 overflow-y-auto rounded-md border border-slate-200 bg-white px-3 py-2"></div>
                                         </div>
                                     </div>
                                     <select id="{{ $card['id'] }}" name="{{ $card['id'] }}" class="hidden">
@@ -400,16 +400,16 @@
                                                 {{ old($card['id'], $card['value']) ? 1 : 0 }}
                                             </span> คน
                                         </p>
-                                        <div id="selected-{{ $card['count_id'] }}" class="flex flex-col gap-2">
+                                        <div id="selected-{{ $card['count_id'] }}" class="overflow-hidden rounded-md border border-slate-200 bg-white">
                                             @php
                                                 $selectedUser = $card['options']->firstWhere('id', old($card['id'], $card['value']));
                                             @endphp
                                             @if ($selectedUser)
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $card['tag_class'] }}">
+                                                <span class="block px-3 py-2 text-sm text-gray-700">
                                                     {{ $selectedUser->name }}
                                                 </span>
                                             @else
-                                                <span class="text-sm text-gray-500">{{ $card['empty_text'] }}</span>
+                                                <span class="block px-3 py-2 text-sm text-gray-500">{{ $card['empty_text'] }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -583,12 +583,10 @@
                         const checked = selectedValues.has(value) ? 'checked' : '';
 
                         html += `
-                            <label class="flex cursor-pointer items-start gap-3 rounded-md border border-transparent bg-white px-3 py-2 text-sm text-gray-700 hover:border-blue-200 hover:bg-blue-50">
-                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
-                                <span class="flex-1">
-                                    <span class="block font-medium text-gray-800">${userName}</span>
-                                    <span class="block text-xs text-gray-500">${userEmail}</span>
-                                </span>
+                            <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-blue-50 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50/50">
+                                <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
+                                <span class="truncate font-medium text-gray-800">${userName}</span>
+                                <span class="truncate text-xs text-gray-500">${userEmail}</span>
                             </label>
                         `;
                     });
@@ -696,12 +694,10 @@
                         const userEmail = $option.data('user-email') || '';
 
                         html += `
-                            <label class="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-gray-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50/50">
-                                <input type="checkbox" class="mt-1 h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
-                                <span class="flex-1">
-                                    <span class="block font-semibold leading-5 text-slate-800">${userName}</span>
-                                    <span class="mt-1 block text-xs leading-4 text-slate-500">${userEmail}</span>
-                                </span>
+                            <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-slate-100 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-slate-50">
+                                <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
+                                <span class="truncate font-semibold leading-5 text-slate-800">${userName}</span>
+                                <span class="truncate text-xs leading-4 text-slate-500">${userEmail}</span>
                             </label>
                         `;
                     });
@@ -733,13 +729,13 @@
 
                     if (evaluateesCount === 0) {
                         $('#selected-evaluatees').html(
-                            '<span class="text-sm text-gray-500">ยังไม่ได้เลือกผู้รับการประเมิน</span>');
+                            '<span class="block px-3 py-2 text-sm text-gray-500">ยังไม่ได้เลือกผู้รับการประเมิน</span>');
                     } else {
                         let html = '';
                         selectedEvaluatees.forEach(val => {
                             const option = $evaluatees.find(`option[value="${val}"]`);
                             const userName = option.data('user-name') || option.text() || 'ไม่ระบุ';
-                            html += `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            html += `<span class="block border-b border-blue-50 px-3 py-2 text-sm text-gray-700 last:border-b-0">
                                 ${userName}
                             </span>`;
                         });
@@ -756,13 +752,13 @@
                         updateReviewerDropdownLabel(config);
 
                         if (!selectedValue) {
-                            $(`#${config.displayId}`).html(`<span class="text-sm text-gray-500">${config.emptyText}</span>`);
+                            $(`#${config.displayId}`).html(`<span class="block px-3 py-2 text-sm text-gray-500">${config.emptyText}</span>`);
                             return;
                         }
 
                         const selectedOption = $select.find(':selected');
                         const userName = selectedOption.data('user-name') || selectedOption.text() || 'ไม่ระบุ';
-                        const tag = `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${config.className}">
+                        const tag = `<span class="block px-3 py-2 text-sm text-gray-700">
                             ${userName}
                         </span>`;
                         $(`#${config.displayId}`).html(tag);
