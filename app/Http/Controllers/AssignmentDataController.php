@@ -95,7 +95,7 @@ class AssignmentDataController extends Controller
                 ]);
 
                 // ส่งอีเมลแจ้งเตือนโดยใช้ reviewer คนแรกใน flow
-                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['first_reviewer']);
+                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['reviewers']);
             }
 
             DB::commit();
@@ -214,7 +214,7 @@ class AssignmentDataController extends Controller
                     'evaluatee_id' => $evaluateeId,
                 ]);
 
-                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['first_reviewer']);
+                $this->sendEvaluationNotification($report->id, $evaluatee, $payload['reviewers']);
             }
 
             DB::commit();
@@ -369,19 +369,28 @@ class AssignmentDataController extends Controller
     /**
      * ส่งอีเมลแจ้งเตือนให้ผู้รับการประเมิน
      */
-    private function sendEvaluationNotification($reportId, $evaluatee, $reviewer)
+    private function sendEvaluationNotification($reportId, $evaluatee, array $reviewers)
     {
         $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
         if (! $report || ! $evaluatee->email) {
             return;
         }
 
+        $reviewerContacts = collect([
+            ['label' => 'หัวหน้างาน', 'name' => $reviewers['evaluator']?->name ?? null],
+            ['label' => 'กรรมการ', 'name' => $reviewers['director']?->name ?? null],
+            ['label' => 'ผู้บริหาร', 'name' => $reviewers['manager']?->name ?? null],
+        ])->filter(fn ($item) => filled($item['name']))->values()->all();
+
         $mailData = [
             'name' => $evaluatee->name,
             'report_title' => optional($report->reportData)->report_title,
             'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
             'status' => $report->status,
-            'evaluator_name' => $reviewer?->name ?? '-',
+            'evaluator_name' => $reviewers['evaluator']?->name ?? '-',
+            'reviewer_contacts' => $reviewerContacts,
+            'action_url' => route('evaluation.show', ['id' => $reportId]),
+            'action_text' => 'เข้าสู่แบบประเมิน',
         ];
 
         try {
@@ -397,6 +406,7 @@ class AssignmentDataController extends Controller
             ]);
         }
     }
+
 
     /**
      * เพิ่ม role ให้ผู้ใช้ เมื่อยังไม่มี role ดังกล่าว

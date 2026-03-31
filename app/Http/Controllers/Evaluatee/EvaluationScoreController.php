@@ -372,6 +372,11 @@ class EvaluationScoreController extends Controller
 
         $assignment->load('assignmentData.evaluatorUser', 'assignmentData.directorUser', 'assignmentData.managerUser');
         $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
+        $reviewerContacts = collect([
+            ['label' => 'หัวหน้างาน', 'name' => $assignment->assignmentData->evaluatorUser->name ?? null],
+            ['label' => 'กรรมการ', 'name' => $assignment->assignmentData->directorUser->name ?? null],
+            ['label' => 'ผู้บริหาร', 'name' => $assignment->assignmentData->managerUser->name ?? null],
+        ])->filter(fn ($item) => filled($item['name']))->values()->all();
         $targetUser = match ($report->status) {
             'Pending' => $assignment->assignmentData->evaluatorUser,
             'Director_assigned' => $assignment->assignmentData->directorUser,
@@ -386,12 +391,23 @@ class EvaluationScoreController extends Controller
                 continue;
             }
 
+            $actionUrl = match ($report->status) {
+                'Pending' => route('evaluator.evaluator.show', ['id' => $reportId]),
+                'Director_assigned' => route('director.show', ['id' => $reportId]),
+                'Manager_assign' => route('manager.show', ['id' => $reportId]),
+                'Completed' => route('evaluation.show', ['id' => $reportId]),
+                default => route('evaluatee.dashboard'),
+            };
+
             $mailData = [
                 'name' => $user->name,
                 'report_title' => optional($report->reportData)->report_title,
                 'version_name' => optional(optional($report->reportData)->criteriaVersion)->version_name,
                 'status' => $report->status,
                 'evaluatee_name' => optional($evaluatee)->name,
+                'reviewer_contacts' => $reviewerContacts,
+                'action_url' => $actionUrl,
+                'action_text' => 'เข้าสู่รายการประเมิน',
             ];
 
             \Mail::send('emails.evaluatee_pending', $mailData, function ($message) use ($user) {

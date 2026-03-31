@@ -13,12 +13,16 @@ class NotifyEndDateMail extends Mailable
     public $name;
     public $endDateTh;
     public $daysLeftText;
+    public $actionUrl;
+    public $actionText;
 
-    public function __construct($name, $endDateTh, $daysLeftText)
+    public function __construct($name, $endDateTh, $daysLeftText, $actionUrl = null, $actionText = 'เข้าสู่รายการประเมิน')
     {
         $this->name = $name;
         $this->endDateTh = $endDateTh;
         $this->daysLeftText = $daysLeftText;
+        $this->actionUrl = $actionUrl;
+        $this->actionText = $actionText;
     }
 
     public function build()

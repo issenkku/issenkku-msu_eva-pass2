@@ -59,11 +59,14 @@ class NotifyEndDate extends Command
                         $daysLeft = $today->diffInDays($carbonDate, false);
                         $daysLeftText = $daysLeft == 0 ? 'วันนี้' : "อีก {$daysLeft} วัน";
 
+                        $actionUrl = $this->resolveActionUrl($assignment, $user);
+
                         Mail::to($user->email)->send(
                             new NotifyEndDateMail(
                                 $user->name,
                                 $endDateTh,
-                                $daysLeftText
+                                $daysLeftText,
+                                $actionUrl
                             )
                         );
                         $successCount++;
@@ -91,5 +94,28 @@ class NotifyEndDate extends Command
                 $this->error("Email: {$fail['user']} | Error: {$fail['error']}");
             }
         }
+    }
+
+    private function resolveActionUrl($assignment, $user): string
+    {
+        if ((int) $assignment->evaluatee_id === (int) $user->id) {
+            return route('evaluation.show', ['id' => $assignment->report_id]);
+        }
+
+        $assignmentData = $assignment->assignmentData;
+
+        if ($assignmentData && (int) $assignmentData->evaluator_id === (int) $user->id) {
+            return route('evaluator.evaluator.show', ['id' => $assignment->report_id]);
+        }
+
+        if ($assignmentData && (int) $assignmentData->director_id === (int) $user->id) {
+            return route('director.show', ['id' => $assignment->report_id]);
+        }
+
+        if ($assignmentData && (int) $assignmentData->manager_id === (int) $user->id) {
+            return route('manager.show', ['id' => $assignment->report_id]);
+        }
+
+        return route('home');
     }
 }
