@@ -428,16 +428,21 @@
                         <h2 class="text-xl font-semibold text-gray-800">สรุปและยืนยันการตั้งค่า</h2>
                     </div>
                     <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="bg-white rounded-lg p-4 shadow-sm summary-card text-center">
-                                <div class="text-2xl font-bold text-blue-600" id="summary-period">-</div>
-                                <div class="text-sm text-gray-500">ระยะเวลาประเมิน (วัน)</div>
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 items-stretch">
+                            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-md summary-card flex min-h-[220px] flex-col">
+                                <div class="mb-4 text-center">
+                                    <div class="text-lg font-bold text-blue-600">ระยะเวลาประเมิน</div>
+                                </div>
+                                <div class="bg-blue-50 rounded-lg p-4 min-h-[120px] flex flex-col items-center justify-center text-center">
+                                    <div class="text-3xl font-extrabold text-blue-600 leading-none" id="summary-period">-</div>
+                                    <div class="mt-3 text-sm font-medium text-gray-600">จำนวนวันของรอบประเมิน</div>
+                                </div>
                             </div>
-                            <div class="bg-white rounded-lg p-6 shadow-sm summary-card">
-                                <div class="text-center mb-3">
+                            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-md summary-card flex min-h-[220px] flex-col">
+                                <div class="mb-4 text-center">
                                     <div class="text-lg font-bold text-green-600">เกณฑ์การประเมินที่เลือก</div>
                                 </div>
-                                <div class="bg-green-50 rounded-lg p-4">
+                                <div class="bg-green-50 rounded-lg p-4 min-h-[120px] flex flex-col justify-center">
                                     <div class="text-sm text-gray-600 font-medium mb-2">ชื่อเกณฑ์:</div>
                                     <div class="text-base font-semibold text-green-700" id="summary-criteria-full">-</div>
                                     <div class="text-xs text-gray-500 mt-2" id="summary-criteria-description">กรุณาเลือกเกณฑ์การประเมิน</div>
