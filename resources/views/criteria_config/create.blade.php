@@ -707,10 +707,122 @@
             </div>
         </div>
     </div>
+    <div id="floating_save_button" class="fixed bottom-6 right-6 z-40 hidden">
+        <div class="flex items-center gap-3 rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-2xl ring-1 ring-blue-500/40">
+            <div class="hidden sm:block">
+                <p class="text-sm font-semibold">มีการแก้ไขที่ยังไม่บันทึก</p>
+                <p class="text-xs text-blue-100">กรุณากดบันทึกก่อนออกจากหน้านี้</p>
+            </div>
+            <button type="button" id="floating_save_submit" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                บันทึก
+            </button>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
+        let isDirty = false;
+        let isSubmitting = false;
+        const unsavedChangesMessage = 'มีข้อมูลที่แก้ไขแล้วยังไม่ได้บันทึก กรุณาบันทึกก่อนออกจากหน้านี้';
+
+        function updateFloatingSaveButton() {
+            const floatingButton = document.getElementById('floating_save_button');
+            if (!floatingButton) {
+                return;
+            }
+
+            floatingButton.classList.toggle('hidden', !isDirty || isSubmitting);
+        }
+
+        function setDirtyState(nextState) {
+            isDirty = Boolean(nextState);
+            updateFloatingSaveButton();
+        }
+
+        function markDirty() {
+            if (isSubmitting) {
+                return;
+            }
+
+            setDirtyState(true);
+        }
+
+        function resetDirtyState() {
+            setDirtyState(false);
+        }
+
+        function shouldBlockNavigation(targetUrl = '') {
+            if (!isDirty || isSubmitting) {
+                return false;
+            }
+
+            if (!targetUrl) {
+                return true;
+            }
+
+            const normalizedTarget = targetUrl.trim();
+            if (!normalizedTarget || normalizedTarget.startsWith('#') || normalizedTarget.startsWith('javascript:')) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function setupUnsavedChangesProtection() {
+            const form = document.getElementById('jsonForm');
+            const floatingSubmitButton = document.getElementById('floating_save_submit');
+
+            if (floatingSubmitButton && form) {
+                floatingSubmitButton.addEventListener('click', function() {
+                    form.requestSubmit();
+                });
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target.closest('#jsonForm')) {
+                    markDirty();
+                }
+            });
+
+            document.addEventListener('change', function(e) {
+                if (e.target.closest('#jsonForm')) {
+                    markDirty();
+                }
+            });
+
+            $(document).on('summernote.change', '.richtext-editor', function() {
+                markDirty();
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (!shouldBlockNavigation(window.location.href)) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.returnValue = unsavedChangesMessage;
+            });
+
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href]');
+                if (!link) {
+                    return;
+                }
+
+                const href = link.getAttribute('href') || '';
+                if (!shouldBlockNavigation(href)) {
+                    return;
+                }
+
+                e.preventDefault();
+                alert(unsavedChangesMessage);
+            }, true);
+        }
+
         // Initialize Summernote for rich text editors
         function initializeSummernote() {
             $('.richtext-editor').each(function() {
@@ -748,6 +860,7 @@
 
         // Initialize Summernote when document is ready
         $(document).ready(function() {
+            setupUnsavedChangesProtection();
             setTimeout(function() {
                 initializeSummernote();
             }, 100);
@@ -1009,6 +1122,7 @@
             if (draggedBlock) {
                 draggedBlock.classList.remove('opacity-60');
                 delete draggedBlock.dataset.dragArmed;
+                markDirty();
             }
             draggedBlock = null;
         });
@@ -1096,6 +1210,8 @@
         }
 
         function showSuccessModal() {
+            isSubmitting = false;
+            resetDirtyState();
             document.getElementById('success_modal').classList.remove('hidden');
             let countdown = 5;
             const countdownElement = document.getElementById('countdown');
@@ -1118,6 +1234,7 @@
                 block.remove();
                 updateCategorySequence(container);
                 updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
             }
@@ -1131,6 +1248,7 @@
                 block.remove();
                 updateEvalSequence(container);
                 updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
             }
@@ -1149,6 +1267,7 @@
                 block.remove();
                 updateQuantMainSequence(container);
                 updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
             }
@@ -1160,6 +1279,7 @@
             if (container.querySelectorAll('.quant_sub_criteria_block').length > 1) {
                 block.remove();
                 updateQuantSubSequence(container);
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
             }
@@ -1178,6 +1298,7 @@
                 block.remove();
                 updateQualMainSequence(container);
                 updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
             }
@@ -1189,6 +1310,7 @@
             if (container.querySelectorAll('.qual_sub_criteria_block').length > 1) {
                 block.remove();
                 updateQualSubSequence(container);
+                markDirty();
             } else {
                 showValidationErrorModal('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
             }
@@ -1201,6 +1323,7 @@
                     block.parentNode.insertBefore(block, previous);
                     updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
                     updateCategorySequence(document.getElementById('categories_container'));
+                    markDirty();
                 }
             }
 
@@ -1211,6 +1334,7 @@
                     block.parentNode.insertBefore(next, block);
                     updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
                     updateCategorySequence(document.getElementById('categories_container'));
+                    markDirty();
                 }
             }
 
@@ -1222,6 +1346,7 @@
                     container.insertBefore(block, previous);
                     updateEvalSequence(container);
                     updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                    markDirty();
                 }
             }
 
@@ -1233,6 +1358,7 @@
                     container.insertBefore(next, block);
                     updateEvalSequence(container);
                     updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
+                    markDirty();
                 }
             }
 
@@ -1244,6 +1370,7 @@
                     block.parentNode.insertBefore(block, previous);
                     updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                     updateQuantMainSequence(container);
+                    markDirty();
                 }
             }
 
@@ -1255,6 +1382,7 @@
                     block.parentNode.insertBefore(next, block);
                     updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                     updateQuantMainSequence(container);
+                    markDirty();
                 }
             }
 
@@ -1266,6 +1394,7 @@
                     block.parentNode.insertBefore(block, previous);
                     updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                     updateQualMainSequence(container);
+                    markDirty();
                 }
             }
 
@@ -1277,6 +1406,7 @@
                     block.parentNode.insertBefore(next, block);
                     updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                     updateQualMainSequence(container);
+                    markDirty();
                 }
             }
 
@@ -1285,6 +1415,7 @@
                 document.getElementById('categories_container').appendChild(newBlock);
                 updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
                 updateCategorySequence(document.getElementById('categories_container'));
+                markDirty();
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1297,6 +1428,7 @@
                 parent.appendChild(newBlock);
                 updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
                 updateEvalSequence(parent);
+                markDirty();
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1310,6 +1442,7 @@
                 parent.appendChild(newBlock);
                 updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                 updateQuantMainSequence(parent);
+                markDirty();
                 
                 // Initialize Summernote for new rich text editors
                 setTimeout(function() {
@@ -1347,6 +1480,7 @@
                 let newBlock = cloneAndClear('.quant_sub_criteria_block');
                 parent.appendChild(newBlock);
                 updateQuantSubSequence(parent);
+                markDirty();
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
@@ -1360,6 +1494,7 @@
                 parent.appendChild(newBlock);
                 updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                 updateQualMainSequence(parent);
+                markDirty();
                 
                 // Initialize Summernote for new rich text editors
                 setTimeout(function() {
@@ -1397,6 +1532,7 @@
                 let newBlock = cloneAndClear('.qual_sub_criteria_block');
                 parent.appendChild(newBlock);
                 updateQualSubSequence(parent);
+                markDirty();
                 
                 // Initialize Summernote for new rich text editors in the new block
                 setTimeout(function() {
@@ -1718,6 +1854,8 @@
 
         document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {
             hideConfirmModal();
+            isSubmitting = true;
+            updateFloatingSaveButton();
             showLoading();
 
             try {
@@ -1740,6 +1878,8 @@
                     // Success case (HTTP 201)
                     showSuccessModal();
                 } else if (response.status === 422) {
+                    isSubmitting = false;
+                    updateFloatingSaveButton();
                     // Validation error (HTTP 422)
                     let errorMessage = 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:\n';
 
@@ -1759,11 +1899,15 @@
 
                     alert(errorMessage);
                 } else {
+                    isSubmitting = false;
+                    updateFloatingSaveButton();
                     // Other errors (e.g., HTTP 500)
                     alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถบันทึกข้อมูลได้'));
                 }
             } catch (error) {
                 // Network or unexpected errors
+                isSubmitting = false;
+                updateFloatingSaveButton();
                 hideLoading();
                 console.error('Fetch error:', error);
                 alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
