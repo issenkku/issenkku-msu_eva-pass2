@@ -493,6 +493,20 @@
             </div>
         </div>
     </div>
+    <div id="floating_save_button" class="fixed bottom-6 right-6 z-40 hidden">
+        <div class="flex items-center gap-3 rounded-2xl bg-blue-600 px-4 py-3 text-white shadow-2xl ring-1 ring-blue-500/40">
+            <div class="hidden sm:block">
+                <p class="text-sm font-semibold">มีการแก้ไขที่ยังไม่บันทึก</p>
+                <p class="text-xs text-blue-100">กรุณากดบันทึกก่อนออกจากหน้านี้</p>
+            </div>
+            <button type="button" id="floating_save_submit" class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                บันทึก
+            </button>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -500,6 +514,100 @@
         let originalData = null;
         let currentReportDataId = null;
         let isInitialDataLoaded = false;
+        let isDirty = false;
+        let isSubmitting = false;
+        let suppressDirtyTracking = true;
+        const unsavedChangesMessage = 'มีข้อมูลที่แก้ไขแล้วยังไม่ได้บันทึก กรุณาบันทึกก่อนออกจากหน้านี้';
+
+        function updateFloatingSaveButton() {
+            const floatingButton = document.getElementById('floating_save_button');
+            if (!floatingButton) {
+                return;
+            }
+
+            floatingButton.classList.toggle('hidden', !isDirty || isSubmitting);
+        }
+
+        function setDirtyState(nextState) {
+            isDirty = Boolean(nextState);
+            updateFloatingSaveButton();
+        }
+
+        function markDirty() {
+            if (suppressDirtyTracking || isSubmitting || !isInitialDataLoaded) {
+                return;
+            }
+
+            setDirtyState(true);
+        }
+
+        function resetDirtyState() {
+            setDirtyState(false);
+        }
+
+        function shouldBlockNavigation(targetUrl = '') {
+            if (!isDirty || isSubmitting) {
+                return false;
+            }
+
+            if (!targetUrl) {
+                return true;
+            }
+
+            const normalizedTarget = targetUrl.trim();
+            if (!normalizedTarget || normalizedTarget.startsWith('#') || normalizedTarget.startsWith('javascript:')) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function setupUnsavedChangesProtection() {
+            const form = document.getElementById('editForm');
+            const floatingSubmitButton = document.getElementById('floating_save_submit');
+
+            if (floatingSubmitButton && form) {
+                floatingSubmitButton.addEventListener('click', function() {
+                    form.requestSubmit();
+                });
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target.closest('#editForm')) {
+                    markDirty();
+                }
+            });
+
+            document.addEventListener('change', function(e) {
+                if (e.target.closest('#editForm')) {
+                    markDirty();
+                }
+            });
+
+            window.addEventListener('beforeunload', function(e) {
+                if (!shouldBlockNavigation(window.location.href)) {
+                    return;
+                }
+
+                e.preventDefault();
+                e.returnValue = unsavedChangesMessage;
+            });
+
+            document.addEventListener('click', function(e) {
+                const link = e.target.closest('a[href]');
+                if (!link) {
+                    return;
+                }
+
+                const href = link.getAttribute('href') || '';
+                if (!shouldBlockNavigation(href)) {
+                    return;
+                }
+
+                e.preventDefault();
+                alert(unsavedChangesMessage);
+            }, true);
+        }
 
         // Clean up all existing Summernote instances
         function cleanupSummernote() {
@@ -553,6 +661,7 @@
                 callbacks: {
                     onChange: function(contents) {
                         $editor.val(contents);
+                        markDirty();
                     }
                 }
             };
@@ -626,6 +735,7 @@
             fetchVersionDetails();
             setupEventListeners();
             setupLazySummernote();
+            setupUnsavedChangesProtection();
         });
 
         function setupEventListeners() {
@@ -634,51 +744,65 @@
                 // Category buttons
                 if (e.target.closest('.delete_category_btn')) {
                     handleDeleteCategory(e.target.closest('.category_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.move_category_up_btn')) {
                     handleMoveCategoryUp(e.target.closest('.category_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.move_category_down_btn')) {
                     handleMoveCategoryDown(e.target.closest('.category_block'));
+                    markDirty();
                 }
                 if (e.target.closest('#add_category_btn')) {
                     handleAddCategory();
+                    markDirty();
                 }
 
                 // Evaluation List buttons
                 if (e.target.closest('.delete_eval_btn')) {
                     handleDeleteEvaluation(e.target.closest('.evaluation_list_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.add_evaluation_list_btn')) {
                     handleAddEvaluation(e.target.closest('.category_block'));
+                    markDirty();
                 }
 
                 // Quantity Criteria buttons
                 if (e.target.closest('.delete_quant_btn')) {
                     handleDeleteQuantityCriteria(e.target.closest('.quant_criteria_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.add_quant_criteria_btn')) {
                     handleAddQuantityCriteria(e.target.closest('.evaluation_list_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.delete_quant_sub_btn')) {
                     handleDeleteQuantitySubCriteria(e.target.closest('.quant_sub_criteria_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.add_quant_sub_criteria_btn')) {
                     handleAddQuantitySubCriteria(e.target.closest('.quant_criteria_block'));
+                    markDirty();
                 }
 
                 // Quality Criteria buttons
                 if (e.target.closest('.delete_qual_btn')) {
                     handleDeleteQualityCriteria(e.target.closest('.qual_criteria_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.add_qual_criteria_btn')) {
                     handleAddQualityCriteria(e.target.closest('.evaluation_list_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.delete_qual_sub_btn')) {
                     handleDeleteQualitySubCriteria(e.target.closest('.qual_sub_criteria_block'));
+                    markDirty();
                 }
                 if (e.target.closest('.add_qual_sub_criteria_btn')) {
                     handleAddQualitySubCriteria(e.target.closest('.qual_criteria_block'));
+                    markDirty();
                 }
             });
 
@@ -923,6 +1047,7 @@
             if (draggedBlock) {
                 draggedBlock.classList.remove('opacity-60');
                 delete draggedBlock.dataset.dragArmed;
+                markDirty();
             }
             draggedBlock = null;
         });
@@ -1155,6 +1280,8 @@
 
         function fetchVersionDetails() {
             isInitialDataLoaded = false;
+            suppressDirtyTracking = true;
+            resetDirtyState();
             showLoading();
             const url = "{{ route('report-structure.show', ['id' => $id ?? '']) }}?t=" + Date.now();
             
@@ -1171,18 +1298,26 @@
             .then(data => {
                 hideLoading();
                 isInitialDataLoaded = false;
+                isSubmitting = false;
+                updateFloatingSaveButton();
                 if (data.data) {
                     originalData = data.data;
                     populateForm(data.data);
                     isInitialDataLoaded = true;
+                    suppressDirtyTracking = false;
+                    resetDirtyState();
                     requestAnimationFrame(() => observeVisibleSummernote());
                 } else {
+                    suppressDirtyTracking = false;
                     showError('ไม่พบข้อมูลเวอร์ชัน');
                 }
             })
             .catch(error => {
                 hideLoading();
                 isInitialDataLoaded = false;
+                isSubmitting = false;
+                updateFloatingSaveButton();
+                suppressDirtyTracking = false;
                 console.error('Error:', error);
                 showError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
             });
@@ -1499,6 +1634,8 @@
                 return;
             }
 
+            isSubmitting = true;
+            updateFloatingSaveButton();
             showLoading();
 
             // Collect all form data in the same structure as create
@@ -1506,6 +1643,8 @@
             try {
                 formData = collectFormData();
             } catch (error) {
+                isSubmitting = false;
+                updateFloatingSaveButton();
                 hideLoading();
                 alert(error.message);
                 return;
@@ -1534,10 +1673,14 @@
             })
             .then(({ ok, status, data }) => {
                 if (ok && data.success === true) {
+                    isSubmitting = false;
+                    resetDirtyState();
                     fetchVersionDetails();
                     hideLoading();
                     showSuccess();
                 } else {
+                    isSubmitting = false;
+                    updateFloatingSaveButton();
                     hideLoading();
                     let errorMessage = 'เกิดข้อผิดพลาดในการบันทึกข้อมูล';
                     if (data.message) {
@@ -1550,6 +1693,8 @@
                 }
             })
             .catch(error => {
+                isSubmitting = false;
+                updateFloatingSaveButton();
                 hideLoading();
                 console.error('Error:', error);
                 showError('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
