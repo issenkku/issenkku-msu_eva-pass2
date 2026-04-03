@@ -10,6 +10,8 @@ use App\Models\Reports;
 use App\Models\Subject;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
+use App\Support\EvaluateeWorkloadModalData;
+use App\Support\EvaluateeWorkloadViewData;
 use Illuminate\Http\Request;
 
 class EvaluationWorkloadController extends Controller
@@ -102,6 +104,18 @@ class EvaluationWorkloadController extends Controller
                 ->map(fn($answers) => $answers->pluck('link')->filter()->values());
         }
 
+        $workloadView = EvaluateeWorkloadViewData::build(
+            $quantitySubCriteria,
+            $workloadForms,
+            $workloadEntriesByFormId,
+            $evidenceLinksByEntryId
+        );
+        $workloadModal = EvaluateeWorkloadModalData::build(
+            $quantitySubCriteria,
+            $workloadForms,
+            $subjects
+        );
+
         return view('evaluatee.evaluation-workload', [
             'reportId' => $reportId,
             'report' => $report,
@@ -115,6 +129,8 @@ class EvaluationWorkloadController extends Controller
             'savedWorkloadScoreC' => $savedWorkloadScoreC,
             'subjects' => $subjects,
             'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
+            'workloadView' => $workloadView,
+            'workloadModal' => $workloadModal,
         ]);
     }
 

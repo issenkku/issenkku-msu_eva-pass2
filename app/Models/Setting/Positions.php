@@ -15,6 +15,7 @@ class Positions extends Model
     protected $fillable = [
         'name',
         'description',
+        'sort_order',
     ];
 
     public function getActivitylogOptions(): LogOptions

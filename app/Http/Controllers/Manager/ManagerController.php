@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Manager;
 
 
+use App\Http\Controllers\Concerns\BuildsDashboardMetrics;
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Services\EvaluationService;
 use App\Services\GraphDataService;
 use App\Services\ScoreService;
+use App\Support\Dashboard\ManagerDashboardMeta;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -16,53 +18,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class ManagerController extends Controller
 {
-    private function countByStatus($evaluations, $statuses)
-    {
-        return $evaluations->filter(function ($assignment) use ($statuses) {
-            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
-
-            return in_array($reportStatus, $statuses);
-        })->count();
-    }
-
-    private function summarizeEvaluateeOverviewStatuses($evaluations): array
-    {
-        $counts = [
-            'รอการกรอกข้อมูล' => 0,
-            'ยังไม่ประเมิน' => 0,
-            'กำลังดำเนินการ' => 0,
-            'ประเมินเสร็จสิ้น' => 0,
-        ];
-
-        $evaluations
-            ->filter(fn ($assignment) => $assignment->evaluateeUser)
-            ->groupBy('evaluateeUser.id')
-            ->each(function ($assignments) use (&$counts) {
-                $statuses = $assignments
-                    ->map(fn ($assignment) => optional($assignment->report)->status ?? 'Assigned')
-                    ->filter()
-                    ->values();
-
-                if ($statuses->isEmpty()) {
-                    $counts['รอการกรอกข้อมูล']++;
-                    return;
-                }
-
-                $allCompleted = $statuses->every(fn ($status) => $status === 'Completed');
-
-                if ($allCompleted) {
-                    $counts['ประเมินเสร็จสิ้น']++;
-                } elseif ($statuses->contains('Manager_draft')) {
-                    $counts['กำลังดำเนินการ']++;
-                } elseif ($statuses->contains('Manager_assign')) {
-                    $counts['ยังไม่ประเมิน']++;
-                } else {
-                    $counts['รอการกรอกข้อมูล']++;
-                }
-            });
-
-        return $counts;
-    }
+    use BuildsDashboardMetrics;
 
     /**
      * เมธอด: dashboard
@@ -82,6 +38,7 @@ class ManagerController extends Controller
         ]);
 
         $filters = $request->only(['search', 'year', 'start_time', 'end_time', 'department_name', 'status', 'urgency']);
+        $hasManagerFilters = $this->hasActiveFilters($request, ['search', 'start_time', 'end_time', 'department_name', 'status', 'urgency', 'year']);
         $departments = Departments::all();
 
         // Get ALL reports with complete data (Director has access to everything)
@@ -95,15 +52,7 @@ class ManagerController extends Controller
         $evaluations = $evaluationService->filterEvaluations($evaluations, $filters);
         if ($request->filled('status')) {
             $status = $request->input('status');
-            $statusGroups = [
-                'manager_waiting' => ['Manager_assign'],
-                'in_progress' => ['Manager_draft'],
-                'completed' => ['Completed'],
-                'รอการกรอกข้อมูล' => ['Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'],
-                'ยังไม่ประเมิน' => ['Manager_assign'],
-                'กำลังดำเนินการ' => ['Manager_draft'],
-                'ประเมินเสร็จสิ้น' => ['Completed'],
-            ];
+            $statusGroups = ManagerDashboardMeta::statusGroups();
 
             if (isset($statusGroups[$status])) {
                 $evaluations = $evaluations->filter(function ($assignment) use ($statusGroups, $status) {
@@ -120,11 +69,11 @@ class ManagerController extends Controller
         // Count status for ALL evaluations (Director sees everything)
         $statusCounts = [
             'ทั้งหมด' => $evaluations->count(),
-            'รอการกรอกข้อมูล' => $this->countByStatus($evaluations,
+            'รอการกรอกข้อมูล' => $this->countByStatuses($evaluations,
                 ['Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft']),
-            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Manager_assign']),
-            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Manager_draft']),
-            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
+            'ยังไม่ประเมิน' => $this->countByStatuses($evaluations, ['Manager_assign']),
+            'กำลังดำเนินการ' => $this->countByStatuses($evaluations, ['Manager_draft']),
+            'ประเมินเสร็จสิ้น' => $this->countByStatuses($evaluations, ['Completed']),
         ];
 
         // Additional counts by department (useful for director overview)
@@ -137,34 +86,16 @@ class ManagerController extends Controller
         });
 
         $totalEvaluations = $evaluations->count();
-        $dueSoonCount = $evaluations->filter(function ($assignment) {
-            $endTime = optional($assignment->assignmentData)->end_time;
-            $status = optional($assignment->report)->status;
-
-            if (! $endTime || $status === 'Completed') {
-                return false;
-            }
-
-            return Carbon::parse($endTime)->between(now()->startOfDay(), now()->copy()->addDays(7)->endOfDay());
-        })->count();
-        $overdueCount = $evaluations->filter(function ($assignment) {
-            $endTime = optional($assignment->assignmentData)->end_time;
-            $status = optional($assignment->report)->status;
-
-            if (! $endTime || $status === 'Completed') {
-                return false;
-            }
-
-            return Carbon::parse($endTime)->endOfDay()->lt(now());
-        })->count();
+        $dueSoonCount = $this->countDueSoonEvaluations($evaluations);
+        $overdueCount = $this->countOverdueEvaluations($evaluations);
         $followUpEvaluations = $evaluations
             ->filter(fn ($assignment) => optional($assignment->report)->status !== 'Completed')
             ->sortBy([
-                fn ($assignment) => $this->getFollowUpPriority(optional($assignment->report)->status),
+                fn ($assignment) => ManagerDashboardMeta::followUpPriority(optional($assignment->report)->status),
                 fn ($assignment) => optional($assignment->assignmentData)->end_time ?? '9999-12-31',
             ])
             ->map(function ($assignment) {
-                $statusMeta = $this->getStatusMeta(optional($assignment->report)->status);
+                $statusMeta = ManagerDashboardMeta::statusMeta(optional($assignment->report)->status);
                 $endTime = optional($assignment->assignmentData)->end_time;
 
                 return [
@@ -182,7 +113,7 @@ class ManagerController extends Controller
             ->groupBy('evaluateeUser.id')
             ->count();
         $totalUsers = \App\Models\User::count();
-        $overviewEvaluateeStatusCounts = $this->summarizeEvaluateeOverviewStatuses($evaluations);
+        $overviewEvaluateeStatusCounts = ManagerDashboardMeta::summarizeOverviewStatuses($evaluations);
         $beforeManagerCount = $overviewEvaluateeStatusCounts['รอการกรอกข้อมูล'] ?? 0;
         $awaitingManagerCount = $overviewEvaluateeStatusCounts['ยังไม่ประเมิน'] ?? 0;
         $managerInProgressCount = $overviewEvaluateeStatusCounts['กำลังดำเนินการ'] ?? 0;
@@ -190,6 +121,23 @@ class ManagerController extends Controller
         $progressPercent = $totalEvaluatees > 0
             ? round(($completedCount / $totalEvaluatees) * 100, 1)
             : 0;
+        $activeManagerFilters = $this->activeFilters($request, ['search', 'start_time', 'end_time', 'department_name', 'status', 'urgency', 'year']);
+        $managerOverviewChart = [
+            'id' => 'managerOverviewChart',
+            'labels' => ['รอการกรอกข้อมูล', 'ยังไม่ประเมิน', 'กำลังดำเนินการ', 'ประเมินเสร็จสิ้น'],
+            'data' => [$beforeManagerCount, $awaitingManagerCount, $managerInProgressCount, $completedCount],
+            'colors' => ['#f59e0b', '#ef4444', '#3b82f6', '#22c55e'],
+            'filters' => [
+                $request->fullUrlWithQuery(['status' => 'รอการกรอกข้อมูล']),
+                $request->fullUrlWithQuery(['status' => 'ยังไม่ประเมิน']),
+                $request->fullUrlWithQuery(['status' => 'กำลังดำเนินการ']),
+                $request->fullUrlWithQuery(['status' => 'ประเมินเสร็จสิ้น']),
+            ],
+            'centerValue' => $progressPercent.'%',
+            'centerLabel' => 'ความคืบหน้ารวม',
+            'centerMeta' => "รับรองเสร็จแล้ว {$completedCount} จาก {$totalEvaluatees} คน",
+        ];
+        $managerOverviewPercents = $this->buildOverviewPercents($managerOverviewChart['data'], $totalEvaluatees);
 
         $userReports = $evaluations->map(function ($assignment) {
             return $assignment->report;
@@ -227,48 +175,15 @@ class ManagerController extends Controller
             'completedCount' => $completedCount,
             'beforeManagerCount' => $beforeManagerCount,
             'progressPercent' => $progressPercent,
+            'hasManagerFilters' => $hasManagerFilters,
+            'activeManagerFilters' => $activeManagerFilters,
+            'managerFilterStatusOptions' => ManagerDashboardMeta::filterStatusOptions(),
+            'managerOverviewChart' => $managerOverviewChart,
+            'managerOverviewPercents' => $managerOverviewPercents,
             'dueSoonCount' => $dueSoonCount,
             'overdueCount' => $overdueCount,
             'followUpEvaluations' => $followUpEvaluations,
         ]);
     }
 
-    private function getStatusMeta(?string $status): array
-    {
-        return match ($status) {
-            'Assigned', 'Draft', 'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft' => ['label' => 'อยู่ในขั้นตอนก่อนถึงผู้บริหาร', 'progress' => 60],
-            'Manager_assign' => ['label' => 'รอผู้บริหารรับรอง', 'progress' => 85],
-            'Manager_draft' => ['label' => 'ผู้บริหารกำลังรับรอง', 'progress' => 95],
-            'Completed' => ['label' => 'รับรองเสร็จสิ้น', 'progress' => 100],
-            default => ['label' => $status ?? '-', 'progress' => 0],
-        };
-    }
-
-    private function getFollowUpPriority(?string $status): int
-    {
-        return match ($status) {
-            'Manager_assign' => 1,
-            'Manager_draft' => 2,
-            default => 3,
-        };
-    }
-
-    private function formatRemainingText($endTime): string
-    {
-        if (! $endTime) {
-            return '-';
-        }
-
-        $days = now()->startOfDay()->diffInDays(Carbon::parse($endTime)->startOfDay(), false);
-
-        if ($days < 0) {
-            return 'เลยกำหนด '.abs($days).' วัน';
-        }
-
-        if ($days === 0) {
-            return 'ครบกำหนดวันนี้';
-        }
-
-        return 'เหลือ '.$days.' วัน';
-    }
 }

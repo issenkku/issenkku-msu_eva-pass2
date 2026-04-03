@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::prefix('departments')->name('departments.')->group(function () {
         Route::get('/', [DepartmentsController::class, 'index'])->name('index');
         Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
+        Route::post('/reorder', [DepartmentsController::class, 'reorder'])->name('reorder');
         Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');
         Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
     });
@@ -46,6 +47,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::prefix('positions')->name('positions.')->group(function () {
         Route::get('/', [PositionsController::class, 'index'])->name('index');
         Route::post('/store', [PositionsController::class, 'store'])->name('store');
+        Route::post('/reorder', [PositionsController::class, 'reorder'])->name('reorder');
         Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
         Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
     });
@@ -53,6 +55,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::prefix('job-level')->name('job-level.')->group(function () {
         Route::get('/', [JobLevelsController::class, 'index'])->name('index');
         Route::post('/store', [JobLevelsController::class, 'store'])->name('store');
+        Route::post('/reorder', [JobLevelsController::class, 'reorder'])->name('reorder');
         Route::put('/{id}', [JobLevelsController::class, 'update'])->name('update');
         Route::delete('/{id}', [JobLevelsController::class, 'destroy'])->name('destroy');
     });

@@ -15,6 +15,10 @@ use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Services\GraphDataService;
 use App\Services\ScoreService;
+use App\Support\EvaluateeDashboardAssignments;
+use App\Support\EvaluateeDashboardOverview;
+use App\Support\EvaluationSummaryData;
+use App\Support\EvaluationScoreSummary;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -23,12 +27,7 @@ use Illuminate\Support\Collection;
 class DashboardEvaluateeController extends Controller
 {
     /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า evaluatee.dashboard บันทึกข้อมูล LengthAwarePaginator
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า evaluatee.dashboard
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * ???????????????????????????????????
      */
     public function index(Request $request)
     {
@@ -91,69 +90,28 @@ class DashboardEvaluateeController extends Controller
             });
         }
 
-        $statusCounts = [
-            'ทั้งหมด' => $evaluations->count(),
-            'ยังไม่ประเมิน' => $this->countByStatus($evaluations, ['Assigned']),
-            'กำลังดำเนินการ' => $this->countByStatus($evaluations, ['Draft']),
-            'รอผลการประเมิน' => $this->countByStatus($evaluations, [
-                'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft',
-                'Manager_assign', 'Manager_draft',
-            ]),
-            'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
-        ];
-
-        $openAssignments = $evaluations->filter(function ($assignment) {
-            $status = optional($assignment->report)->status ?? 'Assigned';
-
-            // unfinished statuses only
-            return in_array($status, ['Assigned', 'Draft']);
-        })->map(function ($assignment) {
-            $startTime = optional($assignment->assignmentData)->start_time;
-            $endTime   = optional($assignment->assignmentData)->end_time;
-
-            // Format Thai date
-            $formatThai = function ($datetime) {
-                if (!$datetime) return '-';
-                \Carbon\Carbon::setLocale('th');
-                setlocale(LC_TIME, 'th_TH.UTF-8');
-                $date = \Carbon\Carbon::parse($datetime);
-                $year = $date->year + 543;
-                return $date->translatedFormat('j F')." {$year}";
-            };
-
-            $daysLeft = $endTime ? now()->startOfDay()->diffInDays(\Carbon\Carbon::parse($endTime)->startOfDay(), false) : null;
-            $status = optional($assignment->report)->status ?? 'Assigned';
-
-            return [
-                'id'       => $assignment->report->id ?? null,
-                'title'    => optional($assignment->report->reportData)->report_title ?? 'ไม่พบชื่อรายงาน',
-                'period'   => ($startTime ? $formatThai($startTime) : '-') . ' - ' . ($endTime ? $formatThai($endTime) : '-'),
-                'deadline' => $endTime ? $formatThai($endTime) : '-',
-                'daysLeft' => $daysLeft,
-                'status'   => $status,
-            ];
-        });
-
-        $unfinishedAssignments = $openAssignments->filter(function ($assignment) {
-            // keep only > 0 days left, or exactly 0 (deadline today)
-            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] >= 0;
-        });
-
-        $overdueAssignments = $openAssignments->filter(function ($assignment) {
-            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] < 0;
-        });
-
-        $totalAssignments = $evaluations->count();
-        $completedAssignments = $this->countByStatus($evaluations, ['Completed']);
-        $notStartedAssignments = $this->countByStatus($evaluations, ['Assigned']);
-        $inProgressAssignments = $this->countByStatus($evaluations, ['Draft']);
-        $actionRequiredAssignments = $this->countByStatus($evaluations, ['Assigned', 'Draft']);
-        $inReviewAssignments = $this->countByStatus($evaluations, [
-            'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_assign', 'Manager_draft',
-        ]);
-        $dueSoonAssignments = $unfinishedAssignments->filter(function ($assignment) {
-            return $assignment['daysLeft'] !== null && $assignment['daysLeft'] <= 3;
-        })->count();
+        // สรุปข้อมูลงานค้างและสถานะทั้งหมดจาก collection กลางเพื่อลด logic ซ้ำใน controller
+        $assignmentSummary = EvaluateeDashboardAssignments::build($evaluations);
+        $statusCounts = $assignmentSummary['statusCounts'];
+        $unfinishedAssignments = $assignmentSummary['unfinishedAssignments'];
+        $overdueAssignments = $assignmentSummary['overdueAssignments'];
+        $totalAssignments = $assignmentSummary['totalAssignments'];
+        $completedAssignments = $assignmentSummary['completedAssignments'];
+        $notStartedAssignments = $assignmentSummary['notStartedAssignments'];
+        $inProgressAssignments = $assignmentSummary['inProgressAssignments'];
+        $actionRequiredAssignments = $assignmentSummary['actionRequiredAssignments'];
+        $inReviewAssignments = $assignmentSummary['inReviewAssignments'];
+        $dueSoonAssignments = $assignmentSummary['dueSoonAssignments'];
+        $evaluateeOverview = EvaluateeDashboardOverview::build(
+            $notStartedAssignments,
+            $inProgressAssignments,
+            $actionRequiredAssignments,
+            $inReviewAssignments,
+            $completedAssignments,
+            $totalAssignments,
+            collect($unfinishedAssignments),
+            collect($overdueAssignments)
+        );
 
         // dd($scatterData);
 
@@ -165,6 +123,11 @@ class DashboardEvaluateeController extends Controller
             $perPage,
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
+        );
+        $evaluationSummary = EvaluationSummaryData::fromAssignments(
+            $paginatedEvaluations->getCollection(),
+            $statusCounts,
+            $request->input('status')
         );
 
         return view('evaluatee.dashboard', [
@@ -186,17 +149,11 @@ class DashboardEvaluateeController extends Controller
             'inReviewAssignments' => $inReviewAssignments,
             'dueSoonAssignments' => $dueSoonAssignments,
             'overdueCount' => $overdueAssignments->count(),
+            'evaluationSummary' => $evaluationSummary,
+            'evaluateeOverview' => $evaluateeOverview,
         ]);
     }
 
-    private function countByStatus($evaluations, $statuses)
-    {
-        return $evaluations->filter(function ($assignment) use ($statuses) {
-            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
-
-            return in_array($reportStatus, $statuses);
-        })->count();
-    }
 
     private function buildReviewerText($assignmentData): string
     {
@@ -240,15 +197,8 @@ class DashboardEvaluateeController extends Controller
             ->filter()
             ->values();
     }
-
     /**
-     * เมธอด: evaluation
-     * จุดประสงค์: แสดงหน้า evaluatee.evaluation และเปลี่ยนเส้นทางไปที่ route evaluation.show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: หน้า evaluatee.evaluation
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
+     * ???????????????????????????????????????
      */
     public function evaluation(Request $request, $id)
     {
@@ -597,13 +547,15 @@ class DashboardEvaluateeController extends Controller
             return redirect()->route('evaluation.show', ['id' => $id, 'readonly' => 1]);
         }
 
+        $scoreSummary = EvaluationScoreSummary::fromCategoryItems($categoryItems);
+
         return view('evaluatee.evaluation', compact(
             'id', 'user', 'report', 'assignment', 'formatThai',
             'startTime', 'endTime', 'reportName',
             'startTimeFormatted', 'endTimeFormatted', 'assessmentType',
             'quantityMainCriterias', 'categoryItems', 'evidenceMap', 'qualityEvidenceMap',
             'readonly', 'versionName', 'reportComment', 'reportDescription',
-            'workloadMap'
+            'workloadMap', 'scoreSummary'
         ));
     }
 }

@@ -5,12 +5,20 @@ namespace App\Http\Controllers\Setting;
 use App\Http\Controllers\Controller;
 use App\Models\Setting\JobLevel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class JobLevelsController extends Controller
 {
+    private function hasSortOrderColumn(): bool
+    {
+        return Schema::hasColumn('job_levels', 'sort_order');
+    }
+
     public function index(Request $request)
     {
-        $sort = $request->input('sort', 'latest');
+        $sort = $request->input('sort', 'manual');
+        $hasSortOrder = $this->hasSortOrderColumn();
 
         $jobLevels = JobLevel::query()
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -20,6 +28,9 @@ class JobLevelsController extends Controller
             });
 
         match ($sort) {
+            'manual' => $hasSortOrder
+                ? $jobLevels->orderBy('sort_order')->orderBy('id')
+                : $jobLevels->orderBy('id'),
             'name_asc' => $jobLevels->orderBy('name'),
             'name_desc' => $jobLevels->orderByDesc('name'),
             'oldest' => $jobLevels->orderBy('id'),
@@ -33,12 +44,18 @@ class JobLevelsController extends Controller
 
     public function store(Request $request)
     {
+        $hasSortOrder = $this->hasSortOrderColumn();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:job_levels,name',
         ], [
             'name.required' => 'กรุณากรอกชื่อระดับตำแหน่งงาน',
             'name.unique' => 'ชื่อระดับตำแหน่งงานนี้มีอยู่แล้วในระบบ',
         ]);
+
+        if ($hasSortOrder) {
+            $validated['sort_order'] = (JobLevel::max('sort_order') ?? 0) + 1;
+        }
 
         JobLevel::create($validated);
 
@@ -77,5 +94,28 @@ class JobLevelsController extends Controller
         $jobLevel->delete();
 
         return redirect()->route('job-level.index')->with('success', 'ลบข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');
+    }
+
+    public function reorder(Request $request)
+    {
+        if (! $this->hasSortOrderColumn()) {
+            return response()->json(['message' => 'sort_order column is unavailable'], 200);
+        }
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:job_levels,id'],
+            'start_order' => ['required', 'integer', 'min:1'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['ids'] as $offset => $id) {
+                JobLevel::whereKey($id)->update([
+                    'sort_order' => $validated['start_order'] + $offset,
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'reordered']);
     }
 }

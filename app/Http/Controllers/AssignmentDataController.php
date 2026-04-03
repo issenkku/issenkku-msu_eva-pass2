@@ -8,6 +8,7 @@ use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\User;
 use App\Support\AssignmentFlow;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,9 @@ use Spatie\Permission\Models\Role;
 
 class AssignmentDataController extends Controller
 {
+    // Controller นี้ดูแลทั้งหน้า list และฟอร์ม create/edit ของรอบการประเมิน
+    // ฝั่ง view จะพยายามรับข้อมูลที่จัดรูปเสร็จแล้วให้มากที่สุด เพื่อลด @php ใน Blade
+
     /**
      * แสดงรายการรอบการประเมิน
      */
@@ -28,6 +32,12 @@ class AssignmentDataController extends Controller
             'directorUser.position',
             'managerUser.position',
         ])->orderBy('created_at', 'desc')->paginate(10);
+
+        // แปลงข้อมูล relation ที่ซ้อนกันให้เป็นแถวพร้อมแสดงผลในตาราง
+        $assignmentRows = $assignmentData->getCollection()
+            ->map(fn (AssignmentData $assignment) => $this->buildAssignmentIndexRow($assignment));
+
+        $assignmentData->setCollection($assignmentRows);
 
         return view('assignment-data.index', compact('assignmentData'));
     }
@@ -426,5 +436,115 @@ class AssignmentDataController extends Controller
         if (! $user->hasRole($roleName)) {
             $user->assignRole($role);
         }
+    }
+
+    private function buildAssignmentIndexRow(AssignmentData $assignment): array
+    {
+        // เตรียม object วันที่ไว้ใช้ทั้งการแสดงผลและคำนวณสถานะของรอบประเมิน
+        $startTime = $assignment->start_time ? Carbon::parse($assignment->start_time) : null;
+        $endTime = $assignment->end_time ? Carbon::parse($assignment->end_time) : null;
+        $reportData = $assignment->assignments->first()?->report?->reportData;
+        $evaluateeCount = $assignment->assignments->count();
+        $now = now();
+        $stageLabels = [
+            'evaluator' => 'ผู้ประเมิน',
+            'director' => 'กรรมการ',
+            'manager' => 'ผู้บริหาร',
+        ];
+
+        // แปลง evaluation_flow ให้เป็นรายการ reviewer ที่พร้อม render ในตาราง
+        // จุดนี้ตั้งใจตัด reviewer ที่ไม่มีอยู่จริงออก เพื่อไม่ให้ view ต้องเช็กซ้ำหลายชั้น
+        $reviewers = collect(AssignmentFlow::stagesFor($assignment))
+            ->map(function (string $stage) use ($assignment, $stageLabels) {
+                $user = match ($stage) {
+                    'evaluator' => $assignment->evaluatorUser,
+                    'director' => $assignment->directorUser,
+                    'manager' => $assignment->managerUser,
+                    default => null,
+                };
+
+                if (! $user) {
+                    return null;
+                }
+
+                return [
+                    'label' => $stageLabels[$stage] ?? 'ผู้ประเมิน',
+                    'name' => $user->name,
+                    'position' => $user->position?->name ?? '-',
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return [
+            // เก็บ model เดิมไว้สำหรับ action เช่น edit/delete โดยไม่ต้องยิง query เพิ่ม
+            'model' => $assignment,
+            // จัดรูปข้อมูลช่วงวันเป็นก้อนเดียว เพื่อให้ row partial อ่านง่าย
+            'date_range' => [
+                'start' => $this->formatThaiDate($startTime),
+                'end' => $this->formatThaiDate($endTime),
+                'days' => $startTime && $endTime ? $startTime->diffInDays($endTime) + 1 : 0,
+            ],
+            // รายงานใช้ข้อมูลจาก assignment แรก เพราะหนึ่งรอบประเมินอ้างถึงเกณฑ์เดียวกัน
+            'report' => [
+                'title' => $reportData?->report_title ?? '-',
+                'description' => $reportData?->report_description,
+            ],
+            'reviewers' => $reviewers,
+            'evaluatee_count' => $evaluateeCount,
+            // ส่ง label/icon/class มาเป็นแพ็กเดียว เพื่อให้ฝั่ง Blade render badge ได้ทันที
+            'status' => $this->resolveAssignmentIndexStatus($startTime, $endTime, $now),
+        ];
+    }
+
+    private function resolveAssignmentIndexStatus(?Carbon $startTime, ?Carbon $endTime, Carbon $now): array
+    {
+        // กันเคสข้อมูลวันที่ไม่ครบก่อน เพื่อให้หน้า list แสดงผลได้แม้ข้อมูลเก่าไม่สมบูรณ์
+        if (! $startTime || ! $endTime) {
+            return [
+                'label' => '-',
+                'icon' => 'fas fa-minus-circle',
+                'class' => 'bg-gray-100 text-gray-800',
+            ];
+        }
+
+        if ($now->lt($startTime)) {
+            return [
+                'label' => 'รอเริ่มต้น',
+                'icon' => 'fas fa-clock',
+                'class' => 'bg-yellow-100 text-yellow-800',
+            ];
+        }
+
+        if ($now->between($startTime, $endTime)) {
+            return [
+                'label' => 'กำลังดำเนินการ',
+                'icon' => 'fas fa-play-circle',
+                'class' => 'bg-green-100 text-green-800',
+            ];
+        }
+
+        return [
+            'label' => 'สิ้นสุดแล้ว',
+            'icon' => 'fas fa-check-circle',
+            'class' => 'bg-gray-100 text-gray-800',
+        ];
+    }
+
+    private function formatThaiDate(?Carbon $date): string
+    {
+        if (! $date) {
+            return '-';
+        }
+
+        // รวม logic ปี พ.ศ. และชื่อเดือนภาษาไทยไว้จุดเดียว
+        // ถ้ารูปแบบวันที่ต้องเปลี่ยนในอนาคต จะได้แก้ที่เดียวแล้วทุกหน้าตรงกัน
+        Carbon::setLocale('th');
+        setlocale(LC_TIME, 'th_TH.UTF-8');
+
+        $thaiMonth = $date->translatedFormat('j F');
+        $buddhistYear = $date->year + 543;
+
+        return "{$thaiMonth} {$buddhistYear}";
     }
 }

@@ -74,6 +74,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/', [SubjectController::class, 'index'])->name('index');
         Route::get('/{id}', [SubjectController::class, 'show'])->name('show');
         Route::post('/', [SubjectController::class, 'store'])->name('store');
+        Route::post('/reorder', [SubjectController::class, 'reorder'])->name('reorder');
         Route::put('/{id}', [SubjectController::class, 'update'])->name('update');
         Route::delete('/{id}', [SubjectController::class, 'destroy'])->name('destroy');
     });

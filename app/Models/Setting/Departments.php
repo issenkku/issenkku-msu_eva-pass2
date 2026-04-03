@@ -14,6 +14,7 @@ class Departments extends Model
 
     protected $fillable = [
         'department_name',
+        'sort_order',
         // 'faculty',
     ];
 

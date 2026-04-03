@@ -2,32 +2,31 @@
 
 namespace App\Http\Controllers\Workload;
 
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreSubjectRequest;
 use App\Http\Requests\Workload\UpdateSubjectRequest;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class SubjectController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า subjects.index ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า subjects.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
+    private function hasSortOrderColumn(): bool
+    {
+        return Schema::hasColumn('subjects', 'sort_order');
+    }
+
     public function index(Request $request)
     {
         if ($request->expectsJson()) {
             return response()->json(Subject::all());
         }
 
-        $sort = $request->input('sort', 'code_asc');
+        $sort = $request->input('sort', 'manual');
         $status = $request->input('status');
+        $hasSortOrder = $this->hasSortOrderColumn();
 
         $subjects = Subject::query()
             ->when($request->filled('search'), function ($query) use ($request) {
@@ -43,6 +42,9 @@ class SubjectController extends Controller
             ->when($status === 'inactive', fn ($query) => $query->where('is_active', false));
 
         match ($sort) {
+            'manual' => $hasSortOrder
+                ? $subjects->orderBy('sort_order')->orderBy('id')
+                : $subjects->orderBy('id'),
             'latest' => $subjects->orderByDesc('id'),
             'oldest' => $subjects->orderBy('id'),
             'code_desc' => $subjects->orderByDesc('code'),
@@ -56,14 +58,6 @@ class SubjectController extends Controller
         return view('subjects.index', compact('subjects'));
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show($id)
     {
         try {
@@ -73,17 +67,15 @@ class SubjectController extends Controller
         }
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: บันทึกข้อมูล Subject ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param StoreSubjectRequest $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(StoreSubjectRequest $request)
     {
-        $subject = Subject::create($request->validated());
+        $validated = $request->validated();
+
+        if ($this->hasSortOrderColumn()) {
+            $validated['sort_order'] = (Subject::max('sort_order') ?? 0) + 1;
+        }
+
+        $subject = Subject::create($validated);
 
         if ($request->expectsJson()) {
             return response()->json($subject, 201);
@@ -92,6 +84,7 @@ class SubjectController extends Controller
         $redirectTo = $request->input('redirect_to')
             ?? $request->query('redirect_to')
             ?? $request->headers->get('referer');
+
         if ($redirectTo) {
             return redirect()->to($redirectTo)->with('success', 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว');
         }
@@ -99,15 +92,6 @@ class SubjectController extends Controller
         return redirect()->route('subjects.index')->with('success', 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว');
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param UpdateSubjectRequest $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(UpdateSubjectRequest $request, $id)
     {
         try {
@@ -121,6 +105,7 @@ class SubjectController extends Controller
             $redirectTo = $request->input('redirect_to')
                 ?? $request->query('redirect_to')
                 ?? $request->headers->get('referer');
+
             if ($redirectTo) {
                 return redirect()->to($redirectTo)->with('success', 'อัปเดตข้อมูลรายวิชาเรียบร้อยแล้ว');
             }
@@ -134,6 +119,7 @@ class SubjectController extends Controller
             $redirectTo = $request->input('redirect_to')
                 ?? $request->query('redirect_to')
                 ?? $request->headers->get('referer');
+
             if ($redirectTo) {
                 return redirect()->to($redirectTo)->with('error', 'ไม่พบรายวิชาที่ต้องการแก้ไข');
             }
@@ -142,14 +128,6 @@ class SubjectController extends Controller
         }
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON และเปลี่ยนเส้นทางไปที่ route subjects.index
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id)
     {
         try {
@@ -163,6 +141,7 @@ class SubjectController extends Controller
             $redirectTo = request()->input('redirect_to')
                 ?? request()->query('redirect_to')
                 ?? request()->headers->get('referer');
+
             if ($redirectTo) {
                 return redirect()->to($redirectTo)->with('success', 'ลบข้อมูลรายวิชาเรียบร้อยแล้ว');
             }
@@ -176,11 +155,35 @@ class SubjectController extends Controller
             $redirectTo = request()->input('redirect_to')
                 ?? request()->query('redirect_to')
                 ?? request()->headers->get('referer');
+
             if ($redirectTo) {
                 return redirect()->to($redirectTo)->with('error', 'ไม่พบรายวิชาที่ต้องการลบ');
             }
 
             return redirect()->route('subjects.index')->with('error', 'ไม่พบรายวิชาที่ต้องการลบ');
         }
+    }
+
+    public function reorder(Request $request)
+    {
+        if (! $this->hasSortOrderColumn()) {
+            return response()->json(['message' => 'sort_order column is unavailable'], 200);
+        }
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
+            'start_order' => ['required', 'integer', 'min:1'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['ids'] as $offset => $id) {
+                Subject::whereKey($id)->update([
+                    'sort_order' => $validated['start_order'] + $offset,
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'reordered']);
     }
 }

@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
+use App\Support\EvaluationScoreSummary;
 use App\Support\QuantityScoreHistoryRecorder;
 
 class EvaluatorScoreController extends Controller
@@ -65,6 +66,7 @@ class EvaluatorScoreController extends Controller
 
         // Get full report data
         $data = $reportDataService->getReportData($id);
+        $data['scoreSummary'] = EvaluationScoreSummary::fromCategoryItems($data['categoryItems'] ?? []);
 
         $report = $data['report'];
 

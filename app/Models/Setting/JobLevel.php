@@ -14,6 +14,7 @@ class JobLevel extends Model
 
     protected $fillable = [
         'name',
+        'sort_order',
     ];
 
     public function users()

@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers\Setting;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\AssignmentData;
 use App\Models\Setting\Positions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class PositionsController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า positions.index
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า positions.index
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
+    private function hasSortOrderColumn(): bool
+    {
+        return Schema::hasColumn('positions', 'sort_order');
+    }
+
     public function index(Request $request)
     {
-        $sort = $request->input('sort', 'latest');
+        $sort = $request->input('sort', 'manual');
         $usage = $request->input('usage');
+        $hasSortOrder = $this->hasSortOrderColumn();
 
         $positions = Positions::query()
             ->withCount('user')
@@ -34,6 +33,9 @@ class PositionsController extends Controller
             ->when($usage === 'unused', fn ($query) => $query->doesntHave('user'));
 
         match ($sort) {
+            'manual' => $hasSortOrder
+                ? $positions->orderBy('sort_order')->orderBy('id')
+                : $positions->orderBy('id'),
             'name_asc' => $positions->orderBy('name'),
             'name_desc' => $positions->orderByDesc('name'),
             'most_users' => $positions->orderByDesc('user_count')->orderBy('name'),
@@ -45,26 +47,16 @@ class PositionsController extends Controller
         $positions = $positions->paginate(10)->withQueryString();
 
         return view('positions.index', compact('positions'));
-        // --- IGNORE ---
-        // return view('index', ['positions' => $positions]);
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล Positions และเปลี่ยนเส้นทางไปที่ route positions.index
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: Redirect ไปที่ route positions.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request)
     {
+        $hasSortOrder = $this->hasSortOrderColumn();
+
         $request->validate([
             'name' => 'required|string|max:255',
-            // 'description' => 'nullable|string|max:500',
         ]);
 
-        // ตรวจสอบชื่อตำแหน่งซ้ำ
         $existingPosition = Positions::where('name', $request->name)->first();
 
         if ($existingPosition) {
@@ -73,31 +65,25 @@ class PositionsController extends Controller
                 ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
         }
 
-        Positions::create([
+        $payload = [
             'name' => $request->name,
-            // 'description' => $request->description,
-        ]);
+        ];
+
+        if ($hasSortOrder) {
+            $payload['sort_order'] = (Positions::max('sort_order') ?? 0) + 1;
+        }
+
+        Positions::create($payload);
 
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route positions.index
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: Redirect ไปที่ route positions.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            // 'description' => 'nullable|string|max:500',
         ]);
 
-        // ตรวจสอบชื่อตำแหน่งซ้ำ (ยกเว้นตัวเอง)
         $existingPosition = Positions::where('name', $request->name)
             ->where('id', '!=', $id)
             ->first();
@@ -111,20 +97,11 @@ class PositionsController extends Controller
         $positions = Positions::findOrFail($id);
         $positions->update([
             'name' => $request->name,
-            // 'description' => $request->description,
         ]);
 
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route positions.index
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: Redirect ไปที่ route positions.index
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id)
     {
         $positions = Positions::findOrFail($id);
@@ -157,7 +134,28 @@ class PositionsController extends Controller
         $positions->delete();
 
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
-        // --- IGNORE ---
-        // return redirect()->route('index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    }
+
+    public function reorder(Request $request)
+    {
+        if (! $this->hasSortOrderColumn()) {
+            return response()->json(['message' => 'sort_order column is unavailable'], 200);
+        }
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:positions,id'],
+            'start_order' => ['required', 'integer', 'min:1'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['ids'] as $offset => $id) {
+                Positions::whereKey($id)->update([
+                    'sort_order' => $validated['start_order'] + $offset,
+                ]);
+            }
+        });
+
+        return response()->json(['message' => 'reordered']);
     }
 }

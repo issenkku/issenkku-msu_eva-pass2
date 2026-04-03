@@ -17,6 +17,7 @@ class Subject extends Model
         'lecture_credits',
         'lab_credits',
         'self_study_credits',
+        'sort_order',
         'is_active',
     ];
 }
