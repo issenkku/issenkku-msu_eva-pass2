@@ -81,7 +81,7 @@
                     <h4 class="text-base font-bold text-amber-900">ใกล้ครบกำหนด</h4>
                     <p class="mt-1 text-sm text-amber-700">รายการที่ครบกำหนดภายในไม่กี่วัน</p>
                 </div>
-                <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-amber-700 shadow-sm ring-1 ring-amber-200">
+                <div class="inline-flex h-12 min-w-[88px] shrink-0 items-center justify-center rounded-full bg-white px-4 text-center text-sm font-semibold leading-none text-amber-700 shadow-sm ring-1 ring-amber-200">
                     {{ $evaluateeOverview['dueSoonCount'] }} รายการ
                 </div>
             </div>
@@ -111,7 +111,7 @@
                     <h4 class="text-base font-bold text-rose-900">เลยกำหนดการส่ง</h4>
                     <p class="mt-1 text-sm text-rose-700">รายการที่เลยวันครบกำหนดแล้ว</p>
                 </div>
-                <div class="inline-flex items-center rounded-full bg-white px-3 py-1 text-sm font-semibold text-rose-700 shadow-sm ring-1 ring-rose-200">
+                <div class="inline-flex h-12 min-w-[88px] shrink-0 items-center justify-center rounded-full bg-white px-4 text-center text-sm font-semibold leading-none text-rose-700 shadow-sm ring-1 ring-rose-200">
                     {{ $evaluateeOverview['overdueCount'] }} รายการ
                 </div>
             </div>
