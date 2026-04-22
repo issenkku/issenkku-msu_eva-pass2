@@ -138,8 +138,9 @@
                         <li class="nav-item">
                             <a class="nav-link text-white d-flex align-items-center" 
                             href="{{ asset('downloads/handbook.pdf') }}" 
-                            download="คู่มือการใช้งานระบบประเมินบุคลากร.pdf"
-                            title="ดาวน์โหลดคู่มือการใช้งาน">
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="เปิดคู่มือการใช้งาน">
                                 <i class="fas fa-book me-2"></i>
                                 <span class="d-none d-xxl-inline">คู่มือ</span>
                             </a>
@@ -263,8 +264,9 @@
                 </a>
                 <a href="{{ asset('downloads/handbook.pdf') }}"  class="mobile-nav-item" 
                     style="padding: 10px 0; border: none;" 
-                    title="ดาวน์โหลดคู่มือการใช้งาน"
-                    download="คู่มือการใช้งานระบบประเมินบุคลากร.pdf">
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="เปิดคู่มือการใช้งาน">
                     <i class="fas fa-book me-2" style="width: 20px; margin-right: 10px;"></i>
                     คู่มือ
                 </a>
