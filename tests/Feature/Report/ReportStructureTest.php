@@ -50,6 +50,7 @@ class ReportStructureTest extends TestCase
             'position_id'   => $this->position->id,
         ]);
         $this->admin->assignRole('admin');
+        $this->actingAs($this->admin, 'web');
     }
 
     public function test_can_show_list_of_criteria_versions()
@@ -399,7 +400,7 @@ class ReportStructureTest extends TestCase
             'report_title' => 'Original Report',
         ]);
 
-        Category::factory()->create([
+        $category = Category::factory()->create([
             'criteria_version_id' => $criteriaVersion->id,
             'main_categories' => 'Original Main',
         ]);
@@ -418,6 +419,7 @@ class ReportStructureTest extends TestCase
             ],
             'categories' => [
                 [
+                    'categorie_id' => $category->id,
                     'main_categories' => 'Updated Main Category',
                     'sub_categories' => 'Updated Sub Category',
                     'sequence' => 1,

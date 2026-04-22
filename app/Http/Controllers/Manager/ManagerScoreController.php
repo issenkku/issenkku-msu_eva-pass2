@@ -100,6 +100,11 @@ class ManagerScoreController extends Controller
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
+            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $assignmentData = $assignment?->assignmentData;
+            if (! $assignment || ($assignmentData?->manager_id && (int) $assignmentData->manager_id !== (int) $request->user()->id)) {
+                abort(403, 'Unauthorized manager');
+            }
 
             $statusCheck = $this->checkReportEditableStatus($report, 'process evaluation scores');
             if ($statusCheck) {
@@ -203,7 +208,6 @@ class ManagerScoreController extends Controller
             $oldStatus = $report->status;
             $oldComment = $report->manager_comment;
 
-            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
             $status = $validated['status'] === 'Completed'
                 ? AssignmentFlow::nextStatusAfter('manager', $assignment?->assignmentData)
                 : $validated['status'];

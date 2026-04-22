@@ -102,6 +102,13 @@ class EvaluatorScoreController extends Controller
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
+            $assignment = $this->reportDataService->getEvaluatorAssignmentForUser(
+                $reportId,
+                $request->user()->loadMissing('position')
+            );
+            if (! $assignment) {
+                abort(403, 'Unauthorized evaluator');
+            }
 
             $statusCheck = $this->checkReportEditableStatus($report, 'process evaluation scores');
             if ($statusCheck) {

@@ -137,7 +137,7 @@
                                                 </h4>
                                             </div>
                                             @if(!empty($mainCriteria['tooltips']))
-                                                <div class="text-sm text-gray-500 mt-1">{!! $mainCriteria['tooltips'] !!}</div>
+                                                <div class="text-sm text-gray-500 mt-1">{{ $mainCriteria['tooltips'] }}</div>
                                             @endif
                                         </div>
 
@@ -404,7 +404,7 @@
 
                                                 <div class="px-4 py-4">
                                                     @if(!empty($mainCriteria['tooltips']))
-                                                        <div class="text-sm text-gray-500 mb-3">{!! $mainCriteria['tooltips'] !!}</div>
+                                                        <div class="text-sm text-gray-500 mb-3">{{ $mainCriteria['tooltips'] }}</div>
                                                     @endif
 
                                                     {{-- Quality Sub Criteria --}}
@@ -434,7 +434,7 @@
                                                                                 {{ $subCriteria['name'] }}
                                                                                 @if(!empty($subCriteria['description']))
                                                                                     <div class="text-sm text-gray-500 mt-1">
-                                                                                        {!! $subCriteria['description'] !!}
+                                                                                        {{ $subCriteria['description'] }}
                                                                                     </div>
                                                                                 @endif
                                                                             </label>
@@ -447,7 +447,7 @@
                                                                                 {{ $subCriteria['name'] }}
                                                                                 @if(!empty($subCriteria['description']))
                                                                                     <div class="text-sm text-gray-500 mt-1">
-                                                                                        {!! $subCriteria['description'] !!}
+                                                                                        {{ $subCriteria['description'] }}
                                                                                     </div>
                                                                                 @endif
                                                                             </span>

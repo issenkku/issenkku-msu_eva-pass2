@@ -98,6 +98,11 @@ class DirectorScoreController extends Controller
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
+            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $assignmentData = $assignment?->assignmentData;
+            if (! $assignment || ($assignmentData?->director_id && (int) $assignmentData->director_id !== (int) $request->user()->id)) {
+                abort(403, 'Unauthorized director');
+            }
 
             $statusCheck = $this->checkReportEditableStatus($report, 'process evaluation scores');
             if ($statusCheck) {
@@ -201,7 +206,6 @@ class DirectorScoreController extends Controller
             $oldStatus = $report->status;
             $oldComment = $report->director_comment;
 
-            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
             $status = $validated['status'] === 'Manager_assign'
                 ? AssignmentFlow::nextStatusAfter('director', $assignment?->assignmentData)
                 : $validated['status'];

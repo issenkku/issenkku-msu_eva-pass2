@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Evaluatee;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;
 use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
+use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
@@ -93,6 +94,7 @@ class EvaluateeWorkloadEntryController extends Controller
             $this->ensureReportEditable((int) $entry->report_id);
 
             $validated = $request->validated();
+            unset($validated['report_id']);
             $workloadFormId = $validated['workload_form_id'] ?? $entry->workload_form_id;
             $fieldValues = $validated['field_values'] ?? $entry->field_values ?? [];
             $evidenceLinks = $request->input('evidence_links', []);
@@ -344,6 +346,13 @@ class EvaluateeWorkloadEntryController extends Controller
     private function ensureReportEditable(int $reportId): void
     {
         $report = Reports::findOrFail($reportId);
+        $isAssignedToUser = Assignments::where('report_id', $reportId)
+            ->where('evaluatee_id', auth()->id())
+            ->exists();
+
+        if (! $isAssignedToUser) {
+            abort(403, 'Unauthorized evaluatee');
+        }
 
         if (! in_array($report->status, $this->editableStatuses, true)) {
             abort(403, 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว');

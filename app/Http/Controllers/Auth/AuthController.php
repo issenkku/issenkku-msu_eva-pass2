@@ -63,7 +63,7 @@ class AuthController extends Controller
             ->withProperties(['ip' => $request->ip()])
             ->log('ผู้ใช้เข้าสู่ระบบ');
 
-        $redirect = route($user->defaultDashboardRoute() ?? 'home');
+        $redirect = route($user->defaultDashboardRoute() ?? 'home', [], false);
 
         return response()->json(['redirect' => $redirect]);
     }
