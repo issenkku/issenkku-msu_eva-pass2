@@ -73,7 +73,7 @@
                 }
 
                 isSaving = true;
-                setStatus('กำลังบันทึกอันดับ...');
+                setStatus('กำลังบันทึกลำดับ...');
 
                 try {
                     const ids = Array.from(tbody.querySelectorAll('tr')).map((row) => Number(row.dataset.id));
@@ -96,9 +96,9 @@
                     }
 
                     updateSequenceLabels();
-                    setStatus('บันทึกอันดับแล้ว');
+                    setStatus('บันทึกลำดับแล้ว');
                 } catch (error) {
-                    setStatus('บันทึกอันดับไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', true);
+                    setStatus('บันทึกลำดับไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', true);
                 } finally {
                     isSaving = false;
                 }

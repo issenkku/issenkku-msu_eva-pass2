@@ -1,4 +1,4 @@
-{{-- row เดียวของตาราง list โดยรับข้อมูลที่จัดรูปเสร็จแล้วจาก controller --}}
+{{-- แถวเดียวของตาราง list โดยรับข้อมูลที่จัดรูปเสร็จแล้วจาก controller --}}
 <tr class="hover:bg-gray-50 transition-all">
     <td class="px-4 py-3 align-top">
         {{-- วันที่ถูก format มาแล้วจาก controller จึง render ได้ตรง ๆ --}}
@@ -11,7 +11,7 @@
     </td>
 
     <td class="px-4 py-3 align-top">
-        {{-- title/description ถูก bundle มาใน key report เพื่อลด logic ใน view --}}
+        {{-- title และ description ถูก bundle มาใน key report เพื่อลด logic ใน view --}}
         <div class="text-sm font-medium text-gray-800 max-w-[250px]">
             {{ $assignmentRow['report']['title'] }}
         </div>
@@ -23,7 +23,7 @@
     </td>
 
     <td class="px-4 py-3 align-top">
-        {{-- render reviewer ตาม flow ที่ controller resolve มาแล้ว ไม่ต้องรู้เรื่อง stage mapping ซ้ำ --}}
+        {{-- render reviewer ตาม flow ที่ controller resolve มาแล้ว --}}
         @if ($assignmentRow['reviewers']->isNotEmpty())
             <div class="space-y-2">
                 @foreach ($assignmentRow['reviewers'] as $reviewer)
@@ -55,8 +55,12 @@
             </span>
 
             @if ($assignmentRow['evaluatee_count'] > 0)
-                <button type="button" data-show-evaluatees data-assignment-id="{{ $assignmentRow['model']->id }}"
-                    class="text-green-600 hover:text-green-800 text-xs underline mt-1">
+                <button
+                    type="button"
+                    data-show-evaluatees
+                    data-assignment-id="{{ $assignmentRow['model']->id }}"
+                    class="text-green-600 hover:text-green-800 text-xs underline mt-1"
+                >
                     ดูรายละเอียด
                 </button>
             @endif
@@ -71,12 +75,18 @@
 
     <td class="px-4 py-3 align-top text-sm font-medium">
         <div class="flex items-center space-x-2">
-            <a href="{{ route('assignment-data.edit', $assignmentRow['model']->id) }}"
-                class="px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 shadow-sm transition-all flex items-center">
+            <a
+                href="{{ route('assignment-data.edit', $assignmentRow['model']->id) }}"
+                class="px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 shadow-sm transition-all flex items-center"
+            >
                 <i class="fas fa-edit mr-1"></i>แก้ไข
             </a>
-            <button type="button" data-delete-assignment data-assignment-id="{{ $assignmentRow['model']->id }}"
-                class="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow-sm transition-all flex items-center">
+            <button
+                type="button"
+                data-delete-assignment
+                data-assignment-id="{{ $assignmentRow['model']->id }}"
+                class="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow-sm transition-all flex items-center"
+            >
                 <i class="fas fa-trash mr-1"></i>ลบ
             </button>
         </div>

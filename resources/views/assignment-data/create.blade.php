@@ -1,5 +1,7 @@
 @extends('layouts.app')
-{{-- หน้าเพิ่มรอบการประเมิน ใช้ partial ร่วมกับหน้าแก้ไขเพื่อลดโค้ดซ้ำ --}}
+{{-- หน้าสร้างรอบการประเมิน ใช้ partial ร่วมกับหน้าแก้ไขเพื่อลดโค้ดซ้ำ --}}
+
+@section('title', 'สร้างรอบการประเมินใหม่')
 
 @section('content')
     @include('assignment-data.partials.flash-messages')
@@ -11,6 +13,8 @@
                 $endTimeValue = old('end_time');
                 $currentReportDataId = null;
             @endphp
+
+            @include('assignment-data.partials.create-page-header')
 
             <form id="evaluation-form" action="{{ route('assignment-data.store') }}" method="POST" novalidate>
                 @csrf
@@ -26,7 +30,6 @@
                     $selectedEvaluatees = collect(old('evaluatees', []))->map(fn ($id) => (int) $id)->all();
                     $selectedEvaluateeUsers = $users->whereIn('id', $selectedEvaluatees);
                     // config นี้คุมเฉพาะหน้าตา/โครง UI ของ block ผู้รับการประเมิน
-                    // แยกออกมาเพื่อให้ partial กลางใช้ได้ทั้ง create และ edit แม้ดีไซน์ต่างกันเล็กน้อย
                     $evaluateesUi = [
                         'dropdown_button_class' => 'flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500',
                         'dropdown_icon_class' => 'fas fa-chevron-down text-xs text-slate-500',
@@ -40,7 +43,6 @@
                     // หน้า create ใช้มุมมอง reviewer แบบ chip เพื่อให้เห็นผู้เลือกแบบกระชับ
                     $reviewerSelectionDisplay = 'chips';
                     // reviewerCards คือ schema กลางของการ์ดแต่ละบทบาท
-                    // partial จะ loop จากชุดข้อมูลนี้แทนการ hard-code evaluator/director/manager แยกกัน
                     $reviewerCards = [
                         [
                             'key' => 'evaluator',
@@ -119,7 +121,6 @@
 
         @php
             // config กลางสำหรับ JS ฝั่งฟอร์ม
-            // หน้านี้ส่งทั้งข้อความ, class, และ id mapping เข้า script แทนการฝังค่าคงที่ใน JS โดยตรง
             $formBehaviorConfig = [
                 'evaluateeNameClass' => 'truncate font-semibold leading-5 text-slate-800',
                 'evaluateeMetaClass' => 'truncate text-xs leading-4 text-slate-500',
@@ -153,8 +154,6 @@
                     'evaluatees' => 'กรุณาเลือกผู้รับการประเมินอย่างน้อย 1 คน',
                     'reviewers' => 'กรุณาเลือกผู้ประเมินอย่างน้อย 1 บทบาท',
                 ],
-                // reviewerConfigs เป็นรูปแบบที่ JS ใช้งานได้ตรงกว่า reviewerCards
-                // ลดภาระฝั่ง script ไม่ต้องรู้โครงสร้างเต็มของการ์ด Blade
                 'reviewerConfigs' => collect($reviewerCards)->map(fn ($card) => [
                     'selectId' => $card['id'],
                     'displayId' => 'selected-' . $card['count_id'],

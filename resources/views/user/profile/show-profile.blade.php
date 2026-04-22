@@ -7,28 +7,28 @@
     $roleNames = $user->roles->pluck('name');
 @endphp
 
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="mx-auto max-w-6xl space-y-6">
     <x-header
         title="โปรไฟล์ผู้ใช้"
         text="รายละเอียดข้อมูลผู้ใช้ทั้งหมดในระบบ"
         icon="fas fa-user" />
 
-    <div class="bg-white rounded-3xl shadow-lg border border-gray-200 overflow-hidden">
-        <div class="bg-gradient-to-r from-slate-50 via-white to-blue-50 px-6 py-8 border-b border-gray-200">
-            <div class="flex flex-col lg:flex-row lg:items-center gap-6">
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-lg">
+        <div class="border-b border-gray-200 bg-gradient-to-r from-slate-50 via-white to-blue-50 px-6 py-8">
+            <div class="flex flex-col gap-6 lg:flex-row lg:items-center">
                 <div class="flex-shrink-0">
                     <img src="{{ $user->profile_photo_url }}"
                         alt="Profile Photo"
-                        class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg ring-4 ring-slate-100">
+                        class="h-32 w-32 rounded-full border-4 border-white object-cover shadow-lg ring-4 ring-slate-100">
                 </div>
 
                 <div class="flex-grow">
                     <h2 class="text-3xl font-bold text-gray-900">{{ $user->display_name }}</h2>
-                    <p class="text-lg text-gray-600 mt-1">{{ $user->email ?? '-' }}</p>
-                    <p class="text-sm text-gray-500 mt-2">รหัสพนักงาน: {{ $user->employee_id ?? '-' }}</p>
+                    <p class="mt-1 text-lg text-gray-600">{{ $user->email ?? '-' }}</p>
+                    <p class="mt-2 text-sm text-gray-500">รหัสพนักงาน: {{ $user->employee_id ?? '-' }}</p>
                     <div class="mt-3 flex flex-wrap gap-2">
                         @forelse ($roleNames as $role)
-                            <span class="rounded-full bg-purple-100 text-purple-800 px-3 py-1 text-xs font-medium">{{ $role }}</span>
+                            <span class="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-800">{{ $role }}</span>
                         @empty
                             <span class="text-sm text-gray-500">ไม่มีบทบาท</span>
                         @endforelse
@@ -37,53 +37,53 @@
             </div>
         </div>
 
-        <div class="p-6 space-y-6">
-            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">ข้อมูลงาน</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div class="space-y-6 p-6">
+            <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900">ข้อมูลงาน</h3>
+                <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div>
                         <p class="text-gray-500">ตำแหน่งงาน</p>
-                        <p class="text-gray-900 font-medium mt-1">{{ optional($user->position)->name ?? '-' }}</p>
+                        <p class="mt-1 font-medium text-gray-900">{{ optional($user->position)->name ?? '-' }}</p>
                     </div>
                     <div>
                         <p class="text-gray-500">ระดับตำแหน่งงาน</p>
-                        <p class="text-gray-900 font-medium mt-1">{{ optional($user->jobLevel)->name ?? '-' }}</p>
+                        <p class="mt-1 font-medium text-gray-900">{{ optional($user->jobLevel)->name ?? '-' }}</p>
                     </div>
                     <div>
                         <p class="text-gray-500">หน่วยงาน/สาขาวิชา</p>
-                        <p class="text-gray-900 font-medium mt-1">{{ optional($user->department)->department_name ?? '-' }}</p>
+                        <p class="mt-1 font-medium text-gray-900">{{ optional($user->department)->department_name ?? '-' }}</p>
                     </div>
                     <div>
                         <p class="text-gray-500">ประเภทบุคลากร</p>
-                        <p class="text-gray-900 font-medium mt-1">{{ $user->personnel_type ?? '-' }}</p>
+                        <p class="mt-1 font-medium text-gray-900">{{ $user->personnel_type ?? '-' }}</p>
                     </div>
                 </div>
             </section>
 
-            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">ข้อมูลติดต่อ</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900">ข้อมูลติดต่อ</h3>
+                <div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div>
                         <p class="text-gray-500">อีเมล</p>
-                        <p class="text-gray-900 font-medium mt-1 break-all">{{ $user->email ?? '-' }}</p>
+                        <p class="mt-1 break-all font-medium text-gray-900">{{ $user->email ?? '-' }}</p>
                     </div>
                     <div>
                         <p class="text-gray-500">เบอร์โทร</p>
-                        <p class="text-gray-900 font-medium mt-1">{{ $formattedPhone }}</p>
+                        <p class="mt-1 font-medium text-gray-900">{{ $formattedPhone }}</p>
                     </div>
                 </div>
             </section>
 
-            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">ประวัติการศึกษา</h3>
+            <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900">ประวัติการศึกษา</h3>
                 @if (!empty($educationHistory))
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm text-gray-700">
-                            <thead class="text-gray-600 border-b border-gray-200">
+                            <thead class="border-b border-gray-200 text-gray-600">
                                 <tr>
-                                    <th class="text-left py-3 pr-4">ปีที่จบ</th>
-                                    <th class="text-left py-3 pr-4">วุฒิการศึกษา</th>
-                                    <th class="text-left py-3">มหาวิทยาลัย</th>
+                                    <th class="py-3 pr-4 text-left">ปีที่จบ</th>
+                                    <th class="py-3 pr-4 text-left">วุฒิการศึกษา</th>
+                                    <th class="py-3 text-left">มหาวิทยาลัย</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,16 +102,16 @@
                 @endif
             </section>
 
-            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">ผลงาน</h3>
+            <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
+                <h3 class="mb-4 text-lg font-semibold text-gray-900">ผลงาน</h3>
                 @if (filled($user->portfolio))
-                    <div class="text-gray-700 whitespace-pre-line leading-7">{{ $user->portfolio }}</div>
+                    <div class="whitespace-pre-line leading-7 text-gray-700">{{ $user->portfolio }}</div>
                 @else
                     <p class="text-gray-600">-</p>
                 @endif
             </section>
 
-            <section class="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+            <section class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
                 <div class="mb-5 flex items-center gap-3">
                     <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
                         <i class="fas fa-clipboard-check"></i>
@@ -177,7 +177,7 @@
                 @endif
             </section>
 
-            <div class="pt-2 flex flex-wrap justify-end gap-3">
+            <div class="flex flex-wrap justify-end gap-3 pt-2">
                 @if ($user->is_public_profile_enabled)
                     <x-button
                         type="primary"

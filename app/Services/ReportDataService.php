@@ -24,7 +24,8 @@ class ReportDataService
         ])
         ->where('report_id', $reportId)
         ->whereHas('assignmentData', function ($q) use ($user) {
-            $q->where('evaluator_id', $user->id);
+            $q->where('evaluator_id', $user->id)
+                ->orWhere('evaluator_position_id', $user->position_id);
         })
         ->first();
     }

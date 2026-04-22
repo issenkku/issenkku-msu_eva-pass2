@@ -253,7 +253,7 @@ class ManagerTest extends TestCase
             'previous_description' => 'ก่อนผู้บริหารแก้',
             'new_description' => 'ผู้บริหารปรับคะแนน',
             'modifier_user_id' => $this->manager->id,
-            'modifier_role' => 'เธเธนเนเธเธฃเธดเธซเธฒเธฃ',
+            'modifier_role' => 'ผู้บริหาร',
         ]);
     }
 

@@ -1,51 +1,49 @@
 @extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views/director_dashboard/index.blade.php --}}
 
 @section('content')
-@include('partials.dashboard-overview-styles')
-<div id="directorDashboardRoot" class="max-w-8xl mx-auto space-y-6">
-    @include('partials.dashboard-flash-message')
+    @include('partials.dashboard-overview-styles')
 
-    <x-profile-card
-        :user="$user"
-        title="ข้อมูลกรรมการ" />
+    {{-- หน้าแดชบอร์ดของกรรมการ: โปรไฟล์, ตัวกรอง, ภาพรวม, งานที่ควรติดตาม และตารางรายการประเมิน --}}
+    <div id="directorDashboardRoot" class="max-w-8xl mx-auto space-y-6">
+        @include('partials.dashboard-flash-message')
 
-    <div class="rounded-xl py-4 lg:mx-10 lg:px-13 my-4">
-        @include('partials.dashboard-filter-panel', [
-            'scope' => 'director',
-            'hasFilters' => $hasDirectorFilters,
-            'showDepartment' => true,
-            'departments' => $departments ?? [],
-            'years' => $years,
-            'statusOptions' => $directorFilterStatusOptions,
-        ])
+        <x-profile-card :user="$user" title="ข้อมูลกรรมการ" />
 
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
-            @include('partials.dashboard-overview-panel', [
-                'overviewTitle' => 'ภาพรวมการพิจารณา',
-                'overviewSubtitle' => 'ใช้ติดตามคิวงานที่ต้องเข้าพิจารณาและงานที่รอส่งต่อให้ผู้บริหาร',
-                'overviewChart' => $directorOverviewChart,
-                'overviewPercents' => $directorOverviewPercents,
-                'activeFilters' => $activeDirectorFilters,
+        <div class="rounded-xl py-4 lg:mx-10 lg:px-13 my-4">
+            @include('partials.dashboard-filter-panel', [
+                'scope' => 'director',
+                'hasFilters' => $hasDirectorFilters,
+                'showDepartment' => true,
+                'departments' => $departments ?? [],
+                'years' => $years,
+                'statusOptions' => $directorFilterStatusOptions,
             ])
 
-            @include('partials.dashboard-follow-up-panel', [
-                'followUpTitle' => 'รายการที่ควรติดตาม',
-                'followUpSubtitle' => 'แสดงงานที่รอกรรมการพิจารณาก่อน และเรียงตามกำหนดเวลา',
-            ])
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                @include('partials.dashboard-overview-panel', [
+                    'overviewTitle' => 'ภาพรวมการพิจารณา',
+                    'overviewSubtitle' => 'ใช้ติดตามคิวงานที่ต้องเข้าพิจารณา และงานที่รอส่งต่อให้ผู้บริหาร',
+                    'overviewChart' => $directorOverviewChart,
+                    'overviewPercents' => $directorOverviewPercents,
+                    'activeFilters' => $activeDirectorFilters,
+                ])
+
+                @include('partials.dashboard-follow-up-panel', [
+                    'followUpTitle' => 'รายการที่ควรติดตาม',
+                    'followUpSubtitle' => 'แสดงงานที่รอกรรมการพิจารณาก่อน และเรียงตามกำหนดเวลา',
+                ])
+            </div>
+        </div>
+
+        <div id="evaluation-table">
+            <x-director-table :evaluations="$evaluations" :statusCounts="$statusCounts" :years="$years" />
         </div>
     </div>
 
-    <div id="evaluation-table">
-        <x-director-table
-            :evaluations="$evaluations"
-            :statusCounts="$statusCounts"
-            :years="$years" />
-    </div>
-</div>
-
-@include('partials.dashboard-overview-script', [
-    'scope' => 'director',
-    'rootId' => 'directorDashboardRoot',
-    'overviewChart' => $directorOverviewChart,
-])
+    @include('partials.dashboard-overview-script', [
+        'scope' => 'director',
+        'rootId' => 'directorDashboardRoot',
+        'overviewChart' => $directorOverviewChart,
+    ])
 @endsection

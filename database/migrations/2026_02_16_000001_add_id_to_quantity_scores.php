@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('quantity_scores', function (Blueprint $table) {
-            $table->bigIncrements('id')->first();
-        });
+        if (! Schema::hasColumn('quantity_scores', 'id')) {
+            Schema::table('quantity_scores', function (Blueprint $table) {
+                $table->bigIncrements('id')->first();
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('quantity_scores', function (Blueprint $table) {
-            $table->dropColumn('id');
-        });
+        if (Schema::hasColumn('quantity_scores', 'id')) {
+            Schema::table('quantity_scores', function (Blueprint $table) {
+                $table->dropColumn('id');
+            });
+        }
     }
 };

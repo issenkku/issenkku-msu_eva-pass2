@@ -10,7 +10,6 @@
     @php
         $flow = collect($assignmentData->evaluation_flow ?? [])->values();
         // แปลง evaluation_flow เดิมเป็นลำดับตัวเลขสำหรับ input แต่ละบทบาท
-        // ถ้า role ใดไม่อยู่ใน flow จะ fallback เป็นลำดับมาตรฐานเพื่อให้ฟอร์มยังแสดงได้
         $stageOrders = [
             'evaluator' => $flow->search('evaluator') !== false ? $flow->search('evaluator') + 1 : 1,
             'director' => $flow->search('director') !== false ? $flow->search('director') + 1 : 2,
@@ -26,23 +25,7 @@
                 $currentReportDataId = $assignmentData->assignments->first()?->report?->reportData?->id;
             @endphp
 
-            <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800 flex items-center">
-                            <i class="fas fa-edit mr-3 text-blue-600"></i>
-                            แก้ไขรอบการประเมิน #{{ $assignmentData->id }}
-                        </h1>
-                        <p class="text-gray-600 mt-1">แก้ไขข้อมูลรอบการประเมิน</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <a href="{{ route('assignment-data.index') }}"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center">
-                            <i class="fas fa-arrow-left mr-2"></i>กลับ
-                        </a>
-                    </div>
-                </div>
-            </div>
+            @include('assignment-data.partials.edit-page-header')
 
             <form id="evaluation-form" action="{{ route('assignment-data.update', $assignmentData->id) }}" method="POST" novalidate>
                 @csrf
@@ -52,16 +35,16 @@
                 @include('assignment-data.partials.form-criteria-section', compact('report_data', 'currentReportDataId'))
 
                 @php
-                    // รวมตัวเลือกหน่วยงาน/ตำแหน่งไว้ให้ partial ใช้ filter แบบเดียวกับหน้า create
+                    // รวมตัวเลือกหน่วยงาน/ตำแหน่งให้ partial ใช้ filter แบบเดียวกับหน้า create
                     $departmentOptions = $users->pluck('department.department_name')->filter()->unique()->sort()->values();
                     $positionOptions = $users->pluck('position.name')->filter()->unique()->sort()->values();
-                    // หน้าแก้ไขต้องรองรับทั้ง old() และค่าที่มีอยู่เดิมในฐานข้อมูล
+                    // หน้าแก้ไขรองรับทั้ง old() และค่าที่มีอยู่เดิมในฐานข้อมูล
                     $selectedEvaluatees = collect(old('evaluatees', $selectedEvaluatees ?? []))
                         ->map(fn ($id) => (int) $id)
                         ->all();
                     // ใช้ assignment เดิมเพื่อแสดงรายชื่อที่ถูกผูกไว้ก่อนเข้าแก้ไข
                     $selectedEvaluateeUsers = $assignmentData->assignments;
-                    // หน้า edit ใช้ selected display แบบ list เพื่ออ่านค่าที่มีอยู่เดิมได้ชัดกว่าแบบ chip
+                    // หน้า edit ใช้ selected display แบบ list เพื่อให้อ่านค่าที่มีอยู่เดิมได้ชัดกว่าแบบ chip
                     $evaluateesUi = [
                         'dropdown_button_class' => 'flex w-full items-center justify-between rounded-md border border-blue-300 bg-white px-4 py-3 text-left text-sm text-gray-700 shadow-sm transition hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500',
                         'dropdown_icon_class' => 'fas fa-chevron-down text-xs text-gray-500',
@@ -73,8 +56,7 @@
                         'empty_item_class' => 'block px-3 py-2 text-sm text-gray-500',
                     ];
                     $reviewerSelectionDisplay = 'list';
-                    // reviewerCards ทำหน้าที่เป็น data source เดียวของ UI reviewer ทั้ง 3 บทบาท
-                    // ค่าที่ต่างจากหน้า create เช่น value เดิม และลำดับเดิม จะถูกกำหนดที่นี่
+                    // reviewerCards เป็น data source กลางของ UI reviewer ทั้ง 3 บทบาท
                     $reviewerCards = [
                         [
                             'key' => 'evaluator',
@@ -156,7 +138,6 @@
 
         @php
             // config ฝั่ง JS ของหน้าแก้ไข
-            // ส่วนใหญ่เหมือน create แต่มีบางค่าที่ต่างกัน เช่นรูปแบบ selected display และ reset behavior
             $formBehaviorConfig = [
                 'evaluateeNameClass' => 'truncate font-medium text-gray-800',
                 'evaluateeMetaClass' => 'truncate text-xs text-gray-500',
@@ -190,7 +171,6 @@
                     'evaluatees' => 'กรุณาเลือกผู้รับการประเมินอย่างน้อย 1 คน',
                     'reviewers' => 'กรุณาเลือกผู้ประเมินอย่างน้อย 1 บทบาท',
                 ],
-                // แปลง reviewerCards ให้เหลือเฉพาะข้อมูลที่ JS ต้องใช้จริง
                 'reviewerConfigs' => collect($reviewerCards)->map(fn ($card) => [
                     'selectId' => $card['id'],
                     'displayId' => 'selected-' . $card['count_id'],

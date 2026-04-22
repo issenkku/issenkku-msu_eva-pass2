@@ -1,4 +1,5 @@
 <style>
+    /* สไตล์หลักของหน้า workload และ modal เพิ่มข้อมูลภาระงาน */
     .workload-readonly-banner {
         background: #eff6ff;
         border: 1px solid #bfdbfe;

@@ -114,5 +114,6 @@
             </div>
         </div>
     </section>
+@empty
     @include('evaluatee.partials.workload-groups-empty-state')
 @endforelse

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;

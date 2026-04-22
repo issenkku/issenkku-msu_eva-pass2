@@ -113,8 +113,6 @@ class DashboardEvaluateeController extends Controller
             collect($overdueAssignments)
         );
 
-        // dd($scatterData);
-
         $page = $request->input('page', 1);
         $perPage = 10;
         $paginatedEvaluations = new LengthAwarePaginator(
@@ -559,19 +557,3 @@ class DashboardEvaluateeController extends Controller
         ));
     }
 }
-
-// Debug output - you can remove this after checking
-// dd([
-//     'evaluation_lists_count' => $evaluationLists->count(),
-//     'evaluation_lists_structure' => $evaluationLists->map(function($list) {
-//         return [
-//             'id' => $list->id,
-//             'name' => $list->name,
-//             'annotation' => $list->annotation,
-//             'quantity_sub_criterias_count' => $list->quantitySubCriterias ? $list->quantitySubCriterias->count() : 0,
-//             'quality_sub_criterias_count' => $list->qualitySubCriterias ? $list->qualitySubCriterias->count() : 0,
-//             'quantity_sub_criterias' => $list->quantitySubCriterias ? $list->quantitySubCriterias->pluck('name', 'id') : [],
-//             'quality_sub_criterias' => $list->qualitySubCriterias ? $list->qualitySubCriterias->pluck('name', 'id') : [],
-//         ];
-//     }),
-// ]);

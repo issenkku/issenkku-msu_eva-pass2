@@ -4,7 +4,7 @@
     $followUpSubtitle = $followUpSubtitle ?? 'แสดงงานที่ควรติดตามก่อน';
 @endphp
 
-<div class="rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+<div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
     <div class="flex items-start justify-between gap-3">
         <div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $followUpTitle }}</h3>

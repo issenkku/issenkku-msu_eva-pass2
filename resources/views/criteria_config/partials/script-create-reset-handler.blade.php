@@ -1,5 +1,5 @@
         document.getElementById('reset_form_btn').addEventListener('click', function() {
-            showValidationErrorModal('เธ•เนเธญเธเธเธฒเธฃเธฅเนเธฒเธเธเนเธญเธกเธนเธฅเธ—เธฑเนเธเธซเธกเธ”เนเธเนเธซเธฃเธทเธญเนเธกเน? <br><br><button id="confirm-reset-btn" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">เธขเธทเธเธขเธฑเธ</button>');
+            showValidationErrorModal('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่? <br><br><button id="confirm-reset-btn" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ยืนยัน</button>');
             setTimeout(() => {
                 const confirmBtn = document.getElementById('confirm-reset-btn');
                 if (confirmBtn) {

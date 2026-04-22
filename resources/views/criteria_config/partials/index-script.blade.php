@@ -1,4 +1,4 @@
-﻿    <script>
+    <script>
         // Unified showAlert function, globally available
         // Modal-based alert (replaces browser alert)
         function showAlert(message, type = 'success') {

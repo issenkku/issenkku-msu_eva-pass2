@@ -1,4 +1,4 @@
-﻿        document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {
+        document.getElementById('confirm_submit_btn').addEventListener('click', async function handleSubmit() {
             hideConfirmModal();
             isSubmitting = true;
             updateFloatingSaveButton();
@@ -27,7 +27,7 @@
                     isSubmitting = false;
                     updateFloatingSaveButton();
                     // Validation error (HTTP 422)
-                    let errorMessage = 'เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเธ•เธฃเธงเธเธชเธญเธเธเนเธญเธกเธนเธฅ:\n';
+                    let errorMessage = 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล:\n';
 
                     // Check for both 'error' and 'errors' to handle potential response variations
                     const errors = data.error || data.errors || {};
@@ -40,7 +40,7 @@
                         }
                     } else {
                         // Fallback if no specific errors are provided
-                        errorMessage += data.message || 'เนเธกเนเธเธเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”';
+                        errorMessage += data.message || 'ไม่พบรายละเอียดข้อผิดพลาด';
                     }
 
                     alert(errorMessage);
@@ -48,7 +48,7 @@
                     isSubmitting = false;
                     updateFloatingSaveButton();
                     // Other errors (e.g., HTTP 500)
-                    alert('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”: ' + (data.message || 'เนเธกเนเธชเธฒเธกเธฒเธฃเธ–เธเธฑเธเธ—เธถเธเธเนเธญเธกเธนเธฅเนเธ”เน'));
+                    alert('เกิดข้อผิดพลาด: ' + (data.message || 'ไม่สามารถบันทึกข้อมูลได้'));
                 }
             } catch (error) {
                 // Network or unexpected errors
@@ -56,6 +56,6 @@
                 updateFloatingSaveButton();
                 hideLoading();
                 console.error('Fetch error:', error);
-                alert('เน€เธเธดเธ”เธเนเธญเธเธดเธ”เธเธฅเธฒเธ”เนเธเธเธฒเธฃเน€เธเธทเนเธญเธกเธ•เนเธญ: ' + error.message);
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
             }
         });

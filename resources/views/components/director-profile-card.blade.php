@@ -47,21 +47,21 @@
         ->values();
 @endphp
 
-<div class="bg-gradient-to-br from-purple-100 to-pink-100 p-6 rounded-2xl shadow-md">
-    <h3 class="text-xl font-bold text-purple-900 mb-6 border-b border-purple-300 pb-2">ข้อมูลผู้เกี่ยวข้องในการประเมิน</h3>
+<div class="rounded-2xl bg-gradient-to-br from-purple-100 to-pink-100 p-6 shadow-md">
+    <h3 class="mb-6 border-b border-purple-300 pb-2 text-xl font-bold text-purple-900">ข้อมูลผู้เกี่ยวข้องในการประเมิน</h3>
 
-    @if($participants->isNotEmpty())
+    @if ($participants->isNotEmpty())
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            @foreach($participants as $participant)
+            @foreach ($participants as $participant)
                 <div class="rounded-xl border border-purple-200 bg-white/70 px-4 py-4">
                     <div class="text-sm font-semibold text-purple-700">{{ $participant['label'] }}</div>
                     <div class="mt-3 space-y-2">
                         <div class="flex">
-                            <span class="font-bold text-gray-800 w-32 flex-shrink-0">ชื่อ-สกุล:</span>
+                            <span class="w-32 flex-shrink-0 font-bold text-gray-800">ชื่อ-สกุล:</span>
                             <span class="text-gray-700">{{ $participant['name'] }}</span>
                         </div>
                         <div class="flex">
-                            <span class="font-bold text-gray-800 w-32 flex-shrink-0">ตำแหน่ง:</span>
+                            <span class="w-32 flex-shrink-0 font-bold text-gray-800">ตำแหน่ง:</span>
                             <span class="text-gray-700">{{ $participant['position'] }}</span>
                         </div>
                     </div>

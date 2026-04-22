@@ -209,8 +209,8 @@ class DirectorScoreController extends Controller
 
             if (isset($validated['comment'])) {
                 $report->director_comment = $validated['comment'];
+                $report->comment = $validated['comment'];
             }
-            $report->syncCombinedComment();
             $newComment = $report->director_comment;
 
             $report->save();

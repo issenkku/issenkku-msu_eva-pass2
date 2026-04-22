@@ -1,3 +1,4 @@
+{{-- สไตล์กลางของหน้า dashboard overview และกราฟสรุป --}}
 <style>
 @media (max-width: 768px) {
     .space-y-6 > * + * {

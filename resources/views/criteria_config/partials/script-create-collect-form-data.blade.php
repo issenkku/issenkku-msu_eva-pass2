@@ -1,19 +1,19 @@
-﻿        let finalData = null;
+        let finalData = null;
 
         document.getElementById('jsonForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            // เนเธกเนเธ•เนเธญเธเธ•เธฃเธงเธเธชเธญเธ version_name เน€เธเธฃเธฒเธฐเธเธฐ generate เธญเธฑเธ•เนเธเธกเธฑเธ•เธด
+            // ไม่ต้องตรวจสอบ version_name เพราะระบบจะสร้างให้อัตโนมัติ
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
             if (!reportTitle) {
-                //alert('เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเน€เธเธ“เธ‘เนเนเธฅเธฐเธฃเธฒเธขเธฅเธฐเน€เธญเธตเธขเธ”เน€เธเธ“เธ‘เน');
+                // alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
                 return;
             }
 
-            // Generate version_name เธญเธฑเธ•เนเธเธกเธฑเธ•เธด
+            // สร้าง version_name อัตโนมัติ
             const currentYear = new Date().getFullYear() + 543; // Convert to Buddhist Era
-            const versionName = `เน€เธเธ“เธ‘เนเธเธฃเธฐเน€เธกเธดเธเธเธต ${currentYear} เธเธฃเธฑเนเธเธ—เธตเน AUTO`;
+            const versionName = `เกณฑ์ประเมินปี ${currentYear} ครั้งที่ AUTO`;
             
             // Save all Summernote content back to textareas before collecting data
             $('.richtext-editor').each(function() {
@@ -23,7 +23,7 @@
             });
             
             finalData = {
-                version_name: versionName, // เธชเธฃเนเธฒเธเธเธทเนเธญเธญเธฑเธ•เนเธเธกเธฑเธ•เธด
+                version_name: versionName, // สร้างชื่อเวอร์ชันอัตโนมัติ
                 created_by: document.getElementById('auth-user-id')?.value || 1,
                 report_datas: [],
                 categories: []
@@ -47,7 +47,7 @@
                 const mainCategories = catBlock.querySelector('.main_categories').value.trim();
                 const subCategories = catBlock.querySelector('.sub_categories').value.trim();
                 if (!mainCategories || !subCategories) {
-                    //alert(`เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธซเธกเธงเธ”เธซเธกเธนเนเธซเธฅเธฑเธเนเธฅเธฐเธซเธกเธงเธ”เธซเธกเธนเนเธขเนเธญเธขเธชเธณเธซเธฃเธฑเธเธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`);
+                    // alert(`กรุณากรอกหมวดหมู่หลักและหมวดหมู่ย่อยสำหรับหมวดหมู่ที่ ${catI + 1}`);
                     return;
                 }
 
@@ -69,7 +69,7 @@
                     const sumScore = evalBlock.querySelector('.sum_score').value;
                     if (!evalName || !sumScore) {
                         // alert(
-                        //     `เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเนเธฅเธฐเธเธฐเนเธเธเธฃเธงเธกเธชเธณเธซเธฃเธฑเธเธฃเธฒเธขเธเธฒเธฃเธ—เธตเน ${evalI + 1} เนเธเธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`
+                        //     `กรุณากรอกชื่อรายการประเมินและคะแนนรวมสำหรับรายการที่ ${evalI + 1} ในหมวดหมู่ที่ ${catI + 1}`
                         // );
                         return;
                     }
@@ -108,7 +108,7 @@
                                 const quantFormula = qMain.querySelector('.quant_formula')?.value.trim() || '';
                                 if (!quantName) {
                                     // alert(
-                                    //     `เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเน€เธเธ“เธ‘เนเนเธฅเธฐเธเธณเธญเธเธดเธเธฒเธขเธชเธณเธซเธฃเธฑเธเน€เธเธ“เธ‘เนเธเธฃเธดเธกเธฒเธ“เธซเธฅเธฑเธเธ—เธตเน ${qj + 1} เนเธเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธ—เธตเน ${evalI + 1} เธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`
+                                    //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                     // );
                                     valid = false;
                                     return;
@@ -137,7 +137,7 @@
                                     const scoreB = subQ.querySelector('.score_b').value;
                                     if (!subName || !scoreA || !scoreB) {
                                         alert(
-                                            `เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเน€เธเธ“เธ‘เนเธขเนเธญเธข, เธเธฐเนเธเธ A, เนเธฅเธฐเธเธฐเนเธเธ B เธชเธณเธซเธฃเธฑเธเน€เธเธ“เธ‘เนเธเธฃเธดเธกเธฒเธ“เธขเนเธญเธขเธ—เธตเน ${sk + 1} เนเธเน€เธเธ“เธ‘เนเธเธฃเธดเธกเธฒเธ“เธซเธฅเธฑเธเธ—เธตเน ${qj + 1} เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธ—เธตเน ${evalI + 1} เธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`
+                                            `กรุณากรอกชื่อเกณฑ์ย่อย, คะแนน A, และคะแนน B สำหรับเกณฑ์ปริมาณย่อยที่ ${sk + 1} ในเกณฑ์ปริมาณหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                         );
                                         valid = false;
                                         return;
@@ -179,7 +179,7 @@
                                 : tooltipsTextarea.value.trim();
                             if (!qualName || !qualRatio) {
                                 alert(
-                                    `เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเน€เธเธ“เธ‘เนเนเธฅเธฐเธชเธฑเธ”เธชเนเธงเธเธเธฐเนเธเธเธชเธณเธซเธฃเธฑเธเน€เธเธ“เธ‘เนเธเธธเธ“เธ เธฒเธเธซเธฅเธฑเธเธ—เธตเน ${qj + 1} เนเธเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธ—เธตเน ${evalI + 1} เธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`
+                                    `กรุณากรอกชื่อเกณฑ์และสัดส่วนคะแนนสำหรับเกณฑ์คุณภาพหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
                                 );
                                 valid = false;
                                 return;
@@ -213,7 +213,7 @@
                                     ? $(descriptionTextarea).summernote('code') 
                                     : descriptionTextarea.value.trim() || '';
                                 if (!subName || !numScore) {
-                                    showValidationErrorModal(`เธเธฃเธธเธ“เธฒเธเธฃเธญเธเธเธทเนเธญเน€เธเธ“เธ‘เนเธขเนเธญเธขเนเธฅเธฐเธเธฐเนเธเธเธชเธนเธเธชเธธเธ”เธชเธณเธซเธฃเธฑเธเน€เธเธ“เธ‘เนเธเธธเธ“เธ เธฒเธเธขเนเธญเธขเธ—เธตเน ${sk + 1} เนเธเน€เธเธ“เธ‘เนเธเธธเธ“เธ เธฒเธเธซเธฅเธฑเธเธ—เธตเน ${qj + 1} เธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธ—เธตเน ${evalI + 1} เธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`);
+                                    showValidationErrorModal(`กรุณากรอกชื่อเกณฑ์ย่อยและคะแนนสูงสุดสำหรับเกณฑ์คุณภาพย่อยที่ ${sk + 1} ในเกณฑ์คุณภาพหลักที่ ${qj + 1} รายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`);
                                     valid = false;
                                     return;
                                 }
@@ -237,7 +237,7 @@
                 });
 
                 if (category.evaluation_lists.length === 0) {
-                    showValidationErrorModal(`เธเธฃเธธเธ“เธฒเน€เธเธดเนเธกเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃเนเธเธซเธกเธงเธ”เธซเธกเธนเนเธ—เธตเน ${catI + 1}`);
+                    showValidationErrorModal(`กรุณาเพิ่มรายการประเมินอย่างน้อย 1 รายการในหมวดหมู่ที่ ${catI + 1}`);
                     return;
                 }
 
@@ -245,9 +245,9 @@
             });
 
             if (finalData.categories.length === 0) {
-                showValidationErrorModal('เธเธฃเธธเธ“เธฒเน€เธเธดเนเธกเธซเธกเธงเธ”เธซเธกเธนเนเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธซเธกเธงเธ”เธซเธกเธนเน');
+                showValidationErrorModal('กรุณาเพิ่มหมวดหมู่การประเมินอย่างน้อย 1 หมวดหมู่');
                 return;
             }
 
-            showConfirmModal(reportTitle); // เนเธชเธ”เธ report_title เนเธ—เธ finalData.version_name
+            showConfirmModal(reportTitle); // แสดง report_title แทน finalData.version_name
         });

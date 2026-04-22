@@ -12,14 +12,11 @@
             focus: false,
         });
 
+        // ป้องกัน backdrop ของ modal หลักไม่ให้รบกวนระหว่างเปิด modal รายวิชา
         function setBackdropInert(isInert) {
             const backdrops = document.querySelectorAll('.modal-backdrop');
             backdrops.forEach(function (backdrop) {
-                if (isInert) {
-                    backdrop.classList.add('workload-backdrop-inert');
-                } else {
-                    backdrop.classList.remove('workload-backdrop-inert');
-                }
+                backdrop.classList.toggle('workload-backdrop-inert', isInert);
             });
         }
 
@@ -34,18 +31,22 @@
         openLinks.forEach(function (link) {
             link.addEventListener('click', function (event) {
                 event.preventDefault();
+
                 const form = document.getElementById('subjectForm');
                 if (form) {
                     form.action = "{{ route('subjects.store.evaluatee') }}?redirect_to=" + encodeURIComponent(window.location.href);
+
                     const methodInput = document.getElementById('form_method');
                     if (methodInput) {
                         methodInput.value = 'POST';
                     }
+
                     const redirectInput = document.getElementById('subjectRedirectTo');
                     if (redirectInput) {
                         redirectInput.value = window.location.href;
                     }
                 }
+
                 subjectModal.show();
             });
         });

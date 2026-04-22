@@ -308,7 +308,7 @@ class DirectorTest extends TestCase
             'previous_description' => 'ก่อนกรรมการแก้',
             'new_description' => 'กรรมการปรับคะแนน',
             'modifier_user_id' => $this->director->id,
-            'modifier_role' => 'เธเธฃเธฃเธกเธเธฒเธฃ',
+            'modifier_role' => 'กรรมการ',
         ]);
     }
 

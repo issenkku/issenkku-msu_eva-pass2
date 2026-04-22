@@ -1,6 +1,6 @@
-{{-- กล่องข้อความแจ้งเตือนแบบสั้น ใช้ซ้ำในหน้า dashboard ของแต่ละบทบาท --}}
+{{-- กล่องข้อความแจ้งเตือนแบบสั้นสำหรับหน้า dashboard --}}
 @if (session('success'))
-    <div id="successMessage" class="fixed top-4 right-4 z-[10000] rounded-lg bg-green-500 px-6 py-4 text-white shadow-lg transition-transform duration-300">
+    <div id="successMessage" class="fixed right-4 top-4 z-[10000] rounded-lg bg-green-500 px-6 py-4 text-white shadow-lg transition-transform duration-300">
         <div class="flex items-center space-x-3">
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>

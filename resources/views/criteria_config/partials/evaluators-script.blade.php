@@ -261,15 +261,6 @@
                 return;
             }
 
-            const formData = {
-                start_date: $('#start_date').val(),
-                end_date: $('#end_date').val(),
-                evaluatees: evaluateesSelected,
-                evaluators: evaluatorsSelected,
-                department_filter: $('#department_filter').val(),
-            };
-
-            console.log('Form Data:', formData);
             alert(
                 `บันทึกข้อมูลเรียบร้อยแล้ว!\\nผู้รับการประเมิน: ${evaluateesSelected.length} คน\\nผู้ประเมิน: ${evaluatorsSelected.length} คน`
             );

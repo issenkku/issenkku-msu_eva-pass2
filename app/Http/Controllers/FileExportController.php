@@ -193,8 +193,6 @@ class FileExportController extends Controller
             );
         }
 
-        // dd($query->toSql(), $query->getBindings(), $query->count());
-
         return $query;
     }
 }

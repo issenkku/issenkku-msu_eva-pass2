@@ -5,9 +5,7 @@
         const statusChartCenterValue = document.getElementById('statusChartCenterValue');
         const statusChartCenterLabel = document.getElementById('statusChartCenterLabel');
         const overviewCards = Array.from(document.querySelectorAll('.evaluation-overview-card'));
-        const clearFilterButtons = Array.from(document.querySelectorAll(
-            '#evaluationClearFilterTop, #evaluationClearFilter, #evaluationClearFilterBottom'
-        ));
+        const clearFilterButtons = Array.from(document.querySelectorAll('#evaluationClearFilter'));
         let statusChartInstance = null;
 
         const resetStatusChartCenter = () => {

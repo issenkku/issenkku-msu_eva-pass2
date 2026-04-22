@@ -151,7 +151,7 @@ class EvaluatorTest extends TestCase
                     'score' => 5,
                 ]
             ],
-            'status' => 'Director_assigned', // Submit to evaluator
+            'status' => 'Pending',
             'comment' => 'Evaluator evaluation completed, forwarding to director',
         ];
 
@@ -253,7 +253,7 @@ class EvaluatorTest extends TestCase
             'previous_description' => 'ก่อนตรวจ',
             'new_description' => 'ผู้ประเมินปรับคะแนน',
             'modifier_user_id' => $this->evaluator->id,
-            'modifier_role' => 'เธเธนเนเธเธฃเธฐเน€เธกเธดเธ',
+            'modifier_role' => 'ผู้ประเมิน',
         ]);
     }
 

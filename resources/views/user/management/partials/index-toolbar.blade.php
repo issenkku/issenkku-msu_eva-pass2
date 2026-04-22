@@ -1,4 +1,4 @@
-{{-- แถบเครื่องมือด้านบน รวมจำนวนผู้ใช้และปุ่มเปิด modal หลักของหน้า --}}
+{{-- แถบเครื่องมือด้านบน แสดงจำนวนผู้ใช้และปุ่มการทำงานหลัก --}}
 <div class="d-flex flex-column flex-md-row justify-between items-start md:items-center mb-4 gap-3">
     <h2 class="text-xl font-bold">รายชื่อเจ้าหน้าที่ทั้งหมด ({{ $users->total() }} คน)</h2>
 
@@ -8,16 +8,15 @@
             text="เพิ่มไฟล์เจ้าหน้าที่"
             onclick="openImportModal(this)"
             data-action="{{ route('users.import') }}"
-            icon="fas fa-file-import" />
+            icon="fas fa-file-import"
+        />
 
         <x-button
             type="primary"
             text="เพิ่มเจ้าหน้าที่"
             onclick="openCreateModal(this)"
             data-action="{{ route('users.store') }}"
-            icon="fas fa-user-plus" />
+            icon="fas fa-user-plus"
+        />
     </div>
-
-    @include('user.management.user-form-modal')
-    @include('user.management.import-user-modal')
 </div>

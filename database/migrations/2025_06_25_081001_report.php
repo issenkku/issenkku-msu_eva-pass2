@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
         Schema::create('quantity_scores', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('quantity_sub_criteria_id')->constrained('quantity_sub_criterias')->onDelete('cascade');
             $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->decimal('score_C', 5, 2)->nullable();
@@ -29,6 +30,8 @@ return new class extends Migration
             $table->index(['quantity_sub_criteria_id', 'report_id'], 'quantity_scores_all_idx');
         });
         Schema::create('quality_scores', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->foreignId('quality_sub_criteria_id')->constrained('quality_sub_criterias')->onDelete('cascade');
             $table->foreignId('report_id')->constrained('reports')->onDelete('cascade');
             $table->decimal('score', 5, 2)->nullable();

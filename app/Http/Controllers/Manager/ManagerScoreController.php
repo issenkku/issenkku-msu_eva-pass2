@@ -211,8 +211,8 @@ class ManagerScoreController extends Controller
 
             if (isset($validated['comment'])) {
                 $report->manager_comment = $validated['comment'];
+                $report->comment = $validated['comment'];
             }
-            $report->syncCombinedComment();
             $newComment = $report->manager_comment;
 
             $report->save();

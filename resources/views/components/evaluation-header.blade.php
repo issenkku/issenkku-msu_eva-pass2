@@ -17,13 +17,6 @@
     <p class="mb-1 text-sm text-gray-500">{{ $period }}</p>
     <p class="mb-2 text-sm text-gray-400">กำหนดส่ง: {{ $deadline }}</p>
 
-    <div class="mb-2">
-        <a href="{{ route('evaluation.show', $evaluationId) }}"
-           class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-200">
-            การดำเนินการ
-        </a>
-    </div>
-
     <div class="mt-4">
         <a href="{{ route('evaluation.show', $evaluationId) }}"
            class="inline-flex items-center gap-2 rounded-full px-5 py-2 font-medium text-white shadow transition"

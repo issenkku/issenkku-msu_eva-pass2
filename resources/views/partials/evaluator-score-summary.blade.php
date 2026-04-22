@@ -1,5 +1,4 @@
 {{-- สรุปคะแนนรวมของ evaluator รับค่าที่คำนวณจาก controller/support class แล้ว --}}
-
 <div class="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-6 shadow-sm">
     <h3 class="mb-4 flex items-center gap-2 text-xl font-bold text-blue-900">
         <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

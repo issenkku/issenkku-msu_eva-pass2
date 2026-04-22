@@ -1,4 +1,5 @@
 @push('scripts')
+    {{-- สคริปต์กลางของ dashboard overview ใช้ร่วมกันหลายบทบาท --}}
     <script>
         (function() {
             const dashboardScope = @json($scope);
@@ -147,9 +148,15 @@
             };
 
             function initFilterToggle(scopeRoot = document) {
-                const toggle = scopeRoot.getElementById ? scopeRoot.getElementById(`${dashboardScope}FilterToggle`) : scopeRoot.querySelector(`#${dashboardScope}FilterToggle`);
-                const panel = scopeRoot.getElementById ? scopeRoot.getElementById(`${dashboardScope}FilterPanel`) : scopeRoot.querySelector(`#${dashboardScope}FilterPanel`);
-                const chevron = scopeRoot.getElementById ? scopeRoot.getElementById(`${dashboardScope}FilterChevron`) : scopeRoot.querySelector(`#${dashboardScope}FilterChevron`);
+                const toggle = scopeRoot.getElementById
+                    ? scopeRoot.getElementById(`${dashboardScope}FilterToggle`)
+                    : scopeRoot.querySelector(`#${dashboardScope}FilterToggle`);
+                const panel = scopeRoot.getElementById
+                    ? scopeRoot.getElementById(`${dashboardScope}FilterPanel`)
+                    : scopeRoot.querySelector(`#${dashboardScope}FilterPanel`);
+                const chevron = scopeRoot.getElementById
+                    ? scopeRoot.getElementById(`${dashboardScope}FilterChevron`)
+                    : scopeRoot.querySelector(`#${dashboardScope}FilterChevron`);
 
                 if (!toggle || !panel || !chevron || toggle.dataset.bound === 'true') {
                     return;

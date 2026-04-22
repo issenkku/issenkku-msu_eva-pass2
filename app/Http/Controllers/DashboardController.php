@@ -165,8 +165,6 @@ class DashboardController extends Controller
         $progressPercent = $totalEvaluations > 0 ? round(($completedCount / $totalEvaluations) * 100, 1) : 0;
         $startedPercent = $totalEvaluations > 0 ? round(($startedCount / $totalEvaluations) * 100, 1) : 0;
 
-        // dd($chartData);
-
         $totalEvaluatees = $evaluations
             ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')

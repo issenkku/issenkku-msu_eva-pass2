@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
+use App\Support\AssignmentFlow;
 use App\Support\EvaluationScoreSummary;
 use App\Support\QuantityScoreHistoryRecorder;
 
@@ -261,13 +262,16 @@ class EvaluatorScoreController extends Controller
             $oldStatus = $report->status;
             $oldComment = $report->evaluator_comment;
 
-            $status = $validated['status'];
+            $assignment = Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $status = in_array($validated['status'], ['Pending', 'Director_assigned', 'Submitted'], true)
+                ? AssignmentFlow::nextStatusAfter('evaluator', $assignment?->assignmentData)
+                : $validated['status'];
             $report->status = $status;
 
             if (isset($validated['comment'])) {
                 $report->evaluator_comment = $validated['comment'];
+                $report->comment = $validated['comment'];
             }
-            $report->syncCombinedComment();
             $newComment = $report->evaluator_comment;
 
             $report->save();

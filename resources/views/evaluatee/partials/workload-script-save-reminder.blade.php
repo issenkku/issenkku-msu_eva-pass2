@@ -24,6 +24,7 @@
             : currentTotal > 0;
         let allowPageExit = false;
 
+        // แสดงแถบเตือนเมื่อคะแนนภาระงานล่าสุดยังไม่ได้กดบันทึก
         function updateReminder() {
             reminderEl.hidden = !hasUnsavedChanges;
             if (!hasUnsavedChanges || !reminderTextEl) {

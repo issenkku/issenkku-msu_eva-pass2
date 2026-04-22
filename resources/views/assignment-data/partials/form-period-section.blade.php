@@ -11,15 +11,27 @@
             <label for="start_time" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันเริ่มต้นประเมิน:
             </label>
-            <input type="text" name="start_time" id="start_time" value="{{ $startTimeValue }}"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
+            <input
+                type="text"
+                name="start_time"
+                id="start_time"
+                value="{{ $startTimeValue }}"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date"
+                required
+            >
         </div>
         <div>
             <label for="end_time" class="block text-sm font-medium text-gray-700 mb-2">
                 <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>วันสิ้นสุดประเมิน:
             </label>
-            <input type="text" name="end_time" id="end_time" value="{{ $endTimeValue }}"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date" required>
+            <input
+                type="text"
+                name="end_time"
+                id="end_time"
+                value="{{ $endTimeValue }}"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date"
+                required
+            >
         </div>
     </div>
 </div>

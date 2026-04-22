@@ -9,6 +9,7 @@
 
             clearSubjectSelection();
 
+            // โหมดแก้ไข: ดึงค่าจาก dataset ของปุ่มที่กดมาเติมกลับเข้าฟอร์ม
             if (isEdit) {
                 const entryId = trigger.dataset.entryId;
                 const formId = trigger.dataset.formId || '';
@@ -45,6 +46,7 @@
                 return;
             }
 
+            // โหมดเพิ่มใหม่: ล้างค่าเดิมและเติม default จากปุ่มต้นทาง
             setFormMode('create');
             if (workloadForm) {
                 workloadForm.reset();
@@ -81,6 +83,7 @@
                 return;
             }
 
+            // เติมค่าซ้ำหลัง modal render เสร็จเพื่อให้ field แบบ dynamic ติดครบ
             fillFields(pendingEditPayload.fieldValues || {}, pendingEditPayload.formId, true);
             setEvidenceLinks(pendingEditPayload.evidenceLinks || []);
             updateWorkloadSubmitState();

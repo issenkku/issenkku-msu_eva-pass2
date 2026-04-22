@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views\user\management\forgotPassword.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -11,18 +10,19 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-msu.png') }}?v=1">
     <link rel="shortcut icon" href="{{ asset('favicon-msu.png') }}?v=1">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <style>
-        body { background: #f3f4f6; }
-    </style>
+    @include('user.management.partials.forgot-password-style')
     @vite([])
 </head>
-<body class="min-h-screen flex items-center justify-center px-4">
-    <div class="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
-        <div class="flex justify-center mb-4">
-            <img src="/favicon-msu.png" alt="MSU Logo" class="h-24 w-24 object-contain" />
+<body class="flex min-h-screen items-center justify-center px-4">
+    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
+        <div class="mb-4 flex justify-center">
+            <img src="/favicon-msu.png" alt="MSU Logo" class="h-24 w-24 object-contain">
         </div>
-        <h2 class="text-2xl font-extrabold text-gray-800 mb-2 text-center">ลืมรหัสผ่าน</h2>
-        <p class="text-sm text-gray-600 text-center mb-6">กรอกอีเมลที่ลงทะเบียนไว้เพื่อรับลิงก์รีเซ็ตรหัสผ่าน</p>
+
+        <h2 class="mb-2 text-center text-2xl font-extrabold text-gray-800">ลืมรหัสผ่าน</h2>
+        <p class="mb-6 text-center text-sm text-gray-600">
+            กรอกอีเมลที่ลงทะเบียนไว้เพื่อรับลิงก์รีเซ็ตรหัสผ่าน
+        </p>
 
         @if (session('status'))
             <div class="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
@@ -39,22 +39,32 @@
         <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
             @csrf
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
-                <input id="email" name="email" type="email" required autofocus autocomplete="off"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                       placeholder="email@example.com">
+                <label for="email" class="mb-1 block text-sm font-medium text-gray-700">อีเมล</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autofocus
+                    autocomplete="off"
+                    class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="email@example.com"
+                >
             </div>
 
-            <button type="submit"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition duration-200">
+            <button
+                type="submit"
+                class="w-full rounded-lg bg-green-600 py-2 font-semibold text-white transition duration-200 hover:bg-green-700"
+            >
                 ส่งลิงก์รีเซ็ตรหัสผ่าน
             </button>
         </form>
 
         <div class="mt-6 text-center">
-            <a href="{{ route('login') }}" class="text-sm text-blue-600 hover:underline">กลับไปหน้าเข้าสู่ระบบ</a>
+            <a href="{{ route('login') }}" class="text-sm text-blue-600 hover:underline">
+                กลับไปหน้าเข้าสู่ระบบ
+            </a>
         </div>
     </div>
 </body>
 </html>
-

@@ -23,7 +23,7 @@
             </div>
             <div class="modal-footer">
                 <x-button
-                    type="defualt"
+                    type="secondary"
                     text="ยกเลิก"
                     icon="fas fa-times"
                     data-bs-dismiss="modal" />

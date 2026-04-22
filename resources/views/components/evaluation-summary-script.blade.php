@@ -1,5 +1,5 @@
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const summaryRoot = document.getElementById('evaluationSummary');
     if (!summaryRoot) {
         return;

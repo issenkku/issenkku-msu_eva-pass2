@@ -1,15 +1,15 @@
-﻿        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function(e) {
             if (e.target.closest('.delete_category_btn')) {
                 const block = e.target.closest('.category_block');
                 const container = document.getElementById('categories_container');
-                if (confirm('เธ•เนเธญเธเธเธฒเธฃเธฅเธเธซเธกเธงเธ”เธซเธกเธนเนเธเธตเนเนเธเนเธซเธฃเธทเธญเนเธกเน?')) {
+                if (confirm('ต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
             if (container.querySelectorAll('.category_block').length > 1) {
                 block.remove();
                 updateCategorySequence(container);
                 updateButtonStates('.category_block', '.move_category_up_btn', '.move_category_down_btn');
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเธซเธกเธงเธ”เธซเธกเธนเนเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีหมวดหมู่การประเมินอย่างน้อย 1 รายการ');
             }
                 }
             }
@@ -23,7 +23,7 @@
                 updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเธฃเธฒเธขเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีรายการประเมินอย่างน้อย 1 รายการ');
             }
             }
 
@@ -42,7 +42,7 @@
                 updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเน€เธเธ“เธ‘เนเธเธฃเธดเธกเธฒเธ“เธซเธฅเธฑเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีเกณฑ์ปริมาณหลักอย่างน้อย 1 รายการ');
             }
             }
 
@@ -54,7 +54,7 @@
                 updateQuantSubSequence(container);
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเน€เธเธ“เธ‘เนเธเธฃเธดเธกเธฒเธ“เธขเนเธญเธขเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีเกณฑ์ปริมาณย่อยอย่างน้อย 1 รายการ');
             }
             }
 
@@ -73,7 +73,7 @@
                 updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเน€เธเธ“เธ‘เนเธเธธเธ“เธ เธฒเธเธซเธฅเธฑเธเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีเกณฑ์คุณภาพหลักอย่างน้อย 1 รายการ');
             }
             }
 
@@ -85,7 +85,7 @@
                 updateQualSubSequence(container);
                 markDirty();
             } else {
-                showValidationErrorModal('เธ•เนเธญเธเธกเธตเน€เธเธ“เธ‘เนเธเธธเธ“เธ เธฒเธเธขเนเธญเธขเธญเธขเนเธฒเธเธเนเธญเธข 1 เธฃเธฒเธขเธเธฒเธฃ');
+                showValidationErrorModal('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
             }
             }
 
@@ -231,7 +231,7 @@
                             ['insert', ['link', 'picture']],
                             ['view', ['fullscreen', 'codeview', 'help']]
                         ],
-                        placeholder: 'เธเธฃเธธเธ“เธฒเนเธชเนเธเธณเธญเธเธดเธเธฒเธขเน€เธเธดเนเธกเน€เธ•เธดเธก...',
+                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
                         lang: 'th-TH',
                         callbacks: {
                             onChange: function(contents, $editable) {
@@ -283,7 +283,7 @@
                             ['insert', ['link', 'picture']],
                             ['view', ['fullscreen', 'codeview', 'help']]
                         ],
-                        placeholder: 'เธเธฃเธธเธ“เธฒเนเธชเนเธเธณเธญเธเธดเธเธฒเธขเน€เธเธดเนเธกเน€เธ•เธดเธก...',
+                        placeholder: 'กรุณาใส่คำอธิบายเพิ่มเติม...',
                         lang: 'th-TH',
                         callbacks: {
                             onChange: function(contents, $editable) {
@@ -321,4 +321,4 @@
                             ['insert', ['link', 'picture']],
                             ['view', ['fullscreen', 'codeview', 'help']]
                         ],
-                        placeholder: 'เนเธชเนเธเธณเธญเธเธดเธเธฒเธขเธเธฒเธฃเนเธซเนเธเธฐเนเธเธ',
+                        placeholder: 'ใส่คำอธิบายการให้คะแนน',

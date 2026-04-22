@@ -7,14 +7,6 @@
         if (form) {
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
-
-                const formData = new FormData(this);
-                const data = {};
-                formData.forEach((value, key) => {
-                    data[key] = value;
-                });
-
-                console.log('Form Data:', data);
             });
         }
 

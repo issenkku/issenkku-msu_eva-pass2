@@ -1,4 +1,4 @@
-{{-- ไฟล์มุมมอง: resources/views\components\evaluator-table.blade.php --}}
+{{-- มุมมองตารางสรุปสถานะการประเมินของผู้ประเมิน --}}
 @props(['evaluations', 'statusCounts', 'years'])
 
 @php
@@ -6,46 +6,44 @@
 
     function formatThaiDate($date)
     {
-        if (!$date) return '-';
+        if (!$date) {
+            return '-';
+        }
 
-        Carbon::setLocale('th'); 
+        Carbon::setLocale('th');
         setlocale(LC_TIME, 'th_TH.UTF-8');
 
-        $thaiMonth = $date->translatedFormat('j F'); 
+        $thaiMonth = $date->translatedFormat('j F');
         $buddhistYear = $date->year + 543;
         $time = $date->format('H:i');
 
         return [
             'date' => "{$thaiMonth} {$buddhistYear}",
-            'time' => "{$time} น."
+            'time' => "{$time} น.",
         ];
     }
 
-    // Sort evaluations by most recent first
-    $sortedEvaluations = $evaluations->sortByDesc(function($evaluatorAssignment) {
-        // Primary sort: by end_time (most recent first)
+    // เรียงรายการล่าสุดขึ้นก่อน
+    $sortedEvaluations = $evaluations->sortByDesc(function ($evaluatorAssignment) {
         $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
         if ($endTime) {
             return Carbon::parse($endTime)->timestamp;
         }
-        
-        // Secondary sort: by start_time if no end_time
+
         $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
         if ($startTime) {
             return Carbon::parse($startTime)->timestamp;
         }
-        
-        // Tertiary sort: by created_at or updated_at
-        return optional($evaluatorAssignment->report)->updated_at 
+
+        return optional($evaluatorAssignment->report)->updated_at
             ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
-            : (optional($evaluatorAssignment)->created_at 
-                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp 
+            : (optional($evaluatorAssignment)->created_at
+                ? Carbon::parse($evaluatorAssignment->created_at)->timestamp
                 : 0);
-    })->values(); // Reset array keys to ensure proper numbering
+    })->values();
 
     $filteredStatus = request('status');
     if ($filteredStatus) {
-        // Map display names back to DB status (including multiple statuses)
         $reverseMap = [
             'รอการกรอกข้อมูล' => ['Assigned', 'Draft'],
             'ยังไม่ประเมิน' => ['Pending'],
@@ -56,26 +54,23 @@
 
         $statusCodes = $reverseMap[$filteredStatus] ?? [$filteredStatus];
 
-        $sortedEvaluations = $sortedEvaluations->filter(function($evaluatorAssignment) use ($statusCodes) {
+        $sortedEvaluations = $sortedEvaluations->filter(function ($evaluatorAssignment) use ($statusCodes) {
             return in_array(optional($evaluatorAssignment->report)->status, $statusCodes);
-        })->values(); // Reset keys
+        })->values();
     }
 @endphp
 
-{{-- บล็อกเนื้อหา --}}
-<div class="bg-white rounded-lg p-6">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
-    {{-- บล็อกเนื้อหา --}}
-    <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
-        <x-search-bar  
-            placeholder="ค้นหาชื่อ, รายงาน..."
-        /> 
-        {{-- บล็อกเนื้อหา --}}
-        <div  class="flex flex-wrap justify-between gap-2">
-            <x-export-button 
+<div class="rounded-lg bg-white p-6">
+    <h3 class="mb-4 text-lg font-semibold text-gray-800">ภาพรวมสถานะการประเมิน</h3>
+
+    <div class="mb-4 flex flex-wrap justify-between gap-4 border-b pb-4 pl-3 pr-3">
+        <x-search-bar placeholder="ค้นหาชื่อ, รายงาน..." />
+
+        <div class="flex flex-wrap justify-between gap-2">
+            <x-export-button
                 :route="route('export.reports')"
-                label="ส่งออกExcelทั้งหมด" />
-            <x-filter-badge-single 
+                label="ส่งออก Excel ทั้งหมด" />
+            <x-filter-badge-single
                 name="year"
                 placeholder="ปีการประเมินทั้งหมด"
                 :options="$years->mapWithKeys(fn($y) => [$y => $y + 543])->toArray()"
@@ -83,7 +78,6 @@
         </div>
     </div>
 
-    <!-- Status Badges -->
     @php
         $statusStyles = [
             'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800 hover:bg-orange-200',
@@ -96,9 +90,8 @@
         $firstStatus = array_key_first($statusCounts);
     @endphp
 
-    {{-- บล็อกเนื้อหา --}}
-    <div class="flex gap-3 mb-6 flex-wrap">
-        @foreach($statusCounts as $status => $count)
+    <div class="mb-6 flex flex-wrap gap-3">
+        @foreach ($statusCounts as $status => $count)
             @php
                 $isShowAll = $status === $firstStatus;
                 $isActive = $isShowAll ? is_null(request('status')) : request('status') === $status;
@@ -106,43 +99,37 @@
                 $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
 
                 $url = $isShowAll
-                    ? request()->url() 
+                    ? request()->url()
                     : request()->fullUrlWithQuery(['status' => $status]);
             @endphp
 
             <a href="{{ $url }}"
-            data-evaluator-ajax-link
-            class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
+                data-evaluator-ajax-link
+                class="inline-block rounded-full px-3 py-1 text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </a>
         @endforeach
     </div>
 
-    <!-- Table Format -->
-    {{-- บล็อกเนื้อหา --}}
     <div class="relative overflow-x-auto">
-        {{-- บล็อกเนื้อหา --}}
-        <div class="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent pointer-events-none z-10"></div>
-        {{-- บล็อกเนื้อหา --}}
-        <div class="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"></div>
+        <div class="pointer-events-none absolute left-0 top-0 z-10 h-full w-10 bg-gradient-to-r from-white to-transparent"></div>
+        <div class="pointer-events-none absolute right-0 top-0 z-10 h-full w-10 bg-gradient-to-l from-white to-transparent"></div>
 
-        {{-- บล็อกเนื้อหา --}}
-        <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            {{-- ตารางข้อมูล --}}
+        <div class="overflow-x-auto scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300">
             <table class="min-w-[900px] w-full border-collapse text-sm">
                 <thead>
                     <tr class="bg-gray-50">
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">อันดับ</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">รายการประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่เริ่มประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">วันที่สิ้นสุดประเมิน</th>
-                        <th class="text-left p-4 border-b font-medium text-gray-800 whitespace-nowrap">ผู้รับการประเมิน</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap min-w-[180px]">สถานะ</th>
-                        <th class="text-center p-4 border-b font-medium text-gray-800 whitespace-nowrap">การดำเนินการ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">อันดับ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">รายการประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">วันที่เริ่มประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">วันที่สิ้นสุดประเมิน</th>
+                        <th class="whitespace-nowrap border-b p-4 text-left font-medium text-gray-800">ผู้รับการประเมิน</th>
+                        <th class="min-w-[180px] whitespace-nowrap border-b p-4 text-center font-medium text-gray-800">สถานะ</th>
+                        <th class="whitespace-nowrap border-b p-4 text-center font-medium text-gray-800">การดำเนินการ</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($sortedEvaluations as $index => $evaluatorAssignment)
+                    @forelse ($sortedEvaluations as $index => $evaluatorAssignment)
                         @php
                             $report = $evaluatorAssignment->report;
                             $assignmentData = $evaluatorAssignment->assignmentData;
@@ -158,10 +145,10 @@
                                 'Draft' => 'รอการกรอกข้อมูล',
                                 'Pending' => 'ยังไม่ประเมิน',
                                 'Evaluator_draft' => 'กำลังดำเนินการ',
-                                'Director_assigned' => 'รอกรรมการรับรองผล',
-                                'Director_draft' => 'กรรมการเริ่มรับรองผล',
-                                'Manager_assign' => 'รอคณบดีรับรองผล',
-                                'Manager_draft' => 'คณบดีเริ่มรับรองผล',
+                                'Director_assigned' => 'รอผลการประเมิน',
+                                'Director_draft' => 'รอผลการประเมิน',
+                                'Manager_assign' => 'รอผลการประเมิน',
+                                'Manager_draft' => 'รอผลการประเมิน',
                                 'Completed' => 'ประเมินเสร็จสิ้น',
                             ];
                             $status = $statusMapping[$statusFromDB] ?? $statusFromDB;
@@ -174,7 +161,6 @@
                             $startFormatted = formatThaiDate($start);
                             $endFormatted = formatThaiDate($end);
 
-                            // Add visual indicator for recent items
                             $isRecent = false;
                             if ($end && $end->gt(Carbon::now()->subDays(10))) {
                                 $isRecent = true;
@@ -183,23 +169,23 @@
                             }
                         @endphp
 
-                        <tr class="hover:bg-gray-50 transition-colors {{ $isRecent ? 'bg-blue-50' : '' }}">
-                            <td class="p-4 border-b text-gray-500">
+                        <tr class="transition-colors hover:bg-gray-50 {{ $isRecent ? 'bg-blue-50' : '' }}">
+                            <td class="border-b p-4 text-gray-500">
                                 {{ $index + 1 }}
-                                @if($isRecent)
-                                    <span class="inline-block w-2 h-2 bg-blue-500 rounded-full ml-2" title="รายการล่าสุด"></span>
+                                @if ($isRecent)
+                                    <span class="ml-2 inline-block h-2 w-2 rounded-full bg-blue-500" title="รายการล่าสุด"></span>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b">
+                            <td class="border-b p-4">
                                 <div class="font-medium text-gray-800">{{ $reportTitle }}</div>
-                                @if($isRecent)
-                                    <div class="text-xs text-blue-600 mt-1">รายการล่าสุด</div>
+                                @if ($isRecent)
+                                    <div class="mt-1 text-xs text-blue-600">รายการล่าสุด</div>
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
-                                @if($startFormatted !== '-')
+                            <td class="border-b p-4 text-gray-500">
+                                @if ($startFormatted !== '-')
                                     <div class="font-medium">{{ $startFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $startFormatted['time'] }}</div>
                                 @else
@@ -207,8 +193,8 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">
-                                @if($endFormatted !== '-')
+                            <td class="border-b p-4 text-gray-500">
+                                @if ($endFormatted !== '-')
                                     <div class="font-medium">{{ $endFormatted['date'] }}</div>
                                     <div class="text-xs text-gray-400">{{ $endFormatted['time'] }}</div>
                                 @else
@@ -216,28 +202,25 @@
                                 @endif
                             </td>
 
-                            <td class="p-4 border-b text-gray-500">{{ $evaluateeName }}</td>
+                            <td class="border-b p-4 text-gray-500">{{ $evaluateeName }}</td>
 
-                            <td class="py-4 px-2 border-b text-center min-w-[180px]">
+                            <td class="min-w-[180px] border-b px-2 py-4 text-center">
                                 @php
                                     $statusClasses = [
                                         'รอการกรอกข้อมูล' => 'bg-orange-100 text-orange-800',
                                         'ยังไม่ประเมิน' => 'bg-red-100 text-red-800',
                                         'กำลังดำเนินการ' => 'bg-blue-100 text-blue-800',
-                                        'รอกรรมการรับรองผล' => 'bg-yellow-100 text-yellow-800',
-                                        'กรรมการเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
-                                        'รอคณบดีรับรองผล' => 'bg-yellow-100 text-yellow-800',
-                                        'คณบดีเริ่มรับรองผล' => 'bg-yellow-100 text-yellow-800',
+                                        'รอผลการประเมิน' => 'bg-yellow-100 text-yellow-800',
                                         'ประเมินเสร็จสิ้น' => 'bg-green-100 text-green-800',
                                     ];
                                     $statusClass = $statusClasses[$status] ?? 'bg-gray-100 text-gray-800';
                                 @endphp
-                                <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusClass }}">
+                                <span class="rounded-full px-3 py-1 text-sm font-medium {{ $statusClass }}">
                                     {{ $status }}
                                 </span>
                             </td>
 
-                            <td class="p-4 border-b text-center">
+                            <td class="border-b p-4 text-center">
                                 @php
                                     $actions = [
                                         'ยังไม่ประเมิน' => [
@@ -248,19 +231,7 @@
                                             'label' => 'ดำเนินการต่อ',
                                             'classes' => 'bg-blue-500 hover:bg-blue-600 text-white',
                                         ],
-                                        'รอกรรมการรับรองผล' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'กรรมการเริ่มรับรองผล' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'รอคณบดีรับรองผล' => [
-                                            'label' => 'ดูการกรอกข้อมูล',
-                                            'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
-                                        ],
-                                        'คณบดีเริ่มรับรองผล' => [
+                                        'รอผลการประเมิน' => [
                                             'label' => 'ดูการกรอกข้อมูล',
                                             'classes' => 'bg-yellow-500 hover:bg-yellow-600 text-white',
                                         ],
@@ -272,28 +243,25 @@
                                     ];
                                     $action = $actions[$status] ?? null;
 
-                                    // Use the evaluatee ID for routing
                                     $evaluateeId = optional($evaluatee)->id ?? $evaluatorAssignment->evaluatee_id;
-
                                     $url = route('evaluator.evaluator.show', ['id' => $report->id ?? 0]);
 
                                     if ($status === 'รอผลการประเมิน' || $status === 'ประเมินเสร็จสิ้น') {
                                         $url .= '?readonly=1';
                                     }
-                                    
                                 @endphp
 
-                                @if($action && $evaluateeId)
+                                @if ($action && $evaluateeId)
                                     <div class="flex gap-2">
                                         <a href="{{ $url }}"
-                                        class="min-w-[120px] inline-block px-4 py-2 text-sm font-medium rounded-xl shadow transition duration-200 {{ $action['classes'] }}">
+                                            class="inline-block min-w-[120px] rounded-xl px-4 py-2 text-sm font-medium shadow transition duration-200 {{ $action['classes'] }}">
                                             {{ $action['label'] }}
                                         </a>
 
-                                        @if($status === 'ประเมินเสร็จสิ้น')
+                                        @if ($status === 'ประเมินเสร็จสิ้น')
                                             <a href="{{ route('single.reports.export', ['id' => $report->id ?? 0]) }}"
-                                            class="p-2 bg-green-400 hover:bg-green-500 text-white rounded-md shadow transition duration-200"
-                                            title="ส่งออกรายงานผลการประเมินของ {{ $evaluatee->name ?? 'บุคคล' }}">
+                                                class="rounded-md bg-green-400 p-2 text-white shadow transition duration-200 hover:bg-green-500"
+                                                title="ส่งออกรายงานผลการประเมินของ {{ $evaluatee->name ?? 'บุคคล' }}">
                                                 <i class="fas fa-file-export"></i>
                                             </a>
                                         @endif
@@ -305,8 +273,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center py-8 text-gray-500">
-                                <i class="fas fa-inbox text-3xl mb-2 block"></i>
+                            <td colspan="7" class="py-8 text-center text-gray-500">
+                                <i class="fas fa-inbox mb-2 block text-3xl"></i>
                                 <p>ไม่มีข้อมูลการประเมิน</p>
                             </td>
                         </tr>
@@ -314,8 +282,8 @@
                 </tbody>
             </table>
         </div>
-        {{-- บล็อกเนื้อหา --}}
-        <div class="px-6 py-3 border-t border-gray-200">
+
+        <div class="border-t border-gray-200 px-6 py-3">
             {{ $evaluations->links() }}
         </div>
     </div>

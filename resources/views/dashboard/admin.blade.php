@@ -1,75 +1,74 @@
 @extends('layouts.app')
+{{-- ไฟล์มุมมอง: resources/views/dashboard/admin.blade.php --}}
 
 @section('title', 'Evaluation - ระบบประเมิน')
 
 @section('content')
-@include('partials.evaluation-form-styles')
-{{-- บล็อกเนื้อหา --}}
-<div class="max-w-4xl mx-auto space-y-6">
-    <x-evaluation-page-header :version-name="$versionName" />
+    @include('partials.evaluation-form-styles')
 
-    <x-evaluate-report-card 
-        :reportName="$reportName"
-        :reportDescription="$reportDescription"
-        :assessmentType="$assessmentType"
-        :reportComment="$reportComment"
-    />
+    {{-- หน้าอ่านผลการประเมินสำหรับผู้ดูแลระบบ --}}
+    <div class="max-w-4xl mx-auto space-y-6">
+        <x-evaluation-page-header :version-name="$versionName" />
 
-    <x-evaluator-profile-card 
-        :startTimeFormatted="$startTimeFormatted"
-        :endTimeFormatted="$endTimeFormatted"
-        :reportName="$reportName"
-        :report="$report"
-        :user="$user"
-        :assignment="$assignment"
-        :assessmentType="$assessmentType"
-    />
-
-    <x-director-profile-card
-        :startTimeFormatted="$startTimeFormatted"
-        :endTimeFormatted="$endTimeFormatted"
-        :reportName="$reportName"
-        :report="$report"
-        :user="$user"
-        :assignment="$assignment"
-        :assessmentType="$assessmentType"
-    />
-
-    {{-- ฟอร์ม --}}
-    <form id="evaluationForm" method="POST" action="{{ route('director_score.store', $report->id) }}">
-        @csrf
-        @include('partials.evaluation-form-flash')
-
-        {{-- Wrap all inputs in fieldset --}}
-        @if($readonly)
-            <fieldset disabled>
-        @endif
-
-        <x-unified-director
-            :categoryItems="$categoryItems"
-            :readonly="$readonly"
-            :evidenceMap="$evidenceMap"
-            :qualityEvidenceMap="$qualityEvidenceMap"
-            :workloadMap="$workloadMap"
+        <x-evaluate-report-card
+            :reportName="$reportName"
+            :reportDescription="$reportDescription"
+            :assessmentType="$assessmentType"
+            :reportComment="$reportComment"
         />
-        
 
-        @include('partials.admin-comment-section', [
-            'readonly' => $readonly,
-            'assignment' => $assignment,
-            'report' => $report,
-        ])
+        <x-evaluator-profile-card
+            :startTimeFormatted="$startTimeFormatted"
+            :endTimeFormatted="$endTimeFormatted"
+            :reportName="$reportName"
+            :report="$report"
+            :user="$user"
+            :assignment="$assignment"
+            :assessmentType="$assessmentType"
+        />
 
-        <input type="hidden" name="status" id="formStatus" value="submitted">
+        <x-director-profile-card
+            :startTimeFormatted="$startTimeFormatted"
+            :endTimeFormatted="$endTimeFormatted"
+            :reportName="$reportName"
+            :report="$report"
+            :user="$user"
+            :assignment="$assignment"
+            :assessmentType="$assessmentType"
+        />
 
-        @if($readonly)
-            </fieldset>
-        @endif
+        <form id="evaluationForm" method="POST" action="{{ route('director_score.store', $report->id) }}">
+            @csrf
+            @include('partials.evaluation-form-flash')
 
-        @include('partials.evaluation-form-action-buttons', [
-            'readonly' => true,
-            'backHref' => '/dashboard',
-        ])
-    </form>
-</div>
+            @if($readonly)
+                <fieldset disabled>
+            @endif
+
+            <x-unified-director
+                :categoryItems="$categoryItems"
+                :readonly="$readonly"
+                :evidenceMap="$evidenceMap"
+                :qualityEvidenceMap="$qualityEvidenceMap"
+                :workloadMap="$workloadMap"
+            />
+
+            @include('partials.admin-comment-section', [
+                'readonly' => $readonly,
+                'assignment' => $assignment,
+                'report' => $report,
+            ])
+
+            <input type="hidden" name="status" id="formStatus" value="submitted">
+
+            @if($readonly)
+                </fieldset>
+            @endif
+
+            @include('partials.evaluation-form-action-buttons', [
+                'readonly' => true,
+                'backHref' => '/dashboard',
+            ])
+        </form>
+    </div>
 @endsection

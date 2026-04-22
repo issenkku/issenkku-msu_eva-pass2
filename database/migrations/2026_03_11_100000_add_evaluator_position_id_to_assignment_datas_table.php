@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('assignment_datas', 'evaluatee_position_id')) {
+            Schema::table('assignment_datas', function (Blueprint $table) {
+                $table->foreignId('evaluatee_position_id')
+                    ->nullable()
+                    ->after('evaluator_id')
+                    ->constrained('positions');
+            });
+        }
+
         if (!Schema::hasColumn('assignment_datas', 'evaluator_position_id')) {
             Schema::table('assignment_datas', function (Blueprint $table) {
                 $table->foreignId('evaluator_position_id')
@@ -26,6 +35,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::hasColumn('assignment_datas', 'evaluatee_position_id')) {
+            Schema::table('assignment_datas', function (Blueprint $table) {
+                $table->dropForeign(['evaluatee_position_id']);
+                $table->dropColumn('evaluatee_position_id');
+            });
+        }
+
         if (Schema::hasColumn('assignment_datas', 'evaluator_position_id')) {
             Schema::table('assignment_datas', function (Blueprint $table) {
                 $table->dropForeign(['evaluator_position_id']);

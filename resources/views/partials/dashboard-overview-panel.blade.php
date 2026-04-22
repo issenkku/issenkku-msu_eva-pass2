@@ -7,7 +7,7 @@
     $activeFilters = $activeFilters ?? collect();
 @endphp
 
-<div class="xl:col-span-2 rounded-2xl bg-white p-6 shadow-md border border-gray-100">
+<div class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
     <div class="flex items-start justify-between gap-4">
         <div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $overviewTitle }}</h3>
@@ -47,7 +47,10 @@
                                 กรองอยู่: {{ request('status') }}
                             </div>
                         @endif
-                        <button type="button" data-dashboard-reset-filters class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50">
+                        <button
+                            type="button"
+                            data-dashboard-reset-filters
+                            class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50">
                             ล้างการกรอง
                         </button>
                     </div>

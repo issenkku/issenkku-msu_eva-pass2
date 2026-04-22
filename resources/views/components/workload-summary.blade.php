@@ -6,7 +6,7 @@
 ])
 
 @if (!$subCriteria)
-    {{-- บล็อกเนื้อหา --}}
+    {{-- แสดงข้อความเมื่อไม่มีข้อมูลภาระงาน --}}
     <div class="text-sm text-gray-500">ไม่พบข้อมูลภาระงาน</div>
 @else
     @forelse ($subCriteria->groups ?? [] as $group)
@@ -48,12 +48,12 @@
             };
         @endphp
 
-        {{-- บล็อกเนื้อหา --}}
+        {{-- บล็อกกลุ่มภาระงาน --}}
         <div class="mb-6">
             <div class="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                 <div class="flex items-center gap-3">
                     <span class="h-7 w-1.5 rounded-full bg-gradient-to-b from-sky-400 to-indigo-500"></span>
-                    <div class="text-lg font-semibold text-slate-900 tracking-wide">
+                    <div class="text-lg font-semibold tracking-wide text-slate-900">
                         {{ $group->name ?? '-' }}
                     </div>
                 </div>
@@ -83,12 +83,8 @@
                 @endphp
 
                 <div class="mb-4">
-                    {{-- <div class="mb-2 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1 text-sm font-semibold text-slate-800 shadow-sm">
-                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
-                        <span>{{ $item->name ?? '-' }}</span>
-                    </div> --}}
                     <div class="overflow-x-auto rounded-lg border border-gray-200">
-                        {{-- ตารางข้อมูล --}}
+                        {{-- ตารางข้อมูลภาระงาน --}}
                         <table class="min-w-full text-sm">
                             <thead class="bg-slate-200 text-slate-800">
                                 <tr>
@@ -137,6 +133,7 @@
                                                 $normalizedFieldValues['item_star'] = $value;
                                             }
                                         }
+
                                         $itemLabel = null;
                                         $itemScore = null;
                                         $selectedFormItem = null;
@@ -153,10 +150,12 @@
                                                 }
                                             }
                                         }
+
                                         if ($selectedFormItem) {
                                             $itemLabel = $selectedFormItem->label;
                                             $itemScore = $selectedFormItem->score;
                                         }
+
                                         $displayMap = [];
                                         foreach ($tableFields as $field) {
                                             $name = strtolower(trim((string) $field->variable_name));
@@ -173,6 +172,7 @@
                                             }
                                             $displayMap[$name] = $value;
                                         }
+
                                         $evidenceLinks = isset($evidenceLinksByEntryId)
                                             ? ($evidenceLinksByEntryId[$itemEntry->id] ?? collect())
                                             : collect();
@@ -200,7 +200,7 @@
                                         <td class="px-3 py-2">{{ $scoreDisplay }}</td>
                                         <td class="px-3 py-2">
                                             @forelse ($evidenceLinks as $link)
-                                                <a href="{{ $link }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline break-all">
+                                                <a href="{{ $link }}" target="_blank" rel="noopener noreferrer" class="break-all text-blue-600 hover:underline">
                                                     {{ $link }}
                                                 </a><br>
                                             @empty
@@ -224,7 +224,7 @@
             @endforelse
         </div>
     @empty
-        {{-- บล็อกเนื้อหา --}}
+        {{-- แสดงข้อความเมื่อไม่พบกลุ่มภาระงาน --}}
         <div class="text-sm text-gray-500">ไม่พบกลุ่มภาระงาน</div>
     @endforelse
 @endif

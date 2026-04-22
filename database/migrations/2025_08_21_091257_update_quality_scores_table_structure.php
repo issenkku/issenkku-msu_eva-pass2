@@ -11,16 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('quality_scores', function (Blueprint $table) {
-            // เพิ่ม id column เป็น primary key
-            $table->id()->first();
+        if (! Schema::hasColumn('quality_scores', 'id')) {
+            Schema::table('quality_scores', function (Blueprint $table) {
+                $table->id()->first();
+            });
+        }
 
-            // เพิ่ม user_id column
-            $table->unsignedBigInteger('user_id')->nullable()->after('id');
-
-            // เพิ่ม foreign key constraint
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
+        if (! Schema::hasColumn('quality_scores', 'user_id')) {
+            Schema::table('quality_scores', function (Blueprint $table) {
+                $table->foreignId('user_id')->nullable()->after('id')->constrained('users')->onDelete('cascade');
+            });
+        }
     }
 
     /**
@@ -28,15 +29,17 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('quality_scores', function (Blueprint $table) {
-            // ลบ foreign key constraint
-            $table->dropForeign(['user_id']);
+        if (Schema::hasColumn('quality_scores', 'user_id')) {
+            Schema::table('quality_scores', function (Blueprint $table) {
+                $table->dropForeign(['user_id']);
+                $table->dropColumn('user_id');
+            });
+        }
 
-            // ลบ user_id column
-            $table->dropColumn('user_id');
-
-            // ลบ id column
-            $table->dropColumn('id');
-        });
+        if (Schema::hasColumn('quality_scores', 'id')) {
+            Schema::table('quality_scores', function (Blueprint $table) {
+                $table->dropColumn('id');
+            });
+        }
     }
 };

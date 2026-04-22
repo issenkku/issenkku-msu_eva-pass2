@@ -7,11 +7,19 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE assignment_datas MODIFY evaluator_position_id BIGINT UNSIGNED NULL');
     }
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement('ALTER TABLE assignment_datas MODIFY evaluator_position_id BIGINT UNSIGNED NOT NULL');
     }
 };

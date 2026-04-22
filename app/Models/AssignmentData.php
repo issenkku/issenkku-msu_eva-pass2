@@ -16,6 +16,7 @@ class AssignmentData extends Model
 
     protected $fillable = [
         'evaluator_id',
+        'evaluatee_position_id',
         'evaluator_position_id',
         'director_id',
         'director_position_id',
@@ -28,6 +29,7 @@ class AssignmentData extends Model
 
     protected $casts = [
         'evaluator_id' => 'integer',
+        'evaluatee_position_id' => 'integer',
         'evaluator_position_id' => 'integer',
         'director_id' => 'integer',
         'director_position_id' => 'integer',

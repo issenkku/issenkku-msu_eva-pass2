@@ -46,10 +46,7 @@ class AssignmentFlow
             return $configured->all();
         }
 
-        return collect(self::STAGES)
-            ->filter(fn (string $stage) => ! empty($assignmentData->{self::stageColumn($stage)}))
-            ->values()
-            ->all();
+        return self::STAGES;
     }
 
     public static function statusForStage(?string $stage): ?string
@@ -80,4 +77,5 @@ class AssignmentFlow
     {
         return "{$stage}_id";
     }
+
 }

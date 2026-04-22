@@ -12,6 +12,7 @@
             });
         }
 
+        // ชุด interaction ของ subject picker แบบ custom dropdown
         if (subjectTrigger) {
             subjectTrigger.addEventListener('click', function () {
                 if (subjectDropdown && !subjectDropdown.hidden) {
@@ -57,6 +58,7 @@
         });
 
         if (detailFieldsContainer) {
+            // เมื่อผู้ใช้แก้ field หน่วยกิตเอง ให้หยุดสถานะ autofill เพื่อไม่ให้โดนทับ
             detailFieldsContainer.addEventListener('input', function (event) {
                 const target = event.target;
                 if (!target || target.tagName !== 'INPUT') {
@@ -72,6 +74,7 @@
                 }
             });
 
+            // ล้าง invalid state ทันทีเมื่อกรอกถูก และคำนวณสถานะปุ่มบันทึกใหม่
             detailFieldsContainer.addEventListener('input', function (event) {
                 const target = event.target;
                 if (!target || typeof target.matches !== 'function' || !target.matches('input, select, textarea')) {

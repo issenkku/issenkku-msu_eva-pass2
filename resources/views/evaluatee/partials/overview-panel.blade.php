@@ -1,17 +1,21 @@
 <div class="rounded-2xl border bg-white p-6 shadow-md">
     <h3 class="text-xl font-bold text-gray-900">สถานะของฉัน</h3>
 
+    @php
+        $overviewCardTones = [
+            'rose' => ['bg' => 'bg-rose-50', 'ring' => 'ring-rose-200', 'dot' => 'bg-rose-500', 'text' => 'text-rose-800', 'value' => 'text-rose-600', 'percent' => 'text-rose-500', 'meta' => 'text-rose-400'],
+            'blue' => ['bg' => 'bg-blue-50', 'ring' => 'ring-blue-200', 'dot' => 'bg-blue-500', 'text' => 'text-blue-800', 'value' => 'text-blue-600', 'percent' => 'text-blue-500', 'meta' => 'text-blue-400'],
+            'amber' => ['bg' => 'bg-amber-50', 'ring' => 'ring-amber-200', 'dot' => 'bg-amber-400', 'text' => 'text-amber-800', 'value' => 'text-amber-600', 'percent' => 'text-amber-500', 'meta' => 'text-amber-400'],
+            'emerald' => ['bg' => 'bg-emerald-50', 'ring' => 'ring-emerald-200', 'dot' => 'bg-emerald-500', 'text' => 'text-emerald-800', 'value' => 'text-emerald-600', 'percent' => 'text-emerald-500', 'meta' => 'text-emerald-400'],
+        ];
+    @endphp
+
     <section class="mt-5 grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1fr),340px,340px]">
         <div class="h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h4 class="text-base font-bold text-slate-800">ภาพรวมสถานะงาน</h4>
                     <p class="text-sm text-slate-500">ดูจำนวนงานในแต่ละสถานะทั้งหมด</p>
-                </div>
-                <div class="hidden flex flex-wrap items-center gap-2">
-                    <button type="button" id="evaluationClearFilterTop" class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
-                        ล้างการกรอง
-                    </button>
                 </div>
             </div>
 
@@ -39,13 +43,7 @@
                 <div class="grid grid-cols-1 gap-3 lg:w-[360px]">
                     @foreach ($evaluateeOverview['overviewCards'] as $card)
                         @php
-                            $tones = [
-                                'rose' => ['bg' => 'bg-rose-50', 'ring' => 'ring-rose-200', 'dot' => 'bg-rose-500', 'text' => 'text-rose-800', 'value' => 'text-rose-600', 'percent' => 'text-rose-500', 'meta' => 'text-rose-400'],
-                                'blue' => ['bg' => 'bg-blue-50', 'ring' => 'ring-blue-200', 'dot' => 'bg-blue-500', 'text' => 'text-blue-800', 'value' => 'text-blue-600', 'percent' => 'text-blue-500', 'meta' => 'text-blue-400'],
-                                'amber' => ['bg' => 'bg-amber-50', 'ring' => 'ring-amber-200', 'dot' => 'bg-amber-400', 'text' => 'text-amber-800', 'value' => 'text-amber-600', 'percent' => 'text-amber-500', 'meta' => 'text-amber-400'],
-                                'emerald' => ['bg' => 'bg-emerald-50', 'ring' => 'ring-emerald-200', 'dot' => 'bg-emerald-500', 'text' => 'text-emerald-800', 'value' => 'text-emerald-600', 'percent' => 'text-emerald-500', 'meta' => 'text-emerald-400'],
-                            ];
-                            $tone = $tones[$card['tone']] ?? $tones['blue'];
+                            $tone = $overviewCardTones[$card['tone']] ?? $overviewCardTones['blue'];
                         @endphp
                         <button
                             type="button"
@@ -65,12 +63,6 @@
                             <div class="mt-2 text-2xl font-extrabold leading-none {{ $tone['value'] }}">{{ $card['count'] }}</div>
                         </button>
                     @endforeach
-
-                    <div class="hidden pt-1 text-right">
-                        <button type="button" id="evaluationClearFilterBottom" class="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">
-                            ล้างการกรอง
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>

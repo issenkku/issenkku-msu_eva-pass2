@@ -3,7 +3,7 @@
     $searchLabel = $searchLabel ?? 'ค้นหาชื่อ / รหัสพนักงาน / ชื่องาน';
     $searchPlaceholder = $searchPlaceholder ?? 'พิมพ์เพื่อค้นหา';
     $filterTitle = $filterTitle ?? 'กรองข้อมูลการประเมิน';
-    $activeText = $activeText ?? 'มีตัวกรองที่กำลังใช้งานอยู่ กดเพื่อแก้ไขหรือรีเซ็ต';
+    $activeText = $activeText ?? 'มีตัวกรองที่กำลังใช้งานอยู่ กดเพื่อแก้ไขหรือล้างค่า';
     $inactiveText = $inactiveText ?? 'กดเพื่อแสดงตัวเลือกการกรองเพิ่มเติม';
     $showDepartment = $showDepartment ?? false;
     $statusOptions = $statusOptions ?? [];
@@ -17,7 +17,10 @@
 @endphp
 
 <div class="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
-    <button type="button" id="{{ $scope }}FilterToggle" class="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50">
+    <button
+        type="button"
+        id="{{ $scope }}FilterToggle"
+        class="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50">
         <div class="flex items-center gap-2.5">
             <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,7 +47,12 @@
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div class="md:col-span-2 xl:col-span-1">
                     <label class="mb-1 block text-sm font-medium text-gray-700">{{ $searchLabel }}</label>
-                    <input name="search" type="text" value="{{ request('search', '') }}" placeholder="{{ $searchPlaceholder }}" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
+                    <input
+                        name="search"
+                        type="text"
+                        value="{{ request('search', '') }}"
+                        placeholder="{{ $searchPlaceholder }}"
+                        class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
                 </div>
 
                 <div>
