@@ -38,10 +38,19 @@
 
             <div class="p-6">
                 @foreach ($category['evaluation_lists'] as $evaluationList)
+                    @php
+                        $hasQualityItems = !empty($evaluationList['quality_items']);
+                    @endphp
                     {{-- Evaluation List Container --}}
-                    <details class="group mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    @if ($hasQualityItems)
+                        <details class="group mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    @else
+                        <div class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    @endif
                         {{-- Evaluation List Header --}}
-                        <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
+                        @if ($hasQualityItems)
+                            <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
+                        @endif
                             <div
                                 class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200 flex items-start justify-between gap-4">
                                 <div class="min-w-0">
@@ -99,7 +108,7 @@
                                                 {{ number_format($listSelectedQualitySum, 2) }}
                                             </span>
                                             <span
-                                                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
                                                 ตรวจสอบแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
                                             </span>
                                         @endif
@@ -108,20 +117,24 @@
                                         <p class="text-sm text-gray-600 mt-1">{{ $evaluationList['annotation'] }}</p>
                                     @endif
                                 </div>
-                                <div class="flex-shrink-0 pt-1">
-                                    <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 15l7-7 7 7" />
-                                    </svg>
-                                    <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none"
-                                        stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </div>
+                                @if ($hasQualityItems)
+                                    <div class="flex-shrink-0 pt-1">
+                                        <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 15l7-7 7 7" />
+                                        </svg>
+                                        <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                @endif
                             </div>
-                        </summary>
+                        @if ($hasQualityItems)
+                            </summary>
+                        @endif
 
                         <div class="p-6">
                             {{-- Quantity Section --}}
@@ -545,7 +558,11 @@
                                     </div>
                             @endif
                         </div>
-                    </details>
+                    @if ($hasQualityItems)
+                        </details>
+                    @else
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>

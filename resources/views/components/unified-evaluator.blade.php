@@ -37,14 +37,21 @@
 
             <div class="p-6">
                 @foreach($category['evaluation_lists'] as $evaluationList)
+                    @php
+                        $hasQualityItems = !empty($evaluationList['quality_items']);
+                    @endphp
                     {{-- Evaluation List Container --}}
+                    @if($hasQualityItems)
                     <details class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    @else
+                    <div class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    @endif
                     {{-- Evaluation List Header --}}
                     @php
                         $evaluationListQualityTotalRaw = 0;
-                        $qualityMainTotal = count($evaluationList['quality_items']);
+                        $qualityMainTotal = $hasQualityItems ? count($evaluationList['quality_items']) : 0;
                         $qualityMainChecked = 0;
-                        foreach ($evaluationList['quality_items'] as $qualityMain) {
+                        foreach (($evaluationList['quality_items'] ?? []) as $qualityMain) {
                             $sortedSubs = collect($qualityMain['sub_criterias'])->sortBy('sequence')->values();
                             $hasAnyChecked = false;
                             foreach ($sortedSubs as $sub) {
@@ -65,8 +72,10 @@
                             $evaluationListQualityTotal = $listMaxScore;
                         }
                     @endphp
+                    @if($hasQualityItems)
                     <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
-                        <div class="relative bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 pr-14 rounded-t-lg border-b border-gray-200">
+                    @endif
+                        <div class="{{ $hasQualityItems ? 'relative pr-14' : '' }} bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
                             <div class="flex items-center space-x-3">
                                 <h2 class="text-xl font-bold text-gray-800">
                                     {{ $evaluationList['name'] }}
@@ -80,7 +89,7 @@
                                     <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
                                         คะแนนที่ได้ {{ number_format($evaluationListQualityTotal, 2) }}
                                     </span>
-                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-purple-100 text-purple-800' }}">
                                         ตรวจแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
                                     </span>
                                 @endif
@@ -91,16 +100,20 @@
                                     <p class="text-sm text-gray-600">{{ $evaluationList['annotation'] }}</p>
                                 </div>
                             @endif
-                            <div class="absolute right-6 top-4">
-                                <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                </svg>
-                                <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </div>
+                            @if($hasQualityItems)
+                                <div class="absolute right-6 top-4">
+                                    <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            @endif
                         </div>
+                    @if($hasQualityItems)
                     </summary>
+                    @endif
 
                         <div class="p-6">
                             {{-- Quantity Section --}}
@@ -332,6 +345,7 @@
                                                         <div class="text-sm text-gray-500 mt-1">ไม่มีหมายเหตุเพิ่มเติม</div>
                                                     @endif --}}
                                                 </div>
+                                                    </div>
                                             </details>
 
                                                 @if(!$readonly)
@@ -464,6 +478,7 @@
                                                                             data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}">
                                                                     @endif
                                                                 </div>
+                                                            </div>
                                                         @endforeach
                                                         @if($readonly)
                                                             <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
@@ -548,7 +563,11 @@
 
                             @endif
                         </div>
+                    @if($hasQualityItems)
                     </details>
+                    @else
+                    </div>
+                    @endif
                 @endforeach
             </div>
         </div>
@@ -590,5 +609,6 @@
         </div>
     @endif
 
+</div>
 @include('components.unified-evaluator-styles')
 @include('components.unified-evaluator-script')
