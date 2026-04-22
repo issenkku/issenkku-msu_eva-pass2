@@ -235,7 +235,7 @@
                                                                 <div class="flex h-full flex-col rounded-xl border border-blue-200 bg-blue-50/60 p-3">
                                                                     <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานที่ทำได้ (C)
-
+                                                                    </label>
                                                                     @if(!$readonly)
                                                                         <input type="number" step="1"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
