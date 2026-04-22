@@ -39,56 +39,89 @@
             <div class="p-6">
                 @foreach ($category['evaluation_lists'] as $evaluationList)
                     {{-- Evaluation List Container --}}
-                    <div class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    <details class="group mb-8 bg-gray-50 rounded-lg border border-gray-300">
                         {{-- Evaluation List Header --}}
-                        <div
-                            class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
-                            <div class="flex items-center space-x-3">
-                                <h2 class="text-xl font-bold text-gray-800">
-                                    {{ $evaluationList['name'] }}
-                                </h2>
-                                @php
-                                    $listSelectedQualitySum = 0;
-                                    if (!empty($evaluationList['quality_items'])) {
-                                        foreach ($evaluationList['quality_items'] as $mainCriteria) {
-                                            foreach ($mainCriteria['sub_criterias'] as $subCriteria) {
-                                                $hasScore =
-                                                    isset($subCriteria['score']) &&
-                                                    $subCriteria['score'] !== '' &&
-                                                    $subCriteria['score'] !== null;
-                                                $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
-                                                if ($isSelected) {
-                                                    $listSelectedQualitySum += $hasScore
-                                                        ? floatval($subCriteria['score'])
-                                                        : floatval($subCriteria['num_score'] ?? 0);
+                        <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
+                            <div
+                                class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200 flex items-start justify-between gap-4">
+                                <div class="min-w-0">
+                                    <div class="flex items-center space-x-3 flex-wrap">
+                                        <h2 class="text-xl font-bold text-gray-800">
+                                            {{ $evaluationList['name'] }}
+                                        </h2>
+                                        @php
+                                            $listSelectedQualitySum = 0;
+                                            $qualityMainTotal = 0;
+                                            $qualityMainChecked = 0;
+                                            if (!empty($evaluationList['quality_items'])) {
+                                                $qualityMainTotal = count($evaluationList['quality_items']);
+                                                foreach ($evaluationList['quality_items'] as $mainCriteria) {
+                                                    $sorted = collect($mainCriteria['sub_criterias'])->sortBy('sequence')->values();
+                                                    $hasAnyChecked = $sorted->contains(function ($sub) {
+                                                        $hasScore =
+                                                            !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
+                                                        return $hasScore || ($sub['user_selected'] ?? false);
+                                                    });
+                                                    if ($hasAnyChecked) {
+                                                        $qualityMainChecked++;
+                                                    }
+
+                                                    foreach ($mainCriteria['sub_criterias'] as $subCriteria) {
+                                                        $hasScore =
+                                                            isset($subCriteria['score']) &&
+                                                            $subCriteria['score'] !== '' &&
+                                                            $subCriteria['score'] !== null;
+                                                        $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
+                                                        if ($isSelected) {
+                                                            $listSelectedQualitySum += $hasScore
+                                                                ? floatval($subCriteria['score'])
+                                                                : floatval($subCriteria['num_score'] ?? 0);
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                    $listMaxScore = floatval($evaluationList['sum_score'] ?? 0);
-                                    if ($listMaxScore > 0 && $listSelectedQualitySum > $listMaxScore) {
-                                        $listSelectedQualitySum = $listMaxScore;
-                                    }
-                                @endphp
-                                @if (!empty($evaluationList['quality_items']))
-                                    @if (isset($evaluationList['sum_score']))
-                                        <span
-                                            class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                            คะแนน{{ $evaluationList['sum_score'] }}
-                                        </span>
+                                            $listMaxScore = floatval($evaluationList['sum_score'] ?? 0);
+                                            if ($listMaxScore > 0 && $listSelectedQualitySum > $listMaxScore) {
+                                                $listSelectedQualitySum = $listMaxScore;
+                                            }
+                                        @endphp
+                                        @if (!empty($evaluationList['quality_items']))
+                                            @if (isset($evaluationList['sum_score']))
+                                                <span
+                                                    class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                    คะแนน{{ $evaluationList['sum_score'] }}
+                                                </span>
+                                            @endif
+                                            <span
+                                                id="quality-list-total-{{ $evaluationList['id'] }}"
+                                                class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
+                                                คะแนนที่ได้
+                                                {{ number_format($listSelectedQualitySum, 2) }}
+                                            </span>
+                                            <span
+                                                class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                ตรวจสอบแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if (!empty($evaluationList['annotation']))
+                                        <p class="text-sm text-gray-600 mt-1">{{ $evaluationList['annotation'] }}</p>
                                     @endif
-                                    <span
-                                        id="quality-list-total-{{ $evaluationList['id'] }}"
-                                        class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                        คะแนนที่ได้
-                                        {{ number_format($listSelectedQualitySum, 2) }}
-                                    </span>
-                                @endif
+                                </div>
+                                <div class="flex-shrink-0 pt-1">
+                                    <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </div>
-                            @if (!empty($evaluationList['annotation']))
-                                <p class="text-sm text-gray-600 mt-1">{{ $evaluationList['annotation'] }}</p>
-                            @endif
-                        </div>
+                        </summary>
 
                         <div class="p-6">
                             {{-- Quantity Section --}}
@@ -221,8 +254,8 @@
                                                                         <div class="text-xs font-semibold text-amber-900">ประวัติการแก้ไข</div>
                                                                         @foreach($subCriteria['score_histories'] as $history)
                                                                             <div class="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
-                                                                                <div>ค่าก่อนแก้: {{ $history['previous_score_c'] ?? '-' }} | หลังแก้: {{ $history['new_score_c'] ?? '-' }}</div>
-                                                                                <div>ผู้แก้: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
+                                                                                <div>ค่าเดิม: {{ $history['previous_score_c'] ?? '-' }} | ค่าใหม่: {{ $history['new_score_c'] ?? '-' }}</div>
+                                                                                <div>ผู้แก้ไข: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
                                                                                 <div>หมายเหตุ: {{ $history['new_description'] ?? '-' }}</div>
                                                                                 @if(!empty($history['created_at']))
                                                                                     <div class="text-slate-500">เมื่อ {{ $history['created_at'] }}</div>
@@ -250,55 +283,7 @@
 
                             {{-- Quality Section --}}
                             @if (count($evaluationList['quality_items']) > 0)
-                                @php
-                                    $qualityMainTotal = count($evaluationList['quality_items']);
-                                    $qualityMainChecked = 0;
-                                    foreach ($evaluationList['quality_items'] as $qualityMain) {
-                                        $sorted = collect($qualityMain['sub_criterias'])->sortBy('sequence')->values();
-                                        $hasAnyChecked = $sorted->contains(function ($sub) {
-                                            $hasScore =
-                                                !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
-                                            return $hasScore || ($sub['user_selected'] ?? false);
-                                        });
-                                        if ($hasAnyChecked) {
-                                            $qualityMainChecked++;
-                                        }
-                                    }
-                                @endphp
-                                <details class="group mb-8">
-                                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
-                                        <div
-                                            class="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
-                                            <div class="flex items-center gap-3 flex-wrap">
-                                                <h3 class="text-lg font-semibold text-purple-800 flex items-center">
-                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
-                                                        </path>
-                                                    </svg>
-                                                    ด้านคุณภาพ
-                                                </h3>
-                                                <span
-                                                    class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                    ตรวจสอบแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
-                                                </span>
-                                            </div>
-                                            <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M5 15l7-7 7 7" />
-                                            </svg>
-                                            <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </summary>
-
-                                    <div class="mt-6">
+                                <div class="mt-6">
                                         @foreach ($evaluationList['quality_items'] as $mainCriteria)
                                             @php
                                                 $mainSorted = collect($mainCriteria['sub_criterias'])
@@ -558,10 +543,9 @@
                                             </details>
                                         @endforeach
                                     </div>
-                                </details>
                             @endif
                         </div>
-                    </div>
+                    </details>
                 @endforeach
             </div>
         </div>
@@ -606,243 +590,5 @@
     @endif
 
 </div>
-<style>
-    @media (max-width: 768px) {
-        .md\:flex-row {
-            flex-direction: column !important;
-        }
-
-        .md\:items-center {
-            align-items: flex-start !important;
-        }
-
-        .md\:w-40 {
-            width: 100% !important;
-        }
-    }
-
-    details .chevron-up {
-        display: inline-block !important;
-    }
-
-    details .chevron-down {
-        display: none !important;
-    }
-
-    details[open] .chevron-up {
-        display: none !important;
-    }
-
-    details[open] .chevron-down {
-        display: inline-block !important;
-    }
-</style>
-
-{{-- JavaScript for Quality Checkbox Handling --}}
-<script>
-    function handleQualityCheckboxChange(checkbox) {
-        const subCriteriaId = checkbox.dataset.subCriteriaId;
-        const score = parseFloat(checkbox.dataset.score) || 0;
-        const mainCriteriaId = checkbox.dataset.mainCriteriaId;
-        const allowMultiple = checkbox.dataset.allowMultiple === '1';
-        const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
-
-        if (checkbox.checked && mainCriteriaId && !allowMultiple) {
-            document.querySelectorAll(`input[name*="quality_criteria"][data-main-criteria-id="${mainCriteriaId}"]`).forEach(otherCheckbox => {
-                if (otherCheckbox !== checkbox) {
-                    otherCheckbox.checked = false;
-                    const otherSubCriteriaId = otherCheckbox.dataset.subCriteriaId;
-                    const otherScoreInput = document.getElementById(`quality-score-${otherSubCriteriaId}`);
-                    if (otherScoreInput) {
-                        otherScoreInput.value = '';
-                    }
-                }
-            });
-        }
-
-        if (scoreInput) {
-            if (checkbox.checked) {
-                scoreInput.value = score;
-            } else {
-                scoreInput.value = '';
-            }
-        }
-
-        recalculateSummaryScores();
-    }
-
-    // Initialize checkbox states on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkboxes = document.querySelectorAll('input[name*="quality_criteria"]');
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                handleQualityCheckboxChange(checkbox);
-            }
-        });
-    });
-
-    function recalculateSummaryScores() {
-        const readonlyInput = document.getElementById('quality-readonly');
-        const isReadonly = readonlyInput && readonlyInput.value === '1';
-        if (isReadonly) {
-            return;
-        }
-
-        // Quantity: compute score_D from score_A/B/C, matching backend save logic
-        let quantitySum = 0;
-        document.querySelectorAll('input[name^=\"quantity_list\"][name$=\"[score_C]\"]').forEach(input => {
-            const match = input.name.match(/^quantity_list\[(.+?)\]\[score_C\]$/);
-            if (!match) return;
-
-            const subCriteriaId = match[1];
-            const rawValue = input.value.trim();
-            if (rawValue === '') return;
-
-            const scoreC = parseFloat(rawValue);
-            if (isNaN(scoreC)) return;
-
-            const summaryRow = document.querySelector(`[data-summary-quantity-row][data-sub-id=\"${subCriteriaId}\"]`);
-            const scoreA = parseFloat(summaryRow?.dataset.scoreA || '0');
-            const scoreB = parseFloat(summaryRow?.dataset.scoreB || '0');
-
-            if (!isNaN(scoreA) && !isNaN(scoreB) && scoreB !== 0) {
-                quantitySum += (scoreA * scoreC) / scoreB;
-            }
-        });
-
-        // Quality: sum selected sub-criteria scores, capped per evaluation list
-        const listTotals = {};
-        document.querySelectorAll('input[name^=\"quality_list\"][name$=\"[score]\"]').forEach(input => {
-            const val = parseFloat(input.value);
-            if (isNaN(val)) return;
-
-            const listId = input.dataset.evaluationListId || 'unknown';
-            const listMax = parseFloat(input.dataset.listMax);
-
-            if (!listTotals[listId]) {
-                listTotals[listId] = {
-                    sum: 0,
-                    max: isNaN(listMax) ? 0 : listMax
-                };
-            }
-            listTotals[listId].sum += val;
-        });
-
-        let qualitySum = 0;
-        Object.values(listTotals).forEach(({
-            sum,
-            max
-        }) => {
-            let cappedSum = sum;
-            if (max > 0 && cappedSum > max) cappedSum = max;
-            qualitySum += cappedSum;
-        });
-
-        const qualityMaxInput = document.getElementById('quality-max-score');
-        const qualityMax = qualityMaxInput ? parseFloat(qualityMaxInput.value) : 0;
-        if (!isNaN(qualityMax) && qualityMax > 0 && qualitySum > qualityMax) {
-            qualitySum = qualityMax;
-        }
-
-        // Update the summary fields
-        const quantityEl = document.getElementById('quantity-summary');
-        const qualityEl = document.getElementById('quality-summary');
-        const totalEl = document.getElementById('total-summary');
-        if (quantityEl) quantityEl.textContent = quantitySum.toFixed(2);
-        if (qualityEl) qualityEl.textContent = qualitySum.toFixed(2);
-        if (totalEl) totalEl.textContent = (quantitySum + qualitySum).toFixed(2);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll(
-            'input[name^=\"quality_list\"][name$=\"[score]\"]'
-        ).forEach(input => {
-            input.addEventListener('input', recalculateSummaryScores);
-        });
-        recalculateSummaryScores();
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to update remove button visibility
-        function updateRemoveButtonVisibility(container) {
-            const rows = container.querySelectorAll('.evidence-link-row');
-            const hasContent = Array.from(rows).some(row => {
-                const input = row.querySelector('input[type="url"]');
-                return input && input.value.trim() !== '';
-            });
-
-            rows.forEach((row, index) => {
-                const removeBtn = row.querySelector('.remove-evidence-link');
-                const input = row.querySelector('input[type="url"]');
-                if (rows.length > 1 || hasContent) {
-                    removeBtn.style.display = 'block';
-                } else {
-                    removeBtn.style.display = 'none';
-                }
-            });
-        }
-
-        // Add new evidence link input
-        document.querySelectorAll('.add-evidence-link').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const mainCriteriaId = btn.getAttribute('data-quality-main');
-                const container = document.getElementById('evidence-links-quality-' +
-                    mainCriteriaId);
-                const div = document.createElement('div');
-                div.className = 'flex items-center mb-2 evidence-link-row';
-                div.innerHTML = `
-                <input type="url"
-                    name="evidence_list[${mainCriteriaId}][links][]"
-                    class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
-                    placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
-                <button type="button" 
-                    class="ml-2 px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors remove-evidence-link" 
-                    title="ลบลิงก์">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            `;
-                container.appendChild(div);
-                updateRemoveButtonVisibility(container);
-
-                // Focus on the new input
-                const newInput = div.querySelector('input[type="url"]');
-                newInput.focus();
-            });
-        });
-
-        // Remove evidence link input
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.remove-evidence-link')) {
-                const container = e.target.closest('[id^="evidence-links-quality-"]');
-                const row = e.target.closest('.evidence-link-row');
-                const rows = container.querySelectorAll('.evidence-link-row');
-
-                // If it's the last row and it's empty, just clear it
-                if (rows.length === 1) {
-                    const input = row.querySelector('input[type="url"]');
-                    input.value = '';
-                } else {
-                    // Remove the row
-                    row.remove();
-                }
-
-                updateRemoveButtonVisibility(container);
-            }
-        });
-
-        // Update remove button visibility when input values change
-        document.addEventListener('input', function(e) {
-            if (e.target.type === 'url' && e.target.name && e.target.name.includes('evidence_list')) {
-                const container = e.target.closest('[id^="evidence-links-quality-"]');
-                if (container) {
-                    updateRemoveButtonVisibility(container);
-                }
-            }
-        });
-
-        // Initialize remove button visibility on page load
-        document.querySelectorAll('[id^="evidence-links-quality-"]').forEach(updateRemoveButtonVisibility);
-    });
-</script>
+@include('components.unified-evaluation-styles')
+@include('components.unified-evaluation-script')

@@ -20,7 +20,7 @@
 <input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
 <input type="hidden" id="quality-readonly" value="{{ $readonly ? 1 : 0 }}">
 
-{{-- บล็อกเนื้อหา --}}
+{{-- เนื้อหาแบบประเมิน --}}
 <div class="space-y-8">
     @foreach($categoryItems as $category)
         {{-- Category Container --}}
@@ -38,18 +38,25 @@
             <div class="p-6">
                 @foreach($category['evaluation_lists'] as $evaluationList)
                     {{-- Evaluation List Container --}}
-                    <div class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
+                    <details class="mb-8 bg-gray-50 rounded-lg border border-gray-300">
                     {{-- Evaluation List Header --}}
                     @php
                         $evaluationListQualityTotalRaw = 0;
+                        $qualityMainTotal = count($evaluationList['quality_items']);
+                        $qualityMainChecked = 0;
                         foreach ($evaluationList['quality_items'] as $qualityMain) {
                             $sortedSubs = collect($qualityMain['sub_criterias'])->sortBy('sequence')->values();
+                            $hasAnyChecked = false;
                             foreach ($sortedSubs as $sub) {
                                 $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
                                 $isSelected = $hasScore || ($sub['user_selected'] ?? false);
                                 if ($isSelected) {
                                     $evaluationListQualityTotalRaw += $hasScore ? (float) $sub['score'] : (float) ($sub['num_score'] ?? 0);
+                                    $hasAnyChecked = true;
                                 }
+                            }
+                            if ($hasAnyChecked) {
+                                $qualityMainChecked++;
                             }
                         }
                         $evaluationListQualityTotal = $evaluationListQualityTotalRaw;
@@ -58,7 +65,8 @@
                             $evaluationListQualityTotal = $listMaxScore;
                         }
                     @endphp
-                    <div class="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
+                        <div class="relative bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 pr-14 rounded-t-lg border-b border-gray-200">
                             <div class="flex items-center space-x-3">
                                 <h2 class="text-xl font-bold text-gray-800">
                                     {{ $evaluationList['name'] }}
@@ -67,18 +75,32 @@
                                     <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full">
                                         คะแนน {{ $evaluationList['sum_score'] }}
                                     </span>
+                                @endif
+                                @if(!empty($evaluationList['quality_items']))
                                     <span class="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
-                                        คะแนนที่ได้ {{ number_format($evaluationListQualityTotal, 2)}}
+                                        คะแนนที่ได้ {{ number_format($evaluationListQualityTotal, 2) }}
+                                    </span>
+                                    <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                        ตรวจแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
                                     </span>
                                 @endif
                             </div>
-                            
+
                             @if(!empty($evaluationList['annotation']))
                                 <div class="flex items-center space-x-2 mt-1">
                                     <p class="text-sm text-gray-600">{{ $evaluationList['annotation'] }}</p>
                                 </div>
                             @endif
+                            <div class="absolute right-6 top-4">
+                                <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+                                </svg>
+                                <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                         </div>
+                    </summary>
 
                         <div class="p-6">
                             {{-- Quantity Section --}}
@@ -115,7 +137,7 @@
                                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                                 d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
                                                         </svg> --}}
-                                                        สูตรการคำนวณ 
+                                                        สูตรการคำนวณ
                                                     </h4>
 
                                                     <div class="space-y-3">
@@ -137,10 +159,10 @@
                                         <div class="space-y-3 ml-6 mb-6">
                                             @if(!$readonly)
                                                 <div class="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-                                                    <div class="font-semibold mb-1">คำแนะนำการกรอกข้อมูล</div>
-                                                    <div>กรอกเฉพาะค่าหน่วยภาระงานที่ทำได้ (C) ตามเอกสารหลักฐานจริง</div>
-                                                    <div>ค่าน้ำหนักคะแนน (A) และหน่วยภาระงานมาตรฐาน (B) เป็นค่าที่ระบบกำหนด</div>
-                                                    <div>ระบบจะคำนวณค่าน้ำหนักคะแนนอัตโนมัติในช่องคำนวณ</div>
+                                                    <div class="font-semibold mb-1">คำชี้แจง</div>
+                                                    <div>กรุณาตรวจสอบรายการย่อยและกรอกคะแนนให้ครบถ้วนก่อนบันทึก</div>
+                                                    <div>ระบบจะคำนวณคะแนนจากข้อมูลที่กรอกโดยอัตโนมัติ</div>
+                                                    <div>หากข้อมูลไม่ครบ ระบบอาจคำนวณคะแนนได้ไม่สมบูรณ์</div>
                                                 </div>
                                             @endif
                                             @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
@@ -175,10 +197,13 @@
                                                                 {{-- Score A --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                                     <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
-                                                                        ค่าน้ำหนักคะแนน (A)
+                                                                        {{--
+                                                                        คะแนนที่ได้
+                                                                        --}}
+                                                                        หน่วยภาระงานมาตรฐาน (B)
                                                                     </label>
-                                                                    <input type="text" 
-                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_A]" 
+                                                                    <input type="text"
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_A]"
                                                                         value="{{ $subCriteria['score_a'] ?? '' }}"
                                                                         readonly
                                                                         class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm">
@@ -189,8 +214,8 @@
                                                                     <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานมาตรฐาน (B)
                                                                     </label>
-                                                                    <input type="text" 
-                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_B]" 
+                                                                    <input type="text"
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_B]"
                                                                         value="{{ $subCriteria['score_b'] ?? '' }}"
                                                                         readonly
                                                                         class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm">
@@ -203,33 +228,33 @@
                                                                     </label>
                                                                     @if(!$readonly)
                                                                         <input type="number" step="1"
-                                                                            name="quantity_list[{{ $subCriteria['id'] }}][score_C]" 
+                                                                            name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             data-sub-criteria-id="{{ $subCriteria['id'] }}"
                                                                             oninput="calculateScoreD(this)"
                                                                             class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm focus:border-blue-400 focus:ring-blue-300"
                                                                             placeholder="ใส่ค่า C">
                                                                         {{-- <div class="mt-2 rounded-lg bg-white/80 px-3 py-2 text-center text-[11px] leading-5 text-slate-500">
-                                                                            ผู้ประเมินสามารถปรับค่าได้ตามเอกสารหลักฐาน
+                                                                            ข้อความอธิบายเดิมถูกถอดออก
                                                                         </div> --}}
                                                                     @else
-                                                                        <input type="text" 
-                                                                            name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]" 
+                                                                        <input type="text"
+                                                                            name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             readonly
                                                                             class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm"
                                                                             placeholder="0">
                                                                     @endif
-                                                                    
+
                                                                 </div>
 
                                                                 {{-- Score D --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
                                                                     <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
-                                                                        คำนวณหาค่าน้ำหนักคะแนน
+                                                                        คะแนนที่คำนวณได้ (D)
                                                                     </label>
-                                                                    <input type="text" 
-                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_D]" 
+                                                                    <input type="text"
+                                                                        name="quantity_list[{{ $subCriteria['id'] }}][score_D]"
                                                                         id="score-D-{{ $subCriteria['id'] }}"
                                                                         value="{{ $subCriteria['score_d'] ?? '' }}"
                                                                         readonly
@@ -247,7 +272,7 @@
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][description]"
                                                                             rows="3"
                                                                             class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-amber-400 focus:ring-amber-300"
-                                                                            placeholder="ระบุเหตุผลที่แก้ไขหน่วยภาระงานที่ทำได้ (C)">{{ $subCriteria['score_description'] ?? '' }}</textarea>
+                                                                            placeholder="ระบุหมายเหตุการแก้ไข">{{ $subCriteria['score_description'] ?? '' }}</textarea>
                                                                     @else
                                                                         <textarea
                                                                             rows="3"
@@ -267,19 +292,18 @@
                                                                             <div class="text-xs font-semibold text-slate-700">ประวัติการแก้ไข</div>
                                                                             @foreach($subCriteria['score_histories'] as $history)
                                                                                 <div class="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
-                                                                                    <div>ค่าก่อนแก้: {{ $history['previous_score_c'] ?? '-' }} | หลังแก้: {{ $history['new_score_c'] ?? '-' }}</div>
-                                                                                    <div>ผู้แก้: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
+                                                                                    <div>ค่าเดิม: {{ $history['previous_score_c'] ?? '-' }} | ค่าใหม่: {{ $history['new_score_c'] ?? '-' }}</div>
+                                                                                    <div>ผู้แก้ไข: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
                                                                                     <div>หมายเหตุ: {{ $history['new_description'] ?? '-' }}</div>
                                                                                     @if(!empty($history['created_at']))
                                                                                         <div class="text-slate-500">เมื่อ {{ $history['created_at'] }}</div>
                                                                                     @endif
                                                                                 </div>
                                                                             @endforeach
-                                                                        </div>
-                                                                    @endif
                                                                 </div>
-                                                            @endif
+                                                                    @endif
                                                         </div>
+                                                            @endif
                                                         </div>
                                                     @php
                                                         $workloadData = $workloadMap[$subCriteria['id']] ?? null;
@@ -290,7 +314,7 @@
                                                     @endphp
                                                     <div class="mt-4 border-t border-slate-200 pt-4">
                                                         <h4 class="mb-2 flex items-center text-sm font-semibold text-slate-800">
-                                                            รายการหลักฐานที่เกี่ยวข้อง
+                                                            ข้อมูลภาระงาน
                                                         </h4>
                                                         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                                                             <div class="p-3 sm:p-4">
@@ -301,18 +325,18 @@
                                                     </div>
                                                     {{-- legacy score_description block removed
                                                         <h4 class="text-base font-semibold text-gray-800 flex items-center border-t border-gray-200 pt-3">
-                                                            รายการหลักฐานที่เกี่ยวข้อง
+                                                            หมายเหตุเพิ่มเติม
                                                         </h4>
                                                         <div class="text-sm text-gray-500 mt-1">{{ $subCriteria['score_description'] }}</div>
                                                     @else
-                                                        <div class="text-sm text-gray-500 mt-1">ไม่มีรายการหลักฐานที่เกี่ยวข้อง</div>
+                                                        <div class="text-sm text-gray-500 mt-1">ไม่มีหมายเหตุเพิ่มเติม</div>
                                                     @endif --}}
                                                 </div>
                                             </details>
 
                                                 @if(!$readonly)
-                                                    <input type="hidden" 
-                                                        name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]" 
+                                                    <input type="hidden"
+                                                        name="quantity_list[{{ $subCriteria['id'] }}][quantity_sub_criteria_id]"
                                                         value="{{ $subCriteria['id'] }}">
                                                 @endif
                                             @endforeach
@@ -323,42 +347,6 @@
 
                             {{-- Quality Section --}}
                             @if(count($evaluationList['quality_items']) > 0)
-                                @php
-                                    $qualityMainTotal = count($evaluationList['quality_items']);
-                                    $qualityMainChecked = 0;
-                                    foreach ($evaluationList['quality_items'] as $qualityMain) {
-                                        $sorted = collect($qualityMain['sub_criterias'])->sortBy('sequence')->values();
-                                        $hasAnyChecked = $sorted->contains(function ($sub) {
-                                            $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
-                                            return $hasScore || ($sub['user_selected'] ?? false);
-                                        });
-                                        if ($hasAnyChecked) {
-                                            $qualityMainChecked++;
-                                        }
-                                    }
-                                @endphp
-                                <details class="group mb-8">
-                                    <summary class="list-none [&::-webkit-details-marker]:hidden cursor-pointer">
-                                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 flex items-center justify-between">
-                                            <div class="flex items-center gap-3 flex-wrap">
-                                                <h3 class="text-lg font-semibold text-purple-800 flex items-center">
-                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                                </svg>
-                                                ด้านคุณภาพ
-                                                </h3>
-                                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $qualityMainTotal > 0 && $qualityMainChecked === $qualityMainTotal ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                    ตรวจสอบแล้ว {{ $qualityMainChecked }}/{{ $qualityMainTotal }}
-                                                </span>
-                                            </div>
-                                            <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                            </svg>
-                                            <svg class="w-5 h-5 text-purple-600 chevron-down" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </div>
-                                    </summary>
 
                                     <div class="mt-6">
                                         @foreach($evaluationList['quality_items'] as $mainCriteria)
@@ -386,10 +374,10 @@
                                                             {{ $mainCriteria['name'] }}
                                                         </h4>
                                                         <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
-                                                            {{ $mainHasChecked ? 'มีการเลือกแล้ว' : 'ยังไม่เลือก' }}
+                                                            {{ $mainHasChecked ? 'ตรวจสอบแล้ว' : 'ยังไม่ได้ตรวจ' }}
                                                         </span>
                                                         {{-- <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                            คะแนนที่เลือก {{ number_format($selectedScore, 2) }}
+                                                            คะแนนที่ได้ {{ number_format($selectedScore, 2) }}
                                                         </span> --}}
                                                     </div>
                                                     <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -418,8 +406,8 @@
                                                                     {{-- Checkbox and Label --}}
                                                                     <div class="flex items-center flex-1 min-w-0">
                                                                         @if(!$readonly)
-                                                                            <input type="checkbox" 
-                                                                                name="quality_criteria[{{ $subCriteria['id'] }}]" 
+                                                                            <input type="checkbox"
+                                                                                name="quality_criteria[{{ $subCriteria['id'] }}]"
                                                                                 value="1"
                                                                                 data-score="{{ $subCriteria['num_score'] ?? 0 }}"
                                                                                 data-sub-criteria-id="{{ $subCriteria['id'] }}"
@@ -437,7 +425,7 @@
                                                                                 @endif
                                                                             </label>
                                                                         @else
-                                                                            <input type="checkbox" 
+                                                                            <input type="checkbox"
                                                                                 {{ $shouldBeChecked ? 'checked' : '' }}
                                                                                 disabled
                                                                                 class="h-5 w-5 text-purple-600 border-gray-300 rounded mr-3">
@@ -461,26 +449,25 @@
                                                                     @endif
                                                                     {{-- Hidden Score Input for edit mode --}}
                                                                     @if(!$readonly)
-                                                                        <input type="hidden" 
-                                                                            name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]" 
+                                                                        <input type="hidden"
+                                                                            name="quality_list[{{ $subCriteria['id'] }}][quality_sub_criteria_id]"
                                                                             value="{{ $subCriteria['id'] }}">
-                                                                        <input type="hidden" 
-                                                                            name="quality_list[{{ $subCriteria['id'] }}][evaluation_list_id]" 
+                                                                        <input type="hidden"
+                                                                            name="quality_list[{{ $subCriteria['id'] }}][evaluation_list_id]"
                                                                             value="{{ $evaluationList['id'] }}">
-                                                                        <input type="hidden" 
+                                                                        <input type="hidden"
                                                                             id="quality-score-{{ $subCriteria['id'] }}"
-                                                                            name="quality_list[{{ $subCriteria['id'] }}][score]" 
+                                                                            name="quality_list[{{ $subCriteria['id'] }}][score]"
                                                                             value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}"
                                                                             max="{{ $subCriteria['num_score'] ?? 0 }}"
                                                                             data-evaluation-list-id="{{ $evaluationList['id'] }}"
                                                                             data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}">
                                                                     @endif
                                                                 </div>
-                                                            </div>
                                                         @endforeach
                                                         @if($readonly)
                                                             <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมตามสัดส่วน</span>
+                                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
                                                                 <span class="text-lg font-semibold text-blue-900">{{ number_format($mainCriteria['main_calculated_score'] ?? 0, 2) }}</span>
                                                             </div>
                                                         @endif
@@ -489,10 +476,10 @@
                                                     {{-- Evidence Section for Quality Main Criteria --}}
                                                     <div class="mt-5 border-t border-gray-200 pt-4">
                                                         @php
-                                                            $links = isset($qualityEvidenceMap[$mainCriteria['id']]) && is_array($qualityEvidenceMap[$mainCriteria['id']])
-                                                                ? $qualityEvidenceMap[$mainCriteria['id']]
-                                                                : (isset($qualityEvidenceMap[$mainCriteria['id']]) ? [$qualityEvidenceMap[$mainCriteria['id']]] : ['']);
-
+                                                            $links =
+                                                                isset($qualityEvidenceMap[$mainCriteria['id']]) &&
+                                                                is_array($qualityEvidenceMap[$mainCriteria['id']])
+                                                                    ? $qualityEvidenceMap[$mainCriteria['id']] : (isset($qualityEvidenceMap[$mainCriteria['id']]) ? [$qualityEvidenceMap[$mainCriteria['id']]] : ['']);
                                                             if (empty($links) || (count($links) === 1 && empty($links[0]))) {
                                                                 $links = [''];
                                                             }
@@ -537,7 +524,7 @@
                                                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                                                                 </svg>
-                                                                หลักฐาน
+                                                                หลักฐานที่แนบ
                                                             </h3>
                                                             @if(!empty($qualityEvidenceMap[$mainCriteria['id']]))
                                                                 @foreach((array)$qualityEvidenceMap[$mainCriteria['id']] as $link)
@@ -558,10 +545,10 @@
                                             </details>
                                         @endforeach
                                     </div>
-                                </details>
+
                             @endif
                         </div>
-                    </div>
+                    </details>
                 @endforeach
             </div>
         </div>
@@ -581,7 +568,7 @@
         }
     @endphp
     @if($hasAnnotations)
-        {{-- บล็อกเนื้อหา --}}
+        {{-- บล็อกหมายเหตุ --}}
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -602,149 +589,6 @@
             </div>
         </div>
     @endif
- 
-<style>
-    details > summary .chevron-up {
-        display: inline-block !important;
-    }
 
-    details > summary .chevron-down {
-        display: none !important;
-    }
-
-    details[open] > summary .chevron-up {
-        display: none !important;
-    }
-
-    details[open] > summary .chevron-down {
-        display: inline-block !important;
-    }
-</style>
-
-{{-- JavaScript for Quality Checkbox Handling --}}
-<script>
-function calculateScoreD(input) {
-    const subCriteriaId = input.dataset.subCriteriaId;
-    const parent = input.closest('.grid'); 
-
-    const scoreA = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_A]"]`).value) || 0;
-    const scoreB = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_B]"]`).value) || 1;
-    const scoreC = parseFloat(input.value) || 0;
-
-    const scoreD = (scoreA * scoreC) / scoreB;
-
-    document.getElementById(`score-D-${subCriteriaId}`).value = scoreD ? scoreD.toFixed(2) : '';
-}
-
-function recalculateSummaryScores() {
-    const readonlyInput = document.getElementById('quality-readonly');
-    if (readonlyInput && readonlyInput.value === '1') {
-        return;
-    }
-
-    // Quantity: sum all score_D inputs (fallback to base if none)
-    let quantitySum = 0;
-    const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]');
-    if (quantityInputs.length > 0) {
-        quantityInputs.forEach(input => {
-            let val = parseFloat(input.value);
-            if (!isNaN(val)) quantitySum += val;
-        });
-    } else {
-        const baseInput = document.getElementById('quantity-base-score');
-        quantitySum = baseInput ? parseFloat(baseInput.value) || 0 : 0;
-    }
-
-    // Quality: sum selected sub-criteria scores, capped per evaluation list
-    const listTotals = {};
-    document.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
-        const val = parseFloat(input.value);
-        if (isNaN(val)) return;
-
-        const listId = input.dataset.evaluationListId || 'unknown';
-        const listMax = parseFloat(input.dataset.listMax);
-
-        if (!listTotals[listId]) {
-            listTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
-        }
-        listTotals[listId].sum += val;
-    });
-
-    let qualitySum = 0;
-    Object.values(listTotals).forEach(({ sum, max }) => {
-        let cappedSum = sum;
-        if (max > 0 && cappedSum > max) cappedSum = max;
-        qualitySum += cappedSum;
-    });
-    const qualityMaxInput = document.getElementById('quality-max-score');
-    const qualityMax = qualityMaxInput ? parseFloat(qualityMaxInput.value) : 0;
-    if (!isNaN(qualityMax) && qualityMax > 0 && qualitySum > qualityMax) {
-        qualitySum = qualityMax;
-    }
-
-    // Update the summary fields
-    const quantitySummary = document.getElementById('quantity-summary');
-    const qualitySummary = document.getElementById('quality-summary');
-    const totalSummary = document.getElementById('total-summary');
-
-    if (quantitySummary) quantitySummary.textContent = quantitySum.toFixed(2);
-    if (qualitySummary) qualitySummary.textContent = qualitySum.toFixed(2);
-    if (totalSummary) totalSummary.textContent = (quantitySum + qualitySum).toFixed(2);
-}
-
-// Listen for changes on all relevant inputs
-document.addEventListener('DOMContentLoaded', function() {
-    // Existing code...
-
-    // Attach event listeners for real-time summary
-    document.querySelectorAll(
-        'input[name^="quantity_list"][name$="[score_C]"], input[name^="quantity_list"][name$="[score_D]"], input[name^="quality_list"][name$="[score]"]'
-    ).forEach(input => {
-        input.addEventListener('input', recalculateSummaryScores);
-    });
-
-    // Initial calculation
-    recalculateSummaryScores();
-});
-
-function handleQualityCheckboxChange(checkbox) {
-    const subCriteriaId = checkbox.dataset.subCriteriaId;
-    const score = parseFloat(checkbox.dataset.score) || 0;
-    const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
-    const mainCriteriaId = checkbox.dataset.mainCriteriaId;
-    const allowMultiple = checkbox.dataset.allowMultiple === '1';
-
-    if (checkbox.checked && mainCriteriaId && !allowMultiple) {
-        document.querySelectorAll(`input[name*="quality_criteria"][data-main-criteria-id="${mainCriteriaId}"]`).forEach(otherCheckbox => {
-            if (otherCheckbox !== checkbox) {
-                otherCheckbox.checked = false;
-                const otherSubCriteriaId = otherCheckbox.dataset.subCriteriaId;
-                const otherScoreInput = document.getElementById(`quality-score-${otherSubCriteriaId}`);
-                if (otherScoreInput) {
-                    otherScoreInput.value = '';
-                }
-            }
-        });
-    }
-    
-    if (scoreInput) {
-        if (checkbox.checked) {
-            scoreInput.value = score;
-        } else {
-            scoreInput.value = '';
-        }
-    }
-
-    recalculateSummaryScores();
-}
-
-// Initialize checkbox states on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('input[name*="quality_criteria"]');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            handleQualityCheckboxChange(checkbox);
-        }
-    });
-});
-</script>
+@include('components.unified-evaluator-styles')
+@include('components.unified-evaluator-script')
