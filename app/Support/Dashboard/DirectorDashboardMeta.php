@@ -4,6 +4,46 @@ namespace App\Support\Dashboard;
 
 final class DirectorDashboardMeta
 {
+    public static function summarizeOverviewStatuses($evaluations): array
+    {
+        $counts = [
+            'รอการกรอกข้อมูล' => 0,
+            'ยังไม่ประเมิน' => 0,
+            'กำลังดำเนินการ' => 0,
+            'รอผลการประเมิน' => 0,
+            'ประเมินเสร็จสิ้น' => 0,
+        ];
+
+        $evaluations
+            ->filter(fn ($assignment) => $assignment->evaluateeUser)
+            ->groupBy('evaluatee_id')
+            ->each(function ($assignments) use (&$counts) {
+                $statuses = $assignments
+                    ->map(fn ($assignment) => optional($assignment->report)->status ?? 'Assigned')
+                    ->filter()
+                    ->values();
+
+                if ($statuses->isEmpty()) {
+                    $counts['รอการกรอกข้อมูล']++;
+                    return;
+                }
+
+                if ($statuses->every(fn ($status) => $status === 'Completed')) {
+                    $counts['ประเมินเสร็จสิ้น']++;
+                } elseif ($statuses->contains(fn ($status) => in_array($status, ['Manager_assign', 'Manager_draft'], true))) {
+                    $counts['รอผลการประเมิน']++;
+                } elseif ($statuses->contains('Director_draft')) {
+                    $counts['กำลังดำเนินการ']++;
+                } elseif ($statuses->contains('Director_assigned')) {
+                    $counts['ยังไม่ประเมิน']++;
+                } else {
+                    $counts['รอการกรอกข้อมูล']++;
+                }
+            });
+
+        return $counts;
+    }
+
     public static function statusGroups(): array
     {
         return [
