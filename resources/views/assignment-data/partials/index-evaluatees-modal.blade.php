@@ -11,6 +11,19 @@
                 </svg>
             </button>
         </div>
-        <div id="evaluateesContent" class="mt-4 max-h-96 overflow-y-auto"></div>
+        <div class="relative mb-3">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <i class="fas fa-search text-sm text-gray-400"></i>
+            </div>
+            <input
+                id="evaluateesSearch"
+                type="search"
+                class="h-10 w-full rounded-md border border-gray-300 pl-9 pr-3 text-sm leading-10 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
+                placeholder="ค้นหาชื่อหรืออีเมล"
+                autocomplete="off"
+                disabled
+            >
+        </div>
+        <div id="evaluateesContent" class="max-h-96 overflow-y-auto"></div>
     </div>
 </div>

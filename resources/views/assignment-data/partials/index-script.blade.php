@@ -1,5 +1,14 @@
 {{-- script ของหน้า list: modal รายชื่อ, ลบรายการ, และการจัดการ flash message --}}
 <script>
+    let evaluateesModalItems = [];
+    const evaluateeAvatarColors = [
+        'bg-blue-100 text-blue-600',
+        'bg-green-100 text-green-600',
+        'bg-purple-100 text-purple-600',
+        'bg-pink-100 text-pink-600',
+        'bg-indigo-100 text-indigo-600'
+    ];
+
     $(document).ready(function() {
         // ตั้ง CSRF token กลางสำหรับทุก request ของหน้านี้
         $.ajaxSetup({
@@ -30,8 +39,14 @@
         deleteAssignment($(this).data('assignment-id'), this);
     });
 
+    $(document).on('input', '#evaluateesSearch', function() {
+        renderEvaluateesList($(this).val());
+    });
+
     function showEvaluatees(assignmentId) {
-        // เปิด modal ทันทีพร้อมสถานะ loading เพื่อให้ผู้ใช้เห็นว่าระบบกำลังทำงาน
+        // เปิด modal พร้อมสถานะ loading เพื่อให้ผู้ใช้เห็นว่าระบบกำลังทำงาน
+        evaluateesModalItems = [];
+        $('#evaluateesSearch').val('').prop('disabled', true);
         $('#evaluateesContent').html(
             '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i><p class="text-sm text-gray-500 mt-2">กำลังโหลดข้อมูล...</p></div>'
         );
@@ -41,52 +56,20 @@
             url: `/assignment-data/${assignmentId}`,
             type: 'GET',
             success: function(data) {
-                // API ส่ง assignments กลับมาแล้ว หน้านี้มีหน้าที่จัดเป็น card list อย่างเดียว
-                let html = '<div class="space-y-2">';
+                // API ส่ง assignments กลับมาแล้ว หน้านี้มีหน้าที่จัดเป็นรายชื่อใน modal
+                evaluateesModalItems = (data.assignments || [])
+                    .filter(assignment => assignment.evaluatee_user)
+                    .map((assignment, index) => ({
+                        name: assignment.evaluatee_user.name || '',
+                        email: assignment.evaluatee_user.email || '',
+                        color: evaluateeAvatarColors[index % evaluateeAvatarColors.length]
+                    }));
 
-                if (data.assignments && data.assignments.length > 0) {
-                    data.assignments.forEach((assignment, index) => {
-                        if (assignment.evaluatee_user) {
-                            const initial = assignment.evaluatee_user.name.charAt(0).toUpperCase();
-                            const colors = [
-                                'bg-blue-100 text-blue-600',
-                                'bg-green-100 text-green-600',
-                                'bg-purple-100 text-purple-600',
-                                'bg-pink-100 text-pink-600',
-                                'bg-indigo-100 text-indigo-600'
-                            ];
-                            const color = colors[index % colors.length];
+                $('#evaluateesSearch')
+                    .val('')
+                    .prop('disabled', evaluateesModalItems.length === 0);
 
-                            html += `
-                                <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full ${color} flex items-center justify-center">
-                                            <span class="font-semibold">${initial}</span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-3 flex-1">
-                                        <div class="text-sm font-medium text-gray-900">
-                                            ${assignment.evaluatee_user.name}
-                                        </div>
-                                        <div class="text-sm text-gray-500">
-                                            ${assignment.evaluatee_user.email}
-                                        </div>
-                                    </div>
-                                    <div class="flex-shrink-0">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            ผู้รับการประเมิน
-                                        </span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                } else {
-                    html += '<div class="text-center py-8"><i class="fas fa-user-slash text-4xl text-gray-300 mb-3"></i><p class="text-sm text-gray-500">ไม่พบข้อมูลผู้รับการประเมิน</p></div>';
-                }
-
-                html += '</div>';
-                $('#evaluateesContent').html(html);
+                renderEvaluateesList('');
             },
             error: function(xhr) {
                 console.error('Error loading evaluatees:', xhr);
@@ -95,6 +78,55 @@
                 );
             }
         });
+    }
+
+    function renderEvaluateesList(searchTerm) {
+        const query = (searchTerm || '').trim().toLowerCase();
+        const filteredItems = evaluateesModalItems.filter(item => {
+            return item.name.toLowerCase().includes(query) || item.email.toLowerCase().includes(query);
+        });
+
+        let html = '<ol class="divide-y divide-gray-200">';
+
+        if (evaluateesModalItems.length === 0) {
+            html += '<li class="text-center py-8"><i class="fas fa-user-slash text-4xl text-gray-300 mb-3"></i><p class="text-sm text-gray-500">ไม่พบข้อมูลผู้รับการประเมิน</p></li>';
+        } else if (filteredItems.length === 0) {
+            html += '<li class="text-center py-8"><i class="fas fa-search text-4xl text-gray-300 mb-3"></i><p class="text-sm text-gray-500">ไม่พบรายชื่อที่ค้นหา</p></li>';
+        } else {
+            filteredItems.forEach((item, index) => {
+                const safeName = escapeHtml(item.name);
+                const safeEmail = escapeHtml(item.email);
+                const initial = escapeHtml((item.name || '?').charAt(0).toUpperCase());
+
+                html += `
+                    <li class="flex items-center gap-3 px-1 py-3 hover:bg-gray-50 transition-colors">
+                        <span class="w-6 flex-shrink-0 text-right text-xs text-gray-400">
+                            ${index + 1}.
+                        </span>
+                        <div class="flex-shrink-0 h-8 w-8">
+                            <div class="h-8 w-8 rounded-full ${item.color} flex items-center justify-center">
+                                <span class="text-xs font-semibold">${initial}</span>
+                            </div>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-medium text-gray-900">
+                                ${safeName}
+                            </div>
+                            <div class="truncate text-sm text-gray-500">
+                                ${safeEmail}
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        html += '</ol>';
+        $('#evaluateesContent').html(html);
+    }
+
+    function escapeHtml(value) {
+        return $('<div>').text(value).html();
     }
 
     function closeModal() {
@@ -116,6 +148,7 @@
 
         const button = buttonElement;
         const originalContent = button.innerHTML;
+
         // lock ปุ่มทันทีเพื่อลดการกดซ้ำระหว่าง request
         button.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>กำลังลบ...';
         button.disabled = true;
@@ -126,7 +159,6 @@
             type: 'DELETE',
             success: function(response) {
                 if (response.success) {
-                    // ใช้ toast ชั่วคราวแล้ว reload เพื่อดึงข้อมูลล่าสุดจาก server กลับมา
                     const successHtml = `
                         <div id="deleteSuccessMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
                             <div class="flex items-center space-x-3">
