@@ -19,6 +19,7 @@
                                     <th class="px-4 py-3 border-0">#</th>
                                     <th class="px-4 py-3 border-0">ผู้ใช้</th>
                                     <th class="px-4 py-3 border-0">ประเภท</th>
+                                    <th class="px-4 py-3 border-0">เหตุการณ์</th>
                                     <th class="px-4 py-3 border-0">กิจกรรม</th>
                                     <th class="px-4 py-3 border-0">รายละเอียด</th>
                                     <th class="px-4 py-3 border-0">วันที่</th>
@@ -37,8 +38,14 @@
                                             'จัดการหน่วยงาน' => 'bg-pink-100 text-pink-800',
                                         ];
 
-                                        $logKey = strtolower($activity->log_name);
-                                        $logClass = $logNameClasses[$logKey] ?? 'bg-gray-100 text-gray-800';
+                                        $eventClasses = [
+                                            'created' => 'bg-green-100 text-green-800',
+                                            'updated' => 'bg-blue-100 text-blue-800',
+                                            'deleted' => 'bg-red-100 text-red-800',
+                                        ];
+
+                                        $logClass = $logNameClasses[$activity->log_name] ?? 'bg-gray-100 text-gray-800';
+                                        $eventClass = $eventClasses[$activity->event] ?? 'bg-gray-100 text-gray-800';
                                     @endphp
                                     <tr class="border-bottom">
                                         <td class="px-4 py-3">{{ $activities->firstItem() + $index }}</td>
@@ -61,6 +68,11 @@
                                             </span>
                                         </td>
                                         <td class="px-4 py-3">
+                                            <span class="badge {{ $eventClass }} px-3 py-2">
+                                                {{ $activity->event ? ucfirst($activity->event) : '-' }}
+                                            </span>
+                                        </td>
+                                        <td class="px-4 py-3">
                                             <span class="fw-semibold">{{ $activity->description }}</span>
                                         </td>
                                         <td class="px-4 py-3">
@@ -70,6 +82,13 @@
                                                 </small>
                                             @else
                                                 <small class="text-muted">-</small>
+                                            @endif
+                                            @if ($activity->ip_address && $activity->ip_address !== '-')
+                                                <div>
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-network-wired me-1"></i>{{ $activity->ip_address }}
+                                                    </small>
+                                                </div>
                                             @endif
                                         </td>
                                         <td class="px-4 py-3">

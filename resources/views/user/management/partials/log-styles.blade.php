@@ -74,6 +74,36 @@
         background-color: transparent;
     }
 
+    .active-filter-box {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 14px;
+        border: 1px solid #e9d5ff;
+        border-radius: 10px;
+        background: #faf5ff;
+    }
+
+    .active-filter-title {
+        color: #581c87;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .active-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #e9d5ff;
+        font-size: 0.78rem;
+        line-height: 1.3;
+    }
+
     .badge {
         font-size: 0.75em;
         font-weight: 600;

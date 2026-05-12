@@ -12,7 +12,9 @@
                 <div class="modal-body">
                     <p class="mb-2"><strong>ผู้ใช้:</strong> {{ $activity->causer->name ?? 'ระบบ' }}</p>
                     <p class="mb-2"><strong>ประเภท:</strong> {{ ucfirst($activity->log_name) }}</p>
+                    <p class="mb-2"><strong>เหตุการณ์:</strong> {{ $activity->event ? ucfirst($activity->event) : '-' }}</p>
                     <p class="mb-2"><strong>กิจกรรม:</strong> {{ $activity->description }}</p>
+                    <p class="mb-2"><strong>IP Address:</strong> {{ $activity->ip_address ?? '-' }}</p>
                     <p class="mb-2"><strong>วันที่และเวลา:</strong> {{ $activity->thai_created_at }} เวลา {{ $activity->thai_time }}</p>
                     @if ($activity->properties->count() > 0)
                         <pre class="bg-light p-3 rounded small">{{ json_encode($activity->properties, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
