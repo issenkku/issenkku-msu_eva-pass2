@@ -1,5 +1,39 @@
 {{-- ฟิลด์หลักของหน้าตั้งค่า ใช้เป็นแหล่งข้อมูลหลักที่บันทึกลงระบบ --}}
 <div class="form-group-custom">
+    <label for="logo" class="form-label-custom">
+        โลโก้หน่วยงาน
+    </label>
+    <div class="logo-upload-row">
+        <div class="logo-preview">
+            <img id="logoPreview"
+                src="{{ $setting?->logo_url ?? asset('favicon-msu.png').'?v=1' }}"
+                data-default-logo="{{ asset('favicon-msu.png').'?v=1' }}"
+                alt="โลโก้หน่วยงาน">
+        </div>
+        <div class="logo-upload-control">
+            <input type="file" name="logo" id="logo"
+                class="form-control form-control-custom"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml">
+            <small class="field-help">
+                รองรับ PNG, JPG, WEBP หรือ SVG ขนาดไม่เกิน 2MB และจะแสดงในหน้าเข้าสู่ระบบ
+            </small>
+            @if($setting?->logo_path)
+                <label class="remove-logo-option">
+                    <input type="checkbox" name="remove_logo" value="1">
+                    กลับไปใช้โลโก้เริ่มต้น
+                </label>
+            @endif
+        </div>
+    </div>
+    @error('logo')
+        <div class="alert alert-custom">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ $message }}
+        </div>
+    @enderror
+</div>
+
+<div class="form-group-custom">
     <label for="university" class="form-label-custom">
         ชื่อมหาวิทยาลัย <span style="color: #dc3545;">*</span>
     </label>
@@ -11,6 +45,9 @@
             required>
         <i class="form-icon fas fa-university"></i>
     </div>
+    <small class="field-help">
+        ใช้เป็นชื่อมหาวิทยาลัยกลาง และแสดงในหน้าเข้าสู่ระบบ
+    </small>
     @error('university')
         <div class="alert alert-custom">
             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -31,6 +68,9 @@
             required>
         <i class="form-icon fas fa-graduation-cap"></i>
     </div>
+    <small class="field-help">
+        ใช้เป็นชื่อคณะกลาง และแสดงในหน้าเข้าสู่ระบบ
+    </small>
     @error('faculty')
         <div class="alert alert-custom">
             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -58,7 +98,7 @@
             {{ $message }}
         </div>
     @enderror
-    <small class="text-muted">
+    <small class="field-help">
         <i class="fas fa-info-circle me-1"></i>
         ระบบจะส่งอีเมลแจ้งเตือนก่อนถึงวันสิ้นสุดการประเมินตามจำนวนวันที่ระบุ (1-30 วัน)
     </small>

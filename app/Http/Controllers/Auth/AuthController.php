@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Setting\Settings;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +15,9 @@ class AuthController extends Controller
 {
     public function showLoginForm()
     {
-        return view('user.management.loginForm');
+        $siteSetting = Settings::first();
+
+        return view('user.management.loginForm', compact('siteSetting'));
     }
 
     public function login(Request $request)
