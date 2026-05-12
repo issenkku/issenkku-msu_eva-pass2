@@ -1089,9 +1089,10 @@ class ReportStructureController extends Controller
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
+        $reportDataIds = $criteriaVersion->reportDatas()->pluck('id');
 
         $relatedReports = DB::table('reports')
-            ->where('report_data_id', $id)->get();
+            ->whereIn('report_data_id', $reportDataIds)->get();
 
         if ($relatedReports->count() > 0) {
             // ถ้ามี report ไหนที่ status ไม่ใช่ Completed ห้ามลบ
@@ -1105,7 +1106,10 @@ class ReportStructureController extends Controller
             }
         }
 
-        $criteriaVersion->delete();
+        DB::transaction(function () use ($criteriaVersion) {
+            $criteriaVersion->reportDatas()->delete();
+            $criteriaVersion->delete();
+        });
 
         return response()->json(null, 204);
     }

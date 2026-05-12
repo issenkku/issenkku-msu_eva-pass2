@@ -105,7 +105,7 @@ class UserController extends Controller
         $userId = $request->input('user_id'); // Exclude current user when editing
 
         // Validate the field name to prevent SQL injection
-        $allowedFields = ['employee_id', 'email', 'phone'];
+        $allowedFields = ['name', 'employee_id', 'email', 'phone'];
         
         if (!in_array($field, $allowedFields)) {
             return response()->json(['error' => 'Invalid field'], 400);
@@ -595,7 +595,12 @@ class UserController extends Controller
     {
         $rules = [
             'prefix' => 'required|string|max:50',
-            'name' => 'required|string|max:100',
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('users', 'name')->ignore($user->id),
+            ],
             'phone' => [
                 'required',
                 'max:20',

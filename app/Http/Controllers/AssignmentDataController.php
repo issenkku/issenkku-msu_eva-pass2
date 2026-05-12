@@ -47,7 +47,7 @@ class AssignmentDataController extends Controller
      */
     public function create()
     {
-        $report_data = ReportData::all();
+        $report_data = $this->availableReportData();
         $users = User::with(['roles', 'position', 'department'])->get();
         $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
         $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
@@ -148,7 +148,7 @@ class AssignmentDataController extends Controller
      */
     public function edit(AssignmentData $assignmentData)
     {
-        $report_data = ReportData::all();
+        $report_data = $this->availableReportData();
         $users = User::with(['roles', 'position', 'department'])->get();
         $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
         $directorUsers = $users->filter(fn ($user) => $user->hasRole('กรรมการ'))->values();
@@ -302,6 +302,10 @@ class AssignmentDataController extends Controller
         ]);
 
         $validator->after(function ($validator) use ($request) {
+            if ($request->filled('report_data_id') && ! ReportData::whereKey($request->report_data_id)->whereHas('criteriaVersion')->exists()) {
+                $validator->errors()->add('report_data_id', 'เกณฑ์การประเมินนี้ถูกลบหรือไม่พร้อมใช้งานแล้ว');
+            }
+
             // รวบรวมผู้ที่ถูกเลือกในแต่ละขั้นของ flow
             $selectedActors = array_filter(AssignmentFlow::selectedActorsFromRequest($request->all()));
 
@@ -322,6 +326,14 @@ class AssignmentDataController extends Controller
         });
 
         return $validator;
+    }
+
+    private function availableReportData()
+    {
+        return ReportData::query()
+            ->whereHas('criteriaVersion')
+            ->orderBy('report_title')
+            ->get();
     }
 
     /**
