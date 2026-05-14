@@ -29,7 +29,16 @@
         ? data_get($report, 'comment')
         : null;
 
-    $sections = collect($roles)->map(function (array $meta, string $roleKey) use ($currentRole, $roleComments, $legacyValue) {
+    $visibleRoleKeys = match ($currentRole) {
+        'evaluator' => ['evaluator'],
+        'director' => ['evaluator', 'director'],
+        'manager' => ['evaluator', 'director', 'manager'],
+        default => array_keys($roles),
+    };
+
+    $sections = collect($roles)
+        ->filter(fn (array $meta, string $roleKey) => in_array($roleKey, $visibleRoleKeys, true))
+        ->map(function (array $meta, string $roleKey) use ($currentRole, $roleComments, $legacyValue) {
         $isCurrentRole = $currentRole === $roleKey;
         $value = $roleComments->get($roleKey);
 

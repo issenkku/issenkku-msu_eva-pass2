@@ -237,7 +237,7 @@
                                                                         หน่วยภาระงานที่ทำได้ (C)
                                                                     </label>
                                                                     @if(!$readonly)
-                                                                        <input type="number" step="1"
+                                                                        <input type="number" step="1" min="0"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             data-sub-criteria-id="{{ $subCriteria['id'] }}"

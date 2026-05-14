@@ -32,7 +32,7 @@ class StoreWorkloadEntryRequest extends FormRequest
     {
         return [
             'field_values' => ['nullable', 'array'],
-            'calculated_score' => ['nullable', 'numeric'],
+            'calculated_score' => ['nullable', 'numeric', 'min:0'],
             'report_id' => ['required', 'integer', 'exists:reports,id'],
             'workload_form_id' => ['required_without:workload_form_item_id', 'integer', 'exists:workload_forms,id'],
             'workload_form_item_id' => ['required_without:workload_form_id', 'integer', 'exists:workload_form_items,id'],
@@ -88,6 +88,8 @@ class StoreWorkloadEntryRequest extends FormRequest
             if ($type === 'number' || $type === 'item') {
                 if ($value === null || $value === '' || ! is_numeric($value)) {
                     $validator->errors()->add('field_values', "กรุณากรอกข้อมูลตัวเลขให้ครบ: {$name}");
+                } elseif ((float) $value < 0) {
+                    $validator->errors()->add('field_values', "ข้อมูลตัวเลขต้องไม่ติดลบ: {$name}");
                 }
 
                 continue;

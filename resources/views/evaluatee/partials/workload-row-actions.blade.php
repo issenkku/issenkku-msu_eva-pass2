@@ -14,15 +14,16 @@
             data-field-values='@json($rowView['field_values'] ?? [])'
             data-evidence-links='@json(collect($rowView['evidence_links'] ?? [])->values())'
         >
-            &#3649;&#3585;&#3657;&#3652;&#3586;
+            <i class="fas fa-edit"></i>
+            <span>&#3649;&#3585;&#3657;&#3652;&#3586;</span>
         </button>
-        <x-button
-            type="danger"
-            text="&#3621;&#3610;"
+        <button
+            type="button"
             class="workload-mini-btn workload-delete-btn"
-            icon="fas fa-trash-alt"
-            buttonType="button"
             onclick="confirmDelete({{ $rowView['id'] }})"
-        />
+        >
+            <i class="fas fa-trash-alt"></i>
+            <span>&#3621;&#3610;</span>
+        </button>
     @endunless
 </div>

@@ -51,7 +51,7 @@
             const rawValue = input.value.trim();
             if (rawValue === '') return;
 
-            const scoreC = parseFloat(rawValue);
+            const scoreC = Math.max(0, parseFloat(rawValue));
             if (isNaN(scoreC)) return;
 
             const summaryRow = document.querySelector(`[data-summary-quantity-row][data-sub-id="${subCriteriaId}"]`);

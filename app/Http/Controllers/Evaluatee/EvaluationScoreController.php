@@ -87,7 +87,7 @@ class EvaluationScoreController extends Controller
             $validated = $request->validate([
                 'quantity_list' => 'nullable|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
-                'quantity_list.*.score_C' => 'nullable|numeric',
+                'quantity_list.*.score_C' => 'nullable|numeric|min:0',
                 'quantity_list.*.description' => 'nullable|string',
 
                 'quality_list' => 'nullable|array',

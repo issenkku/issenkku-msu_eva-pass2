@@ -1,4 +1,4 @@
-    function sortItemOptionsAlphabetically() {
+    function sortItemOptionsBySequence() {
         if (!itemSelect) {
             return;
         }
@@ -12,10 +12,10 @@
                 return !!opt.value;
             })
             .sort(function (a, b) {
-                return (a.textContent || '').trim().localeCompare((b.textContent || '').trim(), 'th', {
-                    numeric: true,
-                    sensitivity: 'base',
-                });
+                const sequenceA = Number.parseInt(a.dataset.sequence || '0', 10);
+                const sequenceB = Number.parseInt(b.dataset.sequence || '0', 10);
+
+                return sequenceA - sequenceB;
             });
 
         itemSelect.innerHTML = '';
@@ -28,7 +28,7 @@
     }
 
     if (itemSelect) {
-        sortItemOptionsAlphabetically();
+        sortItemOptionsBySequence();
     }
 
     function getActiveFormId() {

@@ -193,7 +193,7 @@ class ReportController extends Controller
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
-                'quantity_list.*.score_C' => 'nullable|numeric',
+                'quantity_list.*.score_C' => 'nullable|numeric|min:0',
             ]);
 
             $created = [];
@@ -247,8 +247,8 @@ class ReportController extends Controller
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
                 'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
-                'quantity_list.*.score_C' => 'nullable|numeric',
-                'quantity_list.*.score_D' => 'nullable|numeric',
+                'quantity_list.*.score_C' => 'nullable|numeric|min:0',
+                'quantity_list.*.score_D' => 'nullable|numeric|min:0',
             ]);
 
             $updated = [];

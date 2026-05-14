@@ -18,7 +18,7 @@ class UpdateWorkloadEntryRequest extends FormRequest
     {
         return [
             'field_values' => ['sometimes', 'required', 'array'],
-            'calculated_score' => ['nullable', 'numeric'],
+            'calculated_score' => ['nullable', 'numeric', 'min:0'],
             'report_id' => ['sometimes', 'required', 'integer', 'exists:reports,id'],
             'workload_form_id' => ['sometimes', 'required', 'integer', 'exists:workload_forms,id'],
             'subject_id' => ['sometimes', 'nullable', 'integer', 'exists:subjects,id'],
@@ -83,6 +83,8 @@ class UpdateWorkloadEntryRequest extends FormRequest
             if ($type === 'number' || $type === 'item') {
                 if ($value === null || $value === '' || ! is_numeric($value)) {
                     $validator->errors()->add('field_values', "กรุณากรอกข้อมูลตัวเลขให้ครบ: {$name}");
+                } elseif ((float) $value < 0) {
+                    $validator->errors()->add('field_values', "ข้อมูลตัวเลขต้องไม่ติดลบ: {$name}");
                 }
 
                 continue;

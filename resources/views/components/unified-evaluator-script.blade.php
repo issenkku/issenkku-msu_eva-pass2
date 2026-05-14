@@ -6,7 +6,11 @@ function calculateScoreD(input) {
 
     const scoreA = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_A]"]`).value) || 0;
     const scoreB = parseFloat(parent.querySelector(`input[name="quantity_list[${subCriteriaId}][score_B]"]`).value) || 1;
-    const scoreC = parseFloat(input.value) || 0;
+    let scoreC = parseFloat(input.value) || 0;
+    if (scoreC < 0) {
+        scoreC = 0;
+        input.value = 0;
+    }
 
     const scoreD = (scoreA * scoreC) / scoreB;
     document.getElementById(`score-D-${subCriteriaId}`).value = scoreD ? scoreD.toFixed(2) : '';

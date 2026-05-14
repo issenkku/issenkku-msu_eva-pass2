@@ -41,7 +41,7 @@ class EvaluateeWorkloadViewData
                     : $formFields->reject(fn ($field) => self::isGroupField($field))->values();
 
                 $showLevelColumn = $itemEntries->contains(fn ($entry) => !empty($entry?->subject_id));
-                $itemTotalScore = (float) $itemEntries->sum(fn ($entry) => (float) ($entry->calculated_score ?? 0));
+                $itemTotalScore = (float) $itemEntries->sum(fn ($entry) => max(0, (float) ($entry->calculated_score ?? 0)));
 
                 $rows = $itemEntries->map(function ($itemEntry) use ($item, $itemForm, $tableFields, $evidenceLinksByEntryId, $requiresSubject, $showLevelColumn, $group) {
                     $normalizedFieldValues = self::normalizeFieldValues((array) ($itemEntry?->field_values ?? []));
@@ -66,6 +66,7 @@ class EvaluateeWorkloadViewData
 
                     $evidenceLinks = $evidenceLinksByEntryId[$itemEntry->id] ?? collect();
                     $scoreValue = $itemEntry?->calculated_score;
+                    $scoreValue = is_numeric($scoreValue) ? max(0, (float) $scoreValue) : $scoreValue;
                     $scoreDisplay = is_numeric($scoreValue)
                         ? number_format((float) $scoreValue, 2, '.', '')
                         : ($scoreValue ?? '-');

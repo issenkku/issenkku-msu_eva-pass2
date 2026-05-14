@@ -60,6 +60,7 @@ class EvaluateeWorkloadEntryController extends Controller
         $fieldValues = $this->resolveItemFieldValues($form, $fieldValues);
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
             ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+        $calculatedScore = max(0, $calculatedScore);
 
         $this->ensureEvidenceProvided($form->quantity_sub_criteria_id, (array) $evidenceLinks);
 
@@ -127,6 +128,7 @@ class EvaluateeWorkloadEntryController extends Controller
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+            $calculatedScore = max(0, $calculatedScore);
 
             $this->ensureEvidenceProvided($form->quantity_sub_criteria_id, (array) $evidenceLinks);
 

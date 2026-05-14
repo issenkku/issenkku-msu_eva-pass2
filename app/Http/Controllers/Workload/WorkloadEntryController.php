@@ -79,6 +79,7 @@ class WorkloadEntryController extends Controller
         $fieldValues = $this->resolveItemFieldValues($form, $fieldValues);
         $calculatedScore = app(WorkloadFormulaEvaluator::class)
             ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+        $calculatedScore = max(0, $calculatedScore);
 
         $validated['calculated_score'] = $calculatedScore;
         $validated['field_values'] = $fieldValues;
@@ -115,6 +116,7 @@ class WorkloadEntryController extends Controller
             $fieldValues = $this->resolveItemFieldValues($form, (array) $fieldValues);
             $calculatedScore = app(WorkloadFormulaEvaluator::class)
                 ->evaluate($form->formula_logic, $form->fields, $fieldValues);
+            $calculatedScore = max(0, $calculatedScore);
 
             $validated['calculated_score'] = $calculatedScore;
             $validated['field_values'] = $fieldValues;

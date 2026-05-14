@@ -82,7 +82,7 @@ class EvaluationWorkloadController extends Controller
                 $workloadTotalScore = $workloadEntriesByFormId
                     ->flatten(1)
                     ->sum(function ($entry) {
-                        return (float) ($entry->calculated_score ?? 0);
+                        return max(0, (float) ($entry->calculated_score ?? 0));
                     });
             }
         }
@@ -165,7 +165,7 @@ class EvaluationWorkloadController extends Controller
                 ->whereIn('workload_form_id', $formIds)
                 ->get();
             $scoreC = $entries->sum(function ($entry) {
-                return (float) ($entry->calculated_score ?? 0);
+                return max(0, (float) ($entry->calculated_score ?? 0));
             });
         }
 

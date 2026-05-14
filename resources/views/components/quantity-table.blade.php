@@ -85,7 +85,8 @@
                                     </div>
                                 @else
                                     <input
-                                        type="text"
+                                        type="number"
+                                        min="0"
                                         name="quantity_list[{{ $item['sub_criteria_id'] }}][score_C]"
                                         value="{{ $item['tor_compliant'] ?? '' }}"
                                         class="form-input ml-2 h-10 w-full rounded border border-gray-400 px-3 text-base focus:border-purple-500 focus:ring-purple-500"
