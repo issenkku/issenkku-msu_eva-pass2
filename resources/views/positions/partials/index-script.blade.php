@@ -1,6 +1,7 @@
 {{-- script ของหน้าตำแหน่ง ดูแล modal, validation, submit และ auto-hide message --}}
 <script>
     let isFormValid = false;
+    const positionUpdateAction = "{{ route('positions.update', ':id') }}";
 
     function validateForm() {
         const nameInput = document.getElementById('name');
@@ -74,7 +75,9 @@
         if (!form || !modalTitle) return;
 
         resetForm();
-        form.action = `/positions/${id}`;
+        form.action = positionUpdateAction
+            .replace(':id', encodeURIComponent(id))
+            .replace('%3Aid', encodeURIComponent(id));
         document.getElementById('form_method').value = 'PUT';
         document.getElementById('positionId').value = id;
         document.getElementById('name').value = name || '';
@@ -90,6 +93,10 @@
             document.getElementById('name').focus();
         }, { once: true });
     }
+
+    window.openCreateModal = openCreateModal;
+    window.handleEdit = handleEdit;
+    window.submitForm = submitForm;
 
     function submitForm() {
         if (!validateForm()) {
@@ -184,6 +191,12 @@
                 return validateForm();
             });
         }
+
+        document.querySelectorAll('[data-position-edit]').forEach((button) => {
+            button.addEventListener('click', function() {
+                handleEdit(this.dataset.positionId, this.dataset.positionName || '');
+            });
+        });
 
         const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
         messages.forEach(function(message) {

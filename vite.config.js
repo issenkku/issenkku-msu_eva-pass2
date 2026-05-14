@@ -26,6 +26,12 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    server: {
+        host: '127.0.0.1',
+        hmr: {
+            host: '127.0.0.1',
+        },
+    },
     build: {
         outDir: 'public/build',   // ✅ force Vite to build into Laravel's expected path
         manifest: 'manifest.json',           // ✅ generate manifest.json

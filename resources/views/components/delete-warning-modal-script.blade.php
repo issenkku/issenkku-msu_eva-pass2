@@ -6,8 +6,10 @@
 
         if (!form || !modalEl) return;
 
-        const actionTemplate = "{{ $formAction }}";
-        form.action = actionTemplate.replace(':id', id);
+        const actionTemplate = @json($formAction);
+        form.action = actionTemplate
+            .replace(':id', encodeURIComponent(id))
+            .replace('%3Aid', encodeURIComponent(id));
 
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();

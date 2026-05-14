@@ -94,7 +94,11 @@ class PositionsController extends Controller
                 ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
         }
 
-        $positions = Positions::findOrFail($id);
+        $positions = Positions::find($id);
+        if (! $positions) {
+            return redirect()->route('positions.index')->with('error', 'ไม่พบข้อมูลตำแหน่งที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
+        }
+
         $positions->update([
             'name' => $request->name,
         ]);
@@ -104,7 +108,10 @@ class PositionsController extends Controller
 
     public function destroy($id)
     {
-        $positions = Positions::findOrFail($id);
+        $positions = Positions::find($id);
+        if (! $positions) {
+            return redirect()->route('positions.index')->with('error', 'ไม่พบข้อมูลตำแหน่งที่ต้องการลบ อาจถูกลบไปแล้ว');
+        }
 
         $userCount = $positions->user()->count();
         $evaluatorAssignmentCount = AssignmentData::where('evaluator_position_id', $positions->id)->count();

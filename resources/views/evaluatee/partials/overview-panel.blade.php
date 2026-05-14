@@ -10,8 +10,8 @@
         ];
     @endphp
 
-    <section class="mt-5 grid grid-cols-1 items-stretch gap-6 xl:grid-cols-[minmax(0,1fr),340px,340px]">
-        <div class="h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+    <section class="mt-5 grid grid-cols-1 items-stretch gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]">
+        <div class="min-w-0 h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h4 class="text-base font-bold text-slate-800">ภาพรวมสถานะงาน</h4>
@@ -19,8 +19,8 @@
                 </div>
             </div>
 
-            <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px,minmax(0,360px)] lg:items-start lg:justify-between">
-                <div>
+            <div class="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-[260px,minmax(260px,1fr)] 2xl:items-start">
+                <div class="min-w-0">
                     <div class="relative mx-auto h-[260px] w-full max-w-[260px]">
                         <canvas id="{{ $evaluateeOverview['statusChart']['id'] }}"></canvas>
                         <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -40,22 +40,22 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-3 lg:w-[360px]">
+                <div class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-1">
                     @foreach ($evaluateeOverview['overviewCards'] as $card)
                         @php
                             $tone = $overviewCardTones[$card['tone']] ?? $overviewCardTones['blue'];
                         @endphp
                         <button
                             type="button"
-                            class="evaluation-overview-card rounded-xl px-4 py-3 shadow-sm ring-1 {{ $tone['bg'] }} {{ $tone['ring'] }}"
+                            class="evaluation-overview-card min-w-0 rounded-xl px-4 py-3 shadow-sm ring-1 {{ $tone['bg'] }} {{ $tone['ring'] }}"
                             data-status-filter="{{ $card['filter'] }}"
                             aria-pressed="false">
-                            <div class="flex items-center justify-between gap-3">
-                                <div class="flex items-center gap-2">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex min-w-0 items-center gap-2">
                                     <span class="h-2.5 w-2.5 rounded-full {{ $tone['dot'] }}"></span>
-                                    <span class="text-sm font-semibold {{ $tone['text'] }}">{{ $card['title'] }}</span>
+                                    <span class="min-w-0 text-sm font-semibold {{ $tone['text'] }}">{{ $card['title'] }}</span>
                                 </div>
-                                <div class="text-right leading-tight">
+                                <div class="shrink-0 text-right leading-tight">
                                     <div class="text-sm font-semibold {{ $tone['percent'] }}">{{ $card['percent'] }}%</div>
                                     <div class="text-[11px] font-medium {{ $tone['meta'] }}">ของงานทั้งหมด</div>
                                 </div>
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <div class="flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-sm">
+        <div class="min-w-0 flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-sm">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h4 class="text-base font-bold text-amber-900">ใกล้ครบกำหนด</h4>
@@ -82,9 +82,9 @@
                 @forelse($evaluateeOverview['dueSoonList'] as $assignment)
                     <div class="w-full border-b border-amber-100 py-4 last:border-b-0">
                         <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
-                        <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                        <div class="mt-3 flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                             <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
-                            <a href="{{ route('evaluation.show', $assignment['id']) }}" class="inline-flex min-w-[116px] items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition {{ $assignment['action']['classes'] }}">
+                            <a href="{{ route('evaluation.show', $assignment['id']) }}" class="inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition sm:w-auto sm:min-w-[116px] {{ $assignment['action']['classes'] }}">
                                 {{ $assignment['action']['label'] }}
                             </a>
                         </div>
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <div class="flex h-full flex-col rounded-2xl border border-rose-200 bg-rose-50/70 p-6 shadow-sm">
+        <div class="min-w-0 flex h-full flex-col rounded-2xl border border-rose-200 bg-rose-50/70 p-6 shadow-sm">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h4 class="text-base font-bold text-rose-900">เลยกำหนดการส่ง</h4>
@@ -112,9 +112,9 @@
                 @forelse($evaluateeOverview['overdueList'] as $assignment)
                     <div class="w-full border-b border-rose-100 py-4 last:border-b-0">
                         <div class="line-clamp-2 text-sm font-semibold leading-6 text-slate-800">{{ $assignment['title'] }}</div>
-                        <div class="mt-3 flex items-center justify-between gap-3 text-xs text-slate-500">
+                        <div class="mt-3 flex flex-col gap-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                             <span>ครบกำหนด {{ $assignment['deadline'] }}</span>
-                            <a href="{{ route('evaluation.show', $assignment['id']) }}" class="inline-flex min-w-[116px] items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition {{ $assignment['action']['classes'] }}">
+                            <a href="{{ route('evaluation.show', $assignment['id']) }}" class="inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow transition sm:w-auto sm:min-w-[116px] {{ $assignment['action']['classes'] }}">
                                 {{ $assignment['action']['label'] }}
                             </a>
                         </div>

@@ -93,7 +93,11 @@ class DepartmentsController extends Controller
                 ->withErrors(['department_name' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
         }
 
-        $department = Departments::findOrFail($id);
+        $department = Departments::find($id);
+        if (! $department) {
+            return redirect()->route('departments.index')->with('error', 'ไม่พบข้อมูลแผนกที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
+        }
+
         $department->update([
             'department_name' => $request->department_name,
         ]);
@@ -103,7 +107,10 @@ class DepartmentsController extends Controller
 
     public function destroy($id)
     {
-        $department = Departments::findOrFail($id);
+        $department = Departments::find($id);
+        if (! $department) {
+            return redirect()->route('departments.index')->with('error', 'ไม่พบข้อมูลแผนกที่ต้องการลบ อาจถูกลบไปแล้ว');
+        }
 
         $userCount = $department->user()->count();
 

@@ -1,6 +1,7 @@
 {{-- script ของหน้าแผนก ดูแล modal, validation, submit และ auto-hide message --}}
 <script>
     let isFormValid = false;
+    const departmentUpdateAction = "{{ route('departments.update', ':id') }}";
 
     function validateForm() {
         const departmentNameInput = document.getElementById('department_name');
@@ -74,7 +75,9 @@
         if (!form || !modalTitle) return;
 
         resetForm();
-        form.action = `/departments/${id}`;
+        form.action = departmentUpdateAction
+            .replace(':id', encodeURIComponent(id))
+            .replace('%3Aid', encodeURIComponent(id));
         document.getElementById('form_method').value = 'PUT';
         document.getElementById('departmentId').value = id;
         document.getElementById('department_name').value = name || '';
@@ -90,6 +93,10 @@
             document.getElementById('department_name').focus();
         }, { once: true });
     }
+
+    window.openCreateModal = openCreateModal;
+    window.handleEdit = handleEdit;
+    window.submitForm = submitForm;
 
     function submitForm() {
         if (!validateForm()) {
@@ -184,6 +191,12 @@
                 return validateForm();
             });
         }
+
+        document.querySelectorAll('[data-department-edit]').forEach((button) => {
+            button.addEventListener('click', function() {
+                handleEdit(this.dataset.departmentId, this.dataset.departmentName || '');
+            });
+        });
 
         const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');
         messages.forEach(function(message) {

@@ -64,7 +64,10 @@ class JobLevelsController extends Controller
 
     public function update(Request $request, $id)
     {
-        $jobLevel = JobLevel::findOrFail($id);
+        $jobLevel = JobLevel::find($id);
+        if (! $jobLevel) {
+            return redirect()->route('job-level.index')->with('error', 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
+        }
 
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:job_levels,name,'.$jobLevel->id,
@@ -80,7 +83,10 @@ class JobLevelsController extends Controller
 
     public function destroy($id)
     {
-        $jobLevel = JobLevel::findOrFail($id);
+        $jobLevel = JobLevel::find($id);
+        if (! $jobLevel) {
+            return redirect()->route('job-level.index')->with('error', 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการลบ อาจถูกลบไปแล้ว');
+        }
 
         $userCount = $jobLevel->users()->count();
 

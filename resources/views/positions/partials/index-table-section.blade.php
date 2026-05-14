@@ -35,7 +35,14 @@
                             <td class="align-middle"><strong>{{ $position->name }}</strong></td>
                             <td class="align-middle">
                                 <div class="d-flex gap-2 align-items-center">
-                                    <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit" onclick='handleEdit({{ $position->id }}, @json($position->name))' />
+                                    <x-button
+                                        type="warning"
+                                        text="แก้ไข"
+                                        class="text-sm"
+                                        icon="fas fa-edit"
+                                        data-position-edit
+                                        data-position-id="{{ $position->id }}"
+                                        data-position-name="{{ $position->name }}" />
                                     <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" onclick="confirmDelete({{ $position->id }})" />
                                 </div>
                             </td>

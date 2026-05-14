@@ -59,7 +59,7 @@
             </div>
         </div>
 
-        <div class="mb-6 flex items-center gap-4">
+        <div class="mb-6 flex items-start gap-4">
             <div class="w-56">
                 <label for="prefix" class="mb-1 block text-sm font-medium text-gray-700">คำนำหน้า</label>
                 <input
@@ -88,13 +88,13 @@
                 @enderror
             </div>
             <div class="flex-1">
-                <label for="name" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
+                <label for="name" class="mb-1 block text-sm font-medium text-gray-700">ชื่อ-นามสกุล</label>
                 <input
                     type="text"
                     id="name"
                     name="name"
                     value="{{ old('name', $user->name) }}"
-                    class="mt-1 block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('name') border-red-500 @enderror"
+                    class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('name') border-red-500 @enderror"
                 >
                 @error('name')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
