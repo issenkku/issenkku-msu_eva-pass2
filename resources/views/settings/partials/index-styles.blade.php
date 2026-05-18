@@ -1,4 +1,4 @@
-{{-- style ของหน้าตั้งค่าข้อมูลมหาวิทยาลัย ถูกแยกออกจากหน้าแม่เพื่อลดความยาวไฟล์ --}}
+{{-- style ของหน้าตั้งค่าเว็บไซต์ ถูกแยกออกจากหน้าแม่เพื่อลดความยาวไฟล์ --}}
 <style>
     .form-container {
         background-image:
@@ -6,7 +6,7 @@
             var(--settings-background-image, url("{{ asset('images/workload-background.jpg') }}"));
         background-position: center top, center bottom;
         background-repeat: no-repeat;
-        background-size: 100% 100%, cover;
+        background-size: 100% 100%, 100% auto;
         background-attachment: fixed;
         min-height: 100vh;
         padding: 40px 0;
@@ -129,6 +129,88 @@
         height: 100%;
         object-fit: cover;
         display: block;
+    }
+
+    .background-library {
+        margin-top: 12px;
+    }
+
+    .background-library-title {
+        color: #495057;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .background-library-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .background-library-item {
+        position: relative;
+        display: grid;
+        gap: 6px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: #ffffff;
+        padding: 8px;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .background-library-item.is-pending-delete {
+        opacity: 0.45;
+        border-color: #ef4444;
+    }
+
+    .background-library-item:hover,
+    .background-library-item.is-active {
+        border-color: #9333ea;
+        box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.12);
+    }
+
+    .background-library-delete {
+        position: absolute;
+        top: -9px;
+        right: -9px;
+        width: 26px;
+        height: 26px;
+        border: 1px solid #fecaca;
+        border-radius: 50%;
+        background: #ffffff;
+        color: #dc2626;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.18);
+        z-index: 2;
+    }
+
+    .background-library-delete:hover {
+        background: #fef2f2;
+        border-color: #f87171;
+    }
+
+    .background-library-item img {
+        width: 100%;
+        aspect-ratio: 32 / 9;
+        object-fit: cover;
+        border-radius: 6px;
+        display: block;
+    }
+
+    .background-library-item span {
+        color: #6c757d;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .logo-upload-control {
@@ -316,5 +398,71 @@
     .form-label-custom::before {
         content: '';
         margin-right: 0;
+    }
+
+    @media (max-width: 576px) {
+        .form-container {
+            padding: 24px 0;
+        }
+
+        .card-custom {
+            border-radius: 0;
+        }
+
+        .card-header-custom {
+            padding: 26px 18px;
+        }
+
+        .card-header-custom h1 {
+            font-size: 1.55rem;
+        }
+
+        .card-body.p-5,
+        .p-5 {
+            padding: 28px 22px !important;
+        }
+
+        .logo-upload-row,
+        .background-upload-row {
+            grid-template-columns: 1fr;
+            align-items: start;
+        }
+
+        .logo-preview {
+            justify-self: start;
+        }
+
+        .background-preview {
+            width: 100%;
+            max-width: 260px;
+        }
+
+        .logo-upload-control,
+        .form-control-custom {
+            width: 100%;
+        }
+
+        .field-help {
+            max-width: none;
+        }
+
+        .background-library-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .background-library-item {
+            width: 100%;
+        }
+
+        .background-library-delete {
+            top: -7px;
+            right: -7px;
+        }
+
+        .remove-logo-option {
+            display: flex;
+            width: fit-content;
+            max-width: 100%;
+        }
     }
 </style>

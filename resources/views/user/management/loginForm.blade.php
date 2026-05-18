@@ -49,7 +49,7 @@
                 var(--site-background-image);
             background-position: center top, center bottom;
             background-repeat: no-repeat;
-            background-size: 100% 100%, cover;
+            background-size: 100% 100%, 100% auto;
             background-attachment: fixed;
             color: var(--ink);
             font-family: 'Kanit', sans-serif;

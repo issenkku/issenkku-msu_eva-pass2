@@ -1,5 +1,5 @@
 {{-- ฟิลด์หลักของหน้าตั้งค่า ใช้เป็นแหล่งข้อมูลหลักที่บันทึกลงระบบ --}}
-<div class="form-group-custom">
+{{-- <div class="form-group-custom">
     <label for="logo" class="form-label-custom">
         โลโก้หน่วยงาน
     </label>
@@ -31,9 +31,10 @@
             {{ $message }}
         </div>
     @enderror
-</div>
+</div> --}}
 
 <div class="form-group-custom">
+    @php($selectedBackgroundPath = old('selected_background_path', $setting?->background_path))
     <label for="background" class="form-label-custom">
         รูปพื้นหลังหน้าภาระงาน
     </label>
@@ -45,12 +46,35 @@
                 alt="รูปพื้นหลังหน้าภาระงาน">
         </div>
         <div class="logo-upload-control">
+            <input type="hidden" name="selected_background_path" id="selectedBackgroundPath" value="{{ old('selected_background_path') }}">
+            <div id="deletedBackgroundInputs"></div>
             <input type="file" name="background" id="background"
                 class="form-control form-control-custom"
                 accept="image/png,image/jpeg,image/webp">
             <small class="field-help">
                 รองรับ PNG, JPG หรือ WEBP ขนาดไม่เกิน 4MB ใช้เป็นพื้นหลังของหน้ากรอกภาระงาน
             </small>
+            @if(!empty($backgroundAssets))
+                <div class="background-library" aria-label="background image library">
+                    <div class="background-library-title">รูปพื้นหลังที่มีในระบบ</div>
+                    <div class="background-library-grid">
+                        @foreach($backgroundAssets as $backgroundAsset)
+                            <div
+                                class="background-library-item {{ $selectedBackgroundPath === $backgroundAsset['path'] ? 'is-active' : '' }}"
+                                data-background-path="{{ $backgroundAsset['path'] }}"
+                                data-background-url="{{ $backgroundAsset['url'] }}"
+                                role="button"
+                                tabindex="0">
+                                <button type="button" class="background-library-delete" aria-label="ลบรูปพื้นหลัง" title="ลบรูปนี้">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <img src="{{ $backgroundAsset['url'] }}" alt="{{ $backgroundAsset['name'] }}">
+                                <span>{{ $backgroundAsset['name'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
             @if($setting?->background_path)
                 <label class="remove-logo-option">
                     <input type="checkbox" name="remove_background" value="1">
@@ -70,9 +94,15 @@
             {{ $message }}
         </div>
     @enderror
+    @error('selected_background_path')
+        <div class="alert alert-custom">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ $message }}
+        </div>
+    @enderror
 </div>
 
-<div class="form-group-custom">
+{{-- <div class="form-group-custom">
     <label for="university" class="form-label-custom">
         ชื่อมหาวิทยาลัย <span style="color: #dc3545;">*</span>
     </label>
@@ -116,7 +146,7 @@
             {{ $message }}
         </div>
     @enderror
-</div>
+</div> --}}
 
 <div class="form-group-custom">
     <label for="notification_days" class="form-label-custom">

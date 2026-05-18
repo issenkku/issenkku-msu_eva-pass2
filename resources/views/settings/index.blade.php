@@ -3,7 +3,7 @@
 @section('content')
     @include('settings.partials.index-styles')
 
-    {{-- หน้าตั้งค่าข้อมูลมหาวิทยาลัย: style, header, flash, form และ info box ถูกแยกตามหน้าที่ --}}
+    {{-- หน้าตั้งค่าเว็บไซต์: style, header, flash, form และ info box ถูกแยกตามหน้าที่ --}}
     <div class="form-container {{ $setting?->use_white_background ? 'is-white-background' : '' }}" style="--settings-background-image: url('{{ $setting?->background_url ?? asset('images/workload-background.jpg') }}');">
         <div class="container">
             <div class="row justify-content-center">
@@ -47,11 +47,116 @@
             const backgroundPreview = document.getElementById('backgroundPreview');
             const removeBackgroundInput = document.querySelector('input[name="remove_background"]');
             const useWhiteBackgroundInput = document.getElementById('useWhiteBackground');
+            const selectedBackgroundPathInput = document.getElementById('selectedBackgroundPath');
+            const deletedBackgroundInputs = document.getElementById('deletedBackgroundInputs');
+            const backgroundLibraryItems = document.querySelectorAll('.background-library-item');
             const formContainer = document.querySelector('.form-container');
             const appBackgroundShell = document.querySelector('.app-background-shell');
 
             bindImagePreview(logoInput, logoPreview, removeLogoInput, 'defaultLogo');
             bindImagePreview(backgroundInput, backgroundPreview, removeBackgroundInput, 'defaultBackground', function (imageUrl) {
+                setBackgroundImage(imageUrl);
+
+                if (useWhiteBackgroundInput) {
+                    useWhiteBackgroundInput.checked = false;
+                }
+
+                clearSelectedBackground();
+            });
+
+            backgroundLibraryItems.forEach(function (item) {
+                const deleteButton = item.querySelector('.background-library-delete');
+
+                item.addEventListener('click', function () {
+                    selectBackgroundItem(item);
+                });
+
+                item.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        selectBackgroundItem(item);
+                    }
+                });
+
+                if (deleteButton) {
+                    deleteButton.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        markBackgroundForDelete(item);
+                    });
+                }
+            });
+
+            if (useWhiteBackgroundInput) {
+                useWhiteBackgroundInput.addEventListener('change', function () {
+                    formContainer?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
+                    appBackgroundShell?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
+                });
+            }
+
+            function selectBackgroundItem(item) {
+                const imageUrl = item.dataset.backgroundUrl;
+
+                if (!imageUrl || item.classList.contains('is-pending-delete')) {
+                    return;
+                }
+
+                if (selectedBackgroundPathInput) {
+                    selectedBackgroundPathInput.value = item.dataset.backgroundPath || '';
+                }
+
+                if (backgroundInput) {
+                    backgroundInput.value = '';
+                }
+
+                if (removeBackgroundInput) {
+                    removeBackgroundInput.checked = false;
+                }
+
+                if (useWhiteBackgroundInput) {
+                    useWhiteBackgroundInput.checked = false;
+                }
+
+                if (backgroundPreview) {
+                    backgroundPreview.src = imageUrl;
+                }
+
+                setBackgroundImage(imageUrl);
+
+                backgroundLibraryItems.forEach(function (libraryItem) {
+                    libraryItem.classList.toggle('is-active', libraryItem === item);
+                });
+            }
+
+            function markBackgroundForDelete(item) {
+                const backgroundPath = item.dataset.backgroundPath;
+
+                if (!backgroundPath || item.classList.contains('is-pending-delete')) {
+                    return;
+                }
+
+                item.classList.add('is-pending-delete');
+                item.style.display = 'none';
+
+                if (deletedBackgroundInputs) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'delete_background_paths[]';
+                    input.value = backgroundPath;
+                    deletedBackgroundInputs.appendChild(input);
+                }
+
+                if (selectedBackgroundPathInput?.value === backgroundPath || item.classList.contains('is-active')) {
+                    clearSelectedBackground();
+
+                    if (backgroundPreview?.dataset.defaultBackground) {
+                        backgroundPreview.src = backgroundPreview.dataset.defaultBackground;
+                        setBackgroundImage(backgroundPreview.dataset.defaultBackground);
+                    }
+                }
+            }
+
+            function setBackgroundImage(imageUrl) {
                 if (formContainer) {
                     formContainer.style.setProperty('--settings-background-image', `url('${imageUrl}')`);
                     formContainer.classList.remove('is-white-background');
@@ -61,16 +166,15 @@
                     appBackgroundShell.style.setProperty('--app-background-image', `url('${imageUrl}')`);
                     appBackgroundShell.classList.remove('is-white-background');
                 }
+            }
 
-                if (useWhiteBackgroundInput) {
-                    useWhiteBackgroundInput.checked = false;
+            function clearSelectedBackground() {
+                if (selectedBackgroundPathInput) {
+                    selectedBackgroundPathInput.value = '';
                 }
-            });
 
-            if (useWhiteBackgroundInput) {
-                useWhiteBackgroundInput.addEventListener('change', function () {
-                    formContainer?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
-                    appBackgroundShell?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
+                backgroundLibraryItems.forEach(function (item) {
+                    item.classList.remove('is-active');
                 });
             }
 

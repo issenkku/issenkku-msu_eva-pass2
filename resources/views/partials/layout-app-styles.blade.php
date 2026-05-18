@@ -45,7 +45,7 @@
             var(--app-background-image, url("{{ asset('images/workload-background.jpg') }}"));
         background-position: center top, center bottom;
         background-repeat: no-repeat;
-        background-size: 100% 100%, cover;
+        background-size: 100% 100%, 100% auto;
         background-attachment: fixed;
     }
 
