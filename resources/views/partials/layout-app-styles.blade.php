@@ -39,6 +39,29 @@
         color: #495057;
     }
 
+    .app-background-shell {
+        background-image:
+            linear-gradient(180deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.78) 55%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0) 100%),
+            var(--app-background-image, url("{{ asset('images/workload-background.jpg') }}"));
+        background-position: center top, center bottom;
+        background-repeat: no-repeat;
+        background-size: 100% 100%, cover;
+        background-attachment: fixed;
+    }
+
+    .app-background-shell.is-white-background {
+        background: #ffffff !important;
+    }
+
+    .app-background-shell > main {
+        background: transparent;
+    }
+
+    .app-background-shell > main > .bg-gray-50,
+    .app-background-shell > main > .bg-gradient-to-r {
+        background: transparent !important;
+    }
+
     :root {
         --navbar-bg: #0f172a;
         --navbar-border: #334155;

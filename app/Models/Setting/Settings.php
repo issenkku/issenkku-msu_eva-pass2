@@ -12,6 +12,12 @@ class Settings extends Model
         'university',
         'notification_days',
         'logo_path',
+        'background_path',
+        'use_white_background',
+    ];
+
+    protected $casts = [
+        'use_white_background' => 'boolean',
     ];
 
     public $timestamps = false; // Assuming you don't want timestamps for this model
@@ -23,5 +29,14 @@ class Settings extends Model
         }
 
         return asset('favicon-msu.png').'?v=1';
+    }
+
+    public function getBackgroundUrlAttribute(): string
+    {
+        if ($this->background_path && Storage::disk('public')->exists($this->background_path)) {
+            return asset('storage/'.$this->background_path);
+        }
+
+        return asset('images/workload-background.jpg');
     }
 }

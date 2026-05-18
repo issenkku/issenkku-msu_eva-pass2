@@ -3,6 +3,7 @@
 @section('title', 'ภาระงานด้านงานสอน')
 
 @section('content')
+<div class="workload-background-page">
 <div class="max-w-6xl mx-auto space-y-6">
     @if(!empty($readonly))
         <div class="workload-readonly-banner">
@@ -36,6 +37,7 @@
         'workloadTotalScore' => $workloadTotalScore ?? 0,
         'savedWorkloadScoreC' => $savedWorkloadScoreC,
     ])
+</div>
 </div>
 
 @include('evaluatee.partials.workload-entry-modal')

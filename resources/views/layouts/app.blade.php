@@ -35,7 +35,10 @@
 </head>
 
 <body class="bg-white font-sans antialiased">
-    <div class="min-h-screen bg-gray-50">
+    @php
+        $appSetting = \App\Models\Setting\Settings::first();
+    @endphp
+    <div class="min-h-screen bg-gray-50 app-background-shell {{ $appSetting?->use_white_background ? 'is-white-background' : '' }}" style="--app-background-image: url('{{ $appSetting?->background_url ?? asset('images/workload-background.jpg') }}');">
         <!-- Header -->
         <header class="shadow-sm" style="background: #0f172a; border-bottom: 1px solid #334155;">
             <div class="header-shell py-2 px-4 sm:px-6 lg:px-8 flex justify-between items-center">

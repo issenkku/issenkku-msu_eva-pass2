@@ -1,21 +1,32 @@
 {{-- style ของหน้าตั้งค่าข้อมูลมหาวิทยาลัย ถูกแยกออกจากหน้าแม่เพื่อลดความยาวไฟล์ --}}
 <style>
     .form-container {
-        background: #ffffff;
+        background-image:
+            linear-gradient(180deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.78) 55%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0) 100%),
+            var(--settings-background-image, url("{{ asset('images/workload-background.jpg') }}"));
+        background-position: center top, center bottom;
+        background-repeat: no-repeat;
+        background-size: 100% 100%, cover;
+        background-attachment: fixed;
         min-height: 100vh;
         padding: 40px 0;
     }
 
+    .form-container.is-white-background {
+        background: #ffffff !important;
+    }
+
     .card-custom {
-        background: #ffffff;
-        border: 1px solid #dee2e6;
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(222, 226, 230, 0.9);
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         overflow: hidden;
+        backdrop-filter: blur(14px);
     }
 
     .card-header-custom {
-        background: #f3e8ff;
+        background: rgba(243, 232, 255, 0.82);
         color: #495057;
         padding: 30px;
         text-align: center;
@@ -79,6 +90,13 @@
         align-items: center;
     }
 
+    .background-upload-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 14px;
+        align-items: center;
+    }
+
     .logo-preview {
         width: 76px;
         height: 76px;
@@ -95,6 +113,22 @@
         width: 58px;
         height: 58px;
         object-fit: contain;
+    }
+
+    .background-preview {
+        width: 160px;
+        aspect-ratio: 32 / 9;
+        border: 1px solid #eadcff;
+        border-radius: 12px;
+        background: #fbf8ff;
+        overflow: hidden;
+    }
+
+    .background-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
     }
 
     .logo-upload-control {

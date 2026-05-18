@@ -4,7 +4,7 @@
     @include('settings.partials.index-styles')
 
     {{-- หน้าตั้งค่าข้อมูลมหาวิทยาลัย: style, header, flash, form และ info box ถูกแยกตามหน้าที่ --}}
-    <div class="form-container">
+    <div class="form-container {{ $setting?->use_white_background ? 'is-white-background' : '' }}" style="--settings-background-image: url('{{ $setting?->background_url ?? asset('images/workload-background.jpg') }}');">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-8 col-md-10">
@@ -43,32 +43,73 @@
             const logoInput = document.getElementById('logo');
             const logoPreview = document.getElementById('logoPreview');
             const removeLogoInput = document.querySelector('input[name="remove_logo"]');
+            const backgroundInput = document.getElementById('background');
+            const backgroundPreview = document.getElementById('backgroundPreview');
+            const removeBackgroundInput = document.querySelector('input[name="remove_background"]');
+            const useWhiteBackgroundInput = document.getElementById('useWhiteBackground');
+            const formContainer = document.querySelector('.form-container');
+            const appBackgroundShell = document.querySelector('.app-background-shell');
 
-            if (!logoInput || !logoPreview) {
-                return;
+            bindImagePreview(logoInput, logoPreview, removeLogoInput, 'defaultLogo');
+            bindImagePreview(backgroundInput, backgroundPreview, removeBackgroundInput, 'defaultBackground', function (imageUrl) {
+                if (formContainer) {
+                    formContainer.style.setProperty('--settings-background-image', `url('${imageUrl}')`);
+                    formContainer.classList.remove('is-white-background');
+                }
+
+                if (appBackgroundShell) {
+                    appBackgroundShell.style.setProperty('--app-background-image', `url('${imageUrl}')`);
+                    appBackgroundShell.classList.remove('is-white-background');
+                }
+
+                if (useWhiteBackgroundInput) {
+                    useWhiteBackgroundInput.checked = false;
+                }
+            });
+
+            if (useWhiteBackgroundInput) {
+                useWhiteBackgroundInput.addEventListener('change', function () {
+                    formContainer?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
+                    appBackgroundShell?.classList.toggle('is-white-background', useWhiteBackgroundInput.checked);
+                });
             }
 
-            logoInput.addEventListener('change', function () {
-                const file = logoInput.files?.[0];
-
-                if (!file) {
+            function bindImagePreview(input, preview, removeInput, defaultKey, onChange = null) {
+                if (!input || !preview) {
                     return;
                 }
 
-                if (removeLogoInput) {
-                    removeLogoInput.checked = false;
-                }
+                input.addEventListener('change', function () {
+                    const file = input.files?.[0];
 
-                logoPreview.src = URL.createObjectURL(file);
-            });
+                    if (!file) {
+                        return;
+                    }
 
-            if (removeLogoInput) {
-                removeLogoInput.addEventListener('change', function () {
-                    if (removeLogoInput.checked) {
-                        logoInput.value = '';
-                        logoPreview.src = logoPreview.dataset.defaultLogo;
+                    if (removeInput) {
+                        removeInput.checked = false;
+                    }
+
+                    const imageUrl = URL.createObjectURL(file);
+                    preview.src = imageUrl;
+
+                    if (onChange) {
+                        onChange(imageUrl);
                     }
                 });
+
+                if (removeInput) {
+                    removeInput.addEventListener('change', function () {
+                        if (removeInput.checked) {
+                            input.value = '';
+                            preview.src = preview.dataset[defaultKey];
+
+                            if (onChange) {
+                                onChange(preview.dataset[defaultKey]);
+                            }
+                        }
+                    });
+                }
             }
         });
     </script>

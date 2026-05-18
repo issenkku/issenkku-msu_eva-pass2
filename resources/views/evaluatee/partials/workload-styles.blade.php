@@ -1,21 +1,36 @@
 <style>
     /* สไตล์หลักของหน้า workload และ modal เพิ่มข้อมูลภาระงาน */
+    .workload-background-page {
+        min-height: calc(100vh - 64px);
+        margin: -1.5rem;
+        padding: 3.5rem 1.5rem;
+        background-image:
+            linear-gradient(180deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.78) 55%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0) 100%),
+            var(--app-background-image, url("{{ asset('images/workload-background.jpg') }}"));
+        background-position: center top, center bottom;
+        background-repeat: no-repeat;
+        background-size: 100% 100%, cover;
+        background-attachment: fixed;
+    }
+
     .workload-readonly-banner {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
+        background: rgba(239, 246, 255, 0.9);
+        border: 1px solid rgba(191, 219, 254, 0.9);
         color: #1d4ed8;
         border-radius: 14px;
         padding: 14px 18px;
         font-weight: 600;
+        backdrop-filter: blur(12px);
     }
 
     .workload-page-header {
-        background: linear-gradient(135deg, #f3e8ff 0%, #ffffff 60%, #e0f2fe 100%);
-        border: 1px solid #e5e7eb;
+        background: rgba(255, 255, 255, 0.86);
+        border: 1px solid rgba(226, 232, 240, 0.9);
         border-radius: 18px;
         padding: 24px 28px;
         box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
         text-align: center;
+        backdrop-filter: blur(14px);
     }
 
     .workload-page-title {
@@ -31,17 +46,18 @@
     }
 
     .workload-panel {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(226, 232, 240, 0.9);
         border-radius: 18px;
         box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         overflow: hidden;
+        backdrop-filter: blur(16px);
     }
 
     .workload-panel-header {
-        background: linear-gradient(90deg, #ede9fe 0%, #e0f2fe 100%);
+        background: rgba(248, 250, 252, 0.72);
         padding: 16px 22px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.9);
     }
 
     .workload-panel-header h2 {
@@ -52,7 +68,7 @@
 
     .workload-panel-body {
         padding: 20px;
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.78);
     }
 
     .workload-toolbar {

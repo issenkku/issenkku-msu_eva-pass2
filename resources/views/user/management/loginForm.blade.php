@@ -4,6 +4,8 @@
     $facultyName = $siteSetting->faculty ?? 'คณะสาธารณสุขศาสตร์';
     $universityName = $siteSetting->university ?? 'มหาวิทยาลัยมหาสารคาม';
     $siteLogoUrl = $siteSetting?->logo_url ?? asset('favicon-msu.png').'?v=1';
+    $siteBackgroundUrl = $siteSetting?->background_url ?? asset('images/workload-background.jpg');
+    $siteUseWhiteBackground = $siteSetting?->use_white_background ?? false;
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -42,9 +44,19 @@
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
             overflow: hidden;
-            background: var(--pale);
+            background-image:
+                linear-gradient(180deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.78) 55%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0) 100%),
+                var(--site-background-image);
+            background-position: center top, center bottom;
+            background-repeat: no-repeat;
+            background-size: 100% 100%, cover;
+            background-attachment: fixed;
             color: var(--ink);
             font-family: 'Kanit', sans-serif;
+        }
+
+        body.is-white-background {
+            background: #ffffff;
         }
 
         .left {
@@ -305,7 +317,8 @@
             align-items: center;
             justify-content: center;
             padding: 3rem;
-            background: var(--pale);
+            background: rgba(248, 250, 252, 0.72);
+            backdrop-filter: blur(10px);
         }
 
         .right::before {
@@ -644,7 +657,7 @@
         }
     </style>
 </head>
-<body>
+<body class="{{ $siteUseWhiteBackground ? 'is-white-background' : '' }}" style="--site-background-image: url('{{ $siteBackgroundUrl }}');">
     <aside class="left">
         <div class="top-line"></div>
         <div class="left-glow"></div>

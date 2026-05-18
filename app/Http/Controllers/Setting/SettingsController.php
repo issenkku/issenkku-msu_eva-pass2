@@ -66,6 +66,20 @@ class SettingsController extends Controller
                 'nullable',
                 'boolean',
             ],
+            'background' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:4096',
+            ],
+            'remove_background' => [
+                'nullable',
+                'boolean',
+            ],
+            'use_white_background' => [
+                'nullable',
+                'boolean',
+            ],
         ], [
             // ข้อความแจ้งเตือนแบบกำหนดเอง
             'university.regex' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษหรือตัวเลข',
@@ -81,6 +95,9 @@ class SettingsController extends Controller
             'logo.image' => 'ไฟล์โลโก้ต้องเป็นรูปภาพเท่านั้น',
             'logo.mimes' => 'โลโก้ต้องเป็นไฟล์ jpg, jpeg, png, webp หรือ svg เท่านั้น',
             'logo.max' => 'ขนาดโลโก้ต้องไม่เกิน 2MB',
+            'background.image' => 'ไฟล์พื้นหลังต้องเป็นรูปภาพเท่านั้น',
+            'background.mimes' => 'พื้นหลังต้องเป็นไฟล์ jpg, jpeg, png หรือ webp เท่านั้น',
+            'background.max' => 'ขนาดพื้นหลังต้องไม่เกิน 4MB',
         ]);
 
         // เช็คเพิ่มเติมด้วย PHP function (สำรอง)
@@ -97,6 +114,7 @@ class SettingsController extends Controller
         }
 
         $data = $request->only(['university', 'faculty', 'notification_days']);
+        $data['use_white_background'] = $request->boolean('use_white_background');
 
         if ($request->has('id')) {
             // อัปเดตข้อมูลเดิม
@@ -107,6 +125,13 @@ class SettingsController extends Controller
             } elseif ($request->boolean('remove_logo')) {
                 $this->deleteLogo($setting);
                 $data['logo_path'] = null;
+            }
+
+            if ($request->hasFile('background')) {
+                $data['background_path'] = $this->storeBackground($request, $setting);
+            } elseif ($request->boolean('remove_background')) {
+                $this->deleteBackground($setting);
+                $data['background_path'] = null;
             }
 
             $setting->update($data);
@@ -120,6 +145,13 @@ class SettingsController extends Controller
             } elseif ($request->boolean('remove_logo') && $setting) {
                 $this->deleteLogo($setting);
                 $data['logo_path'] = null;
+            }
+
+            if ($request->hasFile('background')) {
+                $data['background_path'] = $this->storeBackground($request, $setting);
+            } elseif ($request->boolean('remove_background') && $setting) {
+                $this->deleteBackground($setting);
+                $data['background_path'] = null;
             }
 
             Settings::updateOrCreate(
@@ -152,6 +184,20 @@ class SettingsController extends Controller
     {
         if ($setting?->logo_path && Storage::disk('public')->exists($setting->logo_path)) {
             Storage::disk('public')->delete($setting->logo_path);
+        }
+    }
+
+    private function storeBackground(Request $request, ?Settings $setting = null): string
+    {
+        $this->deleteBackground($setting);
+
+        return $request->file('background')->store('site-backgrounds', 'public');
+    }
+
+    private function deleteBackground(?Settings $setting = null): void
+    {
+        if ($setting?->background_path && Storage::disk('public')->exists($setting->background_path)) {
+            Storage::disk('public')->delete($setting->background_path);
         }
     }
 }

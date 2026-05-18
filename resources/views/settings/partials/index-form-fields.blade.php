@@ -34,6 +34,45 @@
 </div>
 
 <div class="form-group-custom">
+    <label for="background" class="form-label-custom">
+        รูปพื้นหลังหน้าภาระงาน
+    </label>
+    <div class="background-upload-row">
+        <div class="background-preview">
+            <img id="backgroundPreview"
+                src="{{ $setting?->background_url ?? asset('images/workload-background.jpg') }}"
+                data-default-background="{{ asset('images/workload-background.jpg') }}"
+                alt="รูปพื้นหลังหน้าภาระงาน">
+        </div>
+        <div class="logo-upload-control">
+            <input type="file" name="background" id="background"
+                class="form-control form-control-custom"
+                accept="image/png,image/jpeg,image/webp">
+            <small class="field-help">
+                รองรับ PNG, JPG หรือ WEBP ขนาดไม่เกิน 4MB ใช้เป็นพื้นหลังของหน้ากรอกภาระงาน
+            </small>
+            @if($setting?->background_path)
+                <label class="remove-logo-option">
+                    <input type="checkbox" name="remove_background" value="1">
+                    กลับไปใช้พื้นหลังเริ่มต้น
+                </label>
+            @endif
+            <label class="remove-logo-option">
+                <input type="checkbox" name="use_white_background" id="useWhiteBackground" value="1"
+                    @checked(old('use_white_background', $setting?->use_white_background ?? false))>
+                ใช้พื้นหลังสีขาว
+            </label>
+        </div>
+    </div>
+    @error('background')
+        <div class="alert alert-custom">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ $message }}
+        </div>
+    @enderror
+</div>
+
+<div class="form-group-custom">
     <label for="university" class="form-label-custom">
         ชื่อมหาวิทยาลัย <span style="color: #dc3545;">*</span>
     </label>
