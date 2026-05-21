@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Models/QuantityScoreHistory.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;

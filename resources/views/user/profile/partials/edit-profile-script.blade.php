@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/user/profile/partials/edit-profile-script.blade.php --}}
 <script>
 const oldEducationHistory = @json(old('education_history', $user->education_history_entries));
 

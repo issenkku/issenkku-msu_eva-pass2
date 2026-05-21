@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Console/Commands/UpdateReportStatuses.php
+
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;

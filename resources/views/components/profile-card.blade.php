@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/profile-card.blade.php --}}
 @props(['user', 'title'])
 
 <div class="rounded-2xl border border-purple-300 bg-purple-50 p-6 shadow-md">

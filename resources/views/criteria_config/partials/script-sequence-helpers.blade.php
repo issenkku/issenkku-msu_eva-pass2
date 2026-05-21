@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-sequence-helpers.blade.php --}}
         function updateButtonStates(containerSelector, upBtnSelector, downBtnSelector) {
             const items = document.querySelectorAll(containerSelector);
             items.forEach((item, index) => {

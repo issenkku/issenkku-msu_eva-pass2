@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/list-toolbar-script.blade.php --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-auto-search-form]').forEach(function (form) {

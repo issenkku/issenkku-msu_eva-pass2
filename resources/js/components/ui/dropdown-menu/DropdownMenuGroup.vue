@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dropdown-menu/DropdownMenuGroup.vue -->
 <script setup lang="ts">
 import { DropdownMenuGroup, type DropdownMenuGroupProps } from 'reka-ui'
 

@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-edit-collect-form-data.blade.php --}}
         function collectFormData() {
             const reportDataPayload = {
                 report_title: document.getElementById('report_title').value.trim(),

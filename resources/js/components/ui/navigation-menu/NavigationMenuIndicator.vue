@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/navigation-menu/NavigationMenuIndicator.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { NavigationMenuIndicator, type NavigationMenuIndicatorProps, useForwardProps } from 'reka-ui'

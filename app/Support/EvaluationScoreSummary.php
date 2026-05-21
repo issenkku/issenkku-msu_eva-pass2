@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Support/EvaluationScoreSummary.php
+
 namespace App\Support;
 
 class EvaluationScoreSummary

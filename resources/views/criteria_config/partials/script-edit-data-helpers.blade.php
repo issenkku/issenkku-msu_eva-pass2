@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-edit-data-helpers.blade.php --}}
         function dedupeByKey(items, keyFn) {
             const map = new Map();
             (items || []).forEach(item => {

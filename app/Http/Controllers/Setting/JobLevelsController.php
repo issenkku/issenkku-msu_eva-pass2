@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Http/Controllers/Setting/JobLevelsController.php
+
 namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;

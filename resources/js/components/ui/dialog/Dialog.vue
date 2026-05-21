@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dialog/Dialog.vue -->
 <script setup lang="ts">
 import { DialogRoot, type DialogRootEmits, type DialogRootProps, useForwardPropsEmits } from 'reka-ui'
 

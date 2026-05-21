@@ -1,3 +1,5 @@
+// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/sheet/index.ts
+
 export { default as Sheet } from './Sheet.vue'
 export { default as SheetClose } from './SheetClose.vue'
 export { default as SheetContent } from './SheetContent.vue'

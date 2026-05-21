@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/evaluation-summary-reviewer-modal.blade.php --}}
 <div id="evaluateeReviewerModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 px-4 py-6">
     <div class="flex min-h-full items-center justify-center">
         <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">

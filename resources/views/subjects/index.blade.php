@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/subjects/index.blade.php --}}
 @extends('layouts.app')
 @section('title', 'จัดการข้อมูลรายวิชา')
 

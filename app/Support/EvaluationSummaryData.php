@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Support/EvaluationSummaryData.php
+
 namespace App\Support;
 
 use Carbon\Carbon;

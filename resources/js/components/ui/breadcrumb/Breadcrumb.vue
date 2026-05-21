@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/breadcrumb/Breadcrumb.vue -->
 <script lang="ts" setup>
 import type { HTMLAttributes } from 'vue'
 

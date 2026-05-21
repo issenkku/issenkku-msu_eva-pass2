@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-create-modal-helpers.blade.php --}}
         function showConfirmModal(reportTitle) {
             document.getElementById('version_name_display').textContent = reportTitle || 'ไม่ระบุ';
             document.getElementById('confirm_modal').classList.remove('hidden');

@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/evaluation-summary-row.blade.php --}}
 <tr data-evaluation-row data-status-group="{{ $row['status_group'] }}" class="transition-colors hover:bg-gray-50 {{ $row['is_recent'] ? 'bg-blue-50' : '' }}">
     <td class="border-b p-4 text-gray-500">
         {{ $row['index'] }}

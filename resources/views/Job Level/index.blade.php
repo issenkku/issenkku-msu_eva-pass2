@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/Job Level/index.blade.php --}}
 @extends('layouts.app')
 @section('title', 'จัดการข้อมูลระดับตำแหน่งงาน')
 

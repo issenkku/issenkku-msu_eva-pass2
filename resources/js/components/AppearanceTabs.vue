@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/AppearanceTabs.vue -->
 <script setup lang="ts">
 import { useAppearance } from '@/composables/useAppearance';
 import { Monitor, Moon, Sun } from 'lucide-vue-next';

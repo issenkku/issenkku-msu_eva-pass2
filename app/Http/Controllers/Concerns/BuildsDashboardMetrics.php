@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Http/Controllers/Concerns/BuildsDashboardMetrics.php
+
 namespace App\Http\Controllers\Concerns;
 
 use Carbon\Carbon;

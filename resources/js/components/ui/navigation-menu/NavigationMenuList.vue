@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/navigation-menu/NavigationMenuList.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { NavigationMenuList, type NavigationMenuListProps, useForwardProps } from 'reka-ui'

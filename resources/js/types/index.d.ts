@@ -1,3 +1,5 @@
+// ไฟล์ TypeScript ของระบบ: resources/js/types/index.d.ts
+
 import type { LucideIcon } from 'lucide-vue-next';
 import type { Config } from 'ziggy-js';
 

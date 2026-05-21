@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/Heading.vue -->
 <script setup lang="ts">
 interface Props {
     title: string;

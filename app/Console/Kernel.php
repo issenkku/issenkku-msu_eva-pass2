@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Console/Kernel.php
+
 namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;

@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/evaluatee/partials/workload-script-evidence-links.blade.php --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('workload-evidence-links');

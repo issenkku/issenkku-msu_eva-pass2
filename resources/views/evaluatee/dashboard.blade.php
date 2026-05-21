@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/evaluatee/dashboard.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Dashboard - ระบบประเมิน')

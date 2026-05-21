@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/layouts/auth/AuthSimpleLayout.vue -->
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 

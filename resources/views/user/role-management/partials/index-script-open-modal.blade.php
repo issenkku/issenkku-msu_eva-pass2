@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/user/role-management/partials/index-script-open-modal.blade.php --}}
 function openCreateModal() {
     document.getElementById('roleModal').classList.add('show');
     document.getElementById('modalTitle').innerText = 'เพิ่มบทบาท';

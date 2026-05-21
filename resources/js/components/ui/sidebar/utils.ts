@@ -1,3 +1,5 @@
+// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/sidebar/utils.ts
+
 import type { ComputedRef, Ref } from 'vue'
 import { createContext } from 'reka-ui'
 

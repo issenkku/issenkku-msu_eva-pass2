@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/navigation-menu/NavigationMenuTrigger.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-vue-next'

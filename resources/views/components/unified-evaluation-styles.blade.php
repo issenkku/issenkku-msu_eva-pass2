@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/unified-evaluation-styles.blade.php --}}
 <style>
     @media (max-width: 768px) {
         .md\:flex-row {

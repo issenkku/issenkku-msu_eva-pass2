@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Support/EvaluateeWorkloadViewData.php
+
 namespace App\Support;
 
 use Illuminate\Support\Collection;

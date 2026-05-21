@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Http/Controllers/User/UserTemplateController.php
+
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;

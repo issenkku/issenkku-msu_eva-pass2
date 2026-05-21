@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Mail/NotifyEndDateMail.php
+
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;

@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Http/Requests/Workload/StoreWorkloadEntryRequest.php
+
 namespace App\Http\Requests\Workload;
 
 use App\Models\WorkloadForm;

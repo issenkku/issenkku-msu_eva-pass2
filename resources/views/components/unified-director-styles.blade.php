@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/unified-director-styles.blade.php --}}
 <style>
     details > summary .chevron-up {
         display: inline-block !important;

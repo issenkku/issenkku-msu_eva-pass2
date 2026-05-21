@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/components/role-comment-section.blade.php --}}
 @props([
     'report',
     'currentRole' => null,

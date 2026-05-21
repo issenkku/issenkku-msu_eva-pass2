@@ -1,5 +1,7 @@
 <?php
 
+// ไฟล์คลาสของระบบ: app/Imports/UsersImport.php
+
 namespace App\Imports;
 
 use App\Models\Setting\Departments;

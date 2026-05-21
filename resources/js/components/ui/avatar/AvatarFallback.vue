@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/avatar/AvatarFallback.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { AvatarFallback, type AvatarFallbackProps } from 'reka-ui'

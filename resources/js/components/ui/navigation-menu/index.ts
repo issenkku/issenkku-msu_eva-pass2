@@ -1,3 +1,5 @@
+// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/navigation-menu/index.ts
+
 import { cva } from 'class-variance-authority'
 
 export { default as NavigationMenu } from './NavigationMenu.vue'

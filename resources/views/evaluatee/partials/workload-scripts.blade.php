@@ -1,3 +1,4 @@
+{{-- ไฟล์มุมมอง: resources/views/evaluatee/partials/workload-scripts.blade.php --}}
 <x-delete-warning-modal
     text="รายการภาระงาน"
     formAction="{{ route('evaluatee.workload-entries.destroy', ':id') }}"

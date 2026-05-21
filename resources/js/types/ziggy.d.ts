@@ -1,3 +1,5 @@
+// ไฟล์ TypeScript ของระบบ: resources/js/types/ziggy.d.ts
+
 import { route } from 'ziggy-js';
 
 declare global {

@@ -1,3 +1,4 @@
+<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dialog/DialogDescription.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { DialogDescription, type DialogDescriptionProps, useForwardProps } from 'reka-ui'
