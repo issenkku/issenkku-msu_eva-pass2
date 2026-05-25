@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Setting\Departments;
 use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Notifications\CustomResetPassword;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -19,10 +20,10 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements CanResetPassword
+class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use CanResetPasswordTrait, HasApiTokens, HasFactory, HasRoles, LogsActivity, Notifiable;
+    use CanResetPasswordTrait, HasApiTokens, HasFactory, HasRoles, LogsActivity, MustVerifyEmailTrait, Notifiable;
 
     public const DASHBOARD_ROLE_MAP = [
         'admin' => 'dashboard',
@@ -75,6 +76,7 @@ class User extends Authenticatable implements CanResetPassword
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
             'is_public_profile_enabled' => 'boolean',
             'education_history' => 'array',
         ];

@@ -113,6 +113,7 @@ class NotificationTest extends TestCase
         $this->assignmentData = AssignmentData::factory()->create([
             'evaluatee_position_id' => $this->evaluateePosition->id,
             'evaluator_position_id' => $this->evaluatorPosition->id,
+            'evaluator_id' => $this->evaluator->id,
             'start_time' => now(),
             'end_time' => now()->addDays(30),
         ]);

@@ -39,7 +39,11 @@ RUN docker-php-ext-configure gd \
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 # Configure PHP
-RUN echo "memory_limit=512M" > /usr/local/etc/php/conf.d/memory.ini
+RUN { \
+        echo "memory_limit=512M"; \
+        echo "upload_max_filesize=8M"; \
+        echo "post_max_size=10M"; \
+    } > /usr/local/etc/php/conf.d/app.ini
 
 # Set working directory
 WORKDIR /var/www/html

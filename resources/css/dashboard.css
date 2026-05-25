@@ -327,43 +327,42 @@ body {
         padding: 0.5rem;
     }
     /* อยู่ใน evaluatee.css หรือ <style> */
-.action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* ช่องว่างระหว่างปุ่ม */
-    justify-content: center;
-}
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* ช่องว่างระหว่างปุ่ม */
+        justify-content: center;
+    }
 
-.btn-view,
-.btn-edit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 12px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 16px;
-    transition: background-color 0.2s ease-in-out;
-}
+    .btn-view,
+    .btn-edit {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 16px;
+        transition: background-color 0.2s ease-in-out;
+    }
 
-.btn-view {
-    background-color: #e0f2fe;
-    color: #0284c7;
-}
+    .btn-view {
+        background-color: #e0f2fe;
+        color: #0284c7;
+    }
 
-.btn-view:hover {
-    background-color: #bae6fd;
-}
+    .btn-view:hover {
+        background-color: #bae6fd;
+    }
 
-.btn-edit {
-    background-color: #fef3c7;
-    color: #d97706;
-}
+    .btn-edit {
+        background-color: #fef3c7;
+        color: #d97706;
+    }
 
-.btn-edit:hover {
-    background-color: #fde68a;
-}
-
+    .btn-edit:hover {
+        background-color: #fde68a;
+    }
 }

@@ -109,8 +109,9 @@ class AssignmentDataTest extends TestCase
             'start_time'     => now()->toDateString(),
             'end_time'       => now()->addDays(5)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => $this->evaluateePosition->id,
-            'evaluators'     => $this->evaluatorPosition->id,
+            'evaluatees'     => [$evaluateeUser->id],
+            'evaluator_id'   => $evaluatorUser->id,
+            'stage_order'    => ['evaluator' => 1],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -120,7 +121,7 @@ class AssignmentDataTest extends TestCase
 
         $this->assertDatabaseHas('assignment_datas', [
             'evaluator_position_id' => $this->evaluatorPosition->id,
-            'evaluatee_position_id' => $this->evaluateePosition->id,
+            'evaluator_id' => $evaluatorUser->id,
         ]);
 
         $this->assertDatabaseHas('reports', [
@@ -151,7 +152,7 @@ class AssignmentDataTest extends TestCase
                 'end_time',
                 'report_data_id',
                 'evaluatees',
-                'evaluators',
+                'evaluation_flow',
             ]);
 
         // ✅ make sure nothing got created
@@ -160,25 +161,36 @@ class AssignmentDataTest extends TestCase
         $this->assertDatabaseCount('assignments', 0);
     }
 
-    public function test_store_fails_when_evaluator_equals_evaluatee(): void
+    public function test_store_fails_when_reviewer_roles_use_same_user(): void
     {
         $this->actingAs($this->admin, 'web')
             ->get(route('assignment-data.index'));
 
         $token = session()->token();
 
+        $reviewer = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id'   => $this->evaluatorPosition->id,
+        ]);
+        $evaluateeUser = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id'   => $this->evaluateePosition->id,
+        ]);
+
         $payload = [
             '_token'         => $token,
             'start_time'     => now()->toDateString(),
             'end_time'       => now()->addDays(5)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => $this->evaluateePosition->id,
-            'evaluators'     => $this->evaluateePosition->id, // same position
+            'evaluatees'     => [$evaluateeUser->id],
+            'evaluator_id'   => $reviewer->id,
+            'director_id'    => $reviewer->id,
+            'stage_order'    => ['evaluator' => 1, 'director' => 2],
         ];
 
         $this->actingAs($this->admin, 'web')
             ->post(route('assignment-data.store'), $payload)
-            ->assertSessionHasErrors(['evaluators']);
+            ->assertSessionHasErrors(['evaluation_flow']);
     }
 
     public function test_admin_can_update_assignment_data(): void
@@ -209,8 +221,9 @@ class AssignmentDataTest extends TestCase
             'start_time'     => now()->toDateString(),
             'end_time'       => now()->addDays(10)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => $this->evaluateePosition->id,
-            'evaluators'     => $this->evaluatorPosition->id,
+            'evaluatees'     => [$evaluateeUser->id],
+            'evaluator_id'   => $evaluatorUser->id,
+            'stage_order'    => ['evaluator' => 1],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -220,7 +233,7 @@ class AssignmentDataTest extends TestCase
 
         $this->assertDatabaseHas('assignment_datas', [
             'id' => $assignmentData->id,
-            'end_time' => $payload['end_time'],
+            'end_time' => now()->addDays(10)->startOfDay()->toDateTimeString(),
         ]);
     }
 

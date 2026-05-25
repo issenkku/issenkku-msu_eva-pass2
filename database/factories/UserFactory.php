@@ -30,8 +30,9 @@ class UserFactory extends Factory
             'prefix' => $this->faker->randomElement($prefixes),
             'name' => $this->faker->name,
             'employee_id' => str_pad($this->faker->unique()->numberBetween(8, 999), 3, '0', STR_PAD_LEFT),
-            'password' => Hash::make('password123'), // default password
+            'password' => Hash::make('password'), // default password
             'email' => $this->faker->unique()->safeEmail,
+            'email_verified_at' => now(),
             'phone' => $this->faker->phoneNumber,
             'personnel_type' => $this->faker->randomElement($personnelTypes),
             'bio' => null,
@@ -41,5 +42,12 @@ class UserFactory extends Factory
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
+        ]);
     }
 }

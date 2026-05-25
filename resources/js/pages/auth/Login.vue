@@ -84,7 +84,6 @@ const submit = () => {
                     Log in
                 </Button>
             </div>
-
         </form>
     </AuthBase>
 </template>
