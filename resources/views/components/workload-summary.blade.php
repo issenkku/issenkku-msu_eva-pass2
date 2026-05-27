@@ -54,7 +54,7 @@
                 <div class="flex items-center gap-3">
                     <span class="h-7 w-1.5 rounded-full bg-gradient-to-b from-sky-400 to-indigo-500"></span>
                     <div class="text-lg font-semibold tracking-wide text-slate-900">
-                        {{ $group->name ?? '-' }}
+                        {!! \App\Support\SafeHtml::richText($group->name ?? '-') !!}
                     </div>
                 </div>
             </div>
@@ -182,9 +182,9 @@
                                             : ($scoreValue ?? '-');
                                     @endphp
                                     <tr>
-                                        <td class="px-3 py-2">{{ $item->name ?? '-' }}</td>
+                                        <td class="px-3 py-2">{!! \App\Support\SafeHtml::richText($item->name ?? '-') !!}</td>
                                         <td class="px-3 py-2">
-                                            {{ $itemLabel ?? $item->description ?? '-' }}
+                                            {!! \App\Support\SafeHtml::richText($itemLabel ?? $item->description ?? '-') !!}
                                             @if ($itemScore !== null)
                                                 <span class="text-xs text-gray-500">({{ $itemScore }})</span>
                                             @endif

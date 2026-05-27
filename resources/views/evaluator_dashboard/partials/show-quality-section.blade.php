@@ -43,7 +43,7 @@
                                 <td class="text-left criteria-name-cell">
                                     <div class="criteria-name">{{ $listEva->name }}</div>
                                     @if (!empty($listEva->description))
-                                        <div class="criteria-description">{{ $listEva->description }}</div>
+                                        <div class="criteria-description">{!! \App\Support\SafeHtml::richText($listEva->description) !!}</div>
                                     @else
                                         <div class="text-gray-500">ไม่มีคำอธิบาย</div>
                                     @endif

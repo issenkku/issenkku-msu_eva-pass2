@@ -53,7 +53,7 @@
                         <div class="{{ $hasQualityItems ? 'relative pr-14' : '' }} bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4 rounded-t-lg border-b border-gray-200">
                             <div class="flex items-center space-x-3">
                                 <h2 class="text-xl font-bold text-gray-800">
-                                    {{ $evaluationList['name'] }}
+                                    {!! \App\Support\SafeHtml::richText($evaluationList['name']) !!}
                                 </h2>
                                 @php
                                     $listSelectedQualitySum = 0;
@@ -104,7 +104,7 @@
 
                             @if(!empty($evaluationList['annotation']))
                                 <div class="flex items-center space-x-2 mt-1">
-                                    <p class="text-sm text-gray-600">{{ $evaluationList['annotation'] }}</p>
+                                    <div class="text-sm text-gray-600">{!! \App\Support\SafeHtml::richText($evaluationList['annotation']) !!}</div>
                                 </div>
                             @endif
                             @if($hasQualityItems)
@@ -139,10 +139,10 @@
                                         {{-- Main Criteria Header --}}
                                         <div class="mb-4 border-l-4 border-green-400 pl-4 py-2 bg-green-50">
                                             <h4 class="text-base font-semibold text-gray-800">
-                                                {{ $mainCriteria['name'] }}
+                                                {!! \App\Support\SafeHtml::richText($mainCriteria['name']) !!}
                                             </h4>
                                             @if(!empty($mainCriteria['tooltips']))
-                                                <div class="text-sm text-gray-500 mt-1">{{ $mainCriteria['tooltips'] }}</div>
+                                                <div class="text-sm text-gray-500 mt-1">{!! \App\Support\SafeHtml::richText($mainCriteria['tooltips']) !!}</div>
                                             @endif
                                         </div>
 
@@ -186,7 +186,7 @@
                                                     <summary class="flex items-center justify-between gap-3 bg-gradient-to-r from-white via-purple-50/40 to-white px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                                                         <div class="min-w-0 flex items-center gap-3 flex-wrap">
                                                             <span class="text-base font-semibold text-slate-800">
-                                                                {{ $subCriteria['name'] }}
+                                                                {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                             </span>
                                                             <span class="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700">
                                                                 <span>ดูรายละเอียด</span>
@@ -203,7 +203,7 @@
                                                         <div class="rounded-xl border border-slate-200 bg-white/90 p-4 shadow-sm">
                                                             <div class="space-y-4">
                                                                 @if(!empty($subCriteria['description']))
-                                                                    <div class="rounded-lg bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">{{ $subCriteria['description'] }}</div>
+                                                                    <div class="rounded-lg bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">{!! \App\Support\SafeHtml::richText($subCriteria['description']) !!}</div>
                                                                 @endif
 
                                                                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -365,7 +365,7 @@
                     <summary class="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden bg-purple-50">
                         <div class="min-w-0 flex items-center gap-3 flex-wrap">
                             <h4 class="text-base font-semibold text-gray-800">
-                                {{ $mainCriteria['name'] }}
+                                {!! \App\Support\SafeHtml::richText($mainCriteria['name']) !!}
                             </h4>
                         </div>
                         <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,7 +378,7 @@
 
                     <div class="px-4 py-4">
                         @if(!empty($mainCriteria['tooltips']))
-                            <div class="text-sm text-gray-500 mb-3">{{ $mainCriteria['tooltips'] }}</div>
+                            <div class="text-sm text-gray-500 mb-3">{!! \App\Support\SafeHtml::richText($mainCriteria['tooltips']) !!}</div>
                         @endif
 
                         {{-- Quality Sub Criteria --}}
@@ -415,11 +415,11 @@
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                 <div class="min-w-0">
                                                     <label class="text-base text-gray-800 break-words">
-                                                        {{ $subCriteria['name'] }}
+                                                        {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                     </label>
                                                     @if(!empty($subCriteria['description']))
                                                         <div class="text-sm text-gray-500 mt-1 break-words">
-                                                            {{ $subCriteria['description'] }}
+                                                            {!! \App\Support\SafeHtml::richText($subCriteria['description']) !!}
                                                         </div>
                                                     @endif
                                                 </div>
@@ -430,11 +430,11 @@
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 border-gray-300 rounded mr-3 disabled:opacity-100">
                                                 <div class="min-w-0">
                                                     <span class="text-base text-gray-800 break-words">
-                                                        {{ $subCriteria['name'] }}
+                                                        {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                     </span>
                                                     @if(!empty($subCriteria['description']))
                                                         <div class="text-sm text-gray-500 mt-1 break-words">
-                                                            {{ $subCriteria['description'] }}
+                                                            {!! \App\Support\SafeHtml::richText($subCriteria['description']) !!}
                                                         </div>
                                                     @endif
                                                 </div>
@@ -585,7 +585,7 @@
                     <div class="text-sm text-yellow-700">
                         <ol class="list-decimal list-inside space-y-1">
                             @foreach(array_unique($annotations) as $annotation)
-                                <li>{{ $annotation }}</li>
+                                <li>{!! \App\Support\SafeHtml::richText($annotation) !!}</li>
                             @endforeach
                         </ol>
                     </div>
