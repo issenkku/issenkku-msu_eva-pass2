@@ -183,11 +183,6 @@
                             quantRequireEvidence.checked = Boolean(subData.require_evidence);
                         }
 
-                        const quantRequireSubject = subBlock.querySelector('.quant_require_subject');
-                        if (quantRequireSubject) {
-                            quantRequireSubject.checked = Boolean(subData.require_subject);
-                        }
-
                         subBlock.querySelector('.score_a').value = subData.score_a || '';
                         subBlock.querySelector('.score_b').value = subData.score_b || '';
                         subContainer.appendChild(subBlock);

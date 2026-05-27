@@ -10,8 +10,7 @@ class EvaluateeWorkloadViewData
 {
     public static function build($quantitySubCriteria, Collection $workloadForms, Collection $workloadEntriesByFormId, Collection $evidenceLinksByEntryId): array
     {
-        $requiresSubject = !empty($quantitySubCriteria?->require_subject);
-        $groups = collect($quantitySubCriteria?->groups ?? [])->map(function ($group) use ($workloadForms, $workloadEntriesByFormId, $evidenceLinksByEntryId, $requiresSubject) {
+        $groups = collect($quantitySubCriteria?->groups ?? [])->map(function ($group) use ($workloadForms, $workloadEntriesByFormId, $evidenceLinksByEntryId) {
             $groupFormIds = collect($group->items ?? [])
                 ->map(function ($item) use ($workloadForms) {
                     return $workloadForms->firstWhere('quantity_sub_criteria_item_id', $item->id)?->id;
@@ -27,7 +26,8 @@ class EvaluateeWorkloadViewData
                 ->unique(fn ($field) => self::fieldIdentity($field))
                 ->values();
 
-            $itemViews = collect($group->items ?? [])->map(function ($item) use ($group, $workloadForms, $workloadEntriesByFormId, $evidenceLinksByEntryId, $requiresSubject) {
+            $itemViews = collect($group->items ?? [])->map(function ($item) use ($group, $workloadForms, $workloadEntriesByFormId, $evidenceLinksByEntryId) {
+                $requiresSubject = !empty($item?->require_subject);
                 $itemForm = $workloadForms->firstWhere('quantity_sub_criteria_item_id', $item->id);
                 $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
                 $formFields = $itemForm?->fields
@@ -131,6 +131,7 @@ class EvaluateeWorkloadViewData
             return [
                 'id' => $group->id,
                 'name' => $group->name ?? '',
+                'requires_subject' => $itemViews->contains(fn ($itemView) => !empty($itemView['requires_subject'])),
                 'field_definitions' => $fieldDefinitions->map(fn ($field) => $field->label ?? $field->variable_name)->values(),
                 'items' => $itemViews,
                 'group_total_score' => $groupTotalScore,
@@ -138,7 +139,7 @@ class EvaluateeWorkloadViewData
         })->values();
 
         return [
-            'requires_subject' => $requiresSubject,
+            'requires_subject' => $groups->contains(fn ($group) => !empty($group['requires_subject'])),
             'groups' => $groups,
             'total_display' => is_numeric($groups->sum('group_total_score'))
                 ? number_format((float) $groups->sum('group_total_score'), 0, '.', '')

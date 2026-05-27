@@ -17,11 +17,12 @@
                 const subjectId = trigger.dataset.subjectId || '';
                 const groupId = trigger.dataset.groupId || '';
                 const groupName = trigger.dataset.groupName || '';
+                const requiresSubject = trigger.dataset.requiresSubject === '1';
                 const fieldValues = parseDatasetJson(trigger.dataset.fieldValues) || {};
                 const evidenceLinks = parseDatasetJson(trigger.dataset.evidenceLinks) || [];
 
                 setFormMode('edit', entryId);
-                setActiveGroup(groupId, groupName);
+                setActiveGroup(groupId, groupName, requiresSubject);
                 if (subjectIdField) {
                     subjectIdField.value = subjectId || '';
                 }
@@ -34,6 +35,7 @@
                     itemSelect.value = itemId;
                 }
 
+                updateSubjectRequirementState();
                 updateSelectedItemField();
                 fillFields(fieldValues, formId, true);
                 setEvidenceLinks(evidenceLinks);
@@ -52,6 +54,7 @@
                 workloadForm.reset();
             }
             clearSubjectSelection();
+            setActiveGroup('', '', false);
             updateSubjectRequirementState();
             fillFields({}, '', true);
             setEvidenceLinks([]);
@@ -60,7 +63,10 @@
             const defaultFormId = trigger && trigger.dataset ? trigger.dataset.defaultFormId : (lastDefaultFormId || '');
             const defaultGroupId = trigger && trigger.dataset ? (trigger.dataset.groupId || '') : (lastDefaultGroupId || '');
             const defaultGroupName = trigger && trigger.dataset ? (trigger.dataset.groupName || '') : (lastDefaultGroupName || '');
-            setActiveGroup(defaultGroupId, defaultGroupName);
+            const defaultRequiresSubject = trigger && trigger.dataset
+                ? trigger.dataset.requiresSubject === '1'
+                : lastDefaultRequiresSubject;
+            setActiveGroup(defaultGroupId, defaultGroupName, defaultRequiresSubject);
             selectDefaultForForm(defaultFormId || '');
 
             const presetItemId = trigger && trigger.dataset ? (trigger.dataset.itemId || '') : '';
@@ -72,6 +78,7 @@
                 }
                 updateFormFields();
                 itemSelect.value = presetItemId;
+                updateSubjectRequirementState();
                 updateSelectedItemField();
             }
 

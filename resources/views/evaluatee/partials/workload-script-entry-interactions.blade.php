@@ -6,9 +6,14 @@
                     setActiveFormId(selected.dataset.formId);
                 }
                 if (selected && selected.dataset.groupId) {
-                    setActiveGroup(selected.dataset.groupId, groupLabelInput ? groupLabelInput.value : '');
+                    setActiveGroup(
+                        selected.dataset.groupId,
+                        groupLabelInput ? groupLabelInput.value : '',
+                        selected.dataset.requiresSubject
+                    );
                 }
                 updateFormFields();
+                updateSubjectRequirementState();
             });
         }
 

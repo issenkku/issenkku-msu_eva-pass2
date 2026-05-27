@@ -57,6 +57,7 @@
                                                     data-default-form-id="{{ $itemView['form_id'] ?? '' }}"
                                                     data-group-id="{{ $groupView['id'] }}"
                                                     data-group-name="{{ $groupView['name'] ?? '' }}"
+                                                    data-requires-subject="{{ !empty($itemView['requires_subject']) ? 1 : 0 }}"
                                                     data-item-id="{{ $itemView['id'] }}"
                                                 >
                                                     <i class="fas fa-plus"></i>

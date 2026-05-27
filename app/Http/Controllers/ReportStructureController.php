@@ -479,7 +479,7 @@ class ReportStructureController extends Controller
                                                 'score_a' => $qSub['score_a'],
                                                 'score_b' => $qSub['score_b'],
                                                 ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
-                                                ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
+                                                ...($hasQuantityRequireSubject && array_key_exists('require_subject', $qSub) ? ['require_subject' => (bool) $qSub['require_subject']] : []),
                                             ]);
                                         }
                                     }
@@ -820,7 +820,7 @@ class ReportStructureController extends Controller
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
                                                     ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
-                                                    ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
+                                                    ...($hasQuantityRequireSubject && array_key_exists('require_subject', $qSub) ? ['require_subject' => (bool) $qSub['require_subject']] : []),
                                                 ]);
                                             } else {
                                                 $quantitySubCriteria = QuantitySubCriteria::create([
@@ -832,7 +832,7 @@ class ReportStructureController extends Controller
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
                                                     ...($hasQuantityRequireEvidence ? ['require_evidence' => (bool) ($qSub['require_evidence'] ?? false)] : []),
-                                                    ...($hasQuantityRequireSubject ? ['require_subject' => (bool) ($qSub['require_subject'] ?? false)] : []),
+                                                    ...($hasQuantityRequireSubject && array_key_exists('require_subject', $qSub) ? ['require_subject' => (bool) $qSub['require_subject']] : []),
                                                 ]);
                                             }
 
@@ -1206,6 +1206,7 @@ class ReportStructureController extends Controller
                         'quantity_sub_criteria_group_id' => $newGroup->id,
                         'criteria_version_id' => $newVersionId,
                         'evaluation_list_id' => $newSub->evaluation_list_id,
+                        'require_subject' => (bool) ($item->require_subject ?? false),
                     ]);
 
                     $oldForm = WorkloadForm::with(['fields', 'items'])

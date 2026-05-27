@@ -116,6 +116,10 @@
                                         <input type="text" class="form-control workload-sub-category" value=""
                                             placeholder="กรุณากรอกหมวดหมู่ย่อย">
                                     </div>
+                                    <label class="workload-require-subject-option">
+                                        <input type="checkbox" class="workload-require-subject">
+                                        <span>หัวข้อนี้ต้องเลือกรายวิชาและใช้ค่าหน่วยกิต</span>
+                                    </label>
                                 </div>
 
                                 {{-- ตารางรายการภาระงาน + คะแนน --}}

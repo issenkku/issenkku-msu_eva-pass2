@@ -1,4 +1,4 @@
-<div class="workload-modal-section" id="workloadSubjectSection" @if(empty($workloadModal['requires_subject'])) style="display:none;" @endif>
+<div class="workload-modal-section" id="workloadSubjectSection" style="display:none;">
     <label class="workload-modal-label">&#3619;&#3634;&#3618;&#3623;&#3636;&#3594;&#3634; <span class="required">*</span></label>
     <input type="hidden" name="subject_id" id="workloadSubjectId" value="">
     <div class="workload-subject-picker" id="workloadSubjectPicker">
@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<div class="workload-alert-box" id="workloadSubjectAlertBox" @if(empty($workloadModal['requires_subject'])) style="display:none;" @endif>
+<div class="workload-alert-box" id="workloadSubjectAlertBox" style="display:none;">
     <div class="workload-alert-icon">
         <i class="fas fa-exclamation-triangle"></i>
     </div>

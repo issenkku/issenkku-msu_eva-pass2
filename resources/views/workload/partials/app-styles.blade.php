@@ -146,6 +146,24 @@
             gap: 20px;
         }
 
+        .workload-require-subject-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            align-self: flex-start;
+            margin: 12px 0 0;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .workload-require-subject {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+            accent-color: #2563eb;
+        }
+
         .section-heading {
             display: flex;
             align-items: center;

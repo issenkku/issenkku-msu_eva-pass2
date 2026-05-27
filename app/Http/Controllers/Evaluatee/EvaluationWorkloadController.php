@@ -63,7 +63,7 @@ class EvaluationWorkloadController extends Controller
             $quantitySubCriteria = QuantitySubCriteria::with(['groups.items'])
                 ->find($quantitySubCriteriaId);
 
-            $workloadForms = WorkloadForm::with(['fields', 'items', 'subCriteriaItem'])
+            $workloadForms = WorkloadForm::with(['fields', 'items', 'subCriteriaItem.group'])
                 ->where('quantity_sub_criteria_id', $quantitySubCriteriaId)
                 ->get();
         }

@@ -1,7 +1,12 @@
 <div class="workload-modal-field workload-modal-field-credit" id="workload-detail-fields">
     <label class="workload-modal-label"></label>
     @foreach(($workloadModal['forms'] ?? []) as $formView)
-        <div class="workload-form-fields" data-form-id="{{ $formView['id'] }}" style="display:none;">
+        <div
+            class="workload-form-fields"
+            data-form-id="{{ $formView['id'] }}"
+            data-requires-subject="{{ !empty($formView['requires_subject']) ? 1 : 0 }}"
+            style="display:none;"
+        >
             <div class="workload-modal-subfields">
                 @foreach(($formView['fields'] ?? []) as $fieldView)
                     @if(!empty($fieldView['is_hidden_default']))

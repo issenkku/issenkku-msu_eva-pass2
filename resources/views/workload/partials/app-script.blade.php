@@ -554,6 +554,7 @@
                 const variableChips = card.querySelector('.workload-variable-chips');
                 const subitemTable = card.querySelector('.subitem-table');
                 const subCategoryInput = card.querySelector('.workload-sub-category');
+                const requireSubjectInput = card.querySelector('.workload-require-subject');
                 let editingFormulaRow = null;
 
                 syncSubCardSummary(card);
@@ -562,6 +563,10 @@
                     subCategoryInput.addEventListener('input', () => {
                         syncSubCardSummary(card);
                     });
+                }
+                if (requireSubjectInput && requireSubjectInput.dataset.dirtyBound !== 'true') {
+                    requireSubjectInput.dataset.dirtyBound = 'true';
+                    requireSubjectInput.addEventListener('change', markDirty);
                 }
 
                 const resetVariableForm = () => {
@@ -984,6 +989,10 @@
                 }
                 card.dataset.itemId = '';
                 card.querySelectorAll('input').forEach((input) => {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                        return;
+                    }
                     input.value = '';
                 });
                 card.querySelectorAll('textarea').forEach((textarea) => {
@@ -1091,7 +1100,6 @@
                 const addSubButton = card.querySelector('.workload-add-sub');
                 const addMainButton = card.querySelector('.workload-add-main');
                 const mainNameInput = card.querySelector('.workload-main-category');
-
                 syncMainCardSummary(card);
                 if (mainNameInput && mainNameInput.dataset.summaryBound !== 'true') {
                     mainNameInput.dataset.summaryBound = 'true';
@@ -1099,7 +1107,6 @@
                         syncMainCardSummary(card);
                     });
                 }
-
                 card.querySelectorAll('.workload-sub-card').forEach((subCard) => {
                     initSubCard(subCard);
                     initSubCardSort(card, subCard);
@@ -1172,6 +1179,10 @@
 
                     if (block?.item?.id) {
                         subCard.dataset.itemId = block.item.id;
+                    }
+                    const requireSubjectInput = subCard.querySelector('.workload-require-subject');
+                    if (requireSubjectInput) {
+                        requireSubjectInput.checked = Boolean(block?.item?.require_subject);
                     }
                     const seqDisplay = subCard.querySelector('.workload-sub-sequence-display');
                     const seqInput = subCard.querySelector('.workload-sub-sequence');
@@ -1424,11 +1435,13 @@
                             const subNameInput = subCard.querySelector('.workload-sub-category');
                             const sequenceInput = subCard.querySelector('.workload-sub-sequence');
                             const formulaText = subCard.querySelector('.workload-formula-text');
+                            const requireSubjectInput = subCard.querySelector('.workload-require-subject');
 
                             items.push({
                                 id: subCard.dataset.itemId ? Number(subCard.dataset.itemId) : null,
                                 item_name: subNameInput ? subNameInput.value.trim() : '',
                                 sequence: sequenceInput ? Number(sequenceInput.value || 0) : (index + 1),
+                                require_subject: requireSubjectInput ? requireSubjectInput.checked : false,
                                 formula_logic: formulaText ? formulaText.value.trim() : '',
                                 fields,
                                 form_items: formItems,
@@ -1437,15 +1450,15 @@
 
                         const mainNameInput = card.querySelector('.workload-main-category');
                         const mainSequenceInput = card.querySelector('.workload-main-sequence');
-
-                        groups.push({
+                        const groupPayload = {
                             id: card.dataset.groupId ? Number(card.dataset.groupId) : null,
                             group_name: mainNameInput ? mainNameInput.value.trim() : '',
                             sequence: mainSequenceInput
                                 ? Number(mainSequenceInput.value || 0)
                                 : (groupIndex + 1),
                             items,
-                        });
+                        };
+                        groups.push(groupPayload);
                     });
 
                     fetch('/workload-config/save', {

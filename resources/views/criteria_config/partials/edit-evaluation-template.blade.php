@@ -178,10 +178,6 @@
                                                     <input type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                                     <span>บังคับแนบหลักฐานก่อนบันทึกภาระงาน</span>
                                                 </label>
-                                                <label class="mt-2 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                                                    <input type="checkbox" class="quant_require_subject h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                                    <span>หัวข้อนี้ต้องเลือกรายวิชาและใช้ค่าหน่วยกิต</span>
-                                                </label>
                                             </div>
                                         </div>
                                         <button type="button" class="add_quant_sub_criteria_btn text-sm px-3 py-1.5 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition flex items-center">

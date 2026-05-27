@@ -101,6 +101,7 @@ class WorkloadConfigController extends Controller
                                     'id' => null,
                                     'name' => $active->name,
                                     'sequence' => 1,
+                                    'require_subject' => (bool) $active->require_subject,
                                 ],
                                 'form' => null,
                             ],
@@ -125,6 +126,7 @@ class WorkloadConfigController extends Controller
                         'id' => $item->id,
                         'name' => $item->name,
                         'sequence' => $item->sequence,
+                        'require_subject' => (bool) $item->require_subject,
                     ],
                     'form' => $form ? [
                         'id' => $form->id,
@@ -170,6 +172,7 @@ class WorkloadConfigController extends Controller
             'groups.*.items.*.id' => ['nullable', 'integer'],
             'groups.*.items.*.item_name' => ['required', 'string', 'max:255'],
             'groups.*.items.*.sequence' => ['required', 'integer', 'min:1'],
+            'groups.*.items.*.require_subject' => ['nullable', 'boolean'],
             'groups.*.items.*.formula_logic' => ['nullable', 'string'],
             'groups.*.items.*.fields' => ['nullable', 'array'],
             'groups.*.items.*.fields.*.label' => ['required', 'string', 'max:255'],
@@ -225,6 +228,7 @@ class WorkloadConfigController extends Controller
                             'evaluation_list_id' => $subCriteria->evaluation_list_id,
                             'score_a' => 0,
                             'score_b' => 0,
+                            'require_subject' => (bool) ($itemBlock['require_subject'] ?? false),
                         ]);
                     }
 
@@ -232,6 +236,7 @@ class WorkloadConfigController extends Controller
                         'name' => $itemBlock['item_name'],
                         'sequence' => $itemBlock['sequence'],
                         'quantity_sub_criteria_group_id' => $currentGroup->id,
+                        'require_subject' => (bool) ($itemBlock['require_subject'] ?? false),
                     ]);
 
                     $payloadItemIds[] = $currentItem->id;

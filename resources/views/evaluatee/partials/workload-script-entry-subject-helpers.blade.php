@@ -50,16 +50,56 @@
         }
     }
 
-    function setActiveGroup(groupId, groupName) {
+    function setActiveGroup(groupId, groupName, requiresSubject) {
         activeGroupId = groupId || '';
         activeGroupName = groupName || '';
+        if (typeof requiresSubject !== 'undefined') {
+            activeGroupRequiresSubject = requiresSubject === true || requiresSubject === '1';
+        }
         if (groupLabelInput) {
             groupLabelInput.value = groupName || (activeGroupId ? '\u0e2b\u0e21\u0e27\u0e14\u0e22\u0e48\u0e2d\u0e22 #' + activeGroupId : '-');
         }
     }
 
+    function formRequiresSubject(formId) {
+        if (!formId) {
+            return false;
+        }
+
+        if (detailFieldsContainer) {
+            const formBlock = detailFieldsContainer.querySelector('.workload-form-fields[data-form-id="' + formId + '"]');
+            if (formBlock) {
+                return formBlock.dataset.requiresSubject === '1';
+            }
+        }
+
+        if (itemSelect) {
+            const option = Array.from(itemSelect.options).find(function (opt) {
+                return opt.value && opt.dataset.formId === String(formId);
+            });
+            if (option) {
+                return option.dataset.requiresSubject === '1';
+            }
+        }
+
+        return false;
+    }
+
     function requiresSubject() {
-        return !!(workloadRequireSubjectFlag && workloadRequireSubjectFlag.value === '1');
+        if (itemSelect) {
+            const selected = itemSelect.selectedOptions[0];
+            if (selected && selected.value) {
+                return selected.dataset.requiresSubject === '1';
+            }
+        }
+        const activeFormId = getActiveFormId();
+        if (activeFormId) {
+            return formRequiresSubject(activeFormId);
+        }
+        if (activeGroupId) {
+            return !!activeGroupRequiresSubject;
+        }
+        return false;
     }
 
     function getSelectedSubjectOption() {

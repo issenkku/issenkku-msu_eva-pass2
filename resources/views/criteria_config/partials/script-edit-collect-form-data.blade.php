@@ -114,7 +114,6 @@
                                                     score_a: parseFloat(scoreA),
                                                     score_b: parseFloat(scoreB),
                                                     require_evidence: subBlock.querySelector('.quant_require_evidence')?.checked || false,
-                                                    require_subject: subBlock.querySelector('.quant_require_subject')?.checked || false
                                                 };
                                                 const quantSubIdInput = subBlock.querySelector('.quant_sub_criteria_id');
                                                 if (quantSubIdInput && quantSubIdInput.value) {

@@ -30,8 +30,10 @@
         let lastDefaultFormId = '';
         let lastDefaultGroupId = '';
         let lastDefaultGroupName = '';
+        let lastDefaultRequiresSubject = false;
         let activeGroupId = '';
         let activeGroupName = '';
+        let activeGroupRequiresSubject = false;
         let pendingEditPayload = null;
 
         // เก็บค่าเริ่มต้นจากปุ่มเพิ่มรายการ เพื่อใช้เติม modal ตอนเปิด
@@ -44,6 +46,7 @@
             lastDefaultFormId = btn.dataset.defaultFormId || '';
             lastDefaultGroupId = btn.dataset.groupId || '';
             lastDefaultGroupName = btn.dataset.groupName || '';
+            lastDefaultRequiresSubject = btn.dataset.requiresSubject === '1';
         });
 
         // แยก helper และ lifecycle ตามหน้าที่เพื่อให้ไฟล์หลักเป็น orchestration

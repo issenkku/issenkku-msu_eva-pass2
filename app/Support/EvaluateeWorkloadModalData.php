@@ -10,8 +10,12 @@ class EvaluateeWorkloadModalData
 {
     public static function build($quantitySubCriteria, Collection $workloadForms, Collection $subjects): array
     {
+        $requiresSubject = collect($quantitySubCriteria?->groups ?? [])
+            ->flatMap(fn ($group) => $group->items ?? [])
+            ->contains(fn ($item) => !empty($item?->require_subject));
+
         return [
-            'requires_subject' => !empty($quantitySubCriteria?->require_subject),
+            'requires_subject' => $requiresSubject,
             'requires_evidence' => !empty($quantitySubCriteria?->require_evidence),
             'subjects' => $subjects->map(function ($subject) {
                 return [
@@ -34,6 +38,7 @@ class EvaluateeWorkloadModalData
                         'id' => $item->id,
                         'form_id' => $form->id,
                         'group_id' => $form->subCriteriaItem->quantity_sub_criteria_group_id ?? '',
+                        'requires_subject' => !empty($form->subCriteriaItem?->require_subject),
                         'sequence' => $sequence,
                         'variable_name' => 'item_' . $sequence,
                         'score' => $item->score,
@@ -60,6 +65,7 @@ class EvaluateeWorkloadModalData
 
                 return [
                     'id' => $form->id,
+                    'requires_subject' => !empty($form->subCriteriaItem?->require_subject),
                     'fields' => $fields,
                     'has_renderable_fields' => $fields->contains(fn ($field) => !empty($field['is_renderable_input'])),
                 ];

@@ -25,6 +25,7 @@
                                         value="{{ $itemOption['id'] }}"
                                         data-form-id="{{ $itemOption['form_id'] }}"
                                         data-group-id="{{ $itemOption['group_id'] }}"
+                                        data-requires-subject="{{ !empty($itemOption['requires_subject']) ? 1 : 0 }}"
                                         data-sequence="{{ $itemOption['sequence'] }}"
                                         data-variable-name="{{ $itemOption['variable_name'] }}"
                                         data-score="{{ $itemOption['score'] }}"

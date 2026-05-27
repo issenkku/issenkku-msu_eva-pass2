@@ -11,6 +11,7 @@
             data-subject-id="{{ $rowView['subject_id'] ?? '' }}"
             data-group-id="{{ $rowView['group_id'] ?? '' }}"
             data-group-name="{{ $rowView['group_name'] ?? '' }}"
+            data-requires-subject="{{ !empty($rowView['requires_subject']) ? 1 : 0 }}"
             data-field-values='@json($rowView['field_values'] ?? [])'
             data-evidence-links='@json(collect($rowView['evidence_links'] ?? [])->values())'
         >

@@ -143,14 +143,14 @@
                                         return;
                                     }
 
-                                    quantMain.quantity_sub_criterias.push({
+                                    const quantSubPayload = {
                                         name: subName,
                                         sequence: sk + 1,
                                         score_a: Number(scoreA),
                                         score_b: Number(scoreB),
                                         require_evidence: subQ.querySelector('.quant_require_evidence')?.checked || false,
-                                        require_subject: subQ.querySelector('.quant_require_subject')?.checked || false
-                                    });
+                                    };
+                                    quantMain.quantity_sub_criterias.push(quantSubPayload);
                                 });
 
                                 if (valid) {

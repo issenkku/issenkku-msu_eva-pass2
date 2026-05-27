@@ -205,9 +205,14 @@ class EvaluateeWorkloadEntryController extends Controller
     private function resolveSubjectIdForForm(WorkloadForm $form, mixed $subjectId): ?int
     {
         $subCriteria = $form->quantitySubCriteria ?: QuantitySubCriteria::find($form->quantity_sub_criteria_id);
+        $subCriteriaItem = $form->subCriteriaItem;
         $normalizedSubjectId = $subjectId !== null && $subjectId !== '' ? (int) $subjectId : null;
 
-        if (! $subCriteria || ! $subCriteria->require_subject) {
+        $requiresSubject = $subCriteriaItem
+            ? ! empty($subCriteriaItem->require_subject)
+            : ! empty($subCriteria?->require_subject);
+
+        if (! $requiresSubject) {
             return null;
         }
 

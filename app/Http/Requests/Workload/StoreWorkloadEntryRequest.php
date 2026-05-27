@@ -52,12 +52,16 @@ class StoreWorkloadEntryRequest extends FormRequest
                 return;
             }
 
-            $form = WorkloadForm::with(['fields', 'quantitySubCriteria'])->find($formId);
+            $form = WorkloadForm::with(['fields', 'quantitySubCriteria', 'subCriteriaItem.group'])->find($formId);
             if (! $form) {
                 return;
             }
 
-            if (! empty($form->quantitySubCriteria?->require_subject) && ! $this->filled('subject_id')) {
+            $requiresSubject = $form->subCriteriaItem
+                ? ! empty($form->subCriteriaItem->require_subject)
+                : ! empty($form->quantitySubCriteria?->require_subject);
+
+            if ($requiresSubject && ! $this->filled('subject_id')) {
                 $validator->errors()->add('subject_id', 'กรุณาเลือกรายวิชาก่อนบันทึกข้อมูลภาระงาน');
             }
 

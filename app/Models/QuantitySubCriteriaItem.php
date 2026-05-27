@@ -25,6 +25,11 @@ class QuantitySubCriteriaItem extends Model
         'quantity_sub_criteria_group_id',
         'criteria_version_id',
         'evaluation_list_id',
+        'require_subject',
+    ];
+
+    protected $casts = [
+        'require_subject' => 'boolean',
     ];
 
     public function group(): BelongsTo
