@@ -117,7 +117,7 @@ class EvaluateeWorkloadViewData
                     'rows' => $rows,
                     'show_level_column' => $showLevelColumn,
                     'requires_subject' => $requiresSubject,
-                    'item_total_display' => number_format($itemTotalScore, 0, '.', ''),
+                    'item_total_display' => number_format($itemTotalScore, 2, '.', ''),
                     'empty_column_count' => $emptyColumnCount,
                 ];
             })->values();
@@ -142,7 +142,7 @@ class EvaluateeWorkloadViewData
             'requires_subject' => $groups->contains(fn ($group) => !empty($group['requires_subject'])),
             'groups' => $groups,
             'total_display' => is_numeric($groups->sum('group_total_score'))
-                ? number_format((float) $groups->sum('group_total_score'), 0, '.', '')
+                ? number_format((float) $groups->sum('group_total_score'), 2, '.', '')
                 : '-',
         ];
     }
