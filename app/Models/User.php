@@ -6,6 +6,7 @@ use App\Models\Setting\Departments;
 use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Notifications\CustomResetPassword;
+use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -22,7 +23,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use CanResetPasswordTrait, HasApiTokens, HasFactory, HasRoles, LogsActivity, MustVerifyEmailTrait, Notifiable;
 
     public const DASHBOARD_ROLE_MAP = [
@@ -95,7 +96,7 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
             ->values()
             ->all();
 
-        if (!empty($entries)) {
+        if (! empty($entries)) {
             return $entries;
         }
 
@@ -235,8 +236,7 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
     {
         // Get all assignment data where user is evaluator
         $assignmentDataIds = $this->evaluatorAssignmentData()->pluck('id');
-        
-        // Return assignments query with necessary relationships
+
         return Assignments::whereIn('assignment_data_id', $assignmentDataIds)
             ->with([
                 'evaluateeUser.department',

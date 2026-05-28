@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/layouts/app/AppSidebarLayout.vue -->
 <script setup lang="ts">
 import AppContent from '@/components/AppContent.vue';
 import AppShell from '@/components/AppShell.vue';

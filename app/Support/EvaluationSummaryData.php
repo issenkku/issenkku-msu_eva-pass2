@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/EvaluationSummaryData.php
-
 namespace App\Support;
 
 use Carbon\Carbon;
@@ -134,7 +132,7 @@ class EvaluationSummaryData
                 $isRecent = false;
                 if ($end && $end->gt(Carbon::now()->subDays(3))) {
                     $isRecent = true;
-                } elseif (!$end && $start && $start->gt(Carbon::now()->subDays(3))) {
+                } elseif (! $end && $start && $start->gt(Carbon::now()->subDays(3))) {
                     $isRecent = true;
                 }
 
@@ -164,7 +162,7 @@ class EvaluationSummaryData
 
     private static function formatThaiDate(?Carbon $date): string|array
     {
-        if (!$date) {
+        if (! $date) {
             return '-';
         }
 

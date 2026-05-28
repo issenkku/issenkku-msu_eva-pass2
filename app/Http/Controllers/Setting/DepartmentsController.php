@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/Setting/DepartmentsController.php
-
 namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;

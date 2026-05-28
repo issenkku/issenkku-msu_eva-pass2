@@ -103,7 +103,6 @@
                             <ul class="dropdown-menu" aria-labelledby="settingDropdown">
                                 <li><a class="dropdown-item" href="/criteria-config"><i class="fas fa-sitemap me-2"></i>จัดการโครงสร้างเกณฑ์</a></li>
                                 <li><a class="dropdown-item" href="{{ route('assignment-data.index') }}"><i class="fas fa-calendar-check me-2"></i>จัดการรอบการประเมิน</a></li>
-                                {{-- <li><a class="dropdown-item" href="{{ route('quality-scores.index') }}">คะแนนคุณภาพ</a></li> --}}
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -164,14 +163,8 @@
         <div class="mobile-menu" id="mobileMenu">
             <div class="mobile-menu-header">
                 <span class="mobile-menu-brand">
-                    {{-- <span class="mobile-menu-brand-icon">
-                        <i class="fas fa-bars"></i>
-                    </span> --}}
                     <span>ระบบประเมินบุคลากร</span>
                 </span>
-                {{-- <button class="mobile-menu-close" onclick="closeMobileMenu()">
-                    <i class="fas fa-times"></i>
-                </button> --}}
             </div>
 
             <div class="mobile-menu-content">
@@ -229,11 +222,6 @@
                         <i class="fas fa-tasks" style="width: 20px; margin-right: 10px;"></i>
                         จัดการรอบการประเมิน
                     </a>
-                    {{-- <a href="{{ route('quality-scores.index') }}" class="mobile-nav-item">
-                        <i class="fas fa-star" style="width: 20px; margin-right: 10px;"></i>
-                        คะแนนคุณภาพ
-                    </a> --}}
-                    
                     <!-- Settings Dropdown for Mobile -->
                     <div class="mobile-dropdown" id="settingsDropdown">
                         <button class="mobile-dropdown-toggle" onclick="toggleMobileDropdown('settingsDropdown')">
@@ -297,7 +285,6 @@
     @if (session('success'))
         <script>
             // Show success message if needed
-            // alert('{{ session('success') }}');
         </script>
     @endif
 </body>

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/sidebar/SidebarMenuButton.vue -->
 <script setup lang="ts">
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { type Component, computed } from 'vue'

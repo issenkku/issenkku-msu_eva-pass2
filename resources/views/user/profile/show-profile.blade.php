@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/user/profile/show-profile.blade.php --}}
 @extends('layouts.app')
 
 @section('content')

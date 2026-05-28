@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/evaluators-period-section.blade.php --}}
 <div class="bg-white shadow-sm rounded-lg p-6 mb-6">
     <h2 class="text-xl font-semibold text-gray-800 mb-4">กำหนดกรอบการประเมิน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

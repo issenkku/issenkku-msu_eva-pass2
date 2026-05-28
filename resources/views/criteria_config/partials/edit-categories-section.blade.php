@@ -57,8 +57,6 @@
                             </h4>
                             @include('criteria_config.partials.edit-evaluation-template')
                     </div>
-                    {{-- <!-- Category blocks will be dynamically loaded here -->
-                    <div class="flex justify-center py-10 text-gray-500">กำลังโหลดข้อมูล...</div> --}}
                 </div>
 
                 <button type="button" id="add_category_btn" class="my-6 px-5 py-2.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition flex items-center">

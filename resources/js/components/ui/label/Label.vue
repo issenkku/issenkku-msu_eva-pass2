@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/label/Label.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { Label, type LabelProps } from 'reka-ui'

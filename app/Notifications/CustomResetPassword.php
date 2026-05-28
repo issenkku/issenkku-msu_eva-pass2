@@ -47,7 +47,6 @@ class CustomResetPassword extends ResetPassword
     public function toArray(object $notifiable): array
     {
         return [
-            //
         ];
     }
 }

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dialog/DialogContent.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-vue-next'

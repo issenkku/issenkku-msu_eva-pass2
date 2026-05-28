@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/Dashboard/DirectorDashboardMeta.php
-
 namespace App\Support\Dashboard;
 
 final class DirectorDashboardMeta
@@ -27,6 +25,7 @@ final class DirectorDashboardMeta
 
                 if ($statuses->isEmpty()) {
                     $counts['รอการกรอกข้อมูล']++;
+
                     return;
                 }
 

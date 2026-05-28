@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/user/profile/show-profile-public.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

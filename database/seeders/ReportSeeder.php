@@ -19,8 +19,6 @@ class ReportSeeder extends Seeder
     public function run(): void
     {
         // 1. Create or get one Report (use id=1 if possible)
-        // $report = Report::find(1);
-        // if (!$report) {
         $report = Reports::factory()->create([
             // 'id'     => 1,
             // 'status' => 'Assigned', // หรือเปลี่ยนตาม field ที่โมเดลคุณต้องการ

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/TextLink.vue -->
 <script setup lang="ts">
 import { Method } from '@inertiajs/core';
 import { Link } from '@inertiajs/vue3';

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dialog/DialogOverlay.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { DialogOverlay, type DialogOverlayProps } from 'reka-ui'

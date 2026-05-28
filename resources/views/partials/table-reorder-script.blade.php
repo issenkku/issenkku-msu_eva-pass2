@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/partials/table-reorder-script.blade.php --}}
 <script>
     (function() {
         function initReorderTable(container) {

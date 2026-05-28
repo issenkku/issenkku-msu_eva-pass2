@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/EvaluateeWorkloadModalData.php
-
 namespace App\Support;
 
 use Illuminate\Support\Collection;
@@ -12,11 +10,11 @@ class EvaluateeWorkloadModalData
     {
         $requiresSubject = collect($quantitySubCriteria?->groups ?? [])
             ->flatMap(fn ($group) => $group->items ?? [])
-            ->contains(fn ($item) => !empty($item?->require_subject));
+            ->contains(fn ($item) => ! empty($item?->require_subject));
 
         return [
             'requires_subject' => $requiresSubject,
-            'requires_evidence' => !empty($quantitySubCriteria?->require_evidence),
+            'requires_evidence' => ! empty($quantitySubCriteria?->require_evidence),
             'subjects' => $subjects->map(function ($subject) {
                 return [
                     'id' => $subject->id,
@@ -27,7 +25,7 @@ class EvaluateeWorkloadModalData
                     'lecture_credits' => $subject->lecture_credits ?? 0,
                     'lab_credits' => $subject->lab_credits ?? 0,
                     'self_study_credits' => $subject->self_study_credits ?? 0,
-                    'search' => mb_strtolower(trim(($subject->code ?? '') . ' ' . ($subject->name_th ?? '') . ' ' . ($subject->name_en ?? ''))),
+                    'search' => mb_strtolower(trim(($subject->code ?? '').' '.($subject->name_th ?? '').' '.($subject->name_en ?? ''))),
                 ];
             })->values(),
             'workload_item_options' => $workloadForms->flatMap(function ($form) {
@@ -38,9 +36,9 @@ class EvaluateeWorkloadModalData
                         'id' => $item->id,
                         'form_id' => $form->id,
                         'group_id' => $form->subCriteriaItem->quantity_sub_criteria_group_id ?? '',
-                        'requires_subject' => !empty($form->subCriteriaItem?->require_subject),
+                        'requires_subject' => ! empty($form->subCriteriaItem?->require_subject),
                         'sequence' => $sequence,
-                        'variable_name' => 'item_' . $sequence,
+                        'variable_name' => 'item_'.$sequence,
                         'score' => $item->score,
                         'label' => $item->label,
                     ];
@@ -65,9 +63,9 @@ class EvaluateeWorkloadModalData
 
                 return [
                     'id' => $form->id,
-                    'requires_subject' => !empty($form->subCriteriaItem?->require_subject),
+                    'requires_subject' => ! empty($form->subCriteriaItem?->require_subject),
                     'fields' => $fields,
-                    'has_renderable_fields' => $fields->contains(fn ($field) => !empty($field['is_renderable_input'])),
+                    'has_renderable_fields' => $fields->contains(fn ($field) => ! empty($field['is_renderable_input'])),
                 ];
             })->values(),
         ];

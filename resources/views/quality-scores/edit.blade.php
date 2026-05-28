@@ -1,5 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/quality-scores/edit.blade.php --}}
 @section('title', 'แก้ไขคะแนนเชิงคุณภาพ')
 
 @section('content')

@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-edit-fetch-version.blade.php --}}
         function fetchVersionDetails() {
             isInitialDataLoaded = false;
             suppressDirtyTracking = true;

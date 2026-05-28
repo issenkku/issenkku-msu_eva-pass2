@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/EvaluationScoreSummary.php
-
 namespace App\Support;
 
 class EvaluationScoreSummary
@@ -45,7 +43,7 @@ class EvaluationScoreSummary
         $maxQualityScore = 0.0;
         foreach ($categoryItems as $category) {
             foreach ($category['evaluation_lists'] ?? [] as $evaluationList) {
-                if (!empty($evaluationList['quality_items'])) {
+                if (! empty($evaluationList['quality_items'])) {
                     $maxQualityScore += (float) ($evaluationList['sum_score'] ?? 0);
                 }
             }

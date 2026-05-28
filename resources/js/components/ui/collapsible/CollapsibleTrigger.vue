@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/collapsible/CollapsibleTrigger.vue -->
 <script setup lang="ts">
 import { CollapsibleTrigger, type CollapsibleTriggerProps } from 'reka-ui'
 

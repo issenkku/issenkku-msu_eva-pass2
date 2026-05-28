@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/evaluatee/partials/workload-item-empty-row.blade.php --}}
 <tr>
     <td>{{ $itemView['name'] ?? '-' }}</td>
     @if(!empty($itemView['requires_subject']))

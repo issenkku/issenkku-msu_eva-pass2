@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Workload;
 
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadEntryRequest;
 use App\Http\Requests\Workload\UpdateWorkloadEntryRequest;
@@ -15,14 +14,6 @@ use Illuminate\Http\Request;
 
 class WorkloadEntryController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index(Request $request)
     {
         $query = WorkloadEntry::query();
@@ -42,14 +33,6 @@ class WorkloadEntryController extends Controller
         return response()->json($query->get());
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show($id)
     {
         try {
@@ -59,14 +42,6 @@ class WorkloadEntryController extends Controller
         }
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: บันทึกข้อมูล WorkloadEntry ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param StoreWorkloadEntryRequest $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(StoreWorkloadEntryRequest $request)
     {
         $validated = $request->validated();
@@ -88,15 +63,6 @@ class WorkloadEntryController extends Controller
         return response()->json($entry, 201);
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param UpdateWorkloadEntryRequest $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(UpdateWorkloadEntryRequest $request, $id)
     {
         try {
@@ -128,14 +94,6 @@ class WorkloadEntryController extends Controller
         }
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id)
     {
         try {
@@ -200,8 +158,8 @@ class WorkloadEntryController extends Controller
                 return 'lab_credits';
             }
 
-            $context .= ' ' . trim((string) ($field->label ?? ''));
-            $context .= ' ' . trim((string) ($field->note ?? ''));
+            $context .= ' '.trim((string) ($field->label ?? ''));
+            $context .= ' '.trim((string) ($field->note ?? ''));
         }
 
         $normalizedContext = mb_strtolower($context);
@@ -247,7 +205,7 @@ class WorkloadEntryController extends Controller
             }
         }
 
-        if (!array_key_exists('item_*', $normalized) && !array_key_exists('item_star', $normalized)) {
+        if (! array_key_exists('item_*', $normalized) && ! array_key_exists('item_star', $normalized)) {
             foreach ($normalized as $key => $value) {
                 if (preg_match('/^item_\d+$/', $key)) {
                     $normalized['item_*'] = $value;

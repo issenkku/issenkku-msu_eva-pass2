@@ -130,6 +130,7 @@
             };
 
             const getDragAfterElement = (container, selector, pointerY, draggingItem) => {
+                // Choose the nearest row/card below the pointer so reordering feels stable.
                 const items = getDirectMatches(container, selector)
                     .filter((item) => item !== draggingItem);
 
@@ -157,6 +158,7 @@
                     return;
                 }
 
+                // Bind once per container because cloned workload cards reuse the same setup path.
                 container.dataset.sortableBound = 'true';
 
                 container.addEventListener('dragover', (event) => {

@@ -2,20 +2,22 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-
 use App\Http\Controllers\Controller;
+use App\Models\Assignments;
+use App\Models\EvaluationList;
 use App\Models\EvidenceAnswer;
-use App\Models\QualitySubCriteria;
 use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Models\User;
 use App\Support\AssignmentFlow;
 use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Spatie\Activitylog\Facades\LogBatch;
 use Spatie\Activitylog\Facades\Activity;
 
 class EvaluationScoreController extends Controller
@@ -33,15 +35,6 @@ class EvaluationScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    /**
-     * เมธอด: storeEvaluationScores
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore, EvidenceAnswer ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $reportId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function storeEvaluationScores(Request $request, $reportId)
     {
         try {
@@ -157,8 +150,8 @@ class EvaluationScoreController extends Controller
             DB::beginTransaction();
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
-            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
-            $oldEvidences      = EvidenceAnswer::where('report_id', $reportId)->get();
+            $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
+            $oldEvidences = EvidenceAnswer::where('report_id', $reportId)->get();
 
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
@@ -172,7 +165,7 @@ class EvaluationScoreController extends Controller
                         ? $item['quantity_sub_criteria_id'][0]
                         : (int) $item['quantity_sub_criteria_id'];
 
-                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $subCriteria = QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
                     $description = $item['description'] ?? null;
 
@@ -219,12 +212,12 @@ class EvaluationScoreController extends Controller
                     ->unique()
                     ->values();
 
-                $subCriteriaMap = \App\Models\QualitySubCriteria::whereIn('id', $qualitySubIds)
+                $subCriteriaMap = QualitySubCriteria::whereIn('id', $qualitySubIds)
                     ->get(['id', 'num_score', 'evaluation_list_id'])
                     ->keyBy('id');
 
                 $listIds = $subCriteriaMap->pluck('evaluation_list_id')->filter()->unique()->values();
-                $listMaxMap = \App\Models\EvaluationList::whereIn('id', $listIds)
+                $listMaxMap = EvaluationList::whereIn('id', $listIds)
                     ->get(['id', 'sum_score'])
                     ->keyBy('id');
 
@@ -298,15 +291,15 @@ class EvaluationScoreController extends Controller
             }
 
             $statusMessages = [
-                'Draft'   => 'ผู้รับประเมินกรอกข้อมูล',
+                'Draft' => 'ผู้รับประเมินกรอกข้อมูล',
                 'Pending' => 'ผู้รับประเมินส่งข้อมูล',
-                'Assigned'=> 'ระบบมอบหมาย',
+                'Assigned' => 'ระบบมอบหมาย',
                 'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
             ];
 
             $oldStatus = $report->status;
             $status = $validated['status'];
-            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $assignment = Assignments::with('assignmentData')->where('report_id', $reportId)->first();
             if ($status === 'Pending') {
                 $status = AssignmentFlow::statusForStage(AssignmentFlow::stagesFor($assignment?->assignmentData)[0] ?? null) ?? 'Completed';
             }
@@ -365,13 +358,13 @@ class EvaluationScoreController extends Controller
         }
 
         // สมมติว่าต้องการแจ้งเตือน evaluator (ผู้ประเมิน)
-        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        $assignment = Assignments::where('report_id', $reportId)->first();
         if (! $assignment) {
             return;
         }
 
         $assignment->load('assignmentData.evaluatorUser', 'assignmentData.directorUser', 'assignmentData.managerUser');
-        $evaluatee = \App\Models\User::find($assignment->evaluatee_id);
+        $evaluatee = User::find($assignment->evaluatee_id);
         $reviewerContacts = collect([
             ['label' => 'หัวหน้างาน', 'name' => $assignment->assignmentData->evaluatorUser->name ?? null],
             ['label' => 'กรรมการ', 'name' => $assignment->assignmentData->directorUser->name ?? null],
@@ -412,7 +405,7 @@ class EvaluationScoreController extends Controller
 
             \Mail::send('emails.evaluatee_pending', $mailData, function ($message) use ($user) {
                 $message->to($user->email, $user->name)
-                        ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
+                    ->subject('แจ้งเตือน: มีผู้ทำการประเมินส่งแบบประเมินให้คุณตรวจสอบ');
             });
         }
     }

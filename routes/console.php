@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์เส้นทางของระบบ: routes/console.php
-
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/navigation-menu/NavigationMenuContent.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import {

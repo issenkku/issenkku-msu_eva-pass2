@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views\components\manager-table.blade.php --}}
 @props(['evaluations', 'statusCounts', 'years'])
 
 @php
@@ -57,16 +56,12 @@
         })->values(); // Reset keys
     }
 @endphp
-
-{{-- บล็อกเนื้อหา --}}
 <div class="bg-white rounded-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
-    {{-- บล็อกเนื้อหา --}}
     <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
         <x-search-bar  
             placeholder="ค้นหาชื่อ, รายงาน..."
         /> 
-        {{-- บล็อกเนื้อหา --}}
         <div  class="flex flex-wrap justify-between gap-2">
             <x-export-button 
                 :route="route('export.reports', request()->query())"
@@ -78,8 +73,6 @@
             />
         </div>
     </div>
-
-    <!-- Status Badges -->
     @php
         $statusStyles = [
             'รอการกรอกข้อมูล' => 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -90,8 +83,6 @@
 
         $firstStatus = array_key_first($statusCounts);
     @endphp
-
-    {{-- บล็อกเนื้อหา --}}
     <div class="flex gap-3 mb-6 flex-wrap">
         @foreach($statusCounts as $status => $count)
             @php
@@ -112,16 +103,9 @@
             </a>
         @endforeach
     </div>
-
-    <!-- Table Format -->
-    {{-- บล็อกเนื้อหา --}}
     <div class="relative overflow-x-auto">
-        {{-- บล็อกเนื้อหา --}}
         <div class="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white to-transparent pointer-events-none z-10"></div>
-        {{-- บล็อกเนื้อหา --}}
         <div class="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"></div>
-
-        {{-- บล็อกเนื้อหา --}}
         <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {{-- ตารางข้อมูล --}}
             <table class="min-w-[900px] w-full border-collapse text-sm">
@@ -322,7 +306,6 @@
                 </tbody>
             </table>
         </div>
-        {{-- บล็อกเนื้อหา --}}
         <div class="px-6 py-3 border-t border-gray-200">
             {{ $evaluations->links() }}
         </div>

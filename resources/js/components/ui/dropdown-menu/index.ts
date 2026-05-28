@@ -1,4 +1,3 @@
-// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/dropdown-menu/index.ts
 
 export { default as DropdownMenu } from './DropdownMenu.vue'
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,14 +10,6 @@ use Inertia\Response;
 
 class EmailVerificationPromptController extends Controller
 {
-    /**
-     * เมธอด: __invoke
-     * จุดประสงค์: แสดงหน้า auth/VerifyEmail
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า auth/VerifyEmail
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function __invoke(Request $request): RedirectResponse|Response
     {
         return $request->user()->hasVerifiedEmail()

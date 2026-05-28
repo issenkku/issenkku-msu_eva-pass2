@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/AppContent.vue -->
 <script setup lang="ts">
 import { SidebarInset } from '@/components/ui/sidebar';
 import { computed } from 'vue';

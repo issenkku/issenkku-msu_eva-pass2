@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/user/management/resetPassword.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Assignments;
-use App\Models\EvidenceAnswer;
+use App\Models\EvaluationList;
 use App\Models\QualityScore;
+use App\Models\QualitySubCriteria;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
-use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Services\ReportDataService;
 use App\Support\AssignmentFlow;
 use App\Support\EvaluationScoreSummary;
 use App\Support\QuantityScoreHistoryRecorder;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class EvaluatorScoreController extends Controller
 {
@@ -22,14 +23,6 @@ class EvaluatorScoreController extends Controller
 
     protected $reportDataService;
 
-    /**
-     * เมธอด: __construct
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: โมเดล ReportDataService
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -46,16 +39,6 @@ class EvaluatorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    /**
-     * เมธอด: evaluator
-     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluator และเปลี่ยนเส้นทางไปที่ route evaluator.evaluator.show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id), โมเดล ReportDataService
-     * เอาต์พุต: หน้า evaluator_dashboard.evaluator
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function evaluator(Request $request, $id, ReportDataService $reportDataService)
     {
         $user = $request->user()->load('position', 'department');
@@ -75,7 +58,7 @@ class EvaluatorScoreController extends Controller
             abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
         }
 
-        $readonly = !in_array($report->status, ['Pending', 'Evaluator_draft']);
+        $readonly = ! in_array($report->status, ['Pending', 'Evaluator_draft']);
         if ($readonly && $request->query('readonly') != 1) {
             return redirect()->route('evaluator.evaluator.show', ['id' => $id, 'readonly' => 1]);
         }
@@ -86,17 +69,6 @@ class EvaluatorScoreController extends Controller
         ));
     }
 
-    
-
-    /**
-     * เมธอด: storeEvaluatorScores
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $reportId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function storeEvaluatorScores(Request $request, $reportId)
     {
         try {
@@ -133,7 +105,7 @@ class EvaluatorScoreController extends Controller
             $modifierRole = $request->user()?->getRoleNames()->first() ?: 'ผู้ประเมิน';
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
-            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+            $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
 
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
@@ -146,7 +118,7 @@ class EvaluatorScoreController extends Controller
                         ? $item['quantity_sub_criteria_id'][0]
                         : (int) $item['quantity_sub_criteria_id'];
 
-                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $subCriteria = QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
                     $description = isset($item['description']) ? trim((string) $item['description']) : null;
 
@@ -193,12 +165,12 @@ class EvaluatorScoreController extends Controller
                     ->unique()
                     ->values();
 
-                $subCriteriaMap = \App\Models\QualitySubCriteria::whereIn('id', $qualitySubIds)
+                $subCriteriaMap = QualitySubCriteria::whereIn('id', $qualitySubIds)
                     ->get(['id', 'num_score', 'evaluation_list_id'])
                     ->keyBy('id');
 
                 $listIds = $subCriteriaMap->pluck('evaluation_list_id')->filter()->unique()->values();
-                $listMaxMap = \App\Models\EvaluationList::whereIn('id', $listIds)
+                $listMaxMap = EvaluationList::whereIn('id', $listIds)
                     ->get(['id', 'sum_score'])
                     ->keyBy('id');
 
@@ -260,9 +232,9 @@ class EvaluatorScoreController extends Controller
             }
 
             $statusMessages = [
-                'Evaluator_draft'   => 'ผู้ประเมินกรอกคะแนน',
+                'Evaluator_draft' => 'ผู้ประเมินกรอกคะแนน',
                 'Director_assigned' => 'ผู้ประเมินอนุมัติ',
-                'Assigned'=> 'ระบบมอบหมาย',
+                'Assigned' => 'ระบบมอบหมาย',
                 'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
             ];
 
@@ -282,9 +254,6 @@ class EvaluatorScoreController extends Controller
             $newComment = $report->evaluator_comment;
 
             $report->save();
-            // if ($report->save() && $status === 'Pending') {
-            //     $this->sendEvaluationCompletedMail($reportId);
-            // }
 
             activity()
                 ->causedBy($request->user()) // who did it
@@ -294,7 +263,7 @@ class EvaluatorScoreController extends Controller
                     'สถานะรายงานก่อนหน้า' => $oldStatus,
                     'อัพเดตสถานะรายงาน' => $status,
                     'ความคิดเห็นก่อนหน้า' => $oldComment,
-                    'อัพเดตความคิดเห็น'   => $newComment,
+                    'อัพเดตความคิดเห็น' => $newComment,
                     'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
                     'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
                     'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,

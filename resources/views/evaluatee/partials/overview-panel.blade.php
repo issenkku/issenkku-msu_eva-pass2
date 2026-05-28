@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/evaluatee/partials/overview-panel.blade.php --}}
 <div class="rounded-2xl border bg-white p-6 shadow-md">
     <h3 class="text-xl font-bold text-gray-900">สถานะของฉัน</h3>
 

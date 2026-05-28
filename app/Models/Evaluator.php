@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Models/Evaluator.php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;

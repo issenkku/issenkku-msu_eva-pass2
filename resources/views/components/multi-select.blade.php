@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/multi-select.blade.php --}}
 @props([
     'name',
     'label',

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Workload;
 
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreWorkloadFormFieldRequest;
 use App\Http\Requests\Workload\UpdateWorkloadFormFieldRequest;
@@ -12,14 +11,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class WorkloadFormFieldController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($workloadFormId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $workloadFormId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index($workloadFormId)
     {
         try {
@@ -31,15 +22,6 @@ class WorkloadFormFieldController extends Controller
         }
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: บันทึกข้อมูล WorkloadFormField ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($workloadFormId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param StoreWorkloadFormFieldRequest $request ค่าที่รับเข้ามา
-     * @param mixed $workloadFormId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(StoreWorkloadFormFieldRequest $request, $workloadFormId)
     {
         try {
@@ -60,15 +42,6 @@ class WorkloadFormFieldController extends Controller
         }
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: อัปเดตข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param UpdateWorkloadFormFieldRequest $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(UpdateWorkloadFormFieldRequest $request, $id)
     {
         try {
@@ -81,14 +54,6 @@ class WorkloadFormFieldController extends Controller
         }
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id)
     {
         try {

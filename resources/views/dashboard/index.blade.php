@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/dashboard/index.blade.php --}}
-
 @section('content')
     @include('dashboard.partials.index-styles')
 

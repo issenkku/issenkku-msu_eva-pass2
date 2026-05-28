@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/list-toolbar.blade.php --}}
 @props([
     'action' => url()->current(),
     'searchName' => 'search',

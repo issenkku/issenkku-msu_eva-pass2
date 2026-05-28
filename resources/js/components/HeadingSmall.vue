@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/HeadingSmall.vue -->
 <script setup lang="ts">
 interface Props {
     title: string;

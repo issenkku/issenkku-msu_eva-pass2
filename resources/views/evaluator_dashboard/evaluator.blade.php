@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/evaluator_dashboard/evaluator.blade.php --}}
-
 @section('title', 'Evaluation')
 
 @section('content')

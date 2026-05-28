@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Evaluatee;
 
-
 use App\Http\Controllers\Controller;
-use App\Support\AssignmentFlow;
 use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
@@ -15,14 +13,16 @@ use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Services\GraphDataService;
 use App\Services\ScoreService;
+use App\Support\AssignmentFlow;
 use App\Support\EvaluateeDashboardAssignments;
 use App\Support\EvaluateeDashboardOverview;
-use App\Support\EvaluationSummaryData;
 use App\Support\EvaluationScoreSummary;
+use App\Support\EvaluationSummaryData;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class DashboardEvaluateeController extends Controller
 {
@@ -40,11 +40,10 @@ class DashboardEvaluateeController extends Controller
             'assignment.report.reportData',
         ]);
 
-        // $evaluations = $user->assignment->pluck('report')->filter();
-
         $evaluations = $user->assignment->map(function ($assignment) {
             $assignment->reviewerEntries = $this->reviewerEntries($assignment->assignmentData)->all();
             $assignment->evaluatorName = $this->buildReviewerText($assignment->assignmentData);
+
             return $assignment;
         });
 
@@ -76,7 +75,7 @@ class DashboardEvaluateeController extends Controller
         $years = $user->assignment->pluck('assignmentData.start_time')
             ->filter()
             ->map(function ($dt) {
-                return \Carbon\Carbon::parse($dt)->year;
+                return Carbon::parse($dt)->year;
             })
             ->unique()
             ->sortDesc()
@@ -84,7 +83,7 @@ class DashboardEvaluateeController extends Controller
 
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
-                $year = \Carbon\Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+                $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
 
                 return $year == $request->input('year');
             });
@@ -152,7 +151,6 @@ class DashboardEvaluateeController extends Controller
         ]);
     }
 
-
     private function buildReviewerText($assignmentData): string
     {
         $reviewers = $this->reviewerEntries($assignmentData)
@@ -195,6 +193,7 @@ class DashboardEvaluateeController extends Controller
             ->filter()
             ->values();
     }
+
     /**
      * ???????????????????????????????????????
      */
@@ -221,9 +220,9 @@ class DashboardEvaluateeController extends Controller
             if (! $datetime) {
                 return '-';
             }
-            \Carbon\Carbon::setLocale('th');
+            Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
-            $date = \Carbon\Carbon::parse($datetime);
+            $date = Carbon::parse($datetime);
             $year = $date->year + 543;
 
             return $date->translatedFormat('j F')." {$year}";
@@ -529,7 +528,7 @@ class DashboardEvaluateeController extends Controller
                 ->orderByDesc('created_at')
                 ->get()
                 ->groupBy('workload_entry_id')
-                ->map(fn($answers) => $answers->pluck('link')->filter()->values());
+                ->map(fn ($answers) => $answers->pluck('link')->filter()->values());
 
             foreach ($quantitySubCriteriaIds as $subCriteriaId) {
                 $workloadMap[$subCriteriaId] = [

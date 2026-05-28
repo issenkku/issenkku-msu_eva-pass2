@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/Evaluatee/EvaluateeWorkloadEntryController.php
-
 namespace App\Http\Controllers\Evaluatee;
 
 use App\Http\Controllers\Controller;
@@ -199,7 +197,7 @@ class EvaluateeWorkloadEntryController extends Controller
             }
         }
 
-        return $sequence > 0 ? 'item_' . $sequence : '';
+        return $sequence > 0 ? 'item_'.$sequence : '';
     }
 
     private function resolveSubjectIdForForm(WorkloadForm $form, mixed $subjectId): ?int
@@ -277,8 +275,8 @@ class EvaluateeWorkloadEntryController extends Controller
                 return 'lab_credits';
             }
 
-            $context .= ' ' . trim((string) ($field->label ?? ''));
-            $context .= ' ' . trim((string) ($field->note ?? ''));
+            $context .= ' '.trim((string) ($field->label ?? ''));
+            $context .= ' '.trim((string) ($field->note ?? ''));
         }
 
         $normalizedContext = mb_strtolower($context);
@@ -367,6 +365,7 @@ class EvaluateeWorkloadEntryController extends Controller
             abort(403, 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว');
         }
     }
+
     private function ensureEvidenceProvided(?int $quantitySubCriteriaId, array $evidenceLinks): void
     {
         if (! $quantitySubCriteriaId) {

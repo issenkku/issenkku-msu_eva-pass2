@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/EvaluateeWorkloadViewData.php
-
 namespace App\Support;
 
 use Illuminate\Support\Collection;
@@ -22,17 +20,17 @@ class EvaluateeWorkloadViewData
             $fieldDefinitions = $workloadForms
                 ->filter(fn ($form) => $groupFormIds->contains($form->id))
                 ->flatMap(fn ($form) => $form->fields ?? collect())
-                ->filter(fn ($field) => !empty($field->variable_name))
+                ->filter(fn ($field) => ! empty($field->variable_name))
                 ->unique(fn ($field) => self::fieldIdentity($field))
                 ->values();
 
             $itemViews = collect($group->items ?? [])->map(function ($item) use ($group, $workloadForms, $workloadEntriesByFormId, $evidenceLinksByEntryId) {
-                $requiresSubject = !empty($item?->require_subject);
+                $requiresSubject = ! empty($item?->require_subject);
                 $itemForm = $workloadForms->firstWhere('quantity_sub_criteria_item_id', $item->id);
                 $itemEntries = $itemForm ? ($workloadEntriesByFormId[$itemForm->id] ?? collect()) : collect();
                 $formFields = $itemForm?->fields
                     ? $itemForm->fields
-                        ->filter(fn ($field) => strtolower((string) ($field->field_type ?? 'number')) !== 'item' && !empty($field->variable_name))
+                        ->filter(fn ($field) => strtolower((string) ($field->field_type ?? 'number')) !== 'item' && ! empty($field->variable_name))
                         ->unique(fn ($field) => self::fieldIdentity($field))
                         ->values()
                     : collect();
@@ -42,7 +40,7 @@ class EvaluateeWorkloadViewData
                     ? $formFields
                     : $formFields->reject(fn ($field) => self::isGroupField($field))->values();
 
-                $showLevelColumn = $itemEntries->contains(fn ($entry) => !empty($entry?->subject_id));
+                $showLevelColumn = $itemEntries->contains(fn ($entry) => ! empty($entry?->subject_id));
                 $itemTotalScore = (float) $itemEntries->sum(fn ($entry) => max(0, (float) ($entry->calculated_score ?? 0)));
 
                 $rows = $itemEntries->map(function ($itemEntry) use ($item, $itemForm, $tableFields, $evidenceLinksByEntryId, $requiresSubject, $showLevelColumn, $group) {
@@ -131,7 +129,7 @@ class EvaluateeWorkloadViewData
             return [
                 'id' => $group->id,
                 'name' => $group->name ?? '',
-                'requires_subject' => $itemViews->contains(fn ($itemView) => !empty($itemView['requires_subject'])),
+                'requires_subject' => $itemViews->contains(fn ($itemView) => ! empty($itemView['requires_subject'])),
                 'field_definitions' => $fieldDefinitions->map(fn ($field) => $field->label ?? $field->variable_name)->values(),
                 'items' => $itemViews,
                 'group_total_score' => $groupTotalScore,
@@ -139,7 +137,7 @@ class EvaluateeWorkloadViewData
         })->values();
 
         return [
-            'requires_subject' => $groups->contains(fn ($group) => !empty($group['requires_subject'])),
+            'requires_subject' => $groups->contains(fn ($group) => ! empty($group['requires_subject'])),
             'groups' => $groups,
             'total_display' => is_numeric($groups->sum('group_total_score'))
                 ? number_format((float) $groups->sum('group_total_score'), 2, '.', '')
@@ -208,7 +206,7 @@ class EvaluateeWorkloadViewData
                     continue;
                 }
 
-                $varName = 'item_' . $sequence;
+                $varName = 'item_'.$sequence;
                 if (array_key_exists($varName, $normalizedFieldValues)) {
                     $selectedFormItem = $formItem;
                     $selectedItemId = $formItem->id;

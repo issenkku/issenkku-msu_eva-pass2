@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\Formula;
 use App\Models\QualityMainCriteria;
 use App\Models\QualitySubCriteria;
 use App\Models\QuantityMainCriteria;
@@ -75,14 +75,6 @@ class ReportStructureController extends Controller
     }
 
     // Get all criteria versions
-    /**
-     * เมธอด: index
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ไม่มี
-     * เอาต์พุต: ข้อมูล JSON
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index()
     {
         $criteriaVersions = CriteriaVersion::with(['createdByUser', 'reportDatas'])->get();
@@ -104,14 +96,6 @@ class ReportStructureController extends Controller
         return $this->jsonNoStore(['data' => $result]);
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show($id)
     {
         try {
@@ -317,14 +301,6 @@ class ReportStructureController extends Controller
     }
 
     // Create new (POST)
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล CriteriaVersion, ReportData, Category, EvaluationList, QuantityMainCriteria, Formula, QuantitySubCriteria, QualityMainCriteria, QualitySubCriteria ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request)
     {
         $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
@@ -462,7 +438,7 @@ class ReportStructureController extends Controller
 
                                     // บันทึกสูตรถ้ามี
                                     if (! empty($qMain['formula'])) {
-                                        \App\Models\Formula::create([
+                                        Formula::create([
                                             'condition' => $qMain['formula'],
                                             'quantity_main_criteria_id' => $quantityMainCriteria->id,
                                         ]);
@@ -495,9 +471,9 @@ class ReportStructureController extends Controller
                                         'ratio' => $qlMain['ratio'],
                                         'tooltips' => $qlMain['tooltips'],
                                         'sequence' => $qlMain['sequence'],
-                                            ...($hasQualityRequireEvidence ? ['require_evidence' => (bool) ($qlMain['require_evidence'] ?? false)] : []),
-                                            ...($hasQualityAllowMultiple ? ['allow_multiple' => (bool) ($qlMain['allow_multiple'] ?? false)] : []),
-                                        ]);
+                                        ...($hasQualityRequireEvidence ? ['require_evidence' => (bool) ($qlMain['require_evidence'] ?? false)] : []),
+                                        ...($hasQualityAllowMultiple ? ['allow_multiple' => (bool) ($qlMain['allow_multiple'] ?? false)] : []),
+                                    ]);
                                     if (! empty($qlMain['quality_sub_criterias'])) {
                                         foreach ($qlMain['quality_sub_criterias'] as $qlSub) {
                                             QualitySubCriteria::create([
@@ -517,13 +493,13 @@ class ReportStructureController extends Controller
                     }
                 }
 
-                
                 if (! empty($validated['source_version_id'])) {
                     $this->copyWorkloadFromSource(
                         (int) $validated['source_version_id'],
                         (int) $version->id
                     );
                 }
+
                 return $version;
             });
 
@@ -561,15 +537,6 @@ class ReportStructureController extends Controller
 
     // Update (PUT/PATCH)
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล ReportData, Category, EvaluationList, QuantityMainCriteria, Formula, QuantitySubCriteria, QualityMainCriteria, QualitySubCriteria, CriteriaVersionResource อัปเดตข้อมูล ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(Request $request, $id)
     {
         $hasQuantityRequireEvidence = $this->hasQuantityRequireEvidenceColumn();
@@ -790,7 +757,7 @@ class ReportStructureController extends Controller
                                             ->where('quantity_main_criteria_id', $quantityMainCriteria->id)
                                             ->delete();
 
-                                        \App\Models\Formula::create([
+                                        Formula::create([
                                             'condition' => $qMain['formula'],
                                             'quantity_main_criteria_id' => $quantityMainCriteria->id,
                                         ]);
@@ -805,17 +772,17 @@ class ReportStructureController extends Controller
                                             $qSubId = $qSub['quantity_sub_criteria_id'] ?? null;
                                             $quantitySubCriteria = null;
 
-                                        if (! empty($qSubId)) {
-                                            $quantitySubCriteria = QuantitySubCriteria::where('id', $qSubId)
-                                                ->where('criteria_version_id', $version->id)
-                                                ->first();
-                                        }
+                                            if (! empty($qSubId)) {
+                                                $quantitySubCriteria = QuantitySubCriteria::where('id', $qSubId)
+                                                    ->where('criteria_version_id', $version->id)
+                                                    ->first();
+                                            }
 
-                                        if ($quantitySubCriteria) {
-                                            $quantitySubCriteria->update([
-                                                'quantity_main_criteria_id' => $quantityMainCriteria->id,
-                                                'evaluation_list_id' => $evaluationList->id,
-                                                'name' => $qSub['name'],
+                                            if ($quantitySubCriteria) {
+                                                $quantitySubCriteria->update([
+                                                    'quantity_main_criteria_id' => $quantityMainCriteria->id,
+                                                    'evaluation_list_id' => $evaluationList->id,
+                                                    'name' => $qSub['name'],
                                                     'sequence' => $qSub['sequence'],
                                                     'score_a' => $qSub['score_a'],
                                                     'score_b' => $qSub['score_b'],
@@ -891,17 +858,17 @@ class ReportStructureController extends Controller
                                             $qlSubId = $qlSub['quality_sub_criteria_id'] ?? null;
                                             $qualitySubCriteria = null;
 
-                                        if (! empty($qlSubId)) {
-                                            $qualitySubCriteria = QualitySubCriteria::where('id', $qlSubId)
-                                                ->where('criteria_version_id', $version->id)
-                                                ->first();
-                                        }
+                                            if (! empty($qlSubId)) {
+                                                $qualitySubCriteria = QualitySubCriteria::where('id', $qlSubId)
+                                                    ->where('criteria_version_id', $version->id)
+                                                    ->first();
+                                            }
 
-                                        if ($qualitySubCriteria) {
-                                            $qualitySubCriteria->update([
-                                                'quality_main_criteria_id' => $qualityMainCriteria->id,
-                                                'evaluation_list_id' => $evaluationList->id,
-                                                'name' => $qlSub['name'],
+                                            if ($qualitySubCriteria) {
+                                                $qualitySubCriteria->update([
+                                                    'quality_main_criteria_id' => $qualityMainCriteria->id,
+                                                    'evaluation_list_id' => $evaluationList->id,
+                                                    'name' => $qlSub['name'],
                                                     'sequence' => $qlSub['sequence'],
                                                     'num_score' => $qlSub['num_score'],
                                                     'description' => $qlSub['description'] ?? null,
@@ -1078,14 +1045,6 @@ class ReportStructureController extends Controller
     }
 
     // Delete (DELETE)
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy($id)
     {
         $criteriaVersion = CriteriaVersion::findOrFail($id);
@@ -1113,6 +1072,7 @@ class ReportStructureController extends Controller
 
         return response()->json(null, 204);
     }
+
     private function copyWorkloadFromSource(int $sourceVersionId, int $newVersionId): void
     {
         if ($sourceVersionId === $newVersionId) {

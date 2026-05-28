@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Controllers\Concerns\BuildsDashboardMetrics;
 use App\Models\AssignmentData;
 use App\Models\Assignments;
@@ -10,31 +9,22 @@ use App\Models\Category;
 use App\Models\QualityScore;
 use App\Models\Reports;
 use App\Models\User;
-use App\Services\GraphDataService;
 use App\Services\ScoreService;
+use App\Support\AssignmentFlow;
 use App\Support\Dashboard\EvaluatorDashboardMeta;
 use Carbon\Carbon;
-use Debugbar;
-use Illuminate\Http\Request; // Assuming you have installed Laravel Debugbar for debugging
+use Debugbar; // Assuming you have installed Laravel Debugbar for debugging
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Pagination\LengthAwarePaginator;
-use App\Support\AssignmentFlow;
 
 class EvaluatorController extends Controller
 {
     use BuildsDashboardMetrics;
 
-    /**
-     * เมธอด: dashboard
-     * จุดประสงค์: แสดงหน้า evaluator_dashboard.index บันทึกข้อมูล LengthAwarePaginator
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า evaluator_dashboard.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function dashboard(Request $request)
     {
         // Load user with all necessary relationships
@@ -72,6 +62,7 @@ class EvaluatorController extends Controller
             return $assignmentData->assignments->map(function ($assignment) use ($assignmentData) {
                 // Attach assignment_data to assignment for easy access
                 $assignment->assignmentData = $assignmentData;
+
                 return $assignment;
             });
         });
@@ -104,6 +95,7 @@ class EvaluatorController extends Controller
         if ($request->filled('year')) {
             $evaluations = $evaluations->filter(function ($assignment) use ($request) {
                 $year = Carbon::parse(optional($assignment->assignmentData)->start_time)->year ?? null;
+
                 return $year == $request->input('year');
             });
         }
@@ -256,15 +248,6 @@ class EvaluatorController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluatee_show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($assignmentId)
-     * เอาต์พุต: หน้า evaluator_dashboard.evaluatee_show
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $assignmentId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show(Request $request, $assignmentId)
     {
         $userId = Auth::id();
@@ -462,15 +445,6 @@ class EvaluatorController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: edit
-     * จุดประสงค์: แสดงหน้า evaluator_dashboard.evaluatee_form
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: หน้า evaluator_dashboard.evaluatee_form
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function edit(Request $request, $id)
     {
         $userId = Auth::id() ?? 2;
@@ -534,12 +508,12 @@ class EvaluatorController extends Controller
         if ($criteriaVersionId) {
             $categories = Category::with([
                 'evaluationLists' => function ($query) {
-                $query->orderBy('sequence')->with([
-                    'quantitySubCriterias.mainCriteria:id,name,tooltips',
-                    'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
-                ]);
-            },
-        ])
+                    $query->orderBy('sequence')->with([
+                        'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                        'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
+                    ]);
+                },
+            ])
                 ->where('criteria_version_id', $criteriaVersionId)
                 ->orderBy('sequence')
                 ->get();
@@ -576,15 +550,6 @@ class EvaluatorController extends Controller
         return view('evaluator_dashboard.evaluatee_form', compact('assignment', 'categories'));
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route evaluator.index
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: Redirect ไปที่ route evaluator.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(Request $request, $id)
     {
         Log::info('Update evaluation scores for report ID: '.$id);
@@ -626,14 +591,6 @@ class EvaluatorController extends Controller
         return redirect()->route('evaluator.index')->with('success', 'บันทึกคะแนนเรียบร้อยแล้ว');
     }
 
-    /**
-     * เมธอด: reject
-     * จุดประสงค์: บันทึกข้อมูล และเปลี่ยนเส้นทางไปที่ route evaluator.index
-     * อินพุต: ตัวระบุ ($reportId)
-     * เอาต์พุต: Redirect ไปที่ route evaluator.index
-     * @param mixed $reportId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function reject($reportId)
     {
         $report = Reports::findOrFail($reportId);
@@ -738,17 +695,17 @@ class EvaluatorController extends Controller
     // อีเมลแจ้งเตือนเมื่อประเมินเสร็จ
     private function sendEvaluationCompletedMail($reportId)
     {
-        $report = \App\Models\Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
+        $report = Reports::with(['reportData', 'reportData.criteriaVersion'])->find($reportId);
         if (! $report) {
             return;
         }
 
         // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
-        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        $assignment = Assignments::where('report_id', $reportId)->first();
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluatee_id);
+        $user = User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }

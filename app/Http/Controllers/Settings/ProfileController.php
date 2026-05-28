@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/Settings/ProfileController.php
-
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;

@@ -1,4 +1,3 @@
-// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/button/index.ts
 
 import { cva, type VariantProps } from 'class-variance-authority'
 

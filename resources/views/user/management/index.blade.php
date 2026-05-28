@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/user/management/index.blade.php --}}
-
 @php
     $personnelTypes = [
         'สนับสนุน' => 'สนับสนุน',

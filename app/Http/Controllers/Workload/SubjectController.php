@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/Workload/SubjectController.php
-
 namespace App\Http\Controllers\Workload;
 
 use App\Http\Controllers\Controller;

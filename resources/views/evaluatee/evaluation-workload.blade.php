@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/evaluatee/evaluation-workload.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'ภาระงานด้านงานสอน')

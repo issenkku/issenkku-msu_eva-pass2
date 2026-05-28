@@ -26,8 +26,6 @@
         'gray' => 'bg-gray-100 text-gray-600',
     ][$color] ?? 'bg-purple-100 text-purple-600';
 @endphp
-
-{{--  --}}
 <div {{ $attributes->class(['stat-card bg-white rounded-xl p-6 shadow-md hover-scale border-l-4 flex items-center justify-between mb-4', $borderColor]) }}>
     <div>
         <p class="text-gray-500 text-sm font-medium">{{ $title }}</p>
@@ -36,7 +34,6 @@
             <p class="text-gray-500 text-sm mt-1">{{ $subtitle }}</p>
         @endif
     </div>
-    {{-- บล็อกเนื้อหา --}}
     <div class="p-3 rounded-lg {{ $iconBg }}">
         @if ($icon)
             <i class="{{ $icon }} {{ $iconSize }} w-8 h-8"></i>

@@ -1,8 +1,6 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views\criteria_config\evaluators.blade.php --}}
 @section('content')
     @include('criteria_config.partials.evaluators-styles')
-    {{-- บล็อกเนื้อหา --}}
     <div class="py-12">
         <div class="max-w-6xl mx-auto px-4">
             <div class="bg-white shadow-sm rounded-lg p-6 mb-4">

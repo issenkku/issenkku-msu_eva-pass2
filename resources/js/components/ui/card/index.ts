@@ -1,4 +1,3 @@
-// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/card/index.ts
 
 export { default as Card } from './Card.vue'
 export { default as CardAction } from './CardAction.vue'

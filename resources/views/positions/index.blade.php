@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/positions/index.blade.php --}}
 @extends('layouts.app')
 @section('title', 'จัดการข้อมูลตำแหน่ง')
 

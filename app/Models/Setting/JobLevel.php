@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Models/Setting/JobLevel.php
-
 namespace App\Models\Setting;
 
 use App\Models\User;

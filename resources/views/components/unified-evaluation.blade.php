@@ -20,8 +20,6 @@
 
 <input type="hidden" id="quality-max-score" value="{{ $qualityMaxScore }}">
 <input type="hidden" id="quality-readonly" value="{{ $readonly ? 1 : 0 }}">
-
-{{-- บล็อกเนื้อหา --}}
 <div class="space-y-8">
     @foreach ($categoryItems as $category)
         {{-- Category Container --}}
@@ -168,11 +166,6 @@
                                                 <div class="p-4 bg-green-50 rounded-xl shadow-sm">
                                                     <h4
                                                         class="text-lg font-semibold text-green-700 mb-3 flex items-center">
-                                                        {{-- <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
-                                                        </svg> --}}
                                                         สูตรการคำนวณ
                                                     </h4>
 
@@ -334,11 +327,6 @@
                                                             class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
                                                             {{ $mainHasChecked ? 'มีการเลือกแล้ว' : 'ยังไม่เลือก' }}
                                                         </span>
-                                                        {{-- <span
-                                                            id="quality-main-total-{{ $mainCriteria['id'] }}"
-                                                            class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                            คะแนนที่ได้ {{ number_format($selectedScore, 2) }}
-                                                        </span> --}}
                                                     </div>
                                                     <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none"
                                                         stroke="currentColor" viewBox="0 0 24 24">
@@ -418,13 +406,6 @@
                                                                             </span>
                                                                         @endif
                                                                     </div>
-                                                                    {{-- <div class="w-full md:w-60">
-                                                                        <div
-                                                                            id="quality-display-score-{{ $subCriteria['id'] }}"
-                                                                            class="text-base text-gray-800 p-2 rounded border text-center bg-slate-50">
-                                                                            {{ number_format($displayScore, 2) }}
-                                                                        </div>
-                                                                    </div> --}}
                                                                     {{-- Hidden Score Input for edit mode --}}
                                                                     @if (!$readonly)
                                                                         <input type="hidden"
@@ -443,14 +424,6 @@
                                                                 </div>
                                                             </div>
                                                         @endforeach
-                                                        {{-- <div
-                                                            class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                                            <span
-                                                                class="text-lg font-semibold text-blue-700">คะแนนที่ได้</span>
-                                                            <span
-                                                                id="quality-main-score-card-{{ $mainCriteria['id'] }}"
-                                                                class="text-lg font-semibold text-blue-900">{{ number_format($selectedScore, 2) }}</span>
-                                                        </div> --}}
                                                     </div>
 
                                                     {{-- Evidence Section for Quality Main Criteria --}}
@@ -582,7 +555,6 @@
         }
     @endphp
     @if ($hasAnnotations)
-        {{-- บล็อกเนื้อหา --}}
         <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
             <div class="flex items-start">
                 <div class="flex-shrink-0">

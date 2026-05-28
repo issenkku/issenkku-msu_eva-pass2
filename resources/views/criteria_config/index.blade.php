@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views\criteria_config\index.blade.php --}}
 @extends('layouts.app')
 
 @section('content')

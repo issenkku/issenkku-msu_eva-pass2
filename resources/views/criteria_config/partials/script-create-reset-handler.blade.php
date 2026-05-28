@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-create-reset-handler.blade.php --}}
         document.getElementById('reset_form_btn').addEventListener('click', function() {
             showValidationErrorModal('ต้องการล้างข้อมูลทั้งหมดใช่หรือไม่? <br><br><button id="confirm-reset-btn" class="mt-2 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none">ยืนยัน</button>');
             setTimeout(() => {

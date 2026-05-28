@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Director;
 
-
 use App\Http\Controllers\Controller;
-use App\Models\EvidenceAnswer;
+use App\Models\Assignments;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Services\ReportDataService;
+use App\Support\AssignmentFlow;
+use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\ReportDataService;
-use App\Support\QuantityScoreHistoryRecorder;
-use App\Support\AssignmentFlow;
 
 class DirectorScoreController extends Controller
 {
@@ -21,14 +21,6 @@ class DirectorScoreController extends Controller
 
     protected $reportDataService;
 
-    /**
-     * เมธอด: __construct
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: โมเดล ReportDataService
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -45,15 +37,6 @@ class DirectorScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    /**
-     * เมธอด: director
-     * จุดประสงค์: แสดงหน้า director_dashboard.director และเปลี่ยนเส้นทางไปที่ route director.show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: หน้า director_dashboard.director
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function director(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -84,21 +67,12 @@ class DirectorScoreController extends Controller
         ]));
     }
 
-    /**
-     * เมธอด: storeDirectorScores
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $reportId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function storeDirectorScores(Request $request, $reportId)
     {
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
-            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $assignment = Assignments::with('assignmentData')->where('report_id', $reportId)->first();
             $assignmentData = $assignment?->assignmentData;
             if (! $assignment || ($assignmentData?->director_id && (int) $assignmentData->director_id !== (int) $request->user()->id)) {
                 abort(403, 'Unauthorized director');
@@ -127,7 +101,7 @@ class DirectorScoreController extends Controller
             $modifierRole = $request->user()?->getRoleNames()->first() ?: 'กรรมการ';
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
-            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+            $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
 
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
@@ -140,7 +114,7 @@ class DirectorScoreController extends Controller
                         ? $item['quantity_sub_criteria_id'][0]
                         : (int) $item['quantity_sub_criteria_id'];
 
-                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $subCriteria = QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
                     $description = isset($item['description']) ? trim((string) $item['description']) : null;
 
@@ -197,9 +171,9 @@ class DirectorScoreController extends Controller
             }
 
             $statusMessages = [
-                'Director_draft'   => 'กรรมการกรอกคะแนน',
+                'Director_draft' => 'กรรมการกรอกคะแนน',
                 'Manager_assign' => 'กรรมการอนุมัติ',
-                'Assigned'=> 'ระบบมอบหมาย',
+                'Assigned' => 'ระบบมอบหมาย',
                 'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
             ];
 
@@ -218,9 +192,6 @@ class DirectorScoreController extends Controller
             $newComment = $report->director_comment;
 
             $report->save();
-            // if ($report->save() && $status === 'Pending') {
-            //     $this->sendEvaluationCompletedMail($reportId);
-            // }
 
             activity()
                 ->causedBy($request->user()) // who did it
@@ -230,7 +201,7 @@ class DirectorScoreController extends Controller
                     'สถานะรายงานก่อนหน้า' => $oldStatus,
                     'อัพเดตสถานะรายงาน' => $status,
                     'ความคิดเห็นก่อนหน้า' => $oldComment,
-                    'อัพเดตความคิดเห็น'   => $newComment,
+                    'อัพเดตความคิดเห็น' => $newComment,
                     'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
                     'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
                     'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,

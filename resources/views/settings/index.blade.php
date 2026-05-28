@@ -1,5 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/settings/index.blade.php --}}
 @section('content')
     @include('settings.partials.index-styles')
 

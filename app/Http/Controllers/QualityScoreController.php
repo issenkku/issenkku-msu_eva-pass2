@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\QualityScore;
 use App\Models\QualitySubCriteria;
 use App\Models\ReportData;
@@ -13,14 +12,6 @@ use Inertia\Inertia;
 
 class QualityScoreController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Index
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า Admin/QualityScores/Index
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index()
     {
         $qualityScores = QualityScore::with([
@@ -33,14 +24,6 @@ class QualityScoreController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: create
-     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Create
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า Admin/QualityScores/Create
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function create()
     {
         $qualitySubCriterias = QualitySubCriteria::with(['mainCriteria', 'evaluationList'])
@@ -58,14 +41,6 @@ class QualityScoreController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ และเปลี่ยนเส้นทางไปที่ route quality-scores.index
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -118,14 +93,6 @@ class QualityScoreController extends Controller
             ->with('success', 'เพิ่มคะแนนคุณภาพสำเร็จ');
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Show
-     * อินพุต: โมเดล QualityScore
-     * เอาต์พุต: หน้า Admin/QualityScores/Show
-     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show(QualityScore $qualityScore)
     {
         $qualityScore->load([
@@ -138,14 +105,6 @@ class QualityScoreController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: edit
-     * จุดประสงค์: แสดงหน้า Admin/QualityScores/Edit
-     * อินพุต: โมเดล QualityScore
-     * เอาต์พุต: หน้า Admin/QualityScores/Edit
-     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function edit(QualityScore $qualityScore)
     {
         $qualityScore->load([
@@ -169,15 +128,6 @@ class QualityScoreController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: update
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
-     * อินพุต: ข้อมูลจากคำขอ, โมเดล QualityScore
-     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function update(Request $request, QualityScore $qualityScore)
     {
         $request->validate([
@@ -197,14 +147,6 @@ class QualityScoreController extends Controller
             ->with('success', 'แก้ไขคะแนนคุณภาพสำเร็จ');
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ลบข้อมูล และเปลี่ยนเส้นทางไปที่ route quality-scores.index
-     * อินพุต: โมเดล QualityScore
-     * เอาต์พุต: Redirect ไปที่ route quality-scores.index
-     * @param QualityScore $qualityScore ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy(QualityScore $qualityScore)
     {
         $qualityScore->delete();
@@ -213,14 +155,6 @@ class QualityScoreController extends Controller
             ->with('success', 'ลบคะแนนคุณภาพสำเร็จ');
     }
 
-    /**
-     * เมธอด: getQualitySubCriterias
-     * จุดประสงค์: ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function getQualitySubCriterias(Request $request)
     {
         $evaluationListId = $request->get('evaluation_list_id');

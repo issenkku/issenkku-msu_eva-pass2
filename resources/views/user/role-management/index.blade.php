@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/user/role-management/index.blade.php --}}
-
 @section('content')
     @include('user.role-management.partials.index-styles')
 

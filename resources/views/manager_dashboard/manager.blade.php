@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/manager_dashboard/manager.blade.php --}}
-
 @section('title', 'Evaluation - ระบบประเมิน')
 
 @section('content')

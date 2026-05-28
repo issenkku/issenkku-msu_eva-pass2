@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
@@ -17,14 +16,6 @@ use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
-    /**
-     * เมธอด: create
-     * จุดประสงค์: แสดงหน้า user.management.resetPassword
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า user.management.resetPassword
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function create(Request $request)
     {
         // Use a Blade fallback to avoid blank page when Vite/Inertia assets are unavailable
@@ -34,14 +25,6 @@ class NewPasswordController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล PasswordReset
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

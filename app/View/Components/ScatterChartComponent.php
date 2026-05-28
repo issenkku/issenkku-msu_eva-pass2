@@ -1,7 +1,5 @@
 <?php
 
-// File: app/View/Components/ScatterChartComponent.php
-
 namespace App\View\Components;
 
 use Illuminate\View\Component;

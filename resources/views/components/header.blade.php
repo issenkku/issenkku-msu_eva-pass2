@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/header.blade.php --}}
 @props([
     'title',
     'text',

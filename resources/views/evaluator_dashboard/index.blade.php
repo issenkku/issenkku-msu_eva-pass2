@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/evaluator_dashboard/index.blade.php --}}
-
 @section('content')
     @include('partials.dashboard-overview-styles')
 

@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Imports/UsersImport.php
-
 namespace App\Imports;
 
 use App\Models\Setting\Departments;
@@ -17,8 +15,11 @@ use Spatie\Permission\Models\Role;
 class UsersImport implements ToCollection
 {
     private int $created = 0;
+
     private int $updated = 0;
+
     private int $skipped = 0;
+
     private array $errors = [];
 
     public function collection(Collection $rows)
@@ -34,6 +35,7 @@ class UsersImport implements ToCollection
 
                 if ($this->isEmptyRow($rowArray)) {
                     $this->skipped++;
+
                     continue;
                 }
 
@@ -248,7 +250,7 @@ class UsersImport implements ToCollection
         $value = $mappedData[$field] ?? null;
         $employeeId = $mappedData['employee_id'] ?? null;
 
-        if (!empty($employeeId)) {
+        if (! empty($employeeId)) {
             return "ข้อมูลซ้ำ: {$field} ({$value}) สำหรับรหัสพนักงาน {$employeeId}";
         }
 
@@ -273,7 +275,7 @@ class UsersImport implements ToCollection
 
     private function buildEducationBio(?array $educationHistory, ?string $fallbackBio = null): ?string
     {
-        if (!empty($educationHistory)) {
+        if (! empty($educationHistory)) {
             return collect($educationHistory)
                 ->map(function (array $entry) {
                     return collect([

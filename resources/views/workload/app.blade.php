@@ -216,18 +216,6 @@
                                                     <button class="chip" type="button">!=</button>
                                                 </div>
                                             </div>
-                                            {{-- <div class="toolbar-group">
-                                                <div class="toolbar-label">คำสั่ง</div>
-                                                <div class="toolbar-buttons">
-                                                    <button class="chip" type="button">AND</button>
-                                                    <button class="chip" type="button">OR</button>
-                                                    <button class="chip" type="button">NOR</button>
-                                                    <button class="chip" type="button">XOR</button>
-                                                    <button class="chip" type="button">XNOR</button>
-                                                    <button class="chip" type="button">NAND</button>
-                                                    <button class="chip" type="button">NOT</button>
-                                                </div>
-                                            </div> --}}
                                             <div class="toolbar-group">
                                                 <div class="toolbar-label">ตัวแปร</div>
                                                 <div class="toolbar-buttons workload-variable-chips" id="workload-variable-chips">
@@ -240,13 +228,11 @@
                                 </div>
                             </div>
                             <div class="sub-footer">
-                                {{-- <button class="btn btn-outline-primary btn-sm" id="workload-add-sub" type="button">เพิ่มหมวดย่อย</button> --}}
                                 <button class="btn btn-outline-primary btn-sm workload-add-sub" type="button">เพิ่มหมวดย่อย</button>
                             </div>
 
                         </div>
                         <div class="sub-footer">
-                            {{-- <button class="btn btn-outline-primary btn-sm workload-add-sub" type="button">เพิ่มหมวดย่อย</button> --}}
                             <button class="btn btn-outline-secondary btn-sm workload-add-main" type="button">เพิ่มหมวดหลัก</button>
                         </div>
                     </div>
@@ -265,7 +251,6 @@
 
     {{-- Toast แจ้งผลการทำงาน --}}
     <div class="workload-toast" id="workload-toast" aria-live="polite" aria-atomic="true">
-        {{--  --}}
         <div class="workload-toast-content">
             <span class="workload-toast-icon" aria-hidden="true">✓</span>
             <span class="workload-toast-text" id="workload-toast-text"></span>

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dropdown-menu/DropdownMenuSub.vue -->
 <script setup lang="ts">
 import {
   DropdownMenuSub,

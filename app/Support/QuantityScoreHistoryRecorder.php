@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/QuantityScoreHistoryRecorder.php
-
 namespace App\Support;
 
 use App\Models\QuantityScoreHistory;

@@ -42,14 +42,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <!-- หน้าหลัก/Dashboard -->
-                    {{-- <li class="nav-item">
-                        <a class="nav-link nav-link-custom {{ request()->routeIs('dashboard') || request()->is('/') ? 'active' : '' }}" 
-                           href="#">
-                            <i class="fas fa-home me-2"></i>
-                            หน้าแรก
-                        </a>
-                    </li> --}}
-
                     <!-- จัดการข้อมูล Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-link-custom dropdown-toggle 

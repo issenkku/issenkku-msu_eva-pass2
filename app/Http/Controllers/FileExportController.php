@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Exports\ReportsExport;
 use App\Exports\SingleReportExport;
 use App\Models\Reports;
@@ -11,14 +10,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FileExportController extends Controller
 {
-    /**
-     * เมธอด: exportDashboard
-     * จุดประสงค์: บันทึกข้อมูล ReportsExport ส่งไฟล์สำหรับดาวน์โหลด
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ไฟล์ดาวน์โหลด
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function exportDashboard(Request $request)
     {
         $user = $request->user();
@@ -33,14 +24,6 @@ class FileExportController extends Controller
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
-    /**
-     * เมธอด: adminExportDashboard
-     * จุดประสงค์: บันทึกข้อมูล ReportsExport ส่งไฟล์สำหรับดาวน์โหลด
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ไฟล์ดาวน์โหลด
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function adminExportDashboard(Request $request)
     {
         $query = $this->adminFilteredAssignmentsQuery($request);
@@ -48,14 +31,6 @@ class FileExportController extends Controller
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
-    /**
-     * เมธอด: exportSingleReport
-     * จุดประสงค์: บันทึกข้อมูล SingleReportExport ส่งไฟล์สำหรับดาวน์โหลด
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: ไฟล์ดาวน์โหลด
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function exportSingleReport($id)
     {
         // Find the report first
@@ -90,14 +65,6 @@ class FileExportController extends Controller
         return Excel::download(new SingleReportExport($assignment), $fileName);
     }
 
-    /**
-     * เมธอด: filteredAssignmentsQuery
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function filteredAssignmentsQuery(Request $request)
     {
         $user = $request->user();
@@ -141,14 +108,6 @@ class FileExportController extends Controller
         return $query;
     }
 
-    /**
-     * เมธอด: adminFilteredAssignmentsQuery
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function adminFilteredAssignmentsQuery(Request $request)
     {
         $user = $request->user();

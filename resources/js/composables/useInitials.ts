@@ -1,4 +1,3 @@
-// ไฟล์ TypeScript ของระบบ: resources/js/composables/useInitials.ts
 
 export function getInitials(fullName?: string): string {
     if (!fullName) return '';

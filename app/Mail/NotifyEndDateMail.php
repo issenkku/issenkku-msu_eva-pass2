@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Mail/NotifyEndDateMail.php
-
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
@@ -13,9 +11,13 @@ class NotifyEndDateMail extends Mailable
     use Queueable, SerializesModels;
 
     public $name;
+
     public $endDateTh;
+
     public $daysLeftText;
+
     public $actionUrl;
+
     public $actionText;
 
     public function __construct($name, $endDateTh, $daysLeftText, $actionUrl = null, $actionText = 'เข้าสู่รายการประเมิน')

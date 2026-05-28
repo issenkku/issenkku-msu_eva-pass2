@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/scatter-chart-component-script.blade.php --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (!window.scatterCharts) {

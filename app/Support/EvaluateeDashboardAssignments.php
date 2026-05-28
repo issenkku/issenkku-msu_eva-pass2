@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/EvaluateeDashboardAssignments.php
-
 namespace App\Support;
 
 use Carbon\Carbon;
@@ -33,7 +31,7 @@ class EvaluateeDashboardAssignments
             return [
                 'id' => $assignment->report->id ?? null,
                 'title' => optional($assignment->report->reportData)->report_title ?? 'ไม่พบชื่อรายงาน',
-                'period' => self::formatThai($startTime) . ' - ' . self::formatThai($endTime),
+                'period' => self::formatThai($startTime).' - '.self::formatThai($endTime),
                 'deadline' => self::formatThai($endTime),
                 'daysLeft' => $endTime ? now()->startOfDay()->diffInDays(Carbon::parse($endTime)->startOfDay(), false) : null,
                 'status' => optional($assignment->report)->status ?? 'Assigned',
@@ -86,6 +84,6 @@ class EvaluateeDashboardAssignments
         setlocale(LC_TIME, 'th_TH.UTF-8');
         $date = Carbon::parse($datetime);
 
-        return $date->translatedFormat('j F') . ' ' . ($date->year + 543);
+        return $date->translatedFormat('j F').' '.($date->year + 543);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Setting;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\Setting\Settings;
 use Illuminate\Http\Request;
@@ -10,14 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า settings.index
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า settings.index
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index()
     {
         $setting = Settings::first();
@@ -25,17 +16,8 @@ class SettingsController extends Controller
 
         return view('settings.index', compact('setting', 'backgroundAssets'));
         // --- IGNORE ---
-        // return view('indexSettings', ['settings' => $settings]);
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ อัปเดตข้อมูล และเปลี่ยนเส้นทางไปที่ route settings.index
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: Redirect ไปที่ route settings.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request)
     {
         $request->validate([

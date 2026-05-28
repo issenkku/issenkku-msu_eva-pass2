@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/User/UserTemplateController.php
-
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
@@ -64,23 +62,23 @@ class UserTemplateController extends Controller
         ];
 
         return Excel::download(
-            new class($sampleData, $headers, $helpRows) implements WithMultipleSheets {
+            new class($sampleData, $headers, $helpRows) implements WithMultipleSheets
+            {
                 public function __construct(
                     private array $sampleData,
                     private array $headers,
                     private array $helpRows,
-                ) {
-                }
+                ) {}
 
                 public function sheets(): array
                 {
                     return [
-                        new class($this->sampleData, $this->headers) implements FromArray, WithHeadings, WithStyles, WithColumnWidths {
+                        new class($this->sampleData, $this->headers) implements FromArray, WithColumnWidths, WithHeadings, WithStyles
+                        {
                             public function __construct(
                                 private array $sampleData,
                                 private array $headers,
-                            ) {
-                            }
+                            ) {}
 
                             public function array(): array
                             {
@@ -119,10 +117,9 @@ class UserTemplateController extends Controller
                                 ];
                             }
                         },
-                        new class($this->helpRows) implements FromArray, WithStyles, WithColumnWidths {
-                            public function __construct(private array $helpRows)
-                            {
-                            }
+                        new class($this->helpRows) implements FromArray, WithColumnWidths, WithStyles
+                        {
+                            public function __construct(private array $helpRows) {}
 
                             public function array(): array
                             {

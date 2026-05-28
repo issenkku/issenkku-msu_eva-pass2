@@ -150,11 +150,6 @@
                                             <div class="ml-6 mb-6">
                                                 <div class="p-4 bg-green-50 rounded-xl shadow-sm">
                                                     <h4 class="text-lg font-semibold text-green-700 mb-3 flex items-center">
-                                                        {{-- <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
-                                                        </svg> --}}
                                                         สูตรการคำนวณ
                                                     </h4>
 
@@ -441,11 +436,6 @@
                                             @endif
                                         </div>
                                         {{-- Selected Score --}}
-                                        {{-- <div class="w-full md:w-60">
-                                            <div class="text-base text-gray-800 text-center">
-                                                คะแนนที่ได้ {{ number_format((float)$displayScore, 2) }}
-                                            </div>
-                                        </div> --}}
                                         {{-- Hidden Score Input for edit mode --}}
                                         @if(!$readonly)
                                             <input type="hidden"
@@ -465,11 +455,6 @@
                                 </div>
                             @endforeach
                             @if($readonly)
-                                {{-- <div class="mt-5 p-6 bg-blue-50 rounded-xl border border-blue-500 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                                <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-
-                                    <span class="text-lg font-semibold text-blue-900">   {{ number_format((float)($selectedDisplayScore ?? 0), 2) }}</span>
-                                </div> --}}
                             @endif
                         </div>
 

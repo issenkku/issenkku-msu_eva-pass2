@@ -7,7 +7,6 @@
             const reportTitle = document.querySelector('.report_title').value.trim();
             const reportDescription = document.querySelector('.report_description').value.trim();
             if (!reportTitle) {
-                // alert('กรุณากรอกชื่อเกณฑ์และรายละเอียดเกณฑ์');
                 return;
             }
 
@@ -47,7 +46,6 @@
                 const mainCategories = catBlock.querySelector('.main_categories').value.trim();
                 const subCategories = catBlock.querySelector('.sub_categories').value.trim();
                 if (!mainCategories || !subCategories) {
-                    // alert(`กรุณากรอกหมวดหมู่หลักและหมวดหมู่ย่อยสำหรับหมวดหมู่ที่ ${catI + 1}`);
                     return;
                 }
 
@@ -68,9 +66,7 @@
                     const evalName = evalBlock.querySelector('.eval_name').value.trim();
                     const sumScore = evalBlock.querySelector('.sum_score').value;
                     if (!evalName || !sumScore) {
-                        // alert(
                         //     `กรุณากรอกชื่อรายการประเมินและคะแนนรวมสำหรับรายการที่ ${evalI + 1} ในหมวดหมู่ที่ ${catI + 1}`
-                        // );
                         return;
                     }
 
@@ -107,9 +103,7 @@
                                     : tooltipsTextarea.value.trim();
                                 const quantFormula = qMain.querySelector('.quant_formula')?.value.trim() || '';
                                 if (!quantName) {
-                                    // alert(
                                     //     `กรุณากรอกชื่อเกณฑ์และคำอธิบายสำหรับเกณฑ์ปริมาณหลักที่ ${qj + 1} ในรายการประเมินที่ ${evalI + 1} หมวดหมู่ที่ ${catI + 1}`
-                                    // );
                                     valid = false;
                                     return;
                                 }

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/collapsible/CollapsibleContent.vue -->
 <script setup lang="ts">
 import { CollapsibleContent, type CollapsibleContentProps } from 'reka-ui'
 

@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/unified-evaluator-styles.blade.php --}}
 <style>
     details > summary .chevron-up {
         display: inline-block !important;

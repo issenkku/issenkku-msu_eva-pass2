@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dropdown-menu/DropdownMenuRadioItem.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils'
 import { Circle } from 'lucide-vue-next'

@@ -1,9 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    {{-- บล็อกเนื้อหา --}}
     <div class="py-12 bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen">
-        {{-- บล็อกเนื้อหา --}}
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             @include('criteria_config.partials.page-intro', [
                 'title' => 'แก้ไขเกณฑ์การประเมิน',

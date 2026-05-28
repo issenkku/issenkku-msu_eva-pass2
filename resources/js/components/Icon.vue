@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/Icon.vue -->
 <script setup lang="ts">
 import { cn } from '@/lib/utils';
 import * as icons from 'lucide-vue-next';

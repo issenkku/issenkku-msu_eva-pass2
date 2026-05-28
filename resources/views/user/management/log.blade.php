@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/user/management/log.blade.php --}}
-
 @section('content')
     {{-- โครงหน้าประวัติการใช้งาน --}}
     <div class="container-fluid">

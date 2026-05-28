@@ -2,33 +2,22 @@
 
 namespace App\Http\Controllers\Manager;
 
-
 use App\Http\Controllers\Concerns\BuildsDashboardMetrics;
 use App\Http\Controllers\Controller;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
+use App\Models\User;
 use App\Services\EvaluationService;
-use App\Services\GraphDataService;
 use App\Services\ScoreService;
 use App\Support\Dashboard\ManagerDashboardMeta;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ManagerController extends Controller
 {
     use BuildsDashboardMetrics;
 
-    /**
-     * เมธอด: dashboard
-     * จุดประสงค์: แสดงหน้า manager_dashboard.index บันทึกข้อมูล LengthAwarePaginator
-     * อินพุต: ข้อมูลจากคำขอ, โมเดล EvaluationService
-     * เอาต์พุต: หน้า manager_dashboard.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param EvaluationService $evaluationService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function dashboard(Request $request, EvaluationService $evaluationService)
     {
         // Load user with comprehensive relationships based on actual schema
@@ -112,7 +101,7 @@ class ManagerController extends Controller
             ->filter(fn ($assignment) => $assignment->evaluateeUser) // Ensure no nulls
             ->groupBy('evaluateeUser.id')
             ->count();
-        $totalUsers = \App\Models\User::count();
+        $totalUsers = User::count();
         $overviewEvaluateeStatusCounts = ManagerDashboardMeta::summarizeOverviewStatuses($evaluations);
         $beforeManagerCount = $overviewEvaluateeStatusCounts['รอการกรอกข้อมูล'] ?? 0;
         $awaitingManagerCount = $overviewEvaluateeStatusCounts['ยังไม่ประเมิน'] ?? 0;
@@ -163,7 +152,7 @@ class ManagerController extends Controller
             'userAsEvaluatee' => $userAsEvaluatee, // Director's evaluatee assignments
             'userAsEvaluator' => $userAsEvaluator, // Director's evaluator assignments
             'allReportsData' => $allReportsData, // Complete reports data
-            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) =>  Carbon::parse($d)->year)->unique()->sortDesc(),
+            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn ($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
             'averageScore' => $averageScore,
             'totalEvaluations' => $totalEvaluations,
             'totalEvaluatees' => $totalEvaluatees,
@@ -185,5 +174,4 @@ class ManagerController extends Controller
             'followUpEvaluations' => $followUpEvaluations,
         ]);
     }
-
 }

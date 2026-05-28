@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views\criteria_config\assign.blade.php --}}
-
 @section('content')
     {{-- หน้ากำหนดช่วงเวลาและผู้เกี่ยวข้องสำหรับการ assign เกณฑ์ --}}
     <div class="py-12">

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/tooltip/TooltipProvider.vue -->
 <script setup lang="ts">
 import { TooltipProvider, type TooltipProviderProps } from 'reka-ui'
 

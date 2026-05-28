@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
@@ -14,14 +13,6 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * เมธอด: create
-     * จุดประสงค์: แสดงหน้า auth/Login
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า auth/Login
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function create(Request $request): Response
     {
         return Inertia::render('auth/Login', [
@@ -30,14 +21,6 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ดำเนินการเข้าสู่ระบบ/ยืนยันตัวตน และเปลี่ยนเส้นทางไปที่ route dashboard
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: Redirect ไปที่ route dashboard
-     * @param LoginRequest $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
@@ -47,14 +30,6 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
-    /**
-     * เมธอด: destroy
-     * จุดประสงค์: ดำเนินการออกจากระบบ
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

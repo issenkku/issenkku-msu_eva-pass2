@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/emails/evaluatee_pending.blade.php --}}
 <div style="font-family: Tahoma, Arial, sans-serif; font-size: 16px; color: #222;">
     <h2>แจ้งเตือน: มีแบบประเมินส่งให้คุณตรวจสอบ</h2>
     <p>เรียนคุณ {{ $name }},</p>

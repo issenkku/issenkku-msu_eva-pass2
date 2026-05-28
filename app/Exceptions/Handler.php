@@ -2,25 +2,25 @@
 
 namespace App\Exceptions;
 
+use App\Models\User;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Support\Facades\Auth;
+use Psr\Log\LogLevel;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
     /**
-     * @var array<class-string<\Throwable>, \Psr\Log\LogLevel::*>
+     * @var array<class-string<Throwable>, LogLevel::*>
      */
     protected $levels = [
-        //
     ];
 
     /**
-     * @var array<int, class-string<\Throwable>>
+     * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-        //
     ];
 
     /**
@@ -34,16 +34,14 @@ class Handler extends ExceptionHandler
 
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+        $this->reportable(function (Throwable $e) {});
     }
 
     public function render($request, Throwable $exception)
     {
         if ($exception instanceof HttpException && $exception->getStatusCode() === 403) {
             if (Auth::check()) {
-                /** @var \App\Models\User $user */
+                /** @var User $user */
                 $user = Auth::user();
                 $errorMessage = 'คุณไม่มีสิทธิ์เข้าถึงหน้านี้';
 

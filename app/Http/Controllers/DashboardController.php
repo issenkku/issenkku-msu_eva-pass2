@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\Department;
-use App\Models\Setting\Positions;
 use App\Models\QuantityScore;
 use App\Models\Reports;
+use App\Models\Setting\Positions;
 use App\Models\User;
+use App\Services\EvaluationService;
 use App\Services\GraphDataService;
+use App\Services\ReportDataService;
 use App\Services\ScoreService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\EvaluationService;
-use App\Services\ReportDataService;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
 {
@@ -27,14 +25,6 @@ class DashboardController extends Controller
 
     protected $reportDataService;
 
-    /**
-     * เมธอด: __construct
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: โมเดล ReportDataService
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -50,6 +40,7 @@ class DashboardController extends Controller
 
         return null; // ถ้าผ่านการตรวจสอบ
     }
+
     private function countByStatus($evaluations, $statuses)
     {
         return $evaluations->filter(function ($assignment) use ($statuses) {
@@ -79,6 +70,7 @@ class DashboardController extends Controller
 
                 if ($statuses->isEmpty()) {
                     $counts['มอบหมาย']++;
+
                     return;
                 }
 
@@ -114,15 +106,6 @@ class DashboardController extends Controller
         };
     }
 
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า dashboard.index บันทึกข้อมูล LengthAwarePaginator
-     * อินพุต: ข้อมูลจากคำขอ, โมเดล EvaluationService
-     * เอาต์พุต: หน้า dashboard.index
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param EvaluationService $evaluationService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index(Request $request, EvaluationService $evaluationService)
     {
         // Get filter parameters
@@ -135,11 +118,6 @@ class DashboardController extends Controller
         $positions = Positions::orderBy('name')->get();
 
         // If no filters are provided, don't set default dates to ensure all data is fetched
-        // $latestPeriod = AssignmentData::latest('end_time')->first();
-        // if (!$startDate && !$endDate && $latestPeriod) {
-        //     $startDate = $latestPeriod->start_time;
-        //     $endDate = $latestPeriod->end_time;
-        // }
 
         // Base query for reports
         $allReportsData = $evaluationService->getAllReportsWithAssignments();
@@ -151,8 +129,8 @@ class DashboardController extends Controller
             'ทั้งหมด' => $evaluations->count(),
             'มอบหมาย' => $this->countByStatus($evaluations, ['Assigned']),
             'เริ่มกรอกข้อมูล' => $this->countByStatus($evaluations, ['Draft']),
-            'กำลังดำเนินการ' => $this->countByStatus($evaluations, 
-            ['Pending','Evaluator_draft','Director_assigned','Director_draft', 'Manager_draft', 'Manager_assign']),
+            'กำลังดำเนินการ' => $this->countByStatus($evaluations,
+                ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_draft', 'Manager_assign']),
             'ประเมินเสร็จสิ้น' => $this->countByStatus($evaluations, ['Completed']),
         ];
 
@@ -280,19 +258,10 @@ class DashboardController extends Controller
             // 'reports' => $reportsQuery->get(),
             'reports' => $reportsWithScores,
             'evaluationPeriod' => $evaluationPeriod,
-            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
+            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn ($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
         ]);
     }
 
-    /**
-     * เมธอด: admin
-     * จุดประสงค์: แสดงหน้า dashboard.admin และเปลี่ยนเส้นทางไปที่ route admin.show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: หน้า dashboard.admin
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function admin(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -300,10 +269,7 @@ class DashboardController extends Controller
         $data = $this->reportDataService->getReportData($id);
         $report = $data['report'];
 
-        // if (in_array($report->status, ['Assigned', 'Draft',
         //     'Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft'])) {
-        //     abort(403, 'ไม่สามารถเข้าถึงหน้าประเมินนี้ได้ เนื่องจากสถานะไม่อนุญาต');
-        // }
 
         $canEdit = in_array($report->status, []);
         $readonly = ! $canEdit; // true if status is something else
@@ -374,14 +340,6 @@ class DashboardController extends Controller
         return 'All Periods';
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: แสดงหน้า dashboard.show
-     * อินพุต: ตัวระบุ ($id)
-     * เอาต์พุต: หน้า dashboard.show
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show($id)
     {
         $userId = Auth::id();

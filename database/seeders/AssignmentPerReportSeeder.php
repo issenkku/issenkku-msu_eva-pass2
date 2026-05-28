@@ -27,11 +27,8 @@ class AssignmentPerReportSeeder extends Seeder
         foreach ($reports as $report) {
 
             // // Create AssignmentData
-            // $assignmentData = AssignmentData::factory()->create();
 
             // Pick existing users or create new
-            // $evaluatee = User::inRandomOrder()->first();
-            // $evaluator = User::where('id', '!=', $evaluatee->id)->inRandomOrder()->first();
             $evaluatee = User::whereHas('roles', function ($query) {
                 $query->where('name', 'ผู้ประเมิน'); // Filter for the 'evaluator' role
             })->inRandomOrder()->first();

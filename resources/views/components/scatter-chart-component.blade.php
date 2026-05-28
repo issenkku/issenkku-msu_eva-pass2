@@ -1,4 +1,3 @@
-{{-- ไฟล์คอมโพเนนต์: resources/views/components/scatter-chart-component.blade.php --}}
 <div class="animate-fadeIn rounded-xl bg-white p-6 shadow-md">
     <div class="mb-6 flex items-center justify-between">
         <h3 class="text-lg font-semibold text-gray-900">{{ $title }}</h3>

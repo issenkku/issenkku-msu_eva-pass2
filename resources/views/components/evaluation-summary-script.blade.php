@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/evaluation-summary-script.blade.php --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const summaryRoot = document.getElementById('evaluationSummary');

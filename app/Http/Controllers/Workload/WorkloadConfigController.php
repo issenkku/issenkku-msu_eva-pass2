@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers\Workload;
 
-
 use App\Http\Controllers\Controller;
-use App\Models\WorkloadForm;
-use App\Models\WorkloadFormField;
-use App\Models\WorkloadFormItem;
 use App\Models\QuantitySubCriteria;
 use App\Models\QuantitySubCriteriaGroup;
 use App\Models\QuantitySubCriteriaItem;
+use App\Models\WorkloadForm;
+use App\Models\WorkloadFormField;
+use App\Models\WorkloadFormItem;
 use App\Services\WorkloadFormulaEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,27 +16,11 @@ use Illuminate\Validation\ValidationException;
 
 class WorkloadConfigController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า workload.app
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า workload.app
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index()
     {
         return view('workload.app');
     }
 
-    /**
-     * เมธอด: quantitySubCriteriaNav
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function quantitySubCriteriaNav(Request $request)
     {
         $request->validate([
@@ -64,14 +47,6 @@ class WorkloadConfigController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: subBlocks
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function subBlocks(Request $request)
     {
         $request->validate([
@@ -152,14 +127,6 @@ class WorkloadConfigController extends Controller
         ]);
     }
 
-    /**
-     * เมธอด: save
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantitySubCriteriaGroup, QuantitySubCriteriaItem, WorkloadFormField, WorkloadFormItem อัปเดตข้อมูล ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function save(Request $request)
     {
         $validated = $request->validate([
@@ -191,7 +158,7 @@ class WorkloadConfigController extends Controller
         DB::transaction(function () use ($validated, $subCriteria) {
             $payloadGroupIds = [];
             foreach ($validated['groups'] as $group) {
-                if (!empty($group['id'])) {
+                if (! empty($group['id'])) {
                     $currentGroup = QuantitySubCriteriaGroup::findOrFail($group['id']);
                 } else {
                     $currentGroup = QuantitySubCriteriaGroup::create([
@@ -217,7 +184,7 @@ class WorkloadConfigController extends Controller
                         $this->validateFormulaLogic($formulaLogic, $fields);
                     }
 
-                    if (!empty($itemBlock['id'])) {
+                    if (! empty($itemBlock['id'])) {
                         $currentItem = QuantitySubCriteriaItem::findOrFail($itemBlock['id']);
                     } else {
                         $currentItem = QuantitySubCriteriaItem::create([
@@ -283,7 +250,7 @@ class WorkloadConfigController extends Controller
                     ->pluck('id')
                     ->all();
                 $deleteItemIds = array_diff($existingItemIds, $payloadItemIds);
-                if (!empty($deleteItemIds)) {
+                if (! empty($deleteItemIds)) {
                     QuantitySubCriteriaItem::whereIn('id', $deleteItemIds)->delete();
                 }
             }
@@ -292,7 +259,7 @@ class WorkloadConfigController extends Controller
                 ->pluck('id')
                 ->all();
             $deleteGroupIds = array_diff($existingGroupIds, $payloadGroupIds);
-            if (!empty($deleteGroupIds)) {
+            if (! empty($deleteGroupIds)) {
                 QuantitySubCriteriaGroup::whereIn('id', $deleteGroupIds)->delete();
             }
         });
@@ -334,7 +301,7 @@ class WorkloadConfigController extends Controller
             if (in_array($token, $builtInVariables, true)) {
                 continue;
             }
-            if (!in_array($token, $variables, true)) {
+            if (! in_array($token, $variables, true)) {
                 throw ValidationException::withMessages([
                     'formula_logic' => ["สูตรมีตัวแปรที่ไม่รู้จัก: {$token}"],
                 ]);

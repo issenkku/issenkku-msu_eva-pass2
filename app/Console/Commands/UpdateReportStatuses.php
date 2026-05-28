@@ -1,17 +1,15 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Console/Commands/UpdateReportStatuses.php
-
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\AssignmentData;
 use Carbon\Carbon;
-
+use Illuminate\Console\Command;
 
 class UpdateReportStatuses extends Command
 {
     protected $signature = 'reports:update-statuses';
+
     protected $description = 'Update reports to Pending if evaluation end_time has passed';
 
     public function handle()

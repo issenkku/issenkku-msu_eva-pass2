@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Auth;
 
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -16,27 +15,11 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * เมธอด: create
-     * จุดประสงค์: แสดงหน้า auth/Register
-     * อินพุต: ไม่มี
-     * เอาต์พุต: หน้า auth/Register
-     * @param void ไม่มีพารามิเตอร์
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function create(): Response
     {
         return Inertia::render('auth/Register');
     }
 
-    /**
-     * เมธอด: store
-     * จุดประสงค์: ดำเนินการเข้าสู่ระบบ/ยืนยันตัวตน ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล User, Registered
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

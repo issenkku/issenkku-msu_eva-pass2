@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/bar-chart-script.blade.php --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const {{ $chartId }}_labels = @json($chartLabels);

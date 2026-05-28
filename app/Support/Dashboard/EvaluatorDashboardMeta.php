@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Support/Dashboard/EvaluatorDashboardMeta.php
-
 namespace App\Support\Dashboard;
 
 final class EvaluatorDashboardMeta
@@ -27,6 +25,7 @@ final class EvaluatorDashboardMeta
 
                 if ($statuses->isEmpty()) {
                     $counts['รอการกรอกข้อมูล']++;
+
                     return;
                 }
 

@@ -2,29 +2,20 @@
 
 namespace App\Http\Controllers\User;
 
-
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Spatie\Activitylog\Models\Activity;
-use Carbon\Carbon;
 
 class ActivityLogController extends Controller
 {
-    /**
-     * เมธอด: index
-     * จุดประสงค์: แสดงหน้า user.management.log
-     * อินพุต: ข้อมูลจากคำขอ
-     * เอาต์พุต: หน้า user.management.log
-     * @param Request $request ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function index(Request $request)
     {
         $query = Activity::with('causer');
 
         if ($request->filled('search')) {
             $keyword = trim((string) $request->search);
-            $like = '%' . $keyword . '%';
+            $like = '%'.$keyword.'%';
 
             $query->where(function ($q) use ($like) {
                 $q->where('description', 'like', $like)
@@ -59,7 +50,7 @@ class ActivityLogController extends Controller
         }
 
         if ($request->filled('ip')) {
-            $query->where('properties', 'like', '%' . trim((string) $request->ip) . '%');
+            $query->where('properties', 'like', '%'.trim((string) $request->ip).'%');
         }
 
         if ($request->filled('period') && $request->period !== 'all') {
@@ -116,6 +107,7 @@ class ActivityLogController extends Controller
             $activity->thai_created_at = $formatThai($date);
             $activity->thai_time = $date->format('H:i:s');
             $activity->ip_address = data_get($activity->properties?->toArray() ?? [], 'ip', '-');
+
             return $activity;
         });
 
@@ -126,14 +118,6 @@ class ActivityLogController extends Controller
         return view('user.management.log', compact('activities', 'logNames', 'eventNames', 'activeFilterLabels'));
     }
 
-    /**
-     * เมธอด: show
-     * จุดประสงค์: แสดงหน้า user.management.log-detail
-     * อินพุต: โมเดล Activity
-     * เอาต์พุต: หน้า user.management.log-detail
-     * @param Activity $activity ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function show(Activity $activity)
     {
         return view('user.management.log-detail', compact('activity'));
@@ -152,23 +136,23 @@ class ActivityLogController extends Controller
         $labels = [];
 
         if ($request->filled('search')) {
-            $labels[] = 'คำค้น: ' . $request->search;
+            $labels[] = 'คำค้น: '.$request->search;
         }
 
         if ($request->filled('log_name') && $request->log_name !== 'all') {
-            $labels[] = 'ประเภท: ' . $request->log_name;
+            $labels[] = 'ประเภท: '.$request->log_name;
         }
 
         if ($request->filled('event') && $request->event !== 'all') {
-            $labels[] = 'เหตุการณ์: ' . $request->event;
+            $labels[] = 'เหตุการณ์: '.$request->event;
         }
 
         if ($request->filled('actor') && $request->actor !== 'all') {
-            $labels[] = 'ผู้ทำรายการ: ' . ($request->actor === 'system' ? 'ระบบ' : 'ผู้ใช้');
+            $labels[] = 'ผู้ทำรายการ: '.($request->actor === 'system' ? 'ระบบ' : 'ผู้ใช้');
         }
 
         if ($request->filled('ip')) {
-            $labels[] = 'IP: ' . $request->ip;
+            $labels[] = 'IP: '.$request->ip;
         }
 
         $periodLabels = [
@@ -180,11 +164,11 @@ class ActivityLogController extends Controller
         ];
 
         if ($request->filled('period') && $request->period !== 'all') {
-            $labels[] = 'ช่วงเวลา: ' . ($periodLabels[$request->period] ?? $request->period);
+            $labels[] = 'ช่วงเวลา: '.($periodLabels[$request->period] ?? $request->period);
         }
 
         if ($request->filled('date_from') || $request->filled('date_to')) {
-            $labels[] = 'วันที่: ' . ($request->date_from ?: 'เริ่มต้น') . ' - ' . ($request->date_to ?: 'ปัจจุบัน');
+            $labels[] = 'วันที่: '.($request->date_from ?: 'เริ่มต้น').' - '.($request->date_to ?: 'ปัจจุบัน');
         }
 
         return $labels;

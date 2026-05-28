@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/dialog/DialogTrigger.vue -->
 <script setup lang="ts">
 import { DialogTrigger, type DialogTriggerProps } from 'reka-ui'
 

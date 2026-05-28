@@ -10,7 +10,6 @@ class EvidenceAnswer extends Model
 {
     use HasFactory;
 
-    // public $incrementing = false;
     protected $table = 'evidence_answers';
 
     protected $fillable = [

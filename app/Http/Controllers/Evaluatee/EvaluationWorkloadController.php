@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Controllers/Evaluatee/EvaluationWorkloadController.php
-
 namespace App\Http\Controllers\Evaluatee;
 
 use App\Http\Controllers\Controller;
@@ -103,7 +101,7 @@ class EvaluationWorkloadController extends Controller
                 ->orderByDesc('created_at')
                 ->get()
                 ->groupBy('workload_entry_id')
-                ->map(fn($answers) => $answers->pluck('link')->filter()->values());
+                ->map(fn ($answers) => $answers->pluck('link')->filter()->values());
         }
 
         $workloadView = EvaluateeWorkloadViewData::build(

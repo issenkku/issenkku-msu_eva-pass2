@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/delete-warning-modal.blade.php --}}
 @props([
     'text',
     'formAction' => '#',

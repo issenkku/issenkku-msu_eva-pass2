@@ -1,4 +1,3 @@
-// ไฟล์ TypeScript ของระบบ: resources/js/components/ui/breadcrumb/index.ts
 
 export { default as Breadcrumb } from './Breadcrumb.vue'
 export { default as BreadcrumbEllipsis } from './BreadcrumbEllipsis.vue'

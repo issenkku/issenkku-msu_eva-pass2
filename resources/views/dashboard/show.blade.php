@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/dashboard/show.blade.php --}}
-
 @section('content')
     @include('dashboard.partials.show-styles')
 

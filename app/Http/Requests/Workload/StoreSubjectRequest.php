@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Requests/Workload/StoreSubjectRequest.php
-
 namespace App\Http\Requests\Workload;
 
 use Illuminate\Foundation\Http\FormRequest;

@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/sheet/SheetClose.vue -->
 <script setup lang="ts">
 import { DialogClose, type DialogCloseProps } from 'reka-ui'
 

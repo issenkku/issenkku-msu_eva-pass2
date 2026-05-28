@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/AppLogo.vue -->
 <script setup lang="ts">
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
 </script>

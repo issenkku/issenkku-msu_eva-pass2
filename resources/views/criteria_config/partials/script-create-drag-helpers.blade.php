@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-create-drag-helpers.blade.php --}}
         let draggedBlock = null;
 
         document.addEventListener('pointerdown', function (e) {

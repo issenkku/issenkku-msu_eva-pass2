@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-edit-populate-helpers.blade.php --}}
         function populateForm(data) {
             document.getElementById('version_name').value = data.version_name || '';
             currentReportDataId = null;

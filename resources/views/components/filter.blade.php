@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/filter.blade.php --}}
 @props([
     'name',
     'label',

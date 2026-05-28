@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/evaluatee/partials/overview-styles.blade.php --}}
 <style>
     .evaluation-overview-card {
         position: relative;

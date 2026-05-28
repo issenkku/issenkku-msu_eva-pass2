@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views\layouts\user-evaluation.blade.php --}}
 <!DOCTYPE html>
 <html lang="th">
 <head>

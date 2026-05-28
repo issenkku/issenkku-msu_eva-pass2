@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views\components\status-badge.blade.php --}}
 @props(['status', 'count', 'active' => false])
 
 @php

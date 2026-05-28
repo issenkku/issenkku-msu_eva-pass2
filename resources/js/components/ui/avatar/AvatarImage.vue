@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/components/ui/avatar/AvatarImage.vue -->
 <script setup lang="ts">
 import type { AvatarImageProps } from 'reka-ui'
 import { AvatarImage } from 'reka-ui'

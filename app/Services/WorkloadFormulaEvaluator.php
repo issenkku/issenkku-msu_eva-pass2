@@ -58,7 +58,7 @@ class WorkloadFormulaEvaluator
         // If the formula contains a single "=" (not a comparison), use the left side.
         $hasComparison = str_contains($trimmed, '==') || str_contains($trimmed, '!=')
             || str_contains($trimmed, '>=') || str_contains($trimmed, '<=');
-        if (!$hasComparison) {
+        if (! $hasComparison) {
             $pos = strpos($trimmed, '=');
             if ($pos !== false) {
                 $left = trim(substr($trimmed, 0, $pos));
@@ -67,6 +67,7 @@ class WorkloadFormulaEvaluator
                 }
             }
         }
+
         return $trimmed;
     }
 
@@ -77,6 +78,7 @@ class WorkloadFormulaEvaluator
             $normalizedKey = strtolower((string) $key);
             if ($normalizedKey === 'item_*') {
                 $values['item_star'] = $value;
+
                 continue;
             }
             $values[$normalizedKey] = $value;
@@ -100,7 +102,7 @@ class WorkloadFormulaEvaluator
             ];
         }
 
-        if (array_key_exists('item_star', $values) && !array_key_exists('item_star', $variables)) {
+        if (array_key_exists('item_star', $values) && ! array_key_exists('item_star', $variables)) {
             $variables['item_star'] = [
                 'type' => 'number',
                 'value' => $values['item_star'],
@@ -132,6 +134,7 @@ class WorkloadFormulaEvaluator
 
             if (ctype_space($char)) {
                 $i++;
+
                 continue;
             }
 
@@ -142,6 +145,7 @@ class WorkloadFormulaEvaluator
                     $i++;
                 }
                 $tokens[] = ['type' => 'number', 'value' => substr($formula, $start, $i - $start)];
+
                 continue;
             }
 
@@ -152,31 +156,36 @@ class WorkloadFormulaEvaluator
                     $i++;
                 }
                 $tokens[] = ['type' => 'identifier', 'value' => substr($formula, $start, $i - $start)];
+
                 continue;
             }
 
             if ($char === '(' || $char === ')' || $char === ',') {
                 $tokens[] = ['type' => $char, 'value' => $char];
                 $i++;
+
                 continue;
             }
 
             if (in_array($char, ['+', '-', '*', '/'], true)) {
                 $tokens[] = ['type' => 'operator', 'value' => $char];
                 $i++;
+
                 continue;
             }
 
             if (in_array($char, ['<', '>', '!', '='], true)) {
                 $next = $i + 1 < $length ? $formula[$i + 1] : '';
                 if ($next === '=') {
-                    $tokens[] = ['type' => 'operator', 'value' => $char . $next];
+                    $tokens[] = ['type' => 'operator', 'value' => $char.$next];
                     $i += 2;
+
                     continue;
                 }
                 if ($char === '<' || $char === '>') {
                     $tokens[] = ['type' => 'operator', 'value' => $char];
                     $i++;
+
                     continue;
                 }
             }
@@ -191,6 +200,7 @@ class WorkloadFormulaEvaluator
 
     private function parseExpression(array $tokens, int &$index, array $variables)
     {
+        // Recursive descent parser: each method below represents one precedence level.
         return $this->parseOr($tokens, $index, $variables);
     }
 
@@ -202,6 +212,7 @@ class WorkloadFormulaEvaluator
             $right = $this->parseAnd($tokens, $index, $variables);
             $value = $this->applyLogicalOperator($operator, $value, $right);
         }
+
         return $value;
     }
 
@@ -212,6 +223,7 @@ class WorkloadFormulaEvaluator
             $right = $this->parseComparison($tokens, $index, $variables);
             $value = $this->toBool($value) && $this->toBool($right);
         }
+
         return $value;
     }
 
@@ -223,6 +235,7 @@ class WorkloadFormulaEvaluator
             $right = $this->parseAddSub($tokens, $index, $variables);
             $value = $this->applyComparisonOperator($operator, $value, $right);
         }
+
         return $value;
     }
 
@@ -238,6 +251,7 @@ class WorkloadFormulaEvaluator
                 $value = $this->toNumber($value) - $this->toNumber($right);
             }
         }
+
         return $value;
     }
 
@@ -259,6 +273,7 @@ class WorkloadFormulaEvaluator
                 $value = $this->toNumber($value) / $divisor;
             }
         }
+
         return $value;
     }
 
@@ -266,12 +281,15 @@ class WorkloadFormulaEvaluator
     {
         if ($this->matchOperator($tokens, $index, ['-'])) {
             $value = $this->parseUnary($tokens, $index, $variables);
+
             return -1 * $this->toNumber($value);
         }
         if ($this->matchIdentifier($tokens, $index, ['not'])) {
             $value = $this->parseUnary($tokens, $index, $variables);
-            return !$this->toBool($value);
+
+            return ! $this->toBool($value);
         }
+
         return $this->parsePrimary($tokens, $index, $variables);
     }
 
@@ -293,21 +311,23 @@ class WorkloadFormulaEvaluator
                 return $this->parseIfFunction($tokens, $index, $variables);
             }
 
-            if (!array_key_exists($identifier, $variables)) {
+            if (! array_key_exists($identifier, $variables)) {
                 throw ValidationException::withMessages([
                     'formula_logic' => ["สูตรมีตัวแปรที่ไม่รู้จัก: {$identifier}"],
                 ]);
             }
+
             return $this->coerceVariableValue($identifier, $variables[$identifier]);
         }
 
         if ($this->matchTokenType($tokens, $index, '(')) {
             $value = $this->parseExpression($tokens, $index, $variables);
-            if (!$this->matchTokenType($tokens, $index, ')')) {
+            if (! $this->matchTokenType($tokens, $index, ')')) {
                 throw ValidationException::withMessages([
                     'formula_logic' => ['สูตรมีวงเล็บไม่ครบ'],
                 ]);
             }
+
             return $value;
         }
 
@@ -318,29 +338,30 @@ class WorkloadFormulaEvaluator
 
     private function parseIfFunction(array $tokens, int &$index, array $variables)
     {
-        if (!$this->matchTokenType($tokens, $index, '(')) {
+        if (! $this->matchTokenType($tokens, $index, '(')) {
             throw ValidationException::withMessages([
                 'formula_logic' => ['รูปแบบ IF ไม่ถูกต้อง'],
             ]);
         }
         $condition = $this->parseExpression($tokens, $index, $variables);
-        if (!$this->matchTokenType($tokens, $index, ',')) {
+        if (! $this->matchTokenType($tokens, $index, ',')) {
             throw ValidationException::withMessages([
                 'formula_logic' => ['รูปแบบ IF ไม่ถูกต้อง (ต้องมี ,)'],
             ]);
         }
         $trueValue = $this->parseExpression($tokens, $index, $variables);
-        if (!$this->matchTokenType($tokens, $index, ',')) {
+        if (! $this->matchTokenType($tokens, $index, ',')) {
             throw ValidationException::withMessages([
                 'formula_logic' => ['รูปแบบ IF ไม่ถูกต้อง (ต้องมี ,)'],
             ]);
         }
         $falseValue = $this->parseExpression($tokens, $index, $variables);
-        if (!$this->matchTokenType($tokens, $index, ')')) {
+        if (! $this->matchTokenType($tokens, $index, ')')) {
             throw ValidationException::withMessages([
                 'formula_logic' => ['รูปแบบ IF ไม่ถูกต้อง (ต้องปิดวงเล็บ)'],
             ]);
         }
+
         return $this->toBool($condition) ? $trueValue : $falseValue;
     }
 
@@ -348,8 +369,10 @@ class WorkloadFormulaEvaluator
     {
         if ($index < count($tokens) && $tokens[$index]['type'] === $type) {
             $index++;
+
             return true;
         }
+
         return false;
     }
 
@@ -358,9 +381,11 @@ class WorkloadFormulaEvaluator
         if ($index < count($tokens) && $tokens[$index]['type'] === 'operator') {
             if (in_array($tokens[$index]['value'], $operators, true)) {
                 $index++;
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -370,9 +395,11 @@ class WorkloadFormulaEvaluator
             $value = strtolower($tokens[$index]['value']);
             if (in_array($value, $identifiers, true)) {
                 $index++;
+
                 return true;
             }
         }
+
         return false;
     }
 
@@ -391,11 +418,12 @@ class WorkloadFormulaEvaluator
                 'field_values' => ["กรุณากรอกค่าตัวแปร: {$name}"],
             ]);
         }
-        if (!is_numeric($value)) {
+        if (! is_numeric($value)) {
             throw ValidationException::withMessages([
                 'field_values' => ["ค่าตัวแปรต้องเป็นตัวเลข: {$name}"],
             ]);
         }
+
         return (float) $value;
     }
 
@@ -423,6 +451,7 @@ class WorkloadFormulaEvaluator
         if (is_string($value)) {
             return $value !== '';
         }
+
         return (bool) $value;
     }
 
@@ -430,7 +459,8 @@ class WorkloadFormulaEvaluator
     {
         if (in_array($operator, ['==', '!='], true)) {
             $result = $left == $right;
-            return $operator === '==' ? $result : !$result;
+
+            return $operator === '==' ? $result : ! $result;
         }
 
         $leftNumber = $this->toNumber($left);
@@ -452,10 +482,10 @@ class WorkloadFormulaEvaluator
 
         return match ($operator) {
             'or' => $a || $b,
-            'nor' => !($a || $b),
+            'nor' => ! ($a || $b),
             'xor' => ($a xor $b),
-            'xnor' => !($a xor $b),
-            'nand' => !($a && $b),
+            'xnor' => ! ($a xor $b),
+            'nand' => ! ($a && $b),
             default => false,
         };
     }

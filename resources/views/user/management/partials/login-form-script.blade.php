@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/user/management/partials/login-form-script.blade.php --}}
 <script>
     const form = document.getElementById('loginForm');
     const errorDiv = document.getElementById('error');

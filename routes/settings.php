@@ -3,9 +3,7 @@
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-// Public profile route - ไม่ต้อง login
 Route::get('profile/{uuid}', [ProfileController::class, 'showPublic'])->name('profile.public');
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -21,7 +19,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/password/reset/send', [ProfileController::class, 'sendPasswordResetLink'])->name('password.reset.send');
 
-    // Route::get('settings/appearance', function () {
-    //     return Inertia::render('settings/Appearance');
-    // })->name('appearance');
 });

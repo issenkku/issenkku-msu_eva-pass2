@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Manager;
 
-
 use App\Http\Controllers\Controller;
-use App\Models\EvidenceAnswer;
-use Illuminate\Support\Facades\Mail;
+use App\Models\Assignments;
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Models\User;
+use App\Services\ReportDataService;
+use App\Support\AssignmentFlow;
+use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\ReportDataService;
-use App\Support\QuantityScoreHistoryRecorder;
-use App\Support\AssignmentFlow;
+use Illuminate\Support\Facades\Mail;
 
 class ManagerScoreController extends Controller
 {
@@ -22,14 +23,6 @@ class ManagerScoreController extends Controller
 
     protected $reportDataService;
 
-    /**
-     * เมธอด: __construct
-     * จุดประสงค์: ประมวลผลคำขอ
-     * อินพุต: โมเดล ReportDataService
-     * เอาต์พุต: ผลลัพธ์ตามการประมวลผล
-     * @param ReportDataService $reportDataService ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function __construct(ReportDataService $reportDataService)
     {
         $this->reportDataService = $reportDataService;
@@ -46,15 +39,6 @@ class ManagerScoreController extends Controller
         return null; // ถ้าผ่านการตรวจสอบ
     }
 
-    /**
-     * เมธอด: manager
-     * จุดประสงค์: แสดงหน้า manager_dashboard.manager และเปลี่ยนเส้นทางไปที่ route manager.show
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($id)
-     * เอาต์พุต: หน้า manager_dashboard.manager
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $id ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function manager(Request $request, $id)
     {
         $user = $request->user()->load('position', 'department');
@@ -86,21 +70,12 @@ class ManagerScoreController extends Controller
         ]));
     }
 
-    /**
-     * เมธอด: storeManagerScores
-     * จุดประสงค์: ตรวจสอบข้อมูลจากคำขอ บันทึกข้อมูล QuantityScore, QualityScore ลบข้อมูล ส่งข้อมูลแบบ JSON
-     * อินพุต: ข้อมูลจากคำขอ, ตัวระบุ ($reportId)
-     * เอาต์พุต: ข้อมูล JSON
-     * @param Request $request ค่าที่รับเข้ามา
-     * @param mixed $reportId ค่าที่รับเข้ามา
-     * @return mixed ผลลัพธ์ของการทำงาน
-     */
     public function storeManagerScores(Request $request, $reportId)
     {
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
-            $assignment = \App\Models\Assignments::with('assignmentData')->where('report_id', $reportId)->first();
+            $assignment = Assignments::with('assignmentData')->where('report_id', $reportId)->first();
             $assignmentData = $assignment?->assignmentData;
             if (! $assignment || ($assignmentData?->manager_id && (int) $assignmentData->manager_id !== (int) $request->user()->id)) {
                 abort(403, 'Unauthorized manager');
@@ -129,7 +104,7 @@ class ManagerScoreController extends Controller
             $modifierRole = $request->user()?->getRoleNames()->first() ?: 'ผู้บริหาร';
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
-            $oldQualityScores  = QualityScore::where('report_id', $reportId)->get();
+            $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
 
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
@@ -142,7 +117,7 @@ class ManagerScoreController extends Controller
                         ? $item['quantity_sub_criteria_id'][0]
                         : (int) $item['quantity_sub_criteria_id'];
 
-                    $subCriteria = \App\Models\QuantitySubCriteria::find($subCriteriaId);
+                    $subCriteria = QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
                     $description = isset($item['description']) ? trim((string) $item['description']) : null;
 
@@ -199,9 +174,9 @@ class ManagerScoreController extends Controller
             }
 
             $statusMessages = [
-                'Manager_draft'   => 'คณบดีกรอกคะแนน',
+                'Manager_draft' => 'คณบดีกรอกคะแนน',
                 'Completed' => 'คณบดีอนุมัติ',
-                'Assigned'=> 'ระบบมอบหมาย',
+                'Assigned' => 'ระบบมอบหมาย',
                 'Submitted' => 'รายงานถูกส่งเรียบร้อยแล้ว',
             ];
 
@@ -232,7 +207,7 @@ class ManagerScoreController extends Controller
                     'สถานะรายงานก่อนหน้า' => $oldStatus,
                     'อัพเดตสถานะรายงาน' => $status,
                     'ความคิดเห็นก่อนหน้า' => $oldComment,
-                    'อัพเดตความคิดเห็น'   => $newComment,
+                    'อัพเดตความคิดเห็น' => $newComment,
                     'คะแนนเชิงปริมาณก่อนหน้า' => $oldQuantityScores,
                     'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
                     'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,
@@ -261,11 +236,11 @@ class ManagerScoreController extends Controller
         }
 
         // สมมติว่าต้องการแจ้งเตือน evaluatee (ผู้ถูกประเมิน)
-        $assignment = \App\Models\Assignments::where('report_id', $reportId)->first();
+        $assignment = Assignments::where('report_id', $reportId)->first();
         if (! $assignment) {
             return;
         }
-        $user = \App\Models\User::find($assignment->evaluatee_id);
+        $user = User::find($assignment->evaluatee_id);
         if (! $user || ! $user->email) {
             return;
         }

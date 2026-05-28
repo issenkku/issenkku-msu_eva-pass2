@@ -1,7 +1,5 @@
 <?php
 
-// ไฟล์คลาสของระบบ: app/Http/Requests/Workload/StoreWorkloadEntryRequest.php
-
 namespace App\Http\Requests\Workload;
 
 use App\Models\WorkloadForm;
@@ -86,6 +84,7 @@ class StoreWorkloadEntryRequest extends FormRequest
 
             if (! array_key_exists($name, $normalized)) {
                 $validator->errors()->add('field_values', "กรุณากรอกข้อมูลให้ครบ: {$name}");
+
                 continue;
             }
 
@@ -103,6 +102,7 @@ class StoreWorkloadEntryRequest extends FormRequest
 
             if ($value === null || $value === '') {
                 $validator->errors()->add('field_values', "กรุณากรอกข้อมูลให้ครบ: {$name}");
+
                 continue;
             }
 

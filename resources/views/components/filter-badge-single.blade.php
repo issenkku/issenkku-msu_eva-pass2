@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/components/filter-badge-single.blade.php --}}
 @props([
     'name',
     'options' => [],

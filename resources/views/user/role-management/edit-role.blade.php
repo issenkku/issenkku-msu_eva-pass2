@@ -1,6 +1,4 @@
 @extends('layouts.app')
-{{-- ไฟล์มุมมอง: resources/views/user/role-management/edit-role.blade.php --}}
-
 @section('content')
     {{-- หน้าแก้ไขบทบาท: ส่วนหัว ฟอร์ม และปุ่มท้ายฟอร์มถูกแยกตามหน้าที่ --}}
     <div class="p-6 max-w-3xl mx-auto">

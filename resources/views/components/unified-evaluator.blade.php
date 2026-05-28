@@ -145,11 +145,6 @@
                                             <div class="ml-6 mb-6">
                                                 <div class="p-4 bg-green-50 rounded-xl shadow-sm">
                                                     <h4 class="text-lg font-semibold text-green-700 mb-3 flex items-center">
-                                                        {{-- <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" stroke-width="2"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                d="M9 17v-2a4 4 0 014-4h6M9 13H5v6h4v-2a4 4 0 014-4z"/>
-                                                        </svg> --}}
                                                         สูตรการคำนวณ
                                                     </h4>
 
@@ -182,9 +177,6 @@
                                                 <details class="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all open:shadow-md">
                                                     <summary class="flex items-center justify-between gap-3 bg-gradient-to-r from-white via-purple-50/40 to-white px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                                                         <div class="min-w-0 flex items-center gap-3 flex-wrap">
-                                                            {{-- <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 text-xs font-bold text-purple-700">
-                                                                {{ $loop->iteration }}
-                                                            </span> --}}
                                                             <span class="text-base font-semibold text-slate-800">
                                                                 {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                             </span>
@@ -247,9 +239,6 @@
                                                                             oninput="calculateScoreD(this)"
                                                                             class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm focus:border-blue-400 focus:ring-blue-300"
                                                                             placeholder="ใส่ค่า C">
-                                                                        {{-- <div class="mt-2 rounded-lg bg-white/80 px-3 py-2 text-center text-[11px] leading-5 text-slate-500">
-                                                                            ข้อความอธิบายเดิมถูกถอดออก
-                                                                        </div> --}}
                                                                     @else
                                                                         <input type="text"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]"
@@ -390,9 +379,6 @@
                                                         <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full {{ $mainHasChecked ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
                                                             {{ $mainHasChecked ? 'ตรวจสอบแล้ว' : 'ยังไม่ได้ตรวจ' }}
                                                         </span>
-                                                        {{-- <span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                            คะแนนที่ได้ {{ number_format($selectedScore, 2) }}
-                                                        </span> --}}
                                                     </div>
                                                     <svg class="w-5 h-5 text-purple-600 chevron-up" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />

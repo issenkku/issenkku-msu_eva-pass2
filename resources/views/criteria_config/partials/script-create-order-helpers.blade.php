@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/criteria_config/partials/script-create-order-helpers.blade.php --}}
         function updateEvalSequence(container, categoryPrefix = '') {
             container.querySelectorAll('.evaluation_list_block').forEach((evalBlock, index) => {
                 const evalPrefix = categoryPrefix ? `${categoryPrefix}.${index + 1}` : `${index + 1}`;

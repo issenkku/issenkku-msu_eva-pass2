@@ -1,4 +1,3 @@
-<!-- ไฟล์คอมโพเนนต์ Vue: resources/js/layouts/AuthLayout.vue -->
 <script setup lang="ts">
 import AuthLayout from '@/layouts/auth/AuthSimpleLayout.vue';
 

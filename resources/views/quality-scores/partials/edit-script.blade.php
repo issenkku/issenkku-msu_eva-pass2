@@ -1,4 +1,3 @@
-{{-- ไฟล์มุมมอง: resources/views/quality-scores/partials/edit-script.blade.php --}}
 @push('scripts')
     <script>
         function validateQualityScoreEditForm() {
