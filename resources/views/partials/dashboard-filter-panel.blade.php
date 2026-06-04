@@ -16,7 +16,7 @@
     $departments = $departments ?? [];
 @endphp
 
-<div class="mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
+<div class="dashboard-filter-card mb-8 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
     <button
         type="button"
         id="{{ $scope }}FilterToggle"
@@ -44,7 +44,7 @@
 
     <div id="{{ $scope }}FilterPanel" class="hidden border-t border-gray-100 px-5 pb-5 pt-2">
         <form id="filterForm" method="get" class="space-y-1">
-            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <div class="dashboard-filter-grid grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div class="md:col-span-2 xl:col-span-1">
                     <label class="mb-1 block text-sm font-medium text-gray-700">{{ $searchLabel }}</label>
                     <input
@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-2 pt-3 md:flex-row md:justify-end">
+            <div class="dashboard-filter-actions flex flex-col gap-2 pt-3 md:flex-row md:justify-end">
                 <button type="button" data-dashboard-reset-filters class="rounded-lg bg-gray-200 px-5 py-2 text-gray-800 transition hover:bg-gray-300">ล้างค่า</button>
                 <button type="submit" class="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700">กรองข้อมูล</button>
             </div>

@@ -7,7 +7,7 @@
     $activeFilters = $activeFilters ?? collect();
 @endphp
 
-<div class="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
+<div class="dashboard-overview-card xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-6 shadow-md">
     <div class="flex items-start justify-between gap-4">
         <div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $overviewTitle }}</h3>
@@ -16,7 +16,7 @@
     </div>
 
     <div class="mt-6 rounded-2xl border border-gray-100 bg-slate-50/60 p-5 lg:p-6">
-        <div class="grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-center">
+        <div class="dashboard-overview-chart-grid grid grid-cols-1 gap-6 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-center">
             <div class="space-y-4">
                 <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 xl:grid-cols-1">
                     <x-dashboard.metric-card

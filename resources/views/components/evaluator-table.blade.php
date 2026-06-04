@@ -60,13 +60,13 @@
     }
 @endphp
 
-<div class="rounded-lg bg-white p-6">
+<div class="evaluation-list-card rounded-lg bg-white p-6">
     <h3 class="mb-4 text-lg font-semibold text-gray-800">ภาพรวมสถานะการประเมิน</h3>
 
-    <div class="mb-4 flex flex-wrap justify-between gap-4 border-b pb-4 pl-3 pr-3">
+    <div class="evaluation-list-toolbar mb-4 flex flex-wrap justify-between gap-4 border-b pb-4 pl-3 pr-3">
         <x-search-bar placeholder="ค้นหาชื่อ, รายงาน..." />
 
-        <div class="flex flex-wrap justify-between gap-2">
+        <div class="evaluation-toolbar-actions flex flex-wrap justify-between gap-2">
             <x-export-button
                 :route="route('export.reports')"
                 label="ส่งออก Excel ทั้งหมด" />

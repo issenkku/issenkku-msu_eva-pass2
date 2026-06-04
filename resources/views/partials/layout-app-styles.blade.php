@@ -548,6 +548,144 @@
     }
 
     /* Responsive */
+    @media (max-width: 1439px) {
+        .app-background-shell > main.p-6 {
+            padding: 1.25rem !important;
+        }
+
+        .header-shell {
+            gap: 1rem;
+        }
+
+        .header-brand {
+            gap: 0.65rem;
+            font-size: 1rem !important;
+        }
+
+        .header-brand::before {
+            width: 40px;
+            height: 40px;
+        }
+
+        .card,
+        .main-container {
+            border-radius: 8px;
+        }
+
+        .card-body,
+        .card-header {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .rounded-2xl.p-6,
+        .rounded-xl.p-6 {
+            padding: 1.25rem !important;
+        }
+    }
+
+    @media (max-width: 1199px) {
+        .app-background-shell > main.p-6 {
+            padding: 1rem !important;
+        }
+
+        .header-shell {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+
+        .header-brand {
+            min-width: 0;
+            white-space: normal;
+            line-height: 1.25;
+        }
+
+        .header-brand::before {
+            width: 36px;
+            height: 36px;
+        }
+
+        .container {
+            max-width: 100%;
+        }
+
+        .card,
+        .main-container {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .btn {
+            min-height: 40px;
+            padding: 0.5rem 0.85rem;
+        }
+
+        .evaluation-list-card {
+            padding: 1.25rem !important;
+        }
+
+        .evaluation-list-header {
+            padding-left: 1.25rem !important;
+            padding-right: 1.25rem !important;
+        }
+
+        .evaluation-list-toolbar {
+            align-items: stretch !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        .evaluation-list-toolbar .search-bar-form {
+            width: 100%;
+            gap: 0.5rem;
+            justify-content: flex-start;
+        }
+
+        .evaluation-list-toolbar .search-bar-form > :not([hidden]) ~ :not([hidden]) {
+            margin-left: 0 !important;
+        }
+
+        .evaluation-list-toolbar .search-bar-form > .relative {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .evaluation-list-toolbar .search-bar-input {
+            width: 100% !important;
+        }
+
+        .evaluation-list-toolbar .search-bar-submit {
+            flex: 0 0 132px;
+        }
+
+        .evaluation-toolbar-actions {
+            width: 100%;
+            justify-content: flex-start !important;
+            gap: 0.6rem !important;
+        }
+
+        .evaluation-toolbar-actions .export-button-form {
+            flex: 0 1 auto;
+        }
+
+        .evaluation-toolbar-actions .export-button-link {
+            width: auto;
+            justify-content: center;
+            white-space: nowrap;
+        }
+
+        .evaluation-toolbar-actions .filter-badge-single {
+            width: 12rem;
+        }
+
+        .table-responsive,
+        .overflow-x-auto {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
     @media (max-width: 1121px) {
         .desktop-nav {
             display: none !important;
@@ -555,6 +693,82 @@
 
         .mobile-menu-btn {
             display: block !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .app-background-shell > main.p-6 {
+            padding: 0.875rem !important;
+        }
+
+        .header-shell {
+            min-height: 58px;
+        }
+
+        .header-brand {
+            max-width: calc(100vw - 5rem);
+            font-size: 0.92rem !important;
+        }
+
+        .header-brand::before {
+            width: 32px;
+            height: 32px;
+        }
+
+        .card,
+        .main-container,
+        .rounded-2xl,
+        .rounded-xl {
+            border-radius: 0.75rem !important;
+        }
+
+        .card-body,
+        .card-header,
+        .rounded-2xl.p-6,
+        .rounded-xl.p-6 {
+            padding: 1rem !important;
+        }
+
+        .btn,
+        button[type="submit"],
+        button[data-dashboard-reset-filters] {
+            min-height: 42px;
+        }
+
+        .evaluation-list-card {
+            padding: 1rem !important;
+        }
+
+        .evaluation-list-header {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+
+        .evaluation-list-toolbar .search-bar-form {
+            flex-wrap: wrap;
+        }
+
+        .evaluation-list-toolbar .search-bar-form > .relative {
+            flex-basis: 100%;
+        }
+
+        .evaluation-list-toolbar .search-bar-submit {
+            flex: 1 1 100%;
+            width: 100%;
+        }
+
+        .evaluation-toolbar-actions {
+            flex-direction: column;
+        }
+
+        .evaluation-toolbar-actions .export-button-form,
+        .evaluation-toolbar-actions .export-button-link,
+        .evaluation-toolbar-actions .filter-badge-single {
+            width: 100%;
+        }
+
+        .evaluation-toolbar-actions .export-button-link {
+            min-height: 42px;
         }
     }
 

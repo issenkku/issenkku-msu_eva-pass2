@@ -7,7 +7,7 @@
 
 @include('components.alpine-cloak-style')
 
-<div class="relative w-48" x-data="{ open: false }" @click.outside="open = false">
+<div class="filter-badge-single relative w-48" x-data="{ open: false }" @click.outside="open = false">
     <div
         class="relative w-full cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-medium shadow-sm"
         @click="open = !open">

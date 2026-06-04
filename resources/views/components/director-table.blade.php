@@ -57,13 +57,13 @@
         })->values(); // Reset keys
     }
 @endphp
-<div class="bg-white rounded-lg p-6">
+<div class="evaluation-list-card bg-white rounded-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">ภาพรวมสถานะการประเมิน</h3>
-    <div class="flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
+    <div class="evaluation-list-toolbar flex flex-wrap gap-4 mb-4 justify-between border-b pb-4 pl-3 pr-3">
         <x-search-bar  
             placeholder="ค้นหาชื่อ, รายงาน..."
         /> 
-        <div  class="flex flex-wrap justify-between gap-2">
+        <div  class="evaluation-toolbar-actions flex flex-wrap justify-between gap-2">
             <x-export-button 
                 :route="route('export.reports', request()->query())"
                 label="ส่งออกExcelทั้งหมด" />
