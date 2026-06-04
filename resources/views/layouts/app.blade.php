@@ -151,7 +151,15 @@
                     </ul>
                 </nav>
 
-                <button class="mobile-menu-btn d-block d-xl-none" onclick="toggleMobileMenu()">
+                <button
+                    id="mobileMenuToggle"
+                    class="mobile-menu-btn d-block d-xl-none"
+                    type="button"
+                    onclick="toggleMobileMenu()"
+                    aria-controls="mobileMenu"
+                    aria-expanded="false"
+                    aria-label="เปิดเมนู"
+                >
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
@@ -165,6 +173,9 @@
                 <span class="mobile-menu-brand">
                     <span>ระบบประเมินบุคลากร</span>
                 </span>
+                <button class="mobile-menu-close" type="button" onclick="closeMobileMenu()" aria-label="ปิดเมนู">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <div class="mobile-menu-content">

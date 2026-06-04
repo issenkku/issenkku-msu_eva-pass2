@@ -387,10 +387,21 @@
     .mobile-menu-close {
         background: none;
         border: none;
+        border-radius: 8px;
         font-size: 1.5rem;
         color: #495057;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
         padding: 4px;
+    }
+
+    .mobile-menu-close:hover {
+        background: #f3f4f6;
+        color: #111827;
     }
 
     .mobile-menu-content {
