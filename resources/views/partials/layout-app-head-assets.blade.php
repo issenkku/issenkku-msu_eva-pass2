@@ -3,6 +3,7 @@
 <link rel="shortcut icon" href="{{ asset('favicon-msu.png') }}?v=1">
 <link rel="apple-touch-icon" href="{{ asset('favicon-msu.png') }}?v=1">
 @vite(['resources/js/app.ts'])
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
