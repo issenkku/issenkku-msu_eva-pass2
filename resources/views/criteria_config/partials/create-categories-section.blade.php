@@ -51,23 +51,23 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                 <div
                                     class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-700">
                                     <span class="category_sequence">1</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่หลัก <span
-                                        class="text-red-500">*</span></label>
-                                <input required
+                                <div class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่หลัก <span
+                                        class="text-red-500">*</span></div>
+                                <input name="main_category" required
                                     class="main_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
                                     placeholder="ชื่อหมวดหมู่หลัก">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่ย่อย <span
-                                        class="text-red-500">*</span></label>
-                                <input required
+                                <div class="block text-sm font-medium text-gray-700 mb-2">หมวดหมู่ย่อย <span
+                                        class="text-red-500">*</span></div>
+                                <input name="sub_category" required
                                     class="sub_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200"
                                     placeholder="ชื่อหมวดหมู่ย่อย">
                             </div>
@@ -95,4 +95,3 @@
                     </svg>
                     เพิ่มหมวดหมู่การประเมิน
                 </button>
-

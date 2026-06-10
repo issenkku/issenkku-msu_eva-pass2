@@ -43,28 +43,28 @@
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                         <div
                                             class="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-700">
                                             <span class="eval_sequence">1.1</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span
-                                                class="text-red-500">*</span></label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span
+                                                class="text-red-500">*</span></div>
                                         <input required name="eval_name"
                                             class="eval_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
                                             placeholder="ชื่อรายการประเมิน">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">คะแนนรวม <span
-                                                class="text-red-500">*</span></label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">คะแนนรวม <span
+                                                class="text-red-500">*</span></div>
                                         <input type="number" required name="sum_score"
                                             class="sum_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
                                             placeholder="คะแนนรวม">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</div>
                                         <input name="annotation"
                                             class="annotation border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200"
                                             placeholder="หมายเหตุ">
@@ -72,16 +72,16 @@
                                 </div>
                                 <!-- Criteria Type Selection -->
                                 <div class="mb-6">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทเกณฑ์</label>
+                                    <div class="block text-sm font-medium text-gray-700 mb-2">ประเภทเกณฑ์</div>
                                     <div class="criteria_type_check_group flex gap-6 text-gray-900">
                                         <label class="flex items-center">
-                                            <input type="checkbox"
+                                            <input name="criteria_type_quantity" type="checkbox"
                                                 class="criteria_type quantity_criteria_type form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500"
                                                 value="quantity">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านปริมาณ</span>
                                         </label>
                                         <label class="flex items-center">
-                                            <input type="checkbox"
+                                            <input name="criteria_type_quality" type="checkbox"
                                                 class="criteria_type quality_criteria_type form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500"
                                                 value="quality">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านคุณภาพ</span>

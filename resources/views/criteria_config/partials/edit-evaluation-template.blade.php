@@ -29,34 +29,34 @@
                                 </div>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                         <div class="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm font-semibold text-gray-700">
                                             <span class="eval_sequence">1.1</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span class="text-red-500">*</span></label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">ชื่อรายการ <span class="text-red-500">*</span></div>
                                         <input required name="eval_name" class="eval_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200" placeholder="ชื่อรายการประเมิน">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">คะแนนรวม <span class="text-red-500">*</span></label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">คะแนนรวม <span class="text-red-500">*</span></div>
                                         <input type="number" required name="sum_score" class="sum_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200" placeholder="คะแนนรวม">
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</label>
+                                        <div class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ</div>
                                         <input name="annotation" class="annotation border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 transition duration-200" placeholder="หมายเหตุ">
                                     </div>
                                 </div>
                                 <!-- Criteria Type Selection -->
                                 <div class="mb-6">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">ประเภทเกณฑ์</label>
+                                    <div class="block text-sm font-medium text-gray-700 mb-2">ประเภทเกณฑ์</div>
                                     <div class="criteria_type_check_group flex gap-6 text-gray-900">
                                         <label class="flex items-center">
-                                            <input type="checkbox" class="criteria_type quantity_criteria_type form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500" value="quantity">
+                                            <input name="criteria_type_quantity" type="checkbox" class="criteria_type quantity_criteria_type form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500" value="quantity">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านปริมาณ</span>
                                         </label>
                                         <label class="flex items-center">
-                                            <input type="checkbox" class="criteria_type quality_criteria_type form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500" value="quality">
+                                            <input name="criteria_type_quality" type="checkbox" class="criteria_type quality_criteria_type form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500" value="quality">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านคุณภาพ</span>
                                         </label>
                                     </div>
@@ -106,25 +106,25 @@
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                                 <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
                                                     <span class="quant_main_sequence">1.1.1</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span class="text-red-500">*</span></label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span class="text-red-500">*</span></div>
                                                 <input name="quant_name" class="quant_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="ชื่อเกณฑ์ปริมาณ">
                                             </div>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500"></span></label>
+                                            <div class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span class="text-red-500"></span></div>
                                             <textarea name="quant_tooltips" class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
                                                     <span class="text-xs text-gray-500">(A=ค่าน้ำหนัก, B=ภาระงานมาตรฐาน, C=ภาระงานที่ทำได้, D=คะแนนที่คำนวณได้)</span>
-                                                </label>
+                                                </div>
                                                 <textarea name="quant_formula" rows="3" class="quant_formula border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200" placeholder="กำหนดสูตรการคำนวณ เช่น D = A × C / B">D = A × C / B</textarea>
                                             </div>
                                         </div>
@@ -149,21 +149,21 @@
                                                 <input type="hidden" name="quant_sub_criteria_id" class="quant_sub_criteria_id" value="">
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:items-end">
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</div>
                                                         <div class="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
                                                             <span class="quant_sub_sequence">1.1.1.1</span>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย <span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย <span class="text-red-500">*</span></div>
                                                         <input name="quant_sub_name" class="quant_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)<span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)<span class="text-red-500">*</span></div>
                                                         <input type="number" name="score_a" class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2 whitespace-nowrap">หน่วยภาระงานมาตรฐาน (B)&nbsp;<span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2 whitespace-nowrap">หน่วยภาระงานมาตรฐาน (B)&nbsp;<span class="text-red-500">*</span></div>
                                                         <input type="number" name="score_b" class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนน B">
                                                     </div>
                                                     <div class="flex flex-col items-start sm:items-end">
@@ -175,7 +175,7 @@
                                                     </div>
                                                 </div>
                                                 <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                                                    <input type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                                    <input name="quant_require_evidence" type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                                     <span>บังคับแนบหลักฐานก่อนบันทึกภาระงาน</span>
                                                 </label>
                                             </div>
@@ -238,31 +238,31 @@
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                                 <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
                                                     <span class="qual_main_sequence">1.1.1</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อกลุ่มเกณฑ์หลัก <span class="text-red-500">*</span></label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ชื่อกลุ่มเกณฑ์หลัก <span class="text-red-500">*</span></div>
                                                 <input name="qual_name" class="qual_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="เช่น บทความวิจัย / ทรัพย์สินทางปัญญา / การประเมินการสอน">
                                                 <p class="mt-2 text-xs text-gray-500">ชื่อนี้ควรเป็นชื่อกลุ่มของตัวเลือกย่อยหลายรายการ</p>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">สัดส่วน <span class="text-red-500">*</span></label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">สัดส่วน <span class="text-red-500">*</span></div>
                                                 <input type="number" name="qual_ratio" class="qual_ratio border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="สัดส่วน %">
                                             </div>
                                         </div>
                                         <div class="mb-4">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบายกลุ่ม</label>
+                                            <div class="block text-sm font-medium text-gray-700 mb-2">คำอธิบายกลุ่ม</div>
                                             <textarea name="qual_tooltips" class="qual_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 text-sm transition duration-200" placeholder="อธิบายว่ากลุ่มนี้ครอบคลุมผลงานประเภทใด หรือมีหลักเกณฑ์รวมอย่างไร"></textarea>
                                         </div>
                                         <label class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                                            <input type="checkbox" class="qual_require_evidence h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <input name="qual_require_evidence" type="checkbox" class="qual_require_evidence h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                                             <span>บังคับแนบหลักฐานเมื่อเลือกเกณฑ์นี้</span>
                                         </label>
                                         <label class="mb-4 ml-4 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                                            <input type="checkbox" class="qual_allow_multiple h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
+                                            <input name="qual_allow_multiple" type="checkbox" class="qual_allow_multiple h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                                             <span>เลือกได้หลายตัวเลือก</span>
                                         </label>
                                         <!-- Quality Sub Criteria Container -->
@@ -285,23 +285,23 @@
                                                 </div>
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-3">
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</div>
                                                         <div class="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
                                                             <span class="qual_sub_sequence">1.1.1.1</span>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ชื่อตัวเลือกย่อย <span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ชื่อตัวเลือกย่อย <span class="text-red-500">*</span></div>
                                                         <input name="qual_sub_name" class="qual_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200" placeholder="เช่น ISI/SCOPUS Q1-2 ผู้ประพันธ์หลัก, สิทธิบัตร ผู้ถือสิทธิร่วม">
                                                         <p class="mt-2 text-xs text-gray-500">แต่ละรายการควรเป็นตัวเลือกที่ชัดเจน ไม่ควรเอาหลายเงื่อนไขมารวมกันในบรรทัดเดียว</p>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">คะแนนสูงสุด <span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">คะแนนสูงสุด <span class="text-red-500">*</span></div>
                                                         <input type="number" name="num_score" class="num_score border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200" placeholder="คะแนนสูงสุด">
                                                     </div>
                                                 </div>
                                                 <div class="mb-2">
-                                                    <label class="block text-sm font-medium text-gray-600 mb-2">คำอธิบายการให้คะแนน</label>
+                                                    <div class="block text-sm font-medium text-gray-600 mb-2">คำอธิบายการให้คะแนน</div>
                                                     <textarea name="qual_sub_description" rows="6" id="qual_sub_description_1"
                                                         class="qual_sub_description richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 block w-full p-2 text-sm transition duration-200"
                                                         placeholder="ระบุเงื่อนไขการได้คะแนน หรือคำอธิบายที่ช่วยให้ผู้เลือกไม่สับสน"></textarea>

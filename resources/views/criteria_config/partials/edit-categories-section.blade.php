@@ -31,19 +31,19 @@
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                 <div class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-semibold text-gray-700">
                                     <span class="category_sequence">1</span>
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">หมวดหลัก <span class="text-red-500">*</span></label>
-                                <input required class="main_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="เช่น งานบริการวิชาการ / งานวิจัย / งานสอน">
+                                <div class="block text-sm font-medium text-gray-700 mb-2">หมวดหลัก <span class="text-red-500">*</span></div>
+                                <input name="main_category" required class="main_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="เช่น งานบริการวิชาการ / งานวิจัย / งานสอน">
                                 <p class="mt-2 text-xs text-gray-500">ใช้สำหรับแบ่งภาพรวมของงานในระดับใหญ่</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อย่อยของหมวด <span class="text-red-500">*</span></label>
-                                <input required class="sub_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="เช่น ด้านคุณภาพผลงาน / ด้านปริมาณผลงาน">
+                                <div class="block text-sm font-medium text-gray-700 mb-2">หัวข้อย่อยของหมวด <span class="text-red-500">*</span></div>
+                                <input name="sub_category" required class="sub_categories border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block w-full p-3 transition duration-200" placeholder="เช่น ด้านคุณภาพผลงาน / ด้านปริมาณผลงาน">
                                 <p class="mt-2 text-xs text-gray-500">ใช้แยกหัวข้อภายในหมวดหลักอีกชั้นหนึ่ง</p>
                             </div>
                         </div>

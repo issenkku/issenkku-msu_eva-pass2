@@ -1,9 +1,9 @@
 <!-- ผู้รับการประเมิน Section -->
 <div>
     <div class="flex items-center justify-between mb-4">
-        <label class="block text-sm font-medium text-gray-700">
+        <div class="block text-sm font-medium text-gray-700">
             รายชื่อผู้รับการประเมิน :
-        </label>
+        </div>
         <div class="text-sm text-gray-500">
             <span id="evaluatees-available-count">0</span> คนที่แสดง จาก
             <span id="evaluatees-total-count">5</span> คนทั้งหมด

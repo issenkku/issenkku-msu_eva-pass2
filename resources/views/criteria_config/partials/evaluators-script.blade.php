@@ -22,7 +22,7 @@
             return $(
                 `<div class="flex items-center justify-between" style="padding: 4px 0;" data-id="${option.id}">
                     <div class="flex items-center">
-                        <input type="checkbox" class="mr-2" ${isSelected ? 'checked' : ''} disabled>
+                        <input id="selected-evaluator-${option.id}" type="checkbox" class="mr-2" ${isSelected ? 'checked' : ''} disabled>
                         <span>${option.text}</span>
                     </div>
                     <span class="${department}">${departmentNames[department] || department}</span>

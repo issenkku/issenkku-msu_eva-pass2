@@ -10,8 +10,10 @@
         'guardExpression' => 'suppressDirtyTracking || isSubmitting || !isInitialDataLoaded',
         'trackSummernote' => true,
     ])
+    @include('criteria_config.partials.script-runtime-form-a11y-helpers')
     @include('criteria_config.partials.script-edit-summernote-helpers')
     document.addEventListener('DOMContentLoaded', function () {
+        observeRuntimeFormFields('editForm');
         fetchVersionDetails();
         setupEventListeners();
         setupLazySummernote();

@@ -62,15 +62,15 @@
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ลำดับ</div>
                                                 <div
                                                     class="w-28 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
                                                     <span class="quant_main_sequence">1.1.1</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
-                                                        class="text-red-500">*</span></label>
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">ชื่อเกณฑ์ <span
+                                                        class="text-red-500">*</span></div>
                                                 <input name="quant_name"
                                                     class="quant_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="ชื่อเกณฑ์ปริมาณ">
@@ -78,18 +78,18 @@
                                         </div>
                                         <div class="mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
-                                                        class="text-red-500"></span></label>
-                                                <textarea name="quant_tooltips" rows="8" id="quant_tooltips_1"
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">คำอธิบาย <span
+                                                        class="text-red-500"></span></div>
+                                                <textarea name="quant_tooltips" rows="8"
                                                     class="quant_tooltips richtext-editor border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
                                                     placeholder="คำอธิบายเพิ่มเติม"></textarea>
                                             </div>
                                         </div>
                                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
+                                                <div class="block text-sm font-medium text-gray-700 mb-2">กำหนดสูตร
                                                     <span class="text-red-500">*</span>
-                                                </label>
+                                                </div>
                                                 <span class="text-xs text-gray-500">(A=ค่าน้ำหนัก, B=ภาระงานมาตรฐาน, C=ภาระงานที่ทำได้, D=คะแนนที่คำนวณได้)</span>
                                                 <textarea name="quant_formula" rows="3"
                                                     class="quant_formula border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2.5 text-sm transition duration-200"
@@ -126,31 +126,31 @@
                                                     class="quant_sub_criteria_id" value="">
                                                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:items-end">
                                                     <div>
-                                                        <label
-                                                            class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</label>
+                                                        <div
+                                                            class="block text-sm font-medium text-gray-600 mb-2">ลำดับ</div>
                                                         <div
                                                             class="w-24 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-700">
                                                             <span class="quant_sub_sequence">1.1.1.1</span>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label
+                                                        <div
                                                             class="block text-sm font-medium text-gray-600 mb-2">ชื่อเกณฑ์ย่อย
-                                                            <span class="text-red-500">*</span></label>
+                                                            <span class="text-red-500">*</span></div>
                                                         <input name="quant_sub_name"
                                                             class="quant_sub_name border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="ชื่อเกณฑ์ย่อย">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)
-                                                            <span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">ค่าน้ำหนักคะแนน (A)
+                                                            <span class="text-red-500">*</span></div>
                                                         <input type="number" name="score_a"
                                                             class="score_a border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนน A">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-sm font-medium text-gray-600 mb-2">หน่วยภาระงานมาตรฐาน (B)
-                                                            <span class="text-red-500">*</span></label>
+                                                        <div class="block text-sm font-medium text-gray-600 mb-2">หน่วยภาระงานมาตรฐาน (B)
+                                                            <span class="text-red-500">*</span></div>
                                                         <input type="number" name="score_b"
                                                             class="score_b border border-gray-300 text-gray-900 rounded-lg shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 block w-full p-2 text-sm transition duration-200"
                                                             placeholder="คะแนน B">
@@ -165,7 +165,7 @@
                                                     </div>
                                                 </div>
                                                 <label class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                                                    <input type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                                                    <input name="quant_require_evidence" type="checkbox" class="quant_require_evidence h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                                                     <span>บังคับแนบหลักฐานก่อนบันทึกภาระงาน</span>
                                                 </label>
                                             </div>

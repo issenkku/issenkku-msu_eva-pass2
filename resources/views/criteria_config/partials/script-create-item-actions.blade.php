@@ -239,6 +239,8 @@
                             }
                         }
                     });
+                    ensureRuntimeFormFieldIdentifiers(newBlock);
+                    ensureRuntimeLabelAssociations(newBlock);
                 }, 100);
                 
                 newBlock.scrollIntoView({
@@ -291,6 +293,8 @@
                             }
                         }
                     });
+                    ensureRuntimeFormFieldIdentifiers(newBlock);
+                    ensureRuntimeLabelAssociations(newBlock);
                 }, 100);
                 
                 newBlock.scrollIntoView({

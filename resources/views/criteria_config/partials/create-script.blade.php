@@ -29,6 +29,120 @@
             setDirtyState(false);
         }
 
+        let runtimeFieldIdCounter = 0;
+
+        function ensureRuntimeFormFieldIdentifiers(root = document) {
+            const form = document.getElementById('jsonForm');
+            if (!form) {
+                return;
+            }
+
+            const scope = root && root.querySelectorAll ? root : form;
+            scope.querySelectorAll('input, select, textarea').forEach(function(field) {
+                if (field.id || field.name || field.dataset.autoFieldId) {
+                    return;
+                }
+
+                runtimeFieldIdCounter += 1;
+                field.id = `runtime-form-field-${runtimeFieldIdCounter}`;
+                field.dataset.autoFieldId = field.id;
+            });
+
+            ensureUniqueFormFieldIds(form);
+        }
+
+        function ensureUniqueFormFieldIds(form) {
+            const seenIds = new Set();
+
+            form.querySelectorAll('input[id], select[id], textarea[id]').forEach(function(field) {
+                const currentId = field.id;
+
+                if (!seenIds.has(currentId)) {
+                    seenIds.add(currentId);
+                    return;
+                }
+
+                runtimeFieldIdCounter += 1;
+                const nextId = `${currentId}-${runtimeFieldIdCounter}`;
+                field.id = nextId;
+                field.dataset.autoFieldId = nextId;
+                seenIds.add(nextId);
+            });
+        }
+
+        function ensureRuntimeLabelAssociations(root = document) {
+            const scope = root && root.querySelectorAll ? root : document;
+
+            scope.querySelectorAll('label').forEach(function(label) {
+                if (label.control) {
+                    return;
+                }
+
+                let field = null;
+                const forId = label.getAttribute('for');
+
+                if (forId && window.CSS && typeof window.CSS.escape === 'function') {
+                    field = document.getElementById(forId) || document.querySelector(`#${CSS.escape(forId)}`);
+                } else if (forId) {
+                    field = document.getElementById(forId);
+                }
+
+                if (!field) {
+                    field = label.querySelector('input:not([type="hidden"]), select, textarea');
+                }
+
+                if (!field && label.parentElement) {
+                    field = label.parentElement.querySelector('input:not([type="hidden"]), select, textarea');
+                }
+
+                if (field) {
+                    if (!field.id) {
+                        runtimeFieldIdCounter += 1;
+                        field.id = `runtime-form-field-${runtimeFieldIdCounter}`;
+                        field.dataset.autoFieldId = field.id;
+                    }
+
+                    label.setAttribute('for', field.id);
+                    return;
+                }
+
+                const replacement = document.createElement('div');
+                Array.from(label.attributes).forEach(function(attribute) {
+                    if (attribute.name !== 'for') {
+                        replacement.setAttribute(attribute.name, attribute.value);
+                    }
+                });
+                replacement.innerHTML = label.innerHTML;
+                label.replaceWith(replacement);
+            });
+        }
+
+        function observeRuntimeFormFields() {
+            const form = document.getElementById('jsonForm');
+            if (!form || !window.MutationObserver) {
+                return;
+            }
+
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    mutation.addedNodes.forEach(function(node) {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            ensureRuntimeFormFieldIdentifiers(node);
+                            ensureRuntimeLabelAssociations(node);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(form, {
+                childList: true,
+                subtree: true,
+            });
+
+            ensureRuntimeFormFieldIdentifiers(form);
+            ensureRuntimeLabelAssociations(document);
+        }
+
         function shouldBlockNavigation(targetUrl = '') {
             if (!isDirty || isSubmitting) {
                 return false;
@@ -129,14 +243,23 @@
                         }
                     }
                 });
+
+                const noteEditor = $editor.next('.note-editor').get(0);
+                if (noteEditor) {
+                    ensureRuntimeFormFieldIdentifiers(noteEditor);
+                    ensureRuntimeLabelAssociations(noteEditor);
+                }
             });
         }
 
         // Initialize Summernote when document is ready
         $(document).ready(function() {
             setupUnsavedChangesProtection();
+            observeRuntimeFormFields();
             setTimeout(function() {
                 initializeSummernote();
+                ensureRuntimeFormFieldIdentifiers();
+                ensureRuntimeLabelAssociations(document);
             }, 100);
         });
 
@@ -740,6 +863,8 @@
                             }
                         }
                     });
+                    ensureRuntimeFormFieldIdentifiers(newBlock);
+                    ensureRuntimeLabelAssociations(newBlock);
                 }, 100);
                 
                 newBlock.scrollIntoView({
@@ -792,6 +917,8 @@
                             }
                         }
                     });
+                    ensureRuntimeFormFieldIdentifiers(newBlock);
+                    ensureRuntimeLabelAssociations(newBlock);
                 }, 100);
                 
                 newBlock.scrollIntoView({
@@ -830,6 +957,8 @@
                             }
                         }
                     });
+                    ensureRuntimeFormFieldIdentifiers(newBlock);
+                    ensureRuntimeLabelAssociations(newBlock);
                 }, 100);
                 
                 newBlock.scrollIntoView({
