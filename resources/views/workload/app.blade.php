@@ -67,7 +67,7 @@
                             <div class="main-criteria-fields">
                                 <div class="sequence-display workload-main-sequence-display" id="workload-main-sequence-display">1</div>
                                 <input type="hidden" class="workload-main-sequence" id="workload-main-sequence" value="1">
-                                <input type="text" class="form-control workload-main-category" value=""
+                                <input id="workload-main-category" type="text" class="form-control workload-main-category" value=""
                                     placeholder="กรุณากรอกหมวดหมู่หลัก">
                             </div>
                         </div>
@@ -113,11 +113,11 @@
                                     <div class="sub-criteria-fields">
                                         <div class="sequence-display workload-sub-sequence-display" id="workload-sub-sequence-display">1</div>
                                         <input type="hidden" class="workload-sub-sequence" id="workload-sub-sequence" value="1">
-                                        <input type="text" class="form-control workload-sub-category" value=""
+                                        <input id="workload-sub-category" type="text" class="form-control workload-sub-category" value=""
                                             placeholder="กรุณากรอกหมวดหมู่ย่อย">
                                     </div>
                                     <label class="workload-require-subject-option">
-                                        <input type="checkbox" class="workload-require-subject">
+                                        <input id="workload-require-subject" type="checkbox" class="workload-require-subject">
                                         <span>หัวข้อนี้ต้องเลือกรายวิชาและใช้ค่าหน่วยกิต</span>
                                     </label>
                                 </div>
@@ -135,8 +135,8 @@
                                             <button class="icon-btn is-drag workload-drag-handle workload-item-drag-handle" title="ลากเพื่อจัดอันดับ" type="button">⋮⋮</button>
                                             <span class="subitem-sequence-text">1</span>
                                         </div>
-                                        <input type="text" class="form-control workload-item-name" value="">
-                                        <input type="number" class="form-control workload-item-score" value=""
+                                        <input id="workload-item-name" type="text" class="form-control workload-item-name" value="">
+                                        <input id="workload-item-score" type="number" class="form-control workload-item-score" value=""
                                             min="0" step="0.01">
                                         <button class="icon-btn is-danger workload-item-remove" type="button">×</button>
                                     </div>
@@ -157,23 +157,23 @@
                                     <div class="formula-panel">
                                         <div class="formula-row">
                                             <div>
-                                                <label class="form-label">ชื่อตัวแปร</label>
-                                                <input type="text" class="form-control workload-variable-label"
+                                                <label for="workload-variable-label" class="form-label">ชื่อตัวแปร</label>
+                                                <input id="workload-variable-label" type="text" class="form-control workload-variable-label"
                                                     placeholder="กรอกชื่อตัวแปร">
                                             </div>
                                             <div>
-                                                <label class="form-label">หมายเหตุ</label>
-                                                <input type="text" class="form-control workload-variable-note"
+                                                <label for="workload-variable-note" class="form-label">หมายเหตุ</label>
+                                                <input id="workload-variable-note" type="text" class="form-control workload-variable-note"
                                                     placeholder="อธิบายว่าฟิลด์นี้ใช้กรอกอะไร">
                                             </div>
                                             <div>
-                                                <label class="form-label">ค่าเริ่มต้น</label>
-                                                <input type="text" class="form-control workload-variable-default-value"
+                                                <label for="workload-variable-default-value" class="form-label">ค่าเริ่มต้น</label>
+                                                <input id="workload-variable-default-value" type="text" class="form-control workload-variable-default-value"
                                                     placeholder="ใส่ค่าที่ต้องการให้แสดงไว้ก่อน">
                                             </div>
                                             <div>
-                                                <label class="form-label">ประเภทอินพุต</label>
-                                                <select class="form-select workload-variable-type">
+                                                <label for="workload-variable-type" class="form-label">ประเภทอินพุต</label>
+                                                <select id="workload-variable-type" class="form-select workload-variable-type">
                                                     <option value="">กรุณาเลือกประเภทอินพุต</option>
                                                     <option value="number" >Number (ตัวเลข)</option>
                                                     <option value="text">Text (ข้อความ)</option>
@@ -191,7 +191,7 @@
                                         <div class="formula-list workload-formula-list" id="workload-formula-list"></div>
 
                                         <div class="mt-3">
-                                            <label class="form-label">สร้างการคำนวณ</label>
+                                            <label for="workload-formula-text" class="form-label">สร้างการคำนวณ</label>
 
                                             <textarea class="form-control formula-text workload-formula-text" rows="4" id="workload-formula-text"></textarea>
                                         </div>
