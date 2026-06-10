@@ -2,15 +2,15 @@
 <div>
     <h3 class="mb-2 font-semibold text-purple-600">ตั้งค่าผู้ใช้งาน</h3>
     <div class="mb-3">
-        <label class="block">สถานะ <span class="text-red-600">*</span></label>
+        <label for="status" class="block">สถานะ <span class="text-red-600">*</span></label>
         <select name="status" id="status" class="w-full rounded border px-3 py-2" required>
             <option value="active">active</option>
             <option value="inactive">inactive</option>
         </select>
     </div>
     <div class="mb-3">
-        <label class="block">บทบาท</label>
-        <div id="roles" class="grid grid-cols-1 gap-2 rounded border px-3 py-3 md:grid-cols-2">
+        <div id="roles_label" class="block">บทบาท</div>
+        <div id="roles" class="grid grid-cols-1 gap-2 rounded border px-3 py-3 md:grid-cols-2" aria-labelledby="roles_label">
             @foreach ($roles as $role)
                 <label class="flex items-center gap-2 text-sm text-gray-700">
                     <input

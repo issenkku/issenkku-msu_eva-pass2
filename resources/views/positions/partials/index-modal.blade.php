@@ -16,7 +16,7 @@
 
                     <div class="mb-3">
                         <label for="name" class="form-label">ชื่อตำแหน่ง <span class="text-danger">*</span></label>
-                        <input type="text" id="name" name="name" class="form-control" required placeholder="กรุณาระบุชื่อตำแหน่ง">
+                        <input type="text" id="name" name="name" class="form-control" autocomplete="off" required placeholder="กรุณาระบุชื่อตำแหน่ง">
                         <div class="text-red-500 text-sm mt-1 hidden" id="nameError">กรุณากรอกชื่อตำแหน่ง</div>
                     </div>
                 </form>

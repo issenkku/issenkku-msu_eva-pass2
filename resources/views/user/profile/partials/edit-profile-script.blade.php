@@ -4,9 +4,9 @@ const oldEducationHistory = @json(old('education_history', $user->education_hist
 function educationHistoryRowTemplate(index, entry = {}) {
     return `
         <div class="grid grid-cols-1 gap-3 rounded-md border border-gray-200 p-3 md:grid-cols-[140px_1fr_1fr_auto]">
-            <input type="text" name="education_history[${index}][graduation_year]" value="${entry.graduation_year ?? ''}" placeholder="ปีที่จบ" maxlength="4" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
-            <input type="text" name="education_history[${index}][degree]" value="${entry.degree ?? ''}" placeholder="วุฒิการศึกษา" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
-            <input type="text" name="education_history[${index}][university]" value="${entry.university ?? ''}" placeholder="มหาวิทยาลัยที่จบ" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
+            <input type="text" name="education_history[${index}][graduation_year]" value="${entry.graduation_year ?? ''}" placeholder="ปีที่จบ" maxlength="4" autocomplete="off" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
+            <input type="text" name="education_history[${index}][degree]" value="${entry.degree ?? ''}" placeholder="วุฒิการศึกษา" autocomplete="organization-title" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
+            <input type="text" name="education_history[${index}][university]" value="${entry.university ?? ''}" placeholder="มหาวิทยาลัยที่จบ" autocomplete="organization" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
             <button type="button" onclick="removeEducationHistoryRow(this)" class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50">ลบ</button>
         </div>
     `;

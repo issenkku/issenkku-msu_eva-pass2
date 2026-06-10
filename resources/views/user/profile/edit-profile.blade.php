@@ -67,6 +67,7 @@
                     id="prefix"
                     name="prefix"
                     list="prefix-options"
+                    autocomplete="honorific-prefix"
                     value="{{ old('prefix', $user->prefix) }}"
                     placeholder="เช่น นาย, อ.ดร., ว่าที่ ร.ต."
                     class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('prefix') border-red-500 @enderror"
@@ -93,6 +94,7 @@
                     type="text"
                     id="name"
                     name="name"
+                    autocomplete="name"
                     value="{{ old('name', $user->name) }}"
                     class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('name') border-red-500 @enderror"
                 >
@@ -108,6 +110,7 @@
                 type="email"
                 id="email"
                 name="email"
+                autocomplete="email"
                 value="{{ old('email', $user->email) }}"
                 class="mt-1 block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('email') border-red-500 @enderror"
             >
@@ -123,6 +126,7 @@
                     type="text"
                     id="employee_id"
                     name="employee_id"
+                    autocomplete="username"
                     value="{{ old('employee_id', $user->employee_id) }}"
                     class="block w-full cursor-not-allowed rounded-md border border-black bg-gray-100 px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('employee_id') border-red-500 @enderror"
                     readonly
@@ -138,6 +142,7 @@
                     type="tel"
                     id="phone"
                     name="phone"
+                    autocomplete="tel"
                     value="{{ old('phone', $user->phone) }}"
                     placeholder="0812345678"
                     class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('phone') border-red-500 @enderror"
@@ -222,7 +227,7 @@
             </div>
 
             <div class="col-span-2">
-                <label for="bio" class="mb-1 block text-sm font-medium text-gray-700">ประวัติการศึกษา</label>
+                <div class="mb-1 block text-sm font-medium text-gray-700">ประวัติการศึกษา</div>
                 <div id="educationHistoryRows" class="space-y-3"></div>
                 <button type="button" id="addEducationHistoryRow" class="mt-3 rounded-md border border-blue-300 px-3 py-2 text-sm text-blue-700 hover:bg-blue-50">
                     เพิ่มวุฒิการศึกษา
@@ -237,6 +242,7 @@
                 <textarea
                     id="portfolio"
                     name="portfolio"
+                    autocomplete="off"
                     rows="6"
                     class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black @error('portfolio') border-red-500 @enderror"
                     placeholder="กรอกข้อมูลผลงาน เช่น งานวิจัย, บทความ, หนังสือ, รางวัลที่ได้รับ และผลงานอื่น ๆ ที่สำคัญ"
