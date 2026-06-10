@@ -170,8 +170,11 @@
                     'endTime' => 'กรุณาเลือกวันสิ้นสุดประเมิน',
                     'evaluatees' => 'กรุณาเลือกผู้รับการประเมินอย่างน้อย 1 คน',
                     'reviewers' => 'กรุณาเลือกผู้ประเมินอย่างน้อย 1 บทบาท',
+                    'stageOrderDuplicate' => 'ลำดับการประเมินของแต่ละบทบาทต้องไม่ซ้ำกัน',
                 ],
                 'reviewerConfigs' => collect($reviewerCards)->map(fn ($card) => [
+                    'stageKey' => $card['key'],
+                    'stageOrderId' => 'stage_order_' . $card['key'],
                     'selectId' => $card['id'],
                     'displayId' => 'selected-' . $card['count_id'],
                     'countId' => $card['count_id'] . '-selected-count',

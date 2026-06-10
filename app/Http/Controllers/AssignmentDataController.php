@@ -323,6 +323,16 @@ class AssignmentDataController extends Controller
             if (count($flow) !== count($selectedActors)) {
                 $validator->errors()->add('evaluation_flow', 'กรุณาระบุลำดับการประเมินให้ครบทุกบทบาทที่เลือก');
             }
+
+            $selectedStageOrders = collect($request->input('stage_order', []))
+                ->only(array_keys($selectedActors))
+                ->filter(fn ($order) => filled($order))
+                ->map(fn ($order) => (int) $order)
+                ->values();
+
+            if ($selectedStageOrders->count() !== $selectedStageOrders->unique()->count()) {
+                $validator->errors()->add('evaluation_flow', 'ลำดับการประเมินของแต่ละบทบาทต้องไม่ซ้ำกัน');
+            }
         });
 
         return $validator;

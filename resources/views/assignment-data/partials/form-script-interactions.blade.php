@@ -63,6 +63,10 @@
             updateDisplayAndCounts();
         });
 
+        $('[data-stage-order-select]').on('change', function() {
+            syncStageOrderOptions();
+        });
+
         $(document).on('change', '.evaluatee-checkbox', function() {
             const selectedValues = $('.evaluatee-checkbox:checked').map(function() {
                 return String($(this).val());
@@ -106,4 +110,5 @@
             filterReviewerOptions(config);
         });
 
+        syncStageOrderOptions();
         updateSummary();

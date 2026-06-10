@@ -209,6 +209,7 @@
                 $(`#${config.displayId}`).html(buildReviewerSelection(config, userName));
             });
 
+            syncStageOrderOptions();
             updateSummary();
         }
 

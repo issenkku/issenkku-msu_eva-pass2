@@ -44,4 +44,39 @@
             return buildSelectionItem(config.selectedItemClass, userName);
         }
 
+        function getSelectedStageOrderEntries() {
+            return reviewerConfigs
+                .map(config => ({
+                    config,
+                    reviewerId: String($(`#${config.selectId}`).val() || ''),
+                    order: String($(`#${config.stageOrderId}`).val() || ''),
+                }))
+                .filter(entry => entry.reviewerId && entry.order);
+        }
+
+        function hasDuplicateStageOrders() {
+            const orders = getSelectedStageOrderEntries().map(entry => entry.order);
+
+            return orders.length !== new Set(orders).size;
+        }
+
+        function syncStageOrderOptions() {
+            const selectedEntries = getSelectedStageOrderEntries();
+
+            reviewerConfigs.forEach(config => {
+                const $select = $(`#${config.stageOrderId}`);
+                const currentValue = String($select.val() || '');
+                const usedByOtherActiveReviewers = new Set(
+                    selectedEntries
+                        .filter(entry => entry.config.stageKey !== config.stageKey)
+                        .map(entry => entry.order)
+                );
+
+                $select.find('option').each(function() {
+                    const optionValue = String($(this).val() || '');
+                    $(this).prop('disabled', optionValue !== currentValue && usedByOtherActiveReviewers.has(optionValue));
+                });
+            });
+        }
+
         let filteredEvaluateeOptions = [];

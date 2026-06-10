@@ -69,6 +69,13 @@
                 return false;
             }
 
+            if (hasDuplicateStageOrders()) {
+                e.preventDefault();
+                alert(formBehaviorConfig.validation.stageOrderDuplicate);
+                syncStageOrderOptions();
+                return false;
+            }
+
             submitButton.prop('disabled', true).html(formBehaviorConfig.loadingHtml);
             if (loadingOverlay && loadingOverlay.length) {
                 loadingOverlay.removeClass('hidden');

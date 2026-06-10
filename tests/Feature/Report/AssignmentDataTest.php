@@ -193,6 +193,48 @@ class AssignmentDataTest extends TestCase
             ->assertSessionHasErrors(['evaluation_flow']);
     }
 
+    public function test_store_fails_when_selected_reviewer_stages_share_the_same_order(): void
+    {
+        Role::create(['name' => 'กรรมการ']);
+
+        $this->actingAs($this->admin, 'web')
+            ->get(route('assignment-data.index'));
+
+        $token = session()->token();
+
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id'   => $this->evaluatorPosition->id,
+        ]);
+        $director = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id'   => $this->evaluatorPosition->id,
+        ]);
+        $evaluateeUser = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id'   => $this->evaluateePosition->id,
+        ]);
+
+        $payload = [
+            '_token'         => $token,
+            'start_time'     => now()->toDateString(),
+            'end_time'       => now()->addDays(5)->toDateString(),
+            'report_data_id' => $this->reportData->id,
+            'evaluatees'     => [$evaluateeUser->id],
+            'evaluator_id'   => $evaluator->id,
+            'director_id'    => $director->id,
+            'stage_order'    => ['evaluator' => 1, 'director' => 1],
+        ];
+
+        $this->actingAs($this->admin, 'web')
+            ->post(route('assignment-data.store'), $payload)
+            ->assertSessionHasErrors(['evaluation_flow']);
+
+        $this->assertDatabaseCount('assignment_datas', 0);
+        $this->assertDatabaseCount('reports', 0);
+        $this->assertDatabaseCount('assignments', 0);
+    }
+
     public function test_admin_can_update_assignment_data(): void
     {
         $this->actingAs($this->admin, 'web')

@@ -141,19 +141,23 @@
                             </div>
                             <h3 class="text-lg font-medium text-gray-700">{{ $card['title'] }}</h3>
                         </div>
-                        <div class="w-24">
+                        <div class="w-32">
                             <label for="stage_order_{{ $card['key'] }}" class="block text-sm font-medium text-gray-700 mb-1">
                                 ลำดับ
                             </label>
-                            <input
-                                type="number"
+                            <select
                                 id="stage_order_{{ $card['key'] }}"
                                 name="stage_order[{{ $card['key'] }}]"
-                                min="1"
-                                max="3"
-                                value="{{ $card['order'] }}"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
+                                data-stage-order-select
+                                data-stage-key="{{ $card['key'] }}"
+                                class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
                             >
+                                @for ($stageOrder = 1; $stageOrder <= 3; $stageOrder++)
+                                    <option value="{{ $stageOrder }}" @selected((int) $card['order'] === $stageOrder)>
+                                        ขั้นที่ {{ $stageOrder }}
+                                    </option>
+                                @endfor
+                            </select>
                         </div>
                     </div>
 
