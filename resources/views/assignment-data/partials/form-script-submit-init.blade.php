@@ -82,13 +82,37 @@
             }
         });
 
-        flatpickr('.flatpickr-date', {
-            dateFormat: 'Y-m-d',
-            altInput: true,
-            altFormat: 'd/m/Y',
-            locale: 'th',
-            allowInput: true
+        document.querySelectorAll('.flatpickr-date').forEach(function(input) {
+            flatpickr(input, {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'd/m/Y',
+                locale: 'th',
+                allowInput: true,
+                onReady: function(selectedDates, dateStr, instance) {
+                    const originalId = instance.input.id;
+
+                    if (!originalId || !instance.altInput) {
+                        return;
+                    }
+
+                    const displayId = `${originalId}_display`;
+                    instance.altInput.id = displayId;
+                    instance.altInput.name = displayId;
+                    instance.altInput.setAttribute('autocomplete', 'off');
+
+                    const label = document.querySelector(`label[for="${originalId}"]`);
+                    if (label) {
+                        label.setAttribute('for', displayId);
+                    }
+
+                    ensureAssignmentRuntimeFieldIds(instance.altInput);
+                    ensureAssignmentRuntimeFieldIds(instance.calendarContainer);
+                }
+            });
         });
+
+        observeAssignmentRuntimeFields();
 
         window.setTimeout(function() {
             const alerts = document.querySelectorAll('.alert');

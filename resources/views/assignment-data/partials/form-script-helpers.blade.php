@@ -80,3 +80,47 @@
         }
 
         let filteredEvaluateeOptions = [];
+        let assignmentRuntimeFieldIdCounter = 0;
+
+        function ensureAssignmentRuntimeFieldIds(root = document) {
+            const fields = root.matches?.('input, select, textarea')
+                ? [root]
+                : Array.from(root.querySelectorAll?.('input, select, textarea') || []);
+
+            fields.forEach(field => {
+                if (!field.id && !field.name) {
+                    assignmentRuntimeFieldIdCounter += 1;
+                    field.id = `assignment-runtime-field-${assignmentRuntimeFieldIdCounter}`;
+                }
+
+                if (!field.autocomplete && field.type !== 'hidden') {
+                    field.autocomplete = 'off';
+                }
+            });
+        }
+
+        function observeAssignmentRuntimeFields() {
+            const form = document.getElementById('evaluation-form');
+
+            if (!form || form.dataset.runtimeFieldObserverAttached === 'true') {
+                return;
+            }
+
+            form.dataset.runtimeFieldObserverAttached = 'true';
+            ensureAssignmentRuntimeFieldIds(document);
+
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            ensureAssignmentRuntimeFieldIds(node);
+                        }
+                    });
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+        }

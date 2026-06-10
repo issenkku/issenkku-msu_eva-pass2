@@ -20,9 +20,9 @@
                 <h3 class="text-lg font-medium text-gray-700">ผู้รับการประเมิน</h3>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-                <label class="block text-sm font-medium text-gray-700">
+                <div class="block text-sm font-medium text-gray-700">
                     รายชื่อผู้รับการประเมิน:
-                </label>
+                </div>
                 <div class="text-sm text-gray-500">
                     <span id="evaluatees-available-count">{{ $users->count() }}</span> คนที่แสดง จาก
                     <span id="evaluatees-total-count">{{ $users->count() }}</span> คนทั้งหมด
@@ -41,6 +41,7 @@
                             <label for="evaluatees-department-filter" class="mb-1 block text-sm font-medium text-gray-700">หน่วยงาน/คณะ</label>
                             <select
                                 id="evaluatees-department-filter"
+                                autocomplete="off"
                                 class="form-select w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">ทั้งหมด</option>
@@ -53,6 +54,7 @@
                             <label for="evaluatees-position-filter" class="mb-1 block text-sm font-medium text-gray-700">ตำแหน่งงาน</label>
                             <select
                                 id="evaluatees-position-filter"
+                                autocomplete="off"
                                 class="form-select w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">ทั้งหมด</option>
@@ -68,6 +70,7 @@
                         <input
                             type="text"
                             id="evaluatees-search-filter"
+                            autocomplete="off"
                             class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="พิมพ์ชื่อหรือตำแหน่งงาน"
                         >
@@ -187,6 +190,7 @@
                                     <label for="{{ $card['count_id'] }}-department-filter" class="mb-1 block text-sm font-medium text-gray-700">หน่วยงาน/คณะ</label>
                                     <select
                                         id="{{ $card['count_id'] }}-department-filter"
+                                        autocomplete="off"
                                         class="form-select w-full text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
                                     >
                                         <option value="">ทั้งหมด</option>
@@ -199,6 +203,7 @@
                                     <label for="{{ $card['count_id'] }}-position-filter" class="mb-1 block text-sm font-medium text-gray-700">ตำแหน่งงาน</label>
                                     <select
                                         id="{{ $card['count_id'] }}-position-filter"
+                                        autocomplete="off"
                                         class="form-select w-full text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
                                     >
                                         <option value="">ทั้งหมด</option>
@@ -214,6 +219,7 @@
                                 <input
                                     type="text"
                                     id="{{ $card['count_id'] }}-search-filter"
+                                    autocomplete="off"
                                     class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 {{ $card['focus_class'] }}"
                                     placeholder="พิมพ์ชื่อหรือตำแหน่งงาน"
                                 >

@@ -15,6 +15,7 @@
                 type="text"
                 name="start_time"
                 id="start_time"
+                autocomplete="off"
                 value="{{ $startTimeValue }}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date"
                 required
@@ -28,6 +29,7 @@
                 type="text"
                 name="end_time"
                 id="end_time"
+                autocomplete="off"
                 value="{{ $endTimeValue }}"
                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flatpickr-date"
                 required

@@ -30,7 +30,7 @@
 
                 html += `
                     <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-blue-50 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-blue-50/50">
-                        <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
+                        <input id="evaluatee-checkbox-${value}" type="checkbox" autocomplete="off" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 evaluatee-checkbox" value="${value}" ${checked}>
                         <span class="${formBehaviorConfig.evaluateeNameClass}">${userName}</span>
                         <span class="${formBehaviorConfig.evaluateeMetaClass}">${userEmail}</span>
                     </label>
@@ -38,6 +38,7 @@
             });
 
             $list.html(html);
+            ensureAssignmentRuntimeFieldIds($list[0]);
         }
 
         function filterEvaluateesByCriteria() {
@@ -137,13 +138,14 @@
                     return;
                 }
 
+                const checkboxId = `${config.selectId}-checkbox-${value}`;
                 const checked = selectedValue === value ? 'checked' : '';
                 const userName = $option.data('user-name') || $option.text() || formBehaviorConfig.notSpecifiedText;
                 const userEmail = $option.data('user-email') || '';
 
                 html += `
                     <label class="grid cursor-pointer grid-cols-[18px_minmax(0,180px)_minmax(0,1fr)] items-center gap-x-3 border-b border-slate-100 px-1 py-2 text-sm text-gray-700 transition last:border-b-0 hover:bg-slate-50">
-                        <input type="checkbox" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
+                        <input id="${checkboxId}" type="checkbox" autocomplete="off" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500 reviewer-checkbox" data-select-id="${config.selectId}" value="${value}" ${checked}>
                         <span class="${formBehaviorConfig.reviewerNameClass}">${userName}</span>
                         <span class="${formBehaviorConfig.reviewerMetaClass}">${userEmail}</span>
                     </label>
@@ -151,6 +153,7 @@
             });
 
             $list.html(html || `<div class="text-sm text-gray-500">${formBehaviorConfig.reviewerNoResultsText}</div>`);
+            ensureAssignmentRuntimeFieldIds($list[0]);
         }
 
         function updateReviewerDropdownLabel(config) {
