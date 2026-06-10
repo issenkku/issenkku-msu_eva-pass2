@@ -6,19 +6,19 @@
     <div class="card-body">
         <div class="info-grid">
             <div class="info-item">
-                <label>ชื่อเกณฑ์:</label>
+                <span class="info-label">ชื่อเกณฑ์:</span>
                 <span>{{ $assignment['report_title'] ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <label>คำอธิบายเกณฑ์:</label>
+                <span class="info-label">คำอธิบายเกณฑ์:</span>
                 <span>{{ $assignment['report_description'] ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <label>ประเภท:</label>
+                <span class="info-label">ประเภท:</span>
                 <span>{{ $assignment['assessment_type'] ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <label>หมายเหตุ:</label>
+                <span class="info-label">หมายเหตุ:</span>
                 <span>{{ $assignment['comment'] ?? '-' }}</span>
             </div>
         </div>

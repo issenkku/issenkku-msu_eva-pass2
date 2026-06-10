@@ -74,7 +74,7 @@
         gap: 16px;
     }
 
-    .info-item label {
+    .info-item .info-label {
         flex: 0 0 160px;
         font-weight: 600;
         color: #4b5563;
@@ -289,7 +289,7 @@
             gap: 4px;
         }
 
-        .info-item label {
+        .info-item .info-label {
             flex: none;
         }
     }

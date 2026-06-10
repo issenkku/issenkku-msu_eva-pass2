@@ -6,15 +6,15 @@
     <div class="card-body">
         <div class="info-grid">
             <div class="info-item">
-                <label>ชื่อ-นามสกุล:</label>
+                <span class="info-label">ชื่อ-นามสกุล:</span>
                 <span>{{ $assignment['evaluatee']['name'] ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <label>ตำแหน่ง:</label>
+                <span class="info-label">ตำแหน่ง:</span>
                 <span>{{ $assignment['evaluatee']['position'] ?? '-' }}</span>
             </div>
             <div class="info-item">
-                <label>หน่วยงาน:</label>
+                <span class="info-label">หน่วยงาน:</span>
                 <span>{{ $assignment['evaluatee']['department'] ?? '-' }}</span>
             </div>
         </div>

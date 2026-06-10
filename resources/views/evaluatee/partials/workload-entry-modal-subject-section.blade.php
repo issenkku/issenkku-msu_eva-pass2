@@ -1,8 +1,8 @@
 <div class="workload-modal-section" id="workloadSubjectSection" style="display:none;">
-    <label class="workload-modal-label">&#3619;&#3634;&#3618;&#3623;&#3636;&#3594;&#3634; <span class="required">*</span></label>
+    <div id="workloadSubjectLabel" class="workload-modal-label">&#3619;&#3634;&#3618;&#3623;&#3636;&#3594;&#3634; <span class="required">*</span></div>
     <input type="hidden" name="subject_id" id="workloadSubjectId" value="">
     <div class="workload-subject-picker" id="workloadSubjectPicker">
-        <button type="button" class="workload-subject-trigger" id="workloadSubjectTrigger" aria-expanded="false">
+        <button type="button" class="workload-subject-trigger" id="workloadSubjectTrigger" aria-labelledby="workloadSubjectLabel workloadSubjectTriggerText" aria-expanded="false">
             <span class="workload-subject-trigger-text" id="workloadSubjectTriggerText">-- &#3648;&#3621;&#3639;&#3629;&#3585;&#3619;&#3634;&#3618;&#3623;&#3636;&#3594;&#3634; --</span>
             <span class="workload-subject-trigger-icon" aria-hidden="true"></span>
         </button>

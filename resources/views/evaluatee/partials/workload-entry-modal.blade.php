@@ -17,7 +17,7 @@
 
                     <div class="workload-modal-grid">
                         <div class="workload-modal-field workload-modal-field-workload">
-                            <label class="workload-modal-label">&#3616;&#3634;&#3619;&#3632;&#3591;&#3634;&#3609; <span class="required">*</span></label>
+                            <label for="workloadFormItemSelect" class="workload-modal-label">&#3616;&#3634;&#3619;&#3632;&#3591;&#3634;&#3609; <span class="required">*</span></label>
                             <select class="workload-modal-select" name="workload_form_item_id" id="workloadFormItemSelect" required>
                                 <option value="">-- &#3648;&#3621;&#3639;&#3629;&#3585;&#3616;&#3634;&#3619;&#3632;&#3591;&#3634;&#3609; --</option>
                                 @foreach(($workloadModal['workload_item_options'] ?? []) as $itemOption)

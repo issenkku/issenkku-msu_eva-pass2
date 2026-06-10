@@ -41,7 +41,7 @@
             </div>
 
             <div class="quality-score-form-group" id="selectedCriteriaContainer" style="display: none;">
-                <label class="quality-score-label">เกณฑ์การประเมินที่เลือก</label>
+                <div class="quality-score-label">เกณฑ์การประเมินที่เลือก</div>
                 <div id="selectedCriteriaList" class="quality-score-selected-box">
                     <div id="noCriteriaMessage" class="quality-score-empty-message">ยังไม่ได้เลือกเกณฑ์การประเมิน</div>
                 </div>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="quality-score-form-group">
-                <label class="quality-score-label">ผู้ใช้งานและคะแนนตามเกณฑ์</label>
+                <div class="quality-score-label">ผู้ใช้งานและคะแนนตามเกณฑ์</div>
 
                 <div class="mb-3" id="scoreTypeContainer" style="display: none;">
                     <div class="form-check form-check-inline">

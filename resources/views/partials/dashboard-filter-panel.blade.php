@@ -46,8 +46,9 @@
         <form id="filterForm" method="get" class="space-y-1">
             <div class="dashboard-filter-grid grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 <div class="md:col-span-2 xl:col-span-1">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">{{ $searchLabel }}</label>
+                    <label for="{{ $scope }}_search" class="mb-1 block text-sm font-medium text-gray-700">{{ $searchLabel }}</label>
                     <input
+                        id="{{ $scope }}_search"
                         name="search"
                         type="text"
                         value="{{ request('search', '') }}"
@@ -56,19 +57,19 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
-                    <input name="start_time" type="date" value="{{ request('start_time', '') }}" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
+                    <label for="{{ $scope }}_start_time" class="mb-1 block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
+                    <input id="{{ $scope }}_start_time" name="start_time" type="date" value="{{ request('start_time', '') }}" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
-                    <input name="end_time" type="date" value="{{ request('end_time', '') }}" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
+                    <label for="{{ $scope }}_end_time" class="mb-1 block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
+                    <input id="{{ $scope }}_end_time" name="end_time" type="date" value="{{ request('end_time', '') }}" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
                 </div>
 
                 @if ($showDepartment)
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-gray-700">หน่วยงาน / แผนก</label>
-                        <select name="department_name" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
+                        <label for="{{ $scope }}_department_name" class="mb-1 block text-sm font-medium text-gray-700">หน่วยงาน / แผนก</label>
+                        <select id="{{ $scope }}_department_name" name="department_name" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
                             <option value="">ทุกหน่วยงาน</option>
                             @foreach ($departments as $department)
                                 <option value="{{ $department->department_name }}" @selected(request('department_name') == $department->department_name)>{{ $department->department_name }}</option>
@@ -78,8 +79,8 @@
                 @endif
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">สถานะ</label>
-                    <select name="status" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
+                    <label for="{{ $scope }}_status" class="mb-1 block text-sm font-medium text-gray-700">สถานะ</label>
+                    <select id="{{ $scope }}_status" name="status" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
                         <option value="">ทั้งหมด</option>
                         @foreach ($statusOptions as $value => $label)
                             <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
@@ -88,8 +89,8 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">ความเร่งด่วน</label>
-                    <select name="urgency" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
+                    <label for="{{ $scope }}_urgency" class="mb-1 block text-sm font-medium text-gray-700">ความเร่งด่วน</label>
+                    <select id="{{ $scope }}_urgency" name="urgency" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
                         <option value="">ทั้งหมด</option>
                         @foreach ($urgencyOptions as $value => $label)
                             <option value="{{ $value }}" @selected(request('urgency') === $value)>{{ $label }}</option>
@@ -98,8 +99,8 @@
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">ปีประเมิน</label>
-                    <select name="year" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
+                    <label for="{{ $scope }}_year" class="mb-1 block text-sm font-medium text-gray-700">ปีประเมิน</label>
+                    <select id="{{ $scope }}_year" name="year" class="w-full rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500">
                         <option value="">ทั้งหมด</option>
                         @foreach ($years as $year)
                             <option value="{{ $year }}" @selected((string) request('year') === (string) $year)>{{ $year }}</option>

@@ -68,7 +68,7 @@
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
                             <div class="flex flex-1 items-start">
                                 @if(!$readonly)
-                                    <label class="text-base text-gray-800">
+                                    <label for="quantity-score-{{ $item['sub_criteria_id'] }}" class="text-base text-gray-800">
                                         {{ $item['title'] ?? 'รายการย่อย' }}
                                     </label>
                                 @else
@@ -85,6 +85,7 @@
                                     </div>
                                 @else
                                     <input
+                                        id="quantity-score-{{ $item['sub_criteria_id'] }}"
                                         type="number"
                                         min="0"
                                         name="quantity_list[{{ $item['sub_criteria_id'] }}][score_C]"

@@ -145,9 +145,10 @@
             selectedUsers.forEach((user, userIndex) => {
                 selectedCriterias.forEach((criteria, criteriaIndex) => {
                     const index = userIndex * selectedCriterias.length + criteriaIndex;
+                    const scoreInputId = `quality_score_${index}`;
                     const scoreInputHtml = scoreType === 'same'
-                        ? `<div class="quality-score-input-group"><label class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" value="${commonScore}" readonly style="background-color: #f8f9fa;"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`
-                        : `<div class="quality-score-input-group"><label class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" placeholder="0.0" onchange="updateSubmitButton()"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`;
+                        ? `<div class="quality-score-input-group"><label for="${scoreInputId}" class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input id="${scoreInputId}" type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" value="${commonScore}" readonly style="background-color: #f8f9fa;"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`
+                        : `<div class="quality-score-input-group"><label for="${scoreInputId}" class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input id="${scoreInputId}" type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" placeholder="0.0" onchange="updateSubmitButton()"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`;
 
                     const row = document.createElement('div');
                     row.className = 'quality-user-score-row';

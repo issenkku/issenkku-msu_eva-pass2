@@ -74,6 +74,7 @@
                             <div class="flex flex-1 items-start">
                                 @if(!$readonly)
                                     <input
+                                        id="quality-criteria-{{ $item['sub_criteria_id'] }}"
                                         type="checkbox"
                                         name="quality_criteria[{{ $item['sub_criteria_id'] }}]"
                                         value="1"
@@ -84,11 +85,12 @@
                                         onchange="handleQualityCheckboxChange(this)"
                                         {{ $shouldBeChecked ? 'checked' : '' }}
                                         class="mt-1 mr-3 h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
-                                    <label class="text-base text-gray-800">
+                                    <label for="quality-criteria-{{ $item['sub_criteria_id'] }}" class="text-base text-gray-800">
                                         {{ $item['title'] ?? 'รายการย่อย' }}
                                     </label>
                                 @else
                                     <input
+                                        id="quality-criteria-readonly-{{ $item['sub_criteria_id'] }}"
                                         type="checkbox"
                                         {{ $shouldBeChecked ? 'checked' : '' }}
                                         disabled
@@ -102,7 +104,7 @@
                             <div class="w-full lg:w-1/4" style="display: none;">
                                 @if(!$readonly)
                                     <div class="flex flex-col">
-                                        <label class="mb-1 text-xs text-gray-600">คะแนน</label>
+                                        <label for="quality-score-{{ $item['sub_criteria_id'] }}" class="mb-1 text-xs text-gray-600">คะแนน</label>
                                         <input
                                             type="hidden"
                                             name="quality_list[{{ $item['sub_criteria_id'] }}][quality_sub_criteria_id]"

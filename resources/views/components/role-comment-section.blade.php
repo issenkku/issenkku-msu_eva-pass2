@@ -59,7 +59,7 @@
     <div class="space-y-5">
         @foreach ($sections as $section)
             <div>
-                <label class="mb-2 block text-sm font-semibold text-gray-800">{{ $section['title'] }}</label>
+                <div class="mb-2 block text-sm font-semibold text-gray-800">{{ $section['title'] }}</div>
 
                 @if ($section['isCurrentRole'] && ! $readonly)
                     <textarea

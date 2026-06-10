@@ -1,5 +1,5 @@
 <div class="workload-modal-field workload-modal-field-credit" id="workload-detail-fields">
-    <label class="workload-modal-label"></label>
+    <div class="workload-modal-label" aria-hidden="true"></div>
     @foreach(($workloadModal['forms'] ?? []) as $formView)
         <div
             class="workload-form-fields"
@@ -18,8 +18,9 @@
                         />
                     @elseif(!empty($fieldView['is_renderable_input']))
                         <div class="workload-modal-subfield">
-                            <label class="workload-modal-sub-label">{{ $fieldView['label'] }}</label>
+                            <label for="workload-field-{{ $formView['id'] }}-{{ $loop->index }}" class="workload-modal-sub-label">{{ $fieldView['label'] }}</label>
                             <input
+                                id="workload-field-{{ $formView['id'] }}-{{ $loop->index }}"
                                 type="{{ $fieldView['input_type'] }}"
                                 class="workload-modal-input"
                                 name="field_values[{{ $fieldView['variable_name'] }}]"
@@ -35,8 +36,8 @@
 
                 @if(empty($formView['has_renderable_fields']))
                     <div class="workload-modal-subfield">
-                        <label class="workload-modal-sub-label">&#3627;&#3609;&#3656;&#3623;&#3618;&#3585;&#3636;&#3605;</label>
-                        <input type="number" class="workload-modal-input" name="field_values[credits]" value="0" />
+                        <label for="workload-credits-{{ $formView['id'] }}" class="workload-modal-sub-label">&#3627;&#3609;&#3656;&#3623;&#3618;&#3585;&#3636;&#3605;</label>
+                        <input id="workload-credits-{{ $formView['id'] }}" type="number" class="workload-modal-input" name="field_values[credits]" value="0" />
                     </div>
                 @endif
             </div>

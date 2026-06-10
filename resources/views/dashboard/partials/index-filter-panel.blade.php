@@ -33,25 +33,28 @@
         <form id="filterForm" method="get" class="space-y-1">
             <div class="flex flex-col space-y-3 md:flex-row md:space-x-4 md:space-y-0">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
+                    <label for="dashboard_start_time" class="mb-1 block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
                     <input
+                        id="dashboard_start_time"
                         name="start_time"
                         type="date"
                         value="{{ request('start_time', '') }}"
                         class="w-48 rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
+                    <label for="dashboard_end_time" class="mb-1 block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
                     <input
+                        id="dashboard_end_time"
                         name="end_time"
                         type="date"
                         value="{{ request('end_time', '') }}"
                         class="w-48 rounded-lg bg-gray-100 px-4 py-2 text-black focus:border-blue-500 focus:ring-blue-500" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm text-gray-700">หน่วยงาน/แผนก</label>
+                    <label for="dashboard_department_name" class="mb-1 block text-sm text-gray-700">หน่วยงาน/แผนก</label>
                     <div class="relative">
                         <select
+                            id="dashboard_department_name"
                             name="department_name"
                             class="w-full appearance-none rounded-lg bg-gray-100 px-4 py-2 pr-10 text-black focus:border-blue-500 focus:ring-blue-500">
                             <option value="">ทุกหน่วยงาน</option>
@@ -69,9 +72,10 @@
                     </div>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm text-gray-700">ตำแหน่งงาน</label>
+                    <label for="dashboard_position_name" class="mb-1 block text-sm text-gray-700">ตำแหน่งงาน</label>
                     <div class="relative">
                         <select
+                            id="dashboard_position_name"
                             name="position_name"
                             class="w-full appearance-none rounded-lg bg-gray-100 px-4 py-2 pr-10 text-black focus:border-blue-500 focus:ring-blue-500">
                             <option value="">ทุกตำแหน่งงาน</option>

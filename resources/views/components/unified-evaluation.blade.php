@@ -370,6 +370,7 @@
                                                                     <div class="flex items-center flex-1 min-w-0">
                                                                         @if (!$readonly)
                                                                             <input type="checkbox"
+                                                                                id="unified-quality-criteria-{{ $subCriteria['id'] }}"
                                                                                 name="quality_criteria[{{ $subCriteria['id'] }}]"
                                                                                 value="1"
                                                                                 data-score="{{ $subCriteria['num_score'] ?? 0 }}"
@@ -380,6 +381,7 @@
                                                                                 {{ $shouldBeChecked ? 'checked' : '' }}
                                                                                 class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                                             <label
+                                                                                for="unified-quality-criteria-{{ $subCriteria['id'] }}"
                                                                                 class="text-base text-gray-800 break-words">
                                                                                 {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                                                 @if (!empty($subCriteria['description']))
@@ -391,6 +393,7 @@
                                                                             </label>
                                                                         @else
                                                                             <input type="checkbox"
+                                                                                id="unified-quality-criteria-readonly-{{ $subCriteria['id'] }}"
                                                                                 {{ $shouldBeChecked ? 'checked' : '' }}
                                                                                 disabled
                                                                                 class="h-5 w-5 text-purple-600 border-gray-300 rounded mr-3">

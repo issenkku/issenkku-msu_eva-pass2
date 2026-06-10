@@ -204,10 +204,11 @@
                                                                 <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
                                                                 {{-- Score A --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
-                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
+                                                                    <label for="director-score-a-{{ $subCriteria['id'] }}" class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         ค่าน้ำหนักคะแนน (A)
                                                                     </label>
                                                                     <input type="text"
+                                                                        id="director-score-a-{{ $subCriteria['id'] }}"
                                                                         name="quantity_list[{{ $subCriteria['id'] }}][score_A]"
                                                                         value="{{ $subCriteria['score_a'] ?? '' }}"
                                                                         readonly
@@ -216,10 +217,11 @@
 
                                                                 {{-- Score B --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
-                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
+                                                                    <label for="director-score-b-{{ $subCriteria['id'] }}" class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานมาตรฐาน (B)
                                                                     </label>
                                                                     <input type="text"
+                                                                        id="director-score-b-{{ $subCriteria['id'] }}"
                                                                         name="quantity_list[{{ $subCriteria['id'] }}][score_B]"
                                                                         value="{{ $subCriteria['score_b'] ?? '' }}"
                                                                         readonly
@@ -228,11 +230,12 @@
 
                                                                 {{-- Score C --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-blue-200 bg-blue-50/60 p-3">
-                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
+                                                                    <label for="director-score-c-{{ $subCriteria['id'] }}" class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         หน่วยภาระงานที่ทำได้ (C)
                                                                     </label>
                                                                     @if(!$readonly)
                                                                         <input type="number" step="1" min="0"
+                                                                            id="director-score-c-{{ $subCriteria['id'] }}"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             data-sub-criteria-id="{{ $subCriteria['id'] }}"
@@ -241,6 +244,7 @@
                                                                             placeholder="ใส่ค่า C">
                                                                     @else
                                                                         <input type="text"
+                                                                            id="director-score-c-{{ $subCriteria['id'] }}"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][tor_compliant]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             readonly
@@ -252,7 +256,7 @@
 
                                                                 {{-- Score D --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-emerald-200 bg-emerald-50/70 p-3">
-                                                                    <label class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
+                                                                    <label for="score-D-{{ $subCriteria['id'] }}" class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
                                                                         คะแนนที่คำนวณได้ (D)
                                                                     </label>
                                                                     <input type="text"
@@ -266,17 +270,19 @@
                                                             </div>
                                                             @if(!$readonly || !empty($subCriteria['score_histories']))
                                                                 <div class="rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-                                                                    <label class="@if($readonly) hidden @else mb-2 block text-sm font-semibold leading-6 text-slate-700 @endif">
+                                                                    <label for="director-score-description-{{ $subCriteria['id'] }}" class="@if($readonly) hidden @else mb-2 block text-sm font-semibold leading-6 text-slate-700 @endif">
                                                                         หมายเหตุการแก้ไขค่า C
                                                                     </label>
                                                                     @if(!$readonly)
                                                                         <textarea
+                                                                            id="director-score-description-{{ $subCriteria['id'] }}"
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][description]"
                                                                             rows="3"
                                                                             class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-amber-400 focus:ring-amber-300"
                                                                             placeholder="ระบุหมายเหตุการแก้ไข">{{ $subCriteria['score_description'] ?? '' }}</textarea>
                                                                     @else
                                                                         <textarea
+                                                                            id="director-score-description-readonly-{{ $subCriteria['id'] }}"
                                                                             rows="3"
                                                                             readonly
                                                                             class="hidden w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm">{{ $subCriteria['score_description'] ?? '' }}</textarea>
@@ -399,6 +405,7 @@
                                         <div class="flex items-start flex-1 min-w-0">
                                             @if(!$readonly)
                                                 <input type="checkbox"
+                                                    id="director-quality-criteria-{{ $subCriteria['id'] }}"
                                                     name="quality_criteria[{{ $subCriteria['id'] }}]"
                                                     value="1"
                                                     data-score="{{ $subCriteria['num_score'] ?? 0 }}"
@@ -409,7 +416,7 @@
                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                 <div class="min-w-0">
-                                                    <label class="text-base text-gray-800 break-words">
+                                                    <label for="director-quality-criteria-{{ $subCriteria['id'] }}" class="text-base text-gray-800 break-words">
                                                         {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                     </label>
                                                     @if(!empty($subCriteria['description']))
@@ -420,6 +427,7 @@
                                                 </div>
                                             @else
                                                 <input type="checkbox"
+                                                    id="director-quality-criteria-readonly-{{ $subCriteria['id'] }}"
                                                     {{ $shouldBeChecked ? 'checked' : '' }}
                                                     disabled
                                                     class="h-5 w-5 accent-purple-600 text-purple-600 border-gray-300 rounded mr-3 disabled:opacity-100">

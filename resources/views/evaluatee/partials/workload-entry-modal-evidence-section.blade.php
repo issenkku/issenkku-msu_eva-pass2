@@ -1,11 +1,11 @@
 <div class="workload-modal-field workload-modal-field-link">
-    <label class="workload-modal-label">&#3649;&#3610;&#3610;&#3621;&#3636;&#3591;&#3585;&#3660;&#3627;&#3621;&#3633;&#3585;&#3600;&#3634;&#3609;</label>
+    <div id="workloadEvidenceLabel" class="workload-modal-label">&#3649;&#3610;&#3610;&#3621;&#3636;&#3591;&#3585;&#3660;&#3627;&#3621;&#3633;&#3585;&#3600;&#3634;&#3609;</div>
     @if(!empty($workloadModal['requires_evidence']))
         <div class="mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
             &#3605;&#3657;&#3629;&#3591;&#3649;&#3609;&#3610;&#3629;&#3618;&#3656;&#3634;&#3591;&#3609;&#3657;&#3629;&#3618; 1 &#3621;&#3636;&#3591;&#3585;&#3660;&#3626;&#3635;&#3627;&#3619;&#3633;&#3610;&#3648;&#3585;&#3603;&#3601;&#3660;&#3609;&#3637;&#3657;
         </div>
     @endif
-    <div id="workload-evidence-links">
+    <div id="workload-evidence-links" aria-labelledby="workloadEvidenceLabel">
         <div class="workload-evidence-row">
             <input type="text" class="workload-modal-input" name="evidence_links[]" placeholder="&#3651;&#3626;&#3656;&#3621;&#3636;&#3591;&#3585;&#3660;&#3627;&#3621;&#3633;&#3585;&#3600;&#3634;&#3609;&#3626;&#3635;&#3627;&#3619;&#3633;&#3610;&#3619;&#3634;&#3618;&#3585;&#3634;&#3619;&#3609;&#3637;&#3657;" />
             <button type="button" class="workload-evidence-remove-btn" title="&#3621;&#3610;&#3621;&#3636;&#3591;&#3585;&#3660;">&#3621;&#3610;</button>

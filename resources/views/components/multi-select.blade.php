@@ -14,10 +14,13 @@
 @include('components.alpine-cloak-style')
 
 <div class="relative w-full" x-data="{ open: false }" @click.outside="open = false">
-    <label class="mb-1 block text-sm font-medium text-gray-700">{{ $label }}</label>
+    <div id="{{ $name }}_multi_select_label" class="mb-1 block text-sm font-medium text-gray-700">{{ $label }}</div>
 
     <div
         class="relative w-full cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm"
+        role="button"
+        tabindex="0"
+        aria-labelledby="{{ $name }}_multi_select_label"
         @click="open = !open">
         <span class="block truncate">
             {{ count($selectedLabels) ? implode(', ', $selectedLabels) : $placeholder }}
