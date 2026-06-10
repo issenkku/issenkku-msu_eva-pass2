@@ -211,13 +211,6 @@
                                                                 </svg>
                                                             </span>
                                                         </div>
-                                                        @unless ($readonly)
-                                                            <a href="{{ route('evaluatee.workload', ['report_id' => $report?->id, 'quantity_sub_criteria_id' => $subCriteria['id']]) }}"
-                                                                onclick="event.stopPropagation()"
-                                                                class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 transition">
-                                                                จัดการข้อมูล
-                                                            </a>
-                                                        @endunless
                                                     </summary>
                                                     @if (!$readonly)
                                                         <input type="hidden"
@@ -240,6 +233,15 @@
                                                             $workloadData['evidenceLinksByEntryId'] ?? collect();
                                                     @endphp
                                                     <div class="border-t border-gray-200 px-4 py-4 bg-gray-50">
+                                                        @unless ($readonly)
+                                                            <div class="mb-3 flex justify-end">
+                                                                <a href="{{ route('evaluatee.workload', ['report_id' => $report?->id, 'quantity_sub_criteria_id' => $subCriteria['id']]) }}"
+                                                                    class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 transition">
+                                                                    จัดการข้อมูล
+                                                                </a>
+                                                            </div>
+                                                        @endunless
+
                                                         @if (!empty($subCriteria['score_histories']))
                                                             <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                                                                 @if (false && !empty($subCriteria['score_description']))
@@ -477,13 +479,11 @@
                                                                             value="{{ $link }}"
                                                                             class="form-input text-base w-full h-12 px-4 rounded-lg border border-gray-300 bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
                                                                             placeholder="ใส่ลิงก์หลักฐานสำหรับรายการนี้">
-                                                                        @if ($idx > 0 || count($links) > 1)
                                                                             <button type="button"
                                                                                 class="ml-2 px-2 py-1 bg-red-100 text-red-700 rounded remove-evidence-link"
                                                                                 title="ลบลิงก์">
                                                                                 &times;
                                                                             </button>
-                                                                        @endif
                                                                     </div>
                                                                 @endforeach
                                                             </div>

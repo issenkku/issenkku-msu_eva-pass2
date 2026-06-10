@@ -114,6 +114,10 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         function updateRemoveButtonVisibility(container) {
+            if (!container) {
+                return;
+            }
+
             const rows = container.querySelectorAll('.evidence-link-row');
             const hasContent = Array.from(rows).some(row => {
                 const input = row.querySelector('input[type="url"]');
@@ -122,6 +126,10 @@
 
             rows.forEach(row => {
                 const removeBtn = row.querySelector('.remove-evidence-link');
+                if (!removeBtn) {
+                    return;
+                }
+
                 if (rows.length > 1 || hasContent) {
                     removeBtn.style.display = 'block';
                 } else {
@@ -134,6 +142,10 @@
             btn.addEventListener('click', function() {
                 const mainCriteriaId = btn.getAttribute('data-quality-main');
                 const container = document.getElementById(`evidence-links-quality-${mainCriteriaId}`);
+                if (!container) {
+                    return;
+                }
+
                 const div = document.createElement('div');
                 div.className = 'flex items-center mb-2 evidence-link-row';
                 div.innerHTML = `
@@ -162,11 +174,17 @@
             if (e.target.closest('.remove-evidence-link')) {
                 const container = e.target.closest('[id^="evidence-links-quality-"]');
                 const row = e.target.closest('.evidence-link-row');
+                if (!container || !row) {
+                    return;
+                }
+
                 const rows = container.querySelectorAll('.evidence-link-row');
 
                 if (rows.length === 1) {
                     const input = row.querySelector('input[type="url"]');
-                    input.value = '';
+                    if (input) {
+                        input.value = '';
+                    }
                 } else {
                     row.remove();
                 }
