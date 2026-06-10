@@ -114,7 +114,15 @@ class EvaluatorTest extends TestCase
             'score_a' => 10,
             'score_b' => 5,
         ]);
-        $this->qualitySubCriteria = QualitySubCriteria::factory()->create();
+        $qualityEvaluationList = \App\Models\EvaluationList::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
+            'sum_score' => 10,
+        ]);
+        $this->qualitySubCriteria = QualitySubCriteria::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
+            'evaluation_list_id' => $qualityEvaluationList->id,
+            'num_score' => 5,
+        ]);
     }
 
     private function createReportWithStatus(string $status): Reports
