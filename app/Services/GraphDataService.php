@@ -2,34 +2,40 @@
 
 namespace App\Services;
 
-use App\Models\QuantityScore;
-use Illuminate\Support\Facades\DB;
-
 class GraphDataService
 {
     public static function scatterData($reports)
     {
+        $reports = collect($reports);
         $scatterData = [];
 
         if ($reports->isEmpty()) {
             return $scatterData;
         }
 
+        $completedReports = $reports->filter(function ($report) {
+            return ($report->status ?? $report->report_status ?? null) === 'Completed';
+        })->values();
+
+        if ($completedReports->isEmpty()) {
+            return $scatterData;
+        }
+
+        $reportIds = $completedReports
+            ->map(fn ($report) => $report->id ?? $report->report_id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds($reportIds);
+        $qualityScores = ScoreService::calculateQualityScoresRawByReportIds($reportIds);
+
         $i = 1;
-        foreach ($reports as $report) {
+        foreach ($completedReports as $report) {
             $reportId = $report->id ?? $report->report_id;
 
-            if (($report->status ?? $report->report_status ?? null) !== 'Completed') {
-                continue;
-            }
-
-            // ✅ Quantity Score
-            $quantityScore = QuantityScore::where('report_id', $reportId)->sum('score_D') ?? 0;
-
-            // ✅ Quality Score (raw sum with per-list and overall caps)
-            $qualityScore = ScoreService::calculateQualityScoreRaw($reportId);
-
-            // ✅ Total
+            $quantityScore = (float) ($quantityScores[$reportId] ?? 0);
+            $qualityScore = (float) ($qualityScores[$reportId] ?? 0);
             $totalScore = $quantityScore + $qualityScore;
 
             $scatterData[] = [
