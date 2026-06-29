@@ -164,6 +164,20 @@ class SubjectController extends Controller
         }
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:subjects,id'],
+        ]);
+
+        $deletedCount = Subject::whereIn('id', $validated['ids'])->delete();
+
+        return redirect()
+            ->route('subjects.index')
+            ->with('success', "ลบรายวิชาที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ");
+    }
+
     public function reorder(Request $request)
     {
         if (! $this->hasSortOrderColumn()) {

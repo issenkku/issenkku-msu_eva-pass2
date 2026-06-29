@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('workload_form_fields', 'note')) {
+            return;
+        }
+
         Schema::table('workload_form_fields', function (Blueprint $table) {
             $table->string('note')->nullable()->after('label');
         });
@@ -15,6 +19,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('workload_form_fields', 'note')) {
+            return;
+        }
+
         Schema::table('workload_form_fields', function (Blueprint $table) {
             $table->dropColumn('note');
         });

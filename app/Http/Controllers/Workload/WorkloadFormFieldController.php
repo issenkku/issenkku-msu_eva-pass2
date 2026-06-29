@@ -8,6 +8,7 @@ use App\Http\Requests\Workload\UpdateWorkloadFormFieldRequest;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Schema;
 
 class WorkloadFormFieldController extends Controller
 {
@@ -27,14 +28,22 @@ class WorkloadFormFieldController extends Controller
         try {
             WorkloadForm::findOrFail($workloadFormId);
 
-            $field = WorkloadFormField::create([
+            $data = [
                 'label' => $request->validated()['label'],
-                'note' => $request->validated()['note'] ?? null,
-                'default_value' => $request->validated()['default_value'] ?? null,
                 'variable_name' => $request->validated()['variable_name'],
                 'field_type' => $request->validated()['field_type'],
                 'workload_form_id' => $workloadFormId,
-            ]);
+            ];
+
+            if (Schema::hasColumn('workload_form_fields', 'note')) {
+                $data['note'] = $request->validated()['note'] ?? null;
+            }
+
+            if (Schema::hasColumn('workload_form_fields', 'default_value')) {
+                $data['default_value'] = $request->validated()['default_value'] ?? null;
+            }
+
+            $field = WorkloadFormField::create($data);
 
             return response()->json($field, 201);
         } catch (ModelNotFoundException $e) {
@@ -46,7 +55,17 @@ class WorkloadFormFieldController extends Controller
     {
         try {
             $field = WorkloadFormField::findOrFail($id);
-            $field->update($request->validated());
+            $data = $request->validated();
+
+            if (! Schema::hasColumn('workload_form_fields', 'note')) {
+                unset($data['note']);
+            }
+
+            if (! Schema::hasColumn('workload_form_fields', 'default_value')) {
+                unset($data['default_value']);
+            }
+
+            $field->update($data);
 
             return response()->json($field);
         } catch (ModelNotFoundException $e) {

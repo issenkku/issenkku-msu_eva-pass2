@@ -261,6 +261,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         clearModalBackdrop();
 
+        document.querySelectorAll('[data-create-modal-open]').forEach((button) => {
+            button.addEventListener('click', openCreateModal);
+        });
+
+        document.querySelectorAll('[data-modal-submit-trigger]').forEach((button) => {
+            button.addEventListener('click', submitForm);
+        });
+
         const creditsLabel = document.querySelector('#subjectModal label[for="credits"]');
         if (creditsLabel) {
             creditsLabel.innerHTML = 'หน่วยกิต <span class="text-danger">*</span>';

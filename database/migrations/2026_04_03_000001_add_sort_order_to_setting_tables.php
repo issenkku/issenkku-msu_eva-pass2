@@ -9,21 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('positions', function (Blueprint $table) {
-            $table->unsignedInteger('sort_order')->nullable()->after('description');
-        });
-
-        Schema::table('departments', function (Blueprint $table) {
-            $table->unsignedInteger('sort_order')->nullable()->after('department_name');
-        });
-
-        Schema::table('job_levels', function (Blueprint $table) {
-            $table->unsignedInteger('sort_order')->nullable()->after('name');
-        });
-
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->unsignedInteger('sort_order')->nullable()->after('self_study_credits');
-        });
+        $this->addSortOrderColumn('positions', 'description');
+        $this->addSortOrderColumn('departments', 'department_name');
+        $this->addSortOrderColumn('job_levels', 'name');
+        $this->addSortOrderColumn('subjects', 'self_study_credits');
 
         $this->backfillSortOrder('positions');
         $this->backfillSortOrder('departments');
@@ -34,25 +23,40 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->dropColumn('sort_order');
-        });
+        $this->dropSortOrderColumn('subjects');
+        $this->dropSortOrderColumn('job_levels');
+        $this->dropSortOrderColumn('departments');
+        $this->dropSortOrderColumn('positions');
+    }
 
-        Schema::table('job_levels', function (Blueprint $table) {
-            $table->dropColumn('sort_order');
-        });
+    private function addSortOrderColumn(string $table, string $after): void
+    {
+        if (! Schema::hasTable($table) || Schema::hasColumn($table, 'sort_order')) {
+            return;
+        }
 
-        Schema::table('departments', function (Blueprint $table) {
-            $table->dropColumn('sort_order');
+        Schema::table($table, function (Blueprint $blueprint) use ($after) {
+            $blueprint->unsignedInteger('sort_order')->nullable()->after($after);
         });
+    }
 
-        Schema::table('positions', function (Blueprint $table) {
-            $table->dropColumn('sort_order');
+    private function dropSortOrderColumn(string $table): void
+    {
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'sort_order')) {
+            return;
+        }
+
+        Schema::table($table, function (Blueprint $blueprint) {
+            $blueprint->dropColumn('sort_order');
         });
     }
 
     private function backfillSortOrder(string $table): void
     {
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'sort_order')) {
+            return;
+        }
+
         $rows = DB::table($table)->orderBy('id')->get(['id']);
 
         foreach ($rows as $index => $row) {

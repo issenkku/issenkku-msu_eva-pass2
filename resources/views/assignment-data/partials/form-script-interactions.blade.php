@@ -64,7 +64,9 @@
         });
 
         $('[data-stage-order-select]').on('change', function() {
-            syncStageOrderOptions();
+            const stageKey = String($(this).data('stage-key') || '');
+
+            normalizeStageOrdersAfterChange(stageKey);
         });
 
         $(document).on('change', '.evaluatee-checkbox', function() {
@@ -110,5 +112,5 @@
             filterReviewerOptions(config);
         });
 
-        syncStageOrderOptions();
+        normalizeStageOrdersAfterChange();
         updateSummary();

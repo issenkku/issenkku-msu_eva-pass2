@@ -20,14 +20,21 @@ class SettingsController extends Controller
 
     public function store(Request $request)
     {
+        $existingSetting = $request->has('id')
+            ? Settings::findOrFail($request->id)
+            : Settings::first();
+        $nameRequirement = $existingSetting ? 'sometimes' : 'required';
+
         $request->validate([
             'university' => [
+                $nameRequirement,
                 'required',
                 'string',
                 'max:255',
                 'regex:/^[ก-๙a-zA-Z\s]+$/u', // ตรวจสอบว่าเป็นภาษาไทย เว้นวรรค เท่านั้น
             ],
             'faculty' => [
+                $nameRequirement,
                 'required',
                 'string',
                 'max:255',
@@ -97,13 +104,13 @@ class SettingsController extends Controller
         ]);
 
         // เช็คเพิ่มเติมด้วย PHP function (สำรอง)
-        if (! $this->isThaiOrEnglish($request->university)) {
+        if ($request->has('university') && ! $this->isThaiOrEnglish($request->university)) {
             return redirect()->back()
                 ->withErrors(['university' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
                 ->withInput();
         }
 
-        if (! $this->isThaiOrEnglish($request->faculty)) {
+        if ($request->has('faculty') && ! $this->isThaiOrEnglish($request->faculty)) {
             return redirect()->back()
                 ->withErrors(['faculty' => 'ชื่อคณะต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
                 ->withInput();
@@ -131,7 +138,7 @@ class SettingsController extends Controller
 
         if ($request->has('id')) {
             // อัปเดตข้อมูลเดิม
-            $setting = Settings::findOrFail($request->id);
+            $setting = $existingSetting;
             $isCurrentBackgroundDeleted = $deleteBackgroundPaths->contains($setting->background_path);
 
             if ($request->hasFile('logo')) {
@@ -155,7 +162,7 @@ class SettingsController extends Controller
             $message = 'อัปเดตข้อมูลสำเร็จ!';
         } else {
             // สร้างข้อมูลใหม่ หรือ upsert
-            $setting = Settings::first();
+            $setting = $existingSetting;
             $isCurrentBackgroundDeleted = $setting && $deleteBackgroundPaths->contains($setting->background_path);
 
             if ($request->hasFile('logo')) {

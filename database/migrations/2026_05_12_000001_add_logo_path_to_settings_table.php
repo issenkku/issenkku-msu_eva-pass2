@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('settings', 'logo_path')) {
+            return;
+        }
+
         Schema::table('settings', function (Blueprint $table) {
             $table->string('logo_path')->nullable()->after('notification_days');
         });
@@ -15,6 +19,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('settings', 'logo_path')) {
+            return;
+        }
+
         Schema::table('settings', function (Blueprint $table) {
             $table->dropColumn('logo_path');
         });

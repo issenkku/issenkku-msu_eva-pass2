@@ -18,9 +18,9 @@
             {{-- เมนูรายการหลัก --}}
             <aside class="workload-nav">
                 <div class="nav-title">ด้านปริมาณผลงาน</div>
-                <div class="nav-list" id="workload-nav-list">
-                    <button class="nav-item2 is-active" type="button">
-
+                <div class="nav-list" id="workload-nav-list" aria-busy="true">
+                    <button class="nav-item2 is-active" type="button" disabled tabindex="-1">
+                        กำลังโหลดรายการ...
                     </button>
                 </div>
             </aside>
@@ -43,14 +43,14 @@
                                 <div class="workload-main-summary">หมวดหมู่หลัก</div>
                             </div>
                             <div class="card-actions">
-                                <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" title="ลากเพื่อจัดอันดับ" type="button">
+                                <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" type="button" aria-label="ลากเพื่อจัดอันดับ" title="ลากเพื่อจัดอันดับ">
                                     <span class="workload-drag-icon" aria-hidden="true">⋮⋮</span>
                                     <span class="workload-drag-label">ลากจัดลำดับ</span>
                                 </button>
-                                <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button">
+                                <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button" aria-label="ยุบหมวดหลัก">
                                     <span>˅</span>
                                 </button>
-                                <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ" aria-label="ลบหมวดหลัก">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 workload-delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -68,6 +68,7 @@
                                 <div class="sequence-display workload-main-sequence-display" id="workload-main-sequence-display">1</div>
                                 <input type="hidden" class="workload-main-sequence" id="workload-main-sequence" value="1">
                                 <input id="workload-main-category" type="text" class="form-control workload-main-category" value=""
+                                    aria-label="หมวดหมู่หลัก"
                                     placeholder="กรุณากรอกหมวดหมู่หลัก">
                             </div>
                         </div>
@@ -89,14 +90,14 @@
                                         <div class="workload-sub-summary">หมวดย่อย</div>
                                     </div>
                                     <div class="card-actions">
-                                        <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" title="ลากเพื่อจัดอันดับ" type="button">
+                                        <button class="icon-btn is-drag workload-drag-handle workload-drag-handle-text" type="button" aria-label="ลากเพื่อจัดอันดับ" title="ลากเพื่อจัดอันดับ">
                                             <span class="workload-drag-icon" aria-hidden="true">⋮⋮</span>
                                             <span class="workload-drag-label">ลากจัดลำดับ</span>
                                         </button>
-                                        <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button">
+                                        <button class="icon-btn workload-collapse-toggle" title="ยุบ" type="button" aria-label="ยุบหมวดย่อย">
                                             <span>˅</span>
                                         </button>
-                                        <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ">
+                                        <button type="button" class="delete_category_btn text-red-600 hover:text-red-800 transition duration-200" title="ลบ" aria-label="ลบหมวดย่อย">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 workload-delete-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -114,6 +115,7 @@
                                         <div class="sequence-display workload-sub-sequence-display" id="workload-sub-sequence-display">1</div>
                                         <input type="hidden" class="workload-sub-sequence" id="workload-sub-sequence" value="1">
                                         <input id="workload-sub-category" type="text" class="form-control workload-sub-category" value=""
+                                            aria-label="หมวดหมู่ย่อย"
                                             placeholder="กรุณากรอกหมวดหมู่ย่อย">
                                     </div>
                                     <label class="workload-require-subject-option">
@@ -132,13 +134,14 @@
                                     </div>
                                     <div class="subitem-row workload-item-row">
                                         <div class="subitem-label">
-                                            <button class="icon-btn is-drag workload-drag-handle workload-item-drag-handle" title="ลากเพื่อจัดอันดับ" type="button">⋮⋮</button>
+                                            <button class="icon-btn is-drag workload-drag-handle workload-item-drag-handle" type="button" aria-label="ลากเพื่อจัดอันดับ" title="ลากเพื่อจัดอันดับ">⋮⋮</button>
                                             <span class="subitem-sequence-text">1</span>
                                         </div>
-                                        <input id="workload-item-name" type="text" class="form-control workload-item-name" value="">
+                                        <input id="workload-item-name" type="text" class="form-control workload-item-name" value=""
+                                            aria-label="ชื่อภาระงาน">
                                         <input id="workload-item-score" type="number" class="form-control workload-item-score" value=""
-                                            min="0" step="0.01">
-                                        <button class="icon-btn is-danger workload-item-remove" type="button">×</button>
+                                            min="0" step="0.01" aria-label="คะแนนภาระงาน">
+                                        <button class="icon-btn is-danger workload-item-remove" type="button" aria-label="ลบรายการภาระงาน">×</button>
                                     </div>
 
                                     <div class="subitem-actions">
@@ -254,7 +257,7 @@
         <div class="workload-toast-content">
             <span class="workload-toast-icon" aria-hidden="true">✓</span>
             <span class="workload-toast-text" id="workload-toast-text"></span>
-            <button class="workload-toast-close" type="button" aria-label="Close">×</button>
+            <button class="workload-toast-close" type="button" aria-label="ปิดข้อความแจ้งผล">×</button>
         </div>
     </div>
     <div id="floating_save_button" class="fixed bottom-6 right-6 z-40 hidden">

@@ -12,10 +12,16 @@ use App\Models\WorkloadFormItem;
 use App\Services\WorkloadFormulaEvaluator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 class WorkloadConfigController extends Controller
 {
+    /**
+     * @var array<string, array<int, string>>
+     */
+    protected array $tableColumnsCache = [];
+
     public function index()
     {
         return view('workload.app');
@@ -86,15 +92,22 @@ class WorkloadConfigController extends Controller
             ]);
         }
 
-        $blocks = $groups->map(function ($group) {
-            $items = QuantitySubCriteriaItem::where('quantity_sub_criteria_group_id', $group->id)
-                ->orderBy('sequence')
-                ->get();
+        $itemsByGroupId = QuantitySubCriteriaItem::whereIn('quantity_sub_criteria_group_id', $groups->pluck('id'))
+            ->orderBy('quantity_sub_criteria_group_id')
+            ->orderBy('sequence')
+            ->get()
+            ->groupBy('quantity_sub_criteria_group_id');
 
-            $itemBlocks = $items->map(function ($item) {
-                $form = WorkloadForm::with(['fields', 'items'])
-                    ->where('quantity_sub_criteria_item_id', $item->id)
-                    ->first();
+        $formsByItemId = WorkloadForm::with(['fields', 'items'])
+            ->whereIn('quantity_sub_criteria_item_id', $itemsByGroupId->flatten()->pluck('id'))
+            ->get()
+            ->keyBy('quantity_sub_criteria_item_id');
+
+        $blocks = $groups->map(function ($group) use ($itemsByGroupId, $formsByItemId) {
+            $items = $itemsByGroupId->get($group->id, collect());
+
+            $itemBlocks = $items->map(function ($item) use ($formsByItemId) {
+                $form = $formsByItemId->get($item->id);
 
                 return [
                     'item' => [
@@ -154,8 +167,13 @@ class WorkloadConfigController extends Controller
         ]);
 
         $subCriteria = QuantitySubCriteria::with('mainCriteria')->findOrFail($validated['quant_sub_criteria_id']);
+        $quantitySubCriteriaItemColumns = $this->tableColumns('quantity_sub_criteria_items');
+        $workloadFormFieldColumns = $this->tableColumns('workload_form_fields');
+        $hasItemRequireSubject = in_array('require_subject', $quantitySubCriteriaItemColumns, true);
+        $hasFieldNote = in_array('note', $workloadFormFieldColumns, true);
+        $hasFieldDefaultValue = in_array('default_value', $workloadFormFieldColumns, true);
 
-        DB::transaction(function () use ($validated, $subCriteria) {
+        DB::transaction(function () use ($validated, $subCriteria, $hasItemRequireSubject, $hasFieldNote, $hasFieldDefaultValue) {
             $payloadGroupIds = [];
             foreach ($validated['groups'] as $group) {
                 if (! empty($group['id'])) {
@@ -187,7 +205,7 @@ class WorkloadConfigController extends Controller
                     if (! empty($itemBlock['id'])) {
                         $currentItem = QuantitySubCriteriaItem::findOrFail($itemBlock['id']);
                     } else {
-                        $currentItem = QuantitySubCriteriaItem::create([
+                        $itemCreateData = [
                             'name' => $itemBlock['item_name'],
                             'sequence' => $itemBlock['sequence'],
                             'quantity_sub_criteria_group_id' => $currentGroup->id,
@@ -195,16 +213,26 @@ class WorkloadConfigController extends Controller
                             'evaluation_list_id' => $subCriteria->evaluation_list_id,
                             'score_a' => 0,
                             'score_b' => 0,
-                            'require_subject' => (bool) ($itemBlock['require_subject'] ?? false),
-                        ]);
+                        ];
+
+                        if ($hasItemRequireSubject) {
+                            $itemCreateData['require_subject'] = (bool) ($itemBlock['require_subject'] ?? false);
+                        }
+
+                        $currentItem = QuantitySubCriteriaItem::create($itemCreateData);
                     }
 
-                    $currentItem->update([
+                    $itemUpdateData = [
                         'name' => $itemBlock['item_name'],
                         'sequence' => $itemBlock['sequence'],
                         'quantity_sub_criteria_group_id' => $currentGroup->id,
-                        'require_subject' => (bool) ($itemBlock['require_subject'] ?? false),
-                    ]);
+                    ];
+
+                    if ($hasItemRequireSubject) {
+                        $itemUpdateData['require_subject'] = (bool) ($itemBlock['require_subject'] ?? false);
+                    }
+
+                    $currentItem->update($itemUpdateData);
 
                     $payloadItemIds[] = $currentItem->id;
                     $form = WorkloadForm::firstOrCreate(
@@ -224,14 +252,22 @@ class WorkloadConfigController extends Controller
                     WorkloadFormItem::where('workload_form_id', $form->id)->delete();
 
                     foreach ($itemBlock['fields'] ?? [] as $field) {
-                        WorkloadFormField::create([
+                        $fieldData = [
                             'label' => $field['label'],
-                            'note' => $field['note'] ?? null,
-                            'default_value' => $field['default_value'] ?? null,
                             'variable_name' => $field['variable_name'],
                             'field_type' => $field['field_type'],
                             'workload_form_id' => $form->id,
-                        ]);
+                        ];
+
+                        if ($hasFieldNote) {
+                            $fieldData['note'] = $field['note'] ?? null;
+                        }
+
+                        if ($hasFieldDefaultValue) {
+                            $fieldData['default_value'] = $field['default_value'] ?? null;
+                        }
+
+                        WorkloadFormField::create($fieldData);
                     }
 
                     foreach ($itemBlock['form_items'] ?? [] as $entry) {
@@ -331,5 +367,17 @@ class WorkloadConfigController extends Controller
                 'formula_logic' => ['สูตรมีวงเล็บไม่ครบ'],
             ]);
         }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function tableColumns(string $table): array
+    {
+        if (! array_key_exists($table, $this->tableColumnsCache)) {
+            $this->tableColumnsCache[$table] = Schema::getColumnListing($table);
+        }
+
+        return $this->tableColumnsCache[$table];
     }
 }

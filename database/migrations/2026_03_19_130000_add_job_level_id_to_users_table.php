@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('users', 'job_level_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->foreignId('job_level_id')
                 ->nullable()
@@ -19,6 +23,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('users', 'job_level_id')) {
+            return;
+        }
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['job_level_id']);
             $table->dropColumn('job_level_id');

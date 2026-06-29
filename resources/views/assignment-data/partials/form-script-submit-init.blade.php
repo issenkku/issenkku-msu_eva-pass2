@@ -21,6 +21,7 @@
                 $('#evaluatees-dropdown-panel').addClass('hidden');
                 $('#toggle-evaluatees-dropdown').find('i').removeClass('fa-chevron-up').addClass('fa-chevron-down');
                 filterEvaluateesByCriteria();
+                normalizeStageOrdersAfterChange();
                 updateDisplayAndCounts();
                 updateSummary();
                 alert(formBehaviorConfig.resetSuccessText);
@@ -69,10 +70,11 @@
                 return false;
             }
 
+            normalizeStageOrdersAfterChange();
+
             if (hasDuplicateStageOrders()) {
                 e.preventDefault();
                 alert(formBehaviorConfig.validation.stageOrderDuplicate);
-                syncStageOrderOptions();
                 return false;
             }
 

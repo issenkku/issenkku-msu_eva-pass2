@@ -60,6 +60,62 @@
             return orders.length !== new Set(orders).size;
         }
 
+        function getAvailableStageOrders() {
+            return reviewerConfigs.map((_, index) => String(index + 1));
+        }
+
+        function normalizeStageOrdersAfterChange(changedStageKey = null) {
+            const availableOrders = getAvailableStageOrders();
+            const assignments = new Map();
+            const usedOrders = new Set();
+            const changedConfig = reviewerConfigs.find(config => config.stageKey === changedStageKey);
+
+            if (changedConfig) {
+                const changedValue = String($(`#${changedConfig.stageOrderId}`).val() || '');
+
+                if (availableOrders.includes(changedValue)) {
+                    assignments.set(changedConfig.stageKey, changedValue);
+                    usedOrders.add(changedValue);
+                }
+            }
+
+            reviewerConfigs.forEach(config => {
+                if (assignments.has(config.stageKey)) {
+                    return;
+                }
+
+                const currentValue = String($(`#${config.stageOrderId}`).val() || '');
+
+                if (availableOrders.includes(currentValue) && !usedOrders.has(currentValue)) {
+                    assignments.set(config.stageKey, currentValue);
+                    usedOrders.add(currentValue);
+                }
+            });
+
+            reviewerConfigs.forEach(config => {
+                if (assignments.has(config.stageKey)) {
+                    return;
+                }
+
+                const nextValue = availableOrders.find(order => !usedOrders.has(order));
+
+                if (nextValue) {
+                    assignments.set(config.stageKey, nextValue);
+                    usedOrders.add(nextValue);
+                }
+            });
+
+            reviewerConfigs.forEach(config => {
+                const assignedValue = assignments.get(config.stageKey);
+
+                if (assignedValue) {
+                    $(`#${config.stageOrderId}`).val(assignedValue);
+                }
+            });
+
+            syncStageOrderOptions();
+        }
+
         function syncStageOrderOptions() {
             const selectedEntries = getSelectedStageOrderEntries();
 

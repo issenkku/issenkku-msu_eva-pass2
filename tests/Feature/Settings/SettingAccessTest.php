@@ -49,6 +49,15 @@ class SettingAccessTest extends TestCase
             ->assertViewIs('settings.index');
     }
 
+    public function test_admin_can_see_university_and_faculty_fields_on_settings_index()
+    {
+        $this->actingAs($this->admin, 'web')
+            ->get(route('settings.index'))
+            ->assertStatus(200)
+            ->assertSee('name="university"', false)
+            ->assertSee('name="faculty"', false);
+    }
+
     public function test_non_admin_cannot_access_settings_routes()
     {
         $department = \Database\Factories\DepartmentFactory::new()->create();

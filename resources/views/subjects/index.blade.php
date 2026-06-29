@@ -10,12 +10,19 @@
             text="ระบบจัดการข้อมูลรายวิชา"
             icon="fas fa-book" />
 
-        <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
+            <x-button
+                type="danger"
+                buttonType="button"
+                text="ลบรายการที่เลือก"
+                class="hidden"
+                data-bulk-delete-open
+                icon="fas fa-trash-alt" />
             <x-button
                 type="primary"
                 buttonType="button"
                 text="เพิ่มรายวิชา"
-                onclick="openCreateModal()"
+                data-create-modal-open
                 icon="fas fa-plus" />
         </div>
 
@@ -52,6 +59,12 @@
         text="รายวิชา"
         formAction="{{ route('subjects.destroy', ':id') }}"
         entityUrl="/subjects" />
+
+    <x-bulk-delete-modal
+        modalId="bulkDeleteSubjectsModal"
+        title="ยืนยันการลบรายวิชา"
+        entityText="รายวิชา"
+        formAction="{{ route('subjects.bulk-destroy') }}" />
 
     @include('subjects.partials.index-flash-message')
     @include('subjects.partials.index-script')

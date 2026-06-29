@@ -5,7 +5,9 @@ namespace Tests\Feature\Settings;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Setting\Settings;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -135,5 +137,90 @@ class UniversitySettingTest extends TestCase
             'faculty' => 'บัญชี',
             'notification_days' => 3,
         ]);
+    }
+
+    public function test_admin_can_select_existing_background_asset()
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('site-backgrounds/background.webp', 'fake image');
+
+        $existing = Settings::create([
+            'university' => 'MSU',
+            'faculty' => 'Public Health',
+            'notification_days' => 7,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->post(route('settings.store'), [
+                'id' => $existing->id,
+                'university' => 'MSU',
+                'faculty' => 'Public Health',
+                'notification_days' => 7,
+                'selected_background_path' => 'site-backgrounds/background.webp',
+            ])
+            ->assertRedirect(route('settings.index'));
+
+        $this->assertDatabaseHas('settings', [
+            'id' => $existing->id,
+            'background_path' => 'site-backgrounds/background.webp',
+        ]);
+    }
+
+    public function test_admin_can_update_background_without_resubmitting_university_and_faculty()
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('site-backgrounds/background.webp', 'fake image');
+
+        $existing = Settings::create([
+            'university' => 'MSU',
+            'faculty' => 'Public Health',
+            'notification_days' => 7,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->post(route('settings.store'), [
+                'id' => $existing->id,
+                'notification_days' => 10,
+                'selected_background_path' => 'site-backgrounds/background.webp',
+            ])
+            ->assertRedirect(route('settings.index'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('settings', [
+            'id' => $existing->id,
+            'university' => 'MSU',
+            'faculty' => 'Public Health',
+            'notification_days' => 10,
+            'background_path' => 'site-backgrounds/background.webp',
+        ]);
+    }
+
+    public function test_admin_can_upload_background_image()
+    {
+        Storage::fake('public');
+
+        $existing = Settings::create([
+            'university' => 'MSU',
+            'faculty' => 'Public Health',
+            'notification_days' => 7,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->post(route('settings.store'), [
+                'id' => $existing->id,
+                'university' => 'MSU',
+                'faculty' => 'Public Health',
+                'notification_days' => 7,
+                'background' => UploadedFile::fake()->image('background.jpg'),
+            ])
+            ->assertRedirect(route('settings.index'));
+
+        $setting = $existing->fresh();
+
+        expect($setting->background_path)
+            ->not->toBeNull()
+            ->toStartWith('site-backgrounds/');
+
+        Storage::disk('public')->assertExists($setting->background_path);
     }
 }

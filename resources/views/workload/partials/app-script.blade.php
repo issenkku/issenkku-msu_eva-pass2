@@ -23,6 +23,7 @@
             const mainContainer = document.querySelector('.workload-card-list');
             const pageActions = document.querySelector('.page-actions');
             let activeDragState = null;
+            let collapseTargetIdCounter = 0;
             let isDirty = false;
             let isSubmitting = false;
             const unsavedChangesMessage = 'มีข้อมูลที่แก้ไขแล้วยังไม่ได้บันทึก กรุณาบันทึกก่อนออกจากหน้านี้';
@@ -319,6 +320,7 @@
                 }
 
                 navList.innerHTML = '';
+                navList.setAttribute('aria-busy', 'false');
                 items.forEach((item) => {
                     const button = document.createElement('button');
                     button.className = `nav-item2${item.id === activeId ? ' is-active' : ''}`;
@@ -371,6 +373,17 @@
             };
 
             // ฟังก์ชันย่อย: toggleCollapsed
+            const ensureCollapseTargetId = (card) => {
+                if (!card) {
+                    return null;
+                }
+                if (!card.id) {
+                    collapseTargetIdCounter += 1;
+                    card.id = `workload-collapse-${collapseTargetIdCounter}`;
+                }
+                return card.id;
+            };
+
             const toggleCollapsed = (card, collapsed) => {
                 if (!card) {
                     return;
@@ -386,6 +399,11 @@
                     const isCollapsed = card.classList.contains('is-collapsed');
                     toggleButton.title = isCollapsed ? 'ขยาย' : 'ยุบ';
                     toggleButton.setAttribute('aria-label', isCollapsed ? 'ขยาย' : 'ยุบ');
+                    toggleButton.setAttribute('aria-expanded', String(!isCollapsed));
+                    const targetId = ensureCollapseTargetId(card);
+                    if (targetId) {
+                        toggleButton.setAttribute('aria-controls', targetId);
+                    }
                 }
                 if (toggleIcon) {
                     toggleIcon.textContent = card.classList.contains('is-collapsed') ? '˄' : '˅';
@@ -734,6 +752,7 @@
                     const editButton = document.createElement('button');
                     editButton.className = 'icon-btn workload-variable-edit';
                     editButton.type = 'button';
+                    editButton.setAttribute('aria-label', 'แก้ไขตัวแปรสูตร');
                     editButton.textContent = '✎';
                     editButton.addEventListener('click', (event) => {
                         event.stopPropagation();
@@ -743,6 +762,7 @@
                     const button = document.createElement('button');
                     button.className = 'icon-btn is-danger workload-variable-remove';
                     button.type = 'button';
+                    button.setAttribute('aria-label', 'ลบตัวแปรสูตร');
                     button.textContent = '×';
                     button.addEventListener('click', () => {
                         if (editingFormulaRow === row) {
@@ -1307,6 +1327,9 @@
                 .then((response) => response.json())
                 .then((data) => {
                     if (!data || !data.active) {
+                        if (navList) {
+                            navList.setAttribute('aria-busy', 'false');
+                        }
                         return;
                     }
 
@@ -1321,6 +1344,9 @@
                     }
                 })
                 .catch(() => {
+                    if (navList) {
+                        navList.setAttribute('aria-busy', 'false');
+                    }
                     // Ignore load errors for now.
                 });
 
@@ -1339,6 +1365,9 @@
                     }
                 })
                 .catch(() => {
+                    if (navList) {
+                        navList.setAttribute('aria-busy', 'false');
+                    }
                     // Ignore load errors for now.
                 });
 

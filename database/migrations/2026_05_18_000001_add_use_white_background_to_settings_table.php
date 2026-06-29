@@ -8,13 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('settings', 'use_white_background')) {
+            return;
+        }
+
         Schema::table('settings', function (Blueprint $table) {
-            $table->boolean('use_white_background')->default(false)->after('background_path');
+            $column = $table->boolean('use_white_background')->default(false);
+
+            if (Schema::hasColumn('settings', 'background_path')) {
+                $column->after('background_path');
+            }
         });
     }
 
     public function down(): void
     {
+        if (! Schema::hasColumn('settings', 'use_white_background')) {
+            return;
+        }
+
         Schema::table('settings', function (Blueprint $table) {
             $table->dropColumn('use_white_background');
         });

@@ -21,9 +21,12 @@
             <table class="table table-custom {{ $canReorder ? '' : 'reorder-disabled' }}">
                 <thead>
                     <tr>
+                        <th style="width: 6%" class="text-center">
+                            <input type="checkbox" class="form-check-input" aria-label="เลือกรายวิชาทั้งหมดในหน้านี้" data-bulk-select-all>
+                        </th>
                         <th style="width: 8%"></th>
                         <th style="width: 10%">ลำดับ</th>
-                        <th style="width: 42%">ชื่อรายวิชา</th>
+                        <th style="width: 36%">ชื่อรายวิชา</th>
                         <th style="width: 15%">หน่วยกิต</th>
                         <th style="width: 25%">การจัดการ</th>
                     </tr>
@@ -31,6 +34,9 @@
                 <tbody data-reorder-body>
                     @foreach ($subjects as $index => $subject)
                         <tr class="reorder-row" data-id="{{ $subject->id }}">
+                            <td class="text-center align-middle">
+                                <input type="checkbox" class="form-check-input" value="{{ $subject->id }}" aria-label="เลือก {{ $subject->code }} {{ $subject->name_th }}" data-bulk-checkbox>
+                            </td>
                             <td class="text-center align-middle"><span class="reorder-handle" data-drag-handle title="ลากเพื่อจัดอันดับ">⋮⋮</span></td>
                             <td class="align-middle" data-sequence>{{ $subjects->firstItem() + $index }}</td>
                             <td class="text-start align-middle">
@@ -46,7 +52,7 @@
                             <td class="align-middle">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
                                     <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit" data-id="{{ $subject->id }}" data-code="{{ $subject->code }}" data-name-th="{{ $subject->name_th }}" data-name-en="{{ $subject->name_en ?? '' }}" data-credits="{{ $subject->credits }}" data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}" data-lab-credits="{{ $subject->lab_credits ?? 0 }}" data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}" data-role="subject-edit-trigger" />
-                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" onclick="confirmDelete({{ $subject->id }})" />
+                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $subject->id }}" />
                                 </div>
                             </td>
                         </tr>

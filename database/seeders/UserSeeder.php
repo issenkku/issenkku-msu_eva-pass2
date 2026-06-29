@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting\Departments;
+use App\Models\Setting\Positions;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +15,9 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('users')->insert([
+        $timestamp = now();
+
+        $users = [
             [
                 'prefix' => 'นางสาว',
                 'name' => 'Admin',
@@ -24,10 +28,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 1,
-                'department_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'คณบดี',
+                'department_name' => 'สำนักงานเลขานุการคณะ',
             ],
             [
                 'prefix' => 'นาย',
@@ -39,10 +41,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'วิชาการ',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 7,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'อาจารย์',
+                'department_name' => 'กลุ่มงานวิชาการและพัฒนานิสิต',
             ],
             [
                 'prefix' => 'นาย',
@@ -54,10 +54,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 7,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'อาจารย์',
+                'department_name' => 'กลุ่มงานวิชาการและพัฒนานิสิต',
             ],
             [
                 'prefix' => 'นาย',
@@ -69,10 +67,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'วิชาการ',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 18,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'ผู้ช่วยศาสตราจารย์',
+                'department_name' => 'กลุ่มงานวิชาการและพัฒนานิสิต',
             ],
             [
                 'prefix' => 'นาง',
@@ -84,10 +80,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 18,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'ผู้ช่วยศาสตราจารย์',
+                'department_name' => 'กลุ่มงานวิชาการและพัฒนานิสิต',
             ],
             [
                 'prefix' => 'นาง',
@@ -99,10 +93,8 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 1,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'หัวหน้ากลุ่มงานบริหาร',
+                'department_name' => 'กลุ่มงานบริหาร',
             ],
             [
                 'prefix' => 'นาง',
@@ -114,12 +106,55 @@ class UserSeeder extends Seeder
                 'personnel_type' => 'สนับสนุน',
                 'bio' => null,
                 'status' => 'active',
-                'position_id' => 2,
-                'department_id' => 3,
-                'created_at' => now(),
-                'updated_at' => now(),
+                'position_name' => 'รองคณบดีฝ่ายบริหารและแผนงาน',
+                'department_name' => 'กลุ่มงานบริหาร',
             ],
-        ]);
+        ];
 
+        $payload = collect($users)->map(function (array $user) use ($timestamp) {
+            return [
+                'prefix' => $user['prefix'],
+                'name' => $user['name'],
+                'employee_id' => $user['employee_id'],
+                'password' => $user['password'],
+                'email' => $user['email'],
+                'phone' => $user['phone'],
+                'personnel_type' => $user['personnel_type'],
+                'bio' => $user['bio'],
+                'status' => $user['status'],
+                'position_id' => $this->resolvePositionId($user['position_name']),
+                'department_id' => $this->resolveDepartmentId($user['department_name']),
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ];
+        })->all();
+
+        DB::table('users')->upsert(
+            $payload,
+            ['email'],
+            [
+                'prefix',
+                'name',
+                'employee_id',
+                'password',
+                'phone',
+                'personnel_type',
+                'bio',
+                'status',
+                'position_id',
+                'department_id',
+                'updated_at',
+            ]
+        );
+    }
+
+    private function resolvePositionId(string $name): int
+    {
+        return Positions::firstOrCreate(['name' => $name])->id;
+    }
+
+    private function resolveDepartmentId(string $name): int
+    {
+        return Departments::firstOrCreate(['department_name' => $name])->id;
     }
 }
