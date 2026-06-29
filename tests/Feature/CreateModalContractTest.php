@@ -1,0 +1,106 @@
+<?php
+
+use Illuminate\Pagination\LengthAwarePaginator;
+
+function modalContractPaginator(array $items, string $path): LengthAwarePaginator
+{
+    return new LengthAwarePaginator($items, count($items), 10, 1, ['path' => url($path)]);
+}
+
+test('department index renders create modal hooks without inline handlers', function () {
+    $departments = modalContractPaginator([
+        (object) [
+            'id' => 1,
+            'department_name' => 'IT',
+            'user_count' => 0,
+        ],
+    ], '/departments');
+
+    $html = view('departments.index', [
+        'departments' => $departments,
+    ])->render();
+
+    expect($html)
+        ->toContain('data-create-modal-open')
+        ->toContain('data-modal-submit-trigger')
+        ->toContain('document.querySelectorAll(\'[data-create-modal-open]\')')
+        ->toContain('document.querySelectorAll(\'[data-modal-submit-trigger]\')')
+        ->not->toContain('onclick="openCreateModal()"')
+        ->not->toContain('onclick="submitForm()"');
+});
+
+test('position index renders create modal hooks without inline handlers', function () {
+    $positions = modalContractPaginator([
+        (object) [
+            'id' => 2,
+            'name' => 'Lecturer',
+            'user_count' => 0,
+        ],
+    ], '/positions');
+
+    $html = view('positions.index', [
+        'positions' => $positions,
+    ])->render();
+
+    expect($html)
+        ->toContain('data-create-modal-open')
+        ->toContain('data-modal-submit-trigger')
+        ->toContain('document.querySelectorAll(\'[data-create-modal-open]\')')
+        ->toContain('document.querySelectorAll(\'[data-modal-submit-trigger]\')')
+        ->not->toContain('onclick="openCreateModal()"')
+        ->not->toContain('onclick="submitForm()"');
+});
+
+test('job level index renders create modal hooks without inline handlers', function () {
+    $jobLevels = modalContractPaginator([
+        (object) [
+            'id' => 3,
+            'name' => 'Senior',
+        ],
+    ], '/job-level');
+
+    $html = view('Job Level.index', [
+        'jobLevels' => $jobLevels,
+    ])->render();
+
+    expect($html)
+        ->toContain('data-create-modal-open')
+        ->toContain('data-modal-submit-trigger')
+        ->toContain('document.querySelectorAll(\'[data-create-modal-open]\')')
+        ->toContain('document.querySelectorAll(\'[data-modal-submit-trigger]\')')
+        ->not->toContain('onclick="openCreateModal()"')
+        ->not->toContain('onclick="submitForm()"');
+});
+
+test('subjects index and subject modal render create hooks without inline handlers', function () {
+    $subjects = modalContractPaginator([
+        (object) [
+            'id' => 4,
+            'code' => 'TH101',
+            'name_th' => 'ภาษาไทย',
+            'name_en' => 'Thai',
+            'credits' => 3,
+            'lecture_credits' => 2,
+            'lab_credits' => 1,
+            'self_study_credits' => 0,
+        ],
+    ], '/subjects');
+
+    $html = view('subjects.index', [
+        'subjects' => $subjects,
+    ])->render();
+
+    expect($html)
+        ->toContain('data-create-modal-open')
+        ->toContain('data-modal-submit-trigger')
+        ->toContain('document.querySelectorAll(\'[data-create-modal-open]\')')
+        ->toContain('document.querySelectorAll(\'[data-modal-submit-trigger]\')')
+        ->not->toContain('onclick="openCreateModal()"')
+        ->not->toContain('onclick="submitForm()"');
+
+    $modalHtml = view('components.subject-modal')->render();
+
+    expect($modalHtml)
+        ->toContain('data-modal-submit-trigger')
+        ->not->toContain('onclick="submitForm()"');
+});

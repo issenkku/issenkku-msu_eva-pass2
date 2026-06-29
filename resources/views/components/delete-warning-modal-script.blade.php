@@ -14,4 +14,18 @@
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
     };
+
+    document.addEventListener('click', function (event) {
+        const deleteButton = event.target.closest('[data-delete-trigger]');
+        if (!deleteButton) {
+            return;
+        }
+
+        event.preventDefault();
+
+        const deleteId = deleteButton.dataset.deleteId;
+        if (deleteId && typeof window.confirmDelete === 'function') {
+            window.confirmDelete(deleteId);
+        }
+    });
 </script>

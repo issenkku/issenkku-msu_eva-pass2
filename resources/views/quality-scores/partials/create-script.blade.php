@@ -108,6 +108,32 @@
             $('#user_select').val(currentValues.filter((id) => id !== userId)).trigger('change');
         }
 
+        if (!window.__qualityScoresCreateHooksBound) {
+            window.__qualityScoresCreateHooksBound = true;
+
+            document.addEventListener('click', function (event) {
+                const removeCriteriaButton = event.target.closest('[data-quality-score-remove-criteria]');
+                if (removeCriteriaButton) {
+                    removeCriteria(removeCriteriaButton.dataset.qualityScoreRemoveCriteria);
+                    return;
+                }
+
+                const removeUserButton = event.target.closest('[data-quality-score-remove-user]');
+                if (removeUserButton) {
+                    removeUser(removeUserButton.dataset.qualityScoreRemoveUser);
+                }
+            });
+
+            document.addEventListener('input', function (event) {
+                const scoreInput = event.target.closest('[data-quality-score-input]');
+                if (!scoreInput) {
+                    return;
+                }
+
+                updateSubmitButton();
+            });
+        }
+
         function updateSelectedCriteriaUI() {
             const container = document.getElementById('selectedCriteriaList');
             const noCriteriaMessage = document.getElementById('noCriteriaMessage');
@@ -121,7 +147,7 @@
             selectedCriterias.forEach((criteria) => {
                 const row = document.createElement('div');
                 row.className = 'quality-score-row';
-                row.innerHTML = `<div class="quality-score-row-info"><div class="quality-score-row-name">${criteria.name}</div><div class="quality-score-row-meta">หมวดหลัก: ${criteria.mainCriteriaName}</div></div><button type="button" class="quality-score-remove-button" onclick="removeCriteria('${criteria.id}')" title="ลบเกณฑ์"><i class="fas fa-times"></i></button>`;
+                row.innerHTML = `<div class="quality-score-row-info"><div class="quality-score-row-name">${criteria.name}</div><div class="quality-score-row-meta">หมวดหลัก: ${criteria.mainCriteriaName}</div></div><button type="button" class="quality-score-remove-button" data-quality-score-remove-criteria="${criteria.id}" title="ลบเกณฑ์"><i class="fas fa-times"></i></button>`;
                 container.appendChild(row);
             });
         }
@@ -148,11 +174,11 @@
                     const scoreInputId = `quality_score_${index}`;
                     const scoreInputHtml = scoreType === 'same'
                         ? `<div class="quality-score-input-group"><label for="${scoreInputId}" class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input id="${scoreInputId}" type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" value="${commonScore}" readonly style="background-color: #f8f9fa;"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`
-                        : `<div class="quality-score-input-group"><label for="${scoreInputId}" class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input id="${scoreInputId}" type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" placeholder="0.0" onchange="updateSubmitButton()"><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`;
+                        : `<div class="quality-score-input-group"><label for="${scoreInputId}" class="quality-score-label" style="margin-bottom: 4px; font-size: 0.8rem;">คะแนน</label><input id="${scoreInputId}" type="number" name="scores[${index}]" class="quality-score-control score-input" min="0" max="100" step="0.1" placeholder="0.0" data-quality-score-input><input type="hidden" name="users[${index}]" value="${user.id}"><input type="hidden" name="criterias[${index}]" value="${criteria.id}"></div>`;
 
                     const row = document.createElement('div');
                     row.className = 'quality-user-score-row';
-                    row.innerHTML = `<div class="quality-user-info"><div class="quality-user-name">${user.name}</div><div class="quality-user-email">${user.email}</div><div class="quality-score-user-criteria">${criteria.name}</div></div>${scoreInputHtml}<div class="d-flex flex-column gap-1"><button type="button" class="quality-score-remove-button" onclick="removeUser('${user.id}')" title="ลบผู้ใช้งาน"><i class="fas fa-user-minus"></i></button><button type="button" class="quality-score-remove-button" onclick="removeCriteria('${criteria.id}')" title="ลบเกณฑ์"><i class="fas fa-minus"></i></button></div>`;
+                    row.innerHTML = `<div class="quality-user-info"><div class="quality-user-name">${user.name}</div><div class="quality-user-email">${user.email}</div><div class="quality-score-user-criteria">${criteria.name}</div></div>${scoreInputHtml}<div class="d-flex flex-column gap-1"><button type="button" class="quality-score-remove-button" data-quality-score-remove-user="${user.id}" title="ลบผู้ใช้งาน"><i class="fas fa-user-minus"></i></button><button type="button" class="quality-score-remove-button" data-quality-score-remove-criteria="${criteria.id}" title="ลบเกณฑ์"><i class="fas fa-minus"></i></button></div>`;
                     container.appendChild(row);
                 });
             });

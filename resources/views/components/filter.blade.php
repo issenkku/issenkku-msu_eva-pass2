@@ -9,18 +9,25 @@
 @php
     $value = is_array($value) ? $value : [$value];
     $selectedLabels = array_intersect_key($options, array_flip($value));
+    $controlId = $name . '_filter_control';
+    $panelId = $name . '_filter_panel';
 @endphp
 
 @include('components.alpine-cloak-style')
 
-<div class="relative w-48" x-data="{ open: false }" @click.outside="open = false">
+<div class="relative w-48" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
     <div id="{{ $name }}_filter_label" class="mb-1 block text-sm font-medium text-gray-700">{{ $label }}</div>
 
-    <div
+    <button
+        x-ref="button"
+        id="{{ $controlId }}"
+        type="button"
         class="relative w-full cursor-pointer rounded-md border border-gray-300 bg-white px-4 py-2 text-sm shadow-sm"
-        role="button"
-        tabindex="0"
+        aria-haspopup="group"
+        aria-expanded="false"
+        aria-controls="{{ $panelId }}"
         aria-labelledby="{{ $name }}_filter_label"
+        x-bind:aria-expanded="open.toString()"
         @click="open = !open">
         <span class="block truncate">
             {{ count($selectedLabels) ? implode(', ', $selectedLabels) : $placeholder }}
@@ -33,13 +40,17 @@
                     clip-rule="evenodd" />
             </svg>
         </div>
-    </div>
+    </button>
 
     <div
+        id="{{ $panelId }}"
+        role="group"
+        aria-labelledby="{{ $controlId }}"
         class="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg"
         x-show="open"
         x-transition
-        x-cloak>
+        x-cloak
+        @keydown.escape.stop.prevent="open = false; $refs.button?.focus()">
         <div class="space-y-1 p-2">
             @foreach ($options as $key => $option)
                 <label class="flex items-center space-x-2 text-sm text-gray-700">
@@ -48,7 +59,7 @@
                         name="{{ $name }}[]"
                         value="{{ $key }}"
                         @checked(in_array($key, $value))
-                        onchange="this.form.submit()"
+                        data-auto-submit-select
                         class="rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                     <span>{{ $option }}</span>
                 </label>
@@ -58,3 +69,4 @@
 </div>
 
 @include('components.alpine-cdn-script')
+@include('components.auto-submit-script')

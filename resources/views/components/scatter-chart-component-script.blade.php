@@ -1,5 +1,24 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    if (!window.__scatterDownloadBound) {
+        window.__scatterDownloadBound = true;
+
+        document.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-scatter-download]');
+            if (!button) {
+                return;
+            }
+
+            const chartId = button.dataset.scatterDownload;
+            const chart = window.scatterCharts?.[chartId];
+            if (!chart || typeof chart.downloadChart !== 'function') {
+                return;
+            }
+
+            chart.downloadChart(`${chartId}.png`);
+        });
+    }
+
     if (!window.scatterCharts) {
         window.scatterCharts = {};
     }

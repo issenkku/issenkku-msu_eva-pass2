@@ -155,7 +155,7 @@
                     id="mobileMenuToggle"
                     class="mobile-menu-btn d-block d-xl-none"
                     type="button"
-                    onclick="toggleMobileMenu()"
+                    data-mobile-menu-toggle
                     aria-controls="mobileMenu"
                     aria-expanded="false"
                     aria-label="เปิดเมนู"
@@ -165,7 +165,7 @@
             </div>
         </header>
 
-        <div class="mobile-menu-overlay" id="mobileMenuOverlay" onclick="closeMobileMenu()"></div>
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay" data-mobile-menu-close></div>
 
         <!-- Mobile Menu -->
         <div class="mobile-menu" id="mobileMenu">
@@ -173,7 +173,7 @@
                 <span class="mobile-menu-brand">
                     <span>ระบบประเมินบุคลากร</span>
                 </span>
-                <button class="mobile-menu-close" type="button" onclick="closeMobileMenu()" aria-label="ปิดเมนู">
+                <button class="mobile-menu-close" type="button" data-mobile-menu-close aria-label="ปิดเมนู">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -235,14 +235,14 @@
                     </a>
                     <!-- Settings Dropdown for Mobile -->
                     <div class="mobile-dropdown" id="settingsDropdown">
-                        <button class="mobile-dropdown-toggle" onclick="toggleMobileDropdown('settingsDropdown')">
+                        <button class="mobile-dropdown-toggle" type="button" data-mobile-dropdown-toggle data-mobile-dropdown-target="settingsDropdown" aria-controls="settingsDropdownMenu" aria-expanded="false">
                             <span>
                                 <i class="fas fa-cog" style="width: 20px; margin-right: 10px;"></i>
                                 ตั้งค่า
                             </span>
                             <i class="fas fa-chevron-down transition-transform duration-300"></i>
                         </button>
-                        <div class="mobile-dropdown-content">
+                        <div class="mobile-dropdown-content" id="settingsDropdownMenu">
                             <a href="{{ route('settings.index') }}" class="mobile-dropdown-item">ตั้งค่าเว็บไซต์</a>
                             <a href="{{ route('departments.index') }}" class="mobile-dropdown-item">ตั้งค่าหน่วยงาน/แผนก</a>
                             <a href="{{ route('positions.index') }}" class="mobile-dropdown-item">ตั้งค่าตำแหน่งงาน</a>

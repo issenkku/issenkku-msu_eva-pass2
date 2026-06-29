@@ -2,9 +2,17 @@
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-auto-search-form]').forEach(function (form) {
             const input = form.querySelector('[data-auto-search-input]');
+            const clearButton = form.querySelector('[data-auto-search-clear]');
 
             if (!input) {
                 return;
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener('click', function () {
+                    input.value = '';
+                    form.requestSubmit();
+                });
             }
 
             let debounceTimer;
@@ -54,3 +62,5 @@
         });
     });
 </script>
+
+@include('components.auto-submit-script')

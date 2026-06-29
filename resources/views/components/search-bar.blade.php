@@ -1,17 +1,16 @@
 <!-- resources/views/components/search-bar.blade.php -->
- @props([
+@props([
     'placeholder'
 ])
 
-{{-- ฟอร์ม --}}
-<form action="{{ url()->current() }}" method="GET" class="search-bar-form flex items-center space-x-2">
-    
-    <!-- Search Input -->
+<form action="{{ url()->current() }}" method="GET" role="search" class="search-bar-form flex items-center space-x-2" data-auto-search-form>
     <div class="relative">
-        <input 
-            type="text" 
-            name="search" 
+        <input
+            type="text"
+            name="search"
+            data-auto-search-input
             placeholder="{{ $placeholder ?? 'ค้นหา...' }}"
+            aria-label="{{ $placeholder ?? 'ค้นหา' }}"
             value="{{ request('search') }}"
             class="search-bar-input w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
         >
@@ -22,15 +21,23 @@
         </div>
     </div>
 
-    <!-- Submit Button (ส่วนที่เพิ่มเข้ามา) -->
-    <button 
-        type="submit" 
+    <button
+        type="submit"
         class="search-bar-submit px-5 py-2 rounded-lg bg-gray-400 text-white hover:bg-gray-500 transition"
     >
         ค้นหา
     </button>
-    
-    <!-- Hidden Inputs for other filters -->
+
+    @if (request('search'))
+        <button
+            type="button"
+            data-auto-search-clear
+            aria-label="ล้างคำค้นหา"
+            class="search-bar-clear px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+            ล้าง
+        </button>
+    @endif
+
     @foreach (request()->except('search', 'page') as $key => $value)
         @if (is_array($value))
             @foreach ($value as $item)
@@ -41,3 +48,5 @@
         @endif
     @endforeach
 </form>
+
+@include('components.search-bar-script')

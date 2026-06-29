@@ -8,7 +8,7 @@
                     id="download{{ $chartId }}Btn"
                     class="text-gray-400 transition-colors hover:text-gray-600"
                     title="ดาวน์โหลดกราฟ"
-                    onclick="window.scatterCharts?.{{ $chartId }}?.downloadChart('{{ $chartId }}.png')"
+                    data-scatter-download="{{ $chartId }}"
                 >
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path

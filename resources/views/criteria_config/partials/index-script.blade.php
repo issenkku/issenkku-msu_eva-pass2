@@ -101,7 +101,7 @@
                             text="คัดลอก"
                             buttonType="button"
                             icon="fas fa-copy"
-                            onclick="copyCriteriaVersion(${item.id}, this)" />
+                            data-copy-criteria-version="${item.id}" />
                         <x-button 
                             type="warning"
                             text="แก้ไข"
@@ -112,13 +112,30 @@
                             text="ลบ" 
                             buttonType="button" 
                             icon="fas fa-trash-alt"
-                            onclick="showDeleteModal(${item.id}, this)" />
+                            data-delete-criteria-version="${item.id}" />
                     </div>
                 `;
                 grid.appendChild(card);
             });
         }
 
+
+        if (!window.__criteriaConfigActionHooksBound) {
+            window.__criteriaConfigActionHooksBound = true;
+
+            document.addEventListener('click', function (event) {
+                const copyButton = event.target.closest('[data-copy-criteria-version]');
+                if (copyButton) {
+                    copyCriteriaVersion(copyButton.dataset.copyCriteriaVersion, copyButton);
+                    return;
+                }
+
+                const deleteButton = event.target.closest('[data-delete-criteria-version]');
+                if (deleteButton) {
+                    showDeleteModal(deleteButton.dataset.deleteCriteriaVersion, deleteButton);
+                }
+            });
+        }
 
         const authUserId = {{ Auth::id() ?? 1 }};
 

@@ -41,12 +41,22 @@
     }
     function toggleMobileDropdown(dropdownId) {
         const dropdown = document.getElementById(dropdownId);
-        const icon = dropdown.querySelector('.fa-chevron-down');
+        const button = document.querySelector(`[data-mobile-dropdown-target="${dropdownId}"]`);
+        const icon = dropdown ? dropdown.querySelector('.fa-chevron-down') : null;
+
+        if (!dropdown) {
+            return;
+        }
 
         dropdown.classList.toggle('active');
+        if (button) {
+            button.setAttribute('aria-expanded', dropdown.classList.contains('active') ? 'true' : 'false');
+        }
         if (dropdown.classList.contains('active')) {
-            icon.style.transform = 'rotate(180deg)';
-        } else {
+            if (icon) {
+                icon.style.transform = 'rotate(180deg)';
+            }
+        } else if (icon) {
             icon.style.transform = 'rotate(0deg)';
         }
     }
@@ -98,6 +108,36 @@
         });
     });
     document.addEventListener('click', function (event) {
+        const mobileMenuToggle = event.target.closest('[data-mobile-menu-toggle]');
+        if (mobileMenuToggle) {
+            toggleMobileMenu();
+            return;
+        }
+
+        const mobileMenuClose = event.target.closest('[data-mobile-menu-close]');
+        if (mobileMenuClose) {
+            closeMobileMenu();
+            return;
+        }
+
+        const mobileDropdownToggle = event.target.closest('[data-mobile-dropdown-toggle]');
+        if (mobileDropdownToggle) {
+            const targetId = mobileDropdownToggle.dataset.mobileDropdownTarget;
+            if (targetId) {
+                toggleMobileDropdown(targetId);
+            }
+            return;
+        }
+
+        const flashCloseButton = event.target.closest('[data-flash-close]');
+        if (flashCloseButton) {
+            const message = flashCloseButton.closest('#successMessage, #warningMessage, #errorMessage, #deleteSuccessMessage');
+            if (message) {
+                message.remove();
+            }
+            return;
+        }
+
         const dropdowns = document.querySelectorAll('.dropdown-menu.show');
         dropdowns.forEach(dropdown => {
             if (!dropdown.contains(event.target) && !dropdown.previousElementSibling.contains(event.target)) {
