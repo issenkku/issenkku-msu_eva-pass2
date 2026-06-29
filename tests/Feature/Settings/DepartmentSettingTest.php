@@ -126,4 +126,22 @@ class DepartmentSettingTest extends TestCase
             'id' => $department->id,
         ]);
     }
+
+    public function test_admin_can_bulk_delete_departments()
+    {
+        $departments = collect([
+            Departments::create(['department_name' => 'ลบหลายรายการ 1']),
+            Departments::create(['department_name' => 'ลบหลายรายการ 2']),
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('departments.bulk-destroy'), [
+                'ids' => $departments->pluck('id')->all(),
+            ])
+            ->assertRedirect(route('departments.index'))
+            ->assertSessionHas('success', 'ลบแผนกที่เลือกเรียบร้อยแล้ว 2 รายการ');
+
+        $this->assertDatabaseMissing('departments', ['id' => $departments[0]->id]);
+        $this->assertDatabaseMissing('departments', ['id' => $departments[1]->id]);
+    }
 }

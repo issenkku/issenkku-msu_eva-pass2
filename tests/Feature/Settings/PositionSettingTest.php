@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Setting\Positions;
 use App\Models\Setting\Departments;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -123,5 +124,48 @@ class PositionSettingTest extends TestCase
         $this->assertDatabaseMissing('positions', [
             'id' => $position->id,
         ]);
+    }
+
+    public function test_admin_can_bulk_delete_positions()
+    {
+        $positions = collect([
+            Positions::create(['name' => 'ลบตำแหน่งหลายรายการ 1']),
+            Positions::create(['name' => 'ลบตำแหน่งหลายรายการ 2']),
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('positions.bulk-destroy'), [
+                'ids' => $positions->pluck('id')->all(),
+            ])
+            ->assertRedirect(route('positions.index'))
+            ->assertSessionHas('success', 'ลบตำแหน่งที่เลือกเรียบร้อยแล้ว 2 รายการ');
+
+        $this->assertDatabaseMissing('positions', ['id' => $positions[0]->id]);
+        $this->assertDatabaseMissing('positions', ['id' => $positions[1]->id]);
+    }
+
+    public function test_admin_can_bulk_delete_positions_when_evaluatee_assignment_column_is_missing()
+    {
+        Schema::shouldReceive('hasColumn')
+            ->with('assignment_datas', 'evaluator_position_id')
+            ->andReturn(true);
+        Schema::shouldReceive('hasColumn')
+            ->with('assignment_datas', 'evaluatee_position_id')
+            ->andReturn(false);
+
+        $positions = collect([
+            Positions::create(['name' => 'คอลัมน์หาย 1']),
+            Positions::create(['name' => 'คอลัมน์หาย 2']),
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('positions.bulk-destroy'), [
+                'ids' => $positions->pluck('id')->all(),
+            ])
+            ->assertRedirect(route('positions.index'))
+            ->assertSessionHas('success', 'ลบตำแหน่งที่เลือกเรียบร้อยแล้ว 2 รายการ');
+
+        $this->assertDatabaseMissing('positions', ['id' => $positions[0]->id]);
+        $this->assertDatabaseMissing('positions', ['id' => $positions[1]->id]);
     }
 }

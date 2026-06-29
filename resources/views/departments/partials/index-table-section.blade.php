@@ -21,15 +21,21 @@
             <table class="table table-custom {{ $canReorder ? '' : 'reorder-disabled' }}">
                 <thead>
                     <tr>
+                        <th style="width: 6%" class="text-center">
+                            <input type="checkbox" class="form-check-input" aria-label="เลือกแผนกทั้งหมดในหน้านี้" data-bulk-select-all>
+                        </th>
                         <th style="width: 8%"></th>
                         <th style="width: 12%">ลำดับ</th>
-                        <th style="width: 60%">ชื่อแผนก</th>
+                        <th style="width: 54%">ชื่อแผนก</th>
                         <th style="width: 20%">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody data-reorder-body>
                     @foreach ($departments as $index => $department)
                         <tr class="reorder-row" data-id="{{ $department->id }}">
+                            <td class="text-center align-middle">
+                                <input type="checkbox" class="form-check-input" value="{{ $department->id }}" aria-label="เลือก {{ $department->department_name }}" data-bulk-checkbox>
+                            </td>
                             <td class="text-center align-middle"><span class="reorder-handle" data-drag-handle title="ลากเพื่อจัดอันดับ">⋮⋮</span></td>
                             <td class="align-middle" data-sequence>{{ $departments->firstItem() + $index }}</td>
                             <td class="align-middle"><strong>{{ $department->department_name }}</strong></td>
@@ -43,7 +49,7 @@
                                         data-department-edit
                                         data-department-id="{{ $department->id }}"
                                         data-department-name="{{ $department->department_name }}" />
-                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" onclick="confirmDelete({{ $department->id }})" />
+                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $department->id }}" />
                                 </div>
                             </td>
                         </tr>

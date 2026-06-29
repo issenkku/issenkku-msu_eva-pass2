@@ -10,12 +10,19 @@
             text="ระบบจัดการข้อมูลตำแหน่งงาน"
             icon="fas fa-user-tie" />
 
-        <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
+            <x-button
+                type="danger"
+                buttonType="button"
+                text="ลบรายการที่เลือก"
+                class="hidden"
+                data-bulk-delete-open
+                icon="fas fa-trash-alt" />
             <x-button
                 type="primary"
                 buttonType="button"
                 text="เพิ่มตำแหน่ง"
-                onclick="openCreateModal()"
+                data-create-modal-open
                 icon="fas fa-plus" />
         </div>
 
@@ -52,6 +59,12 @@
         text="ตำแหน่ง"
         formAction="{{ route('positions.destroy', ':id') }}"
         entityUrl="/positions" />
+
+    <x-bulk-delete-modal
+        modalId="bulkDeletePositionsModal"
+        title="ยืนยันการลบตำแหน่ง"
+        entityText="ตำแหน่ง"
+        formAction="{{ route('positions.bulk-destroy') }}" />
 
     @include('positions.partials.index-flash-message')
     @include('positions.partials.index-script')

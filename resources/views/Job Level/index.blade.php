@@ -10,12 +10,19 @@
             text="ระบบจัดการข้อมูลระดับตำแหน่งงาน"
             icon="fas fa-user-tie" />
 
-        <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
+            <x-button
+                type="danger"
+                buttonType="button"
+                text="ลบรายการที่เลือก"
+                class="hidden"
+                data-bulk-delete-open
+                icon="fas fa-trash-alt" />
             <x-button
                 type="primary"
                 buttonType="button"
                 text="เพิ่มระดับตำแหน่งงาน"
-                onclick="openCreateModal()"
+                data-create-modal-open
                 icon="fas fa-plus" />
         </div>
 
@@ -39,6 +46,12 @@
         text="ระดับตำแหน่งงาน"
         formAction="{{ route('job-level.destroy', ':id') }}"
         entityUrl="/job-level" />
+
+    <x-bulk-delete-modal
+        modalId="bulkDeleteJobLevelsModal"
+        title="ยืนยันการลบระดับตำแหน่งงาน"
+        entityText="ระดับตำแหน่งงาน"
+        formAction="{{ route('job-level.bulk-destroy') }}" />
 
     @include('Job Level.partials.index-flash-message')
     @include('Job Level.partials.index-script')

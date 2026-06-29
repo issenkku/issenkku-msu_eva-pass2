@@ -10,12 +10,19 @@
             text="ระบบจัดการข้อมูลแผนกและคณะ"
             icon="fas fa-building" />
 
-        <div class="d-flex justify-content-end mb-3">
+        <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
+            <x-button
+                type="danger"
+                buttonType="button"
+                text="ลบรายการที่เลือก"
+                class="hidden"
+                data-bulk-delete-open
+                icon="fas fa-trash-alt" />
             <x-button
                 type="primary"
                 buttonType="button"
                 text="เพิ่มแผนก"
-                onclick="openCreateModal()"
+                data-create-modal-open
                 icon="fas fa-plus" />
         </div>
 
@@ -52,6 +59,12 @@
         text="แผนก"
         formAction="{{ route('departments.destroy', ':id') }}"
         entityUrl="/departments" />
+
+    <x-bulk-delete-modal
+        modalId="bulkDeleteDepartmentsModal"
+        title="ยืนยันการลบแผนก"
+        entityText="แผนก"
+        formAction="{{ route('departments.bulk-destroy') }}" />
 
     @include('departments.partials.index-flash-message')
     @include('departments.partials.index-script')

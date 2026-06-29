@@ -18,7 +18,7 @@
                     'education_history' => $user['education_history_entries'] ?? [],
                     'status' => $user['status'],
                     'position_id' => $user['position_id'],
-                    'job_level_id' => $user['job_level_id'],
+                    'job_level_id' => $user['job_level_id'] ?? null,
                     'department_id' => $user['department_id'],
                     'role' => $user['role_names'][0] ?? '',
                     'role_names' => $user['role_names'] ?? [],

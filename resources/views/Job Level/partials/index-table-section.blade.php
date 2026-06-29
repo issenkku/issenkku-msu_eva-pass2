@@ -21,15 +21,21 @@
             <table class="table table-custom {{ $canReorder ? '' : 'reorder-disabled' }}">
                 <thead>
                     <tr>
+                        <th style="width: 6%" class="text-center">
+                            <input type="checkbox" class="form-check-input" aria-label="เลือกระดับตำแหน่งงานทั้งหมดในหน้านี้" data-bulk-select-all>
+                        </th>
                         <th style="width: 8%"></th>
                         <th style="width: 12%">ลำดับ</th>
-                        <th style="width: 60%">ชื่อระดับตำแหน่งงาน</th>
+                        <th style="width: 54%">ชื่อระดับตำแหน่งงาน</th>
                         <th style="width: 20%">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody data-reorder-body>
                     @foreach ($jobLevels as $index => $jobLevel)
                         <tr class="reorder-row" data-id="{{ $jobLevel->id }}">
+                            <td class="text-center align-middle">
+                                <input type="checkbox" class="form-check-input" value="{{ $jobLevel->id }}" aria-label="เลือก {{ $jobLevel->name }}" data-bulk-checkbox>
+                            </td>
                             <td class="text-center align-middle"><span class="reorder-handle" data-drag-handle title="ลากเพื่อจัดอันดับ">⋮⋮</span></td>
                             <td class="align-middle" data-sequence>{{ $jobLevels->firstItem() + $index }}</td>
                             <td class="align-middle"><strong>{{ $jobLevel->name }}</strong></td>
@@ -43,7 +49,7 @@
                                         data-job-level-edit
                                         data-job-level-id="{{ $jobLevel->id }}"
                                         data-job-level-name="{{ $jobLevel->name }}" />
-                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" onclick="confirmDelete({{ $jobLevel->id }})" />
+                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $jobLevel->id }}" />
                                 </div>
                             </td>
                         </tr>

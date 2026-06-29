@@ -126,6 +126,37 @@ class DepartmentsController extends Controller
         return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:departments,id'],
+        ]);
+
+        $departments = Departments::whereIn('id', $validated['ids'])
+            ->withCount('user')
+            ->get();
+        $blockedCount = $departments->where('user_count', '>', 0)->count();
+        $deleteIds = $departments->where('user_count', 0)->pluck('id');
+
+        if ($deleteIds->isEmpty()) {
+            return redirect()
+                ->route('departments.index')
+                ->with('error', 'ไม่สามารถลบแผนกที่เลือกได้ เนื่องจากยังมีการผูกกับผู้ใช้');
+        }
+
+        $deletedCount = Departments::whereIn('id', $deleteIds)->delete();
+        $message = "ลบแผนกที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
+
+        if ($blockedCount > 0) {
+            return redirect()
+                ->route('departments.index')
+                ->with('success', "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        return redirect()->route('departments.index')->with('success', $message);
+    }
+
     public function reorder(Request $request)
     {
         if (! $this->hasSortOrderColumn()) {

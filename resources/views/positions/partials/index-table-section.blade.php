@@ -21,15 +21,21 @@
             <table class="table table-custom {{ $canReorder ? '' : 'reorder-disabled' }}">
                 <thead>
                     <tr>
+                        <th style="width: 6%" class="text-center">
+                            <input type="checkbox" class="form-check-input" aria-label="เลือกตำแหน่งทั้งหมดในหน้านี้" data-bulk-select-all>
+                        </th>
                         <th style="width: 8%"></th>
                         <th style="width: 12%">ลำดับ</th>
-                        <th style="width: 60%">ชื่อตำแหน่ง</th>
+                        <th style="width: 54%">ชื่อตำแหน่ง</th>
                         <th style="width: 20%">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody data-reorder-body>
                     @foreach ($positions as $index => $position)
                         <tr class="reorder-row" data-id="{{ $position->id }}">
+                            <td class="text-center align-middle">
+                                <input type="checkbox" class="form-check-input" value="{{ $position->id }}" aria-label="เลือก {{ $position->name }}" data-bulk-checkbox>
+                            </td>
                             <td class="text-center align-middle"><span class="reorder-handle" data-drag-handle title="ลากเพื่อจัดอันดับ">⋮⋮</span></td>
                             <td class="align-middle" data-sequence>{{ $positions->firstItem() + $index }}</td>
                             <td class="align-middle"><strong>{{ $position->name }}</strong></td>
@@ -43,7 +49,7 @@
                                         data-position-edit
                                         data-position-id="{{ $position->id }}"
                                         data-position-name="{{ $position->name }}" />
-                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" onclick="confirmDelete({{ $position->id }})" />
+                                    <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $position->id }}" />
                                 </div>
                             </td>
                         </tr>

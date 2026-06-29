@@ -143,6 +143,51 @@ class PositionsController extends Controller
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:positions,id'],
+        ]);
+
+        $hasEvaluatorPositionColumn = Schema::hasColumn('assignment_datas', 'evaluator_position_id');
+        $hasEvaluateePositionColumn = Schema::hasColumn('assignment_datas', 'evaluatee_position_id');
+
+        $positions = Positions::whereIn('id', $validated['ids'])
+            ->withCount('user')
+            ->get();
+        $blockedIds = $positions
+            ->filter(function (Positions $position) use ($hasEvaluatorPositionColumn, $hasEvaluateePositionColumn) {
+                $isBoundToEvaluator = $hasEvaluatorPositionColumn
+                    && AssignmentData::where('evaluator_position_id', $position->id)->exists();
+                $isBoundToEvaluatee = $hasEvaluateePositionColumn
+                    && AssignmentData::where('evaluatee_position_id', $position->id)->exists();
+
+                return $position->user_count > 0
+                    || $isBoundToEvaluator
+                    || $isBoundToEvaluatee;
+            })
+            ->pluck('id');
+        $deleteIds = $positions->pluck('id')->diff($blockedIds)->values();
+
+        if ($deleteIds->isEmpty()) {
+            return redirect()
+                ->route('positions.index')
+                ->with('error', 'ไม่สามารถลบตำแหน่งที่เลือกได้ เนื่องจากยังมีการผูกกับข้อมูลอื่น');
+        }
+
+        $deletedCount = Positions::whereIn('id', $deleteIds)->delete();
+        $message = "ลบตำแหน่งที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
+
+        if ($blockedIds->isNotEmpty()) {
+            return redirect()
+                ->route('positions.index')
+                ->with('success', "{$message} และข้าม {$blockedIds->count()} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        return redirect()->route('positions.index')->with('success', $message);
+    }
+
     public function reorder(Request $request)
     {
         if (! $this->hasSortOrderColumn()) {

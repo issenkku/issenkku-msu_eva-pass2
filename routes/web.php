@@ -33,6 +33,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/', [DepartmentsController::class, 'index'])->name('index');
         Route::post('/store', [DepartmentsController::class, 'store'])->name('store');
         Route::post('/reorder', [DepartmentsController::class, 'reorder'])->name('reorder');
+        Route::delete('/bulk-destroy', [DepartmentsController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::put('/{id}', [DepartmentsController::class, 'update'])->name('update');
         Route::delete('/{id}', [DepartmentsController::class, 'destroy'])->name('destroy');
     });
@@ -46,6 +47,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/', [PositionsController::class, 'index'])->name('index');
         Route::post('/store', [PositionsController::class, 'store'])->name('store');
         Route::post('/reorder', [PositionsController::class, 'reorder'])->name('reorder');
+        Route::delete('/bulk-destroy', [PositionsController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::put('/{id}', [PositionsController::class, 'update'])->name('update');
         Route::delete('/{id}', [PositionsController::class, 'destroy'])->name('destroy');
     });
@@ -54,6 +56,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/', [JobLevelsController::class, 'index'])->name('index');
         Route::post('/store', [JobLevelsController::class, 'store'])->name('store');
         Route::post('/reorder', [JobLevelsController::class, 'reorder'])->name('reorder');
+        Route::delete('/bulk-destroy', [JobLevelsController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::put('/{id}', [JobLevelsController::class, 'update'])->name('update');
         Route::delete('/{id}', [JobLevelsController::class, 'destroy'])->name('destroy');
     });
@@ -63,6 +66,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/import/template', [UserTemplateController::class, 'download'])->name('import.template');
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::post('/import', [UserController::class, 'import'])->name('import');
+        Route::delete('/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
         Route::post('/check-unique', [UserController::class, 'checkUnique'])->name('users.check-unique');

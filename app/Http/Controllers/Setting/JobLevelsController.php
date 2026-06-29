@@ -102,6 +102,37 @@ class JobLevelsController extends Controller
         return redirect()->route('job-level.index')->with('success', 'ลบข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'distinct', 'exists:job_levels,id'],
+        ]);
+
+        $jobLevels = JobLevel::whereIn('id', $validated['ids'])
+            ->withCount('users')
+            ->get();
+        $blockedCount = $jobLevels->where('users_count', '>', 0)->count();
+        $deleteIds = $jobLevels->where('users_count', 0)->pluck('id');
+
+        if ($deleteIds->isEmpty()) {
+            return redirect()
+                ->route('job-level.index')
+                ->with('error', 'ไม่สามารถลบระดับตำแหน่งงานที่เลือกได้ เนื่องจากยังมีการผูกกับผู้ใช้');
+        }
+
+        $deletedCount = JobLevel::whereIn('id', $deleteIds)->delete();
+        $message = "ลบระดับตำแหน่งงานที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
+
+        if ($blockedCount > 0) {
+            return redirect()
+                ->route('job-level.index')
+                ->with('success', "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        return redirect()->route('job-level.index')->with('success', $message);
+    }
+
     public function reorder(Request $request)
     {
         if (! $this->hasSortOrderColumn()) {

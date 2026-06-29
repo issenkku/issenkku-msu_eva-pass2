@@ -527,6 +527,32 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
     }
 
+    public function bulkDestroy(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'distinct', 'exists:users,id'],
+        ]);
+
+        $currentUserId = (int) $request->user()->id;
+        $userIds = collect($validated['user_ids'])
+            ->map(fn ($id) => (int) $id)
+            ->reject(fn (int $id) => $id === $currentUserId)
+            ->values();
+
+        if ($userIds->isEmpty()) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้');
+        }
+
+        $deletedCount = User::whereIn('id', $userIds)->delete();
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', "ลบเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ");
+    }
+
     private function normalizeEducationHistory(array $entries): ?array
     {
         $normalized = collect($entries)

@@ -31,7 +31,7 @@
                     type="primary"
                     buttonType="button"
                     text="บันทึก"
-                    onclick="submitForm()"
+                    data-modal-submit-trigger
                     icon="fas fa-save"
                     id="positionSubmitBtn"
                     class="btn-disabled transition-colors disabled:opacity-50 disabled:cursor-not-allowed" />

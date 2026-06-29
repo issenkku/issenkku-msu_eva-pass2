@@ -242,4 +242,27 @@ class UserControllerTest extends TestCase
             'id' => $user->id,
         ]);
     }
+
+    public function test_admin_can_bulk_delete_users_without_deleting_self()
+    {
+        $users = User::factory()->count(2)->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('users.bulk-destroy'), [
+                'user_ids' => [
+                    $users[0]->id,
+                    $users[1]->id,
+                    $this->admin->id,
+                ],
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('success', 'ลบเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว 2 รายการ');
+
+        $this->assertDatabaseMissing('users', ['id' => $users[0]->id]);
+        $this->assertDatabaseMissing('users', ['id' => $users[1]->id]);
+        $this->assertDatabaseHas('users', ['id' => $this->admin->id]);
+    }
 }

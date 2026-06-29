@@ -170,6 +170,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         clearModalBackdrop();
 
+        document.querySelectorAll('[data-create-modal-open]').forEach((button) => {
+            button.addEventListener('click', openCreateModal);
+        });
+
+        document.querySelectorAll('[data-modal-submit-trigger]').forEach((button) => {
+            button.addEventListener('click', submitForm);
+        });
+
         const departmentNameInput = document.getElementById('department_name');
         if (departmentNameInput) {
             departmentNameInput.addEventListener('input', validateForm);
