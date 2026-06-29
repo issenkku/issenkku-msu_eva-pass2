@@ -1,10 +1,9 @@
-@props(['evaluations', 'statusCounts', 'years'])
+﻿@props(['evaluations', 'statusCounts', 'years'])
 
 @php
     use Carbon\Carbon;
 
-    function formatThaiDate($date)
-    {
+        $formatThaiDate = function ($date) {
         if (!$date) return '-';
 
         Carbon::setLocale('th'); 
@@ -16,10 +15,9 @@
 
         return [
             'date' => "{$thaiMonth} {$buddhistYear}",
-            'time' => "{$time} น."
+            'time' => "{$time} เธ."
         ];
-    }
-
+    };
     // Sort evaluations by most recent first
     $sortedEvaluations = $evaluations->sortByDesc(function($evaluatorAssignment) {
         $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
@@ -100,6 +98,7 @@
 
             <a href="{{ $url }}"
             data-director-ajax-link
+            @if ($isActive) aria-current="true" @endif
             class="inline-block px-3 py-1 rounded-full text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </a>
@@ -156,8 +155,8 @@
                             $primaryReviewer = $reviewerEntries->first();
                             $additionalReviewerCount = max($reviewerEntries->count() - 1, 0);
 
-                            $startFormatted = formatThaiDate($start);
-                            $endFormatted = formatThaiDate($end);
+                            $startFormatted = $formatThaiDate($start);
+                            $endFormatted = $formatThaiDate($end);
 
                             // Add visual indicator for recent items
                             $isRecent = false;
@@ -212,8 +211,9 @@
                                         @if($additionalReviewerCount > 0)
                                             <button
                                                 type="button"
+                                                data-director-reviewer-open
+                                                data-director-reviewers='@json($reviewerEntries->values())'
                                                 class="mt-1 text-xs font-medium text-blue-600 hover:text-blue-800 underline"
-                                                onclick='window.openDirectorReviewerModal(@json($reviewerEntries->values()))'
                                             >
                                                 เพิ่มเติม ({{ $additionalReviewerCount }} คน)
                                             </button>
@@ -328,7 +328,7 @@
                     <h3 class="text-lg font-semibold text-slate-900">รายชื่อผู้ประเมิน</h3>
                     <p class="text-sm text-slate-500">แสดงผู้ประเมินทั้งหมดตามลำดับที่กำหนด</p>
                 </div>
-                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="window.closeDirectorReviewerModal()">
+                <button type="button" class="text-slate-400 hover:text-slate-600" data-director-reviewer-close>
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -340,3 +340,4 @@
 </div>
 
 @include('components.director-table-reviewer-script')
+

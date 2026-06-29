@@ -295,6 +295,8 @@ class EvaluatorTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('evaluator_dashboard.evaluator');
         $response->assertViewHas('readonly', true);
+        $response->assertSee('data-quantity-score-input', false);
+        $response->assertDontSee('oninput="calculateScoreD(this)"', false);
     }
 
     public function test_evaluator_can_view_readonly_director_draft_report(): void

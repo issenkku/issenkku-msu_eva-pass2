@@ -41,6 +41,16 @@
         }
     }
 
+    document.addEventListener('click', function (event) {
+        const confirmButton = event.target.closest('[data-form-submit-confirm]');
+
+        if (!confirmButton) {
+            return;
+        }
+
+        confirmSubmit();
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const submitModal = document.getElementById('submitConfirmationModal');
         const cancelSubmitBtn = document.getElementById('cancelSubmitModalBtn');

@@ -28,7 +28,20 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('input[name*="quality_criteria"]').forEach(checkbox => {
+        if (!window.__qualityCheckboxBound) {
+            window.__qualityCheckboxBound = true;
+
+            document.addEventListener('change', function(event) {
+                const checkbox = event.target.closest('[data-quality-checkbox]');
+                if (!checkbox) {
+                    return;
+                }
+
+                handleQualityCheckboxChange(checkbox);
+            });
+        }
+
+        document.querySelectorAll('[data-quality-checkbox]').forEach(checkbox => {
             if (checkbox.checked) {
                 handleQualityCheckboxChange(checkbox);
             }

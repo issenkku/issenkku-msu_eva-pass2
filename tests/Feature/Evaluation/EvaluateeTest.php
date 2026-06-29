@@ -19,6 +19,8 @@ use App\Models\QualitySubCriteria;
 use App\Models\AssignmentData;
 use App\Models\Assignments;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class EvaluateeTest extends TestCase
 {
@@ -176,6 +178,52 @@ class EvaluateeTest extends TestCase
             'id' => $report->id,
             'status' => 'Pending',
         ]);
+    }
+
+    public function test_evaluatee_can_submit_when_quality_main_criteria_require_evidence_column_is_missing(): void
+    {
+        Schema::table('quality_main_criterias', function ($table) {
+            $table->dropColumn('require_evidence');
+        });
+
+        $this->assertFalse(Schema::hasColumn('quality_main_criterias', 'require_evidence'));
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        $report = $this->createReportWithStatus('Draft');
+
+        $payload = [
+            'quantity_list' => [
+                [
+                    'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
+                    'score_C' => 9,
+                ],
+            ],
+            'quality_list' => [
+                [
+                    'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
+                    'score' => 5,
+                ],
+            ],
+            'status' => 'Pending',
+            'change_status' => 1,
+        ];
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/evaluatee-dashboard');
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'status' => 'Pending',
+        ]);
+
+        $this->assertFalse(collect($queries)->contains(
+            fn (string $sql) => str_contains($sql, 'require_evidence')
+        ));
     }
 
     public function test_evaluatee_can_save_draft_scores(): void

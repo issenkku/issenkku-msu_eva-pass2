@@ -239,7 +239,7 @@
                                                                             name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
                                                                             value="{{ $subCriteria['tor_compliant'] ?? '' }}"
                                                                             data-sub-criteria-id="{{ $subCriteria['id'] }}"
-                                                                            oninput="calculateScoreD(this)"
+                                                                            data-quantity-score-input
                                                                             class="h-10 w-full rounded-lg border border-blue-300 bg-white px-3 text-center text-lg font-semibold text-slate-700 shadow-sm focus:border-blue-400 focus:ring-blue-300"
                                                                             placeholder="ใส่ค่า C">
                                                                     @else
@@ -416,13 +416,13 @@
                                                                                 id="evaluator-quality-criteria-{{ $subCriteria['id'] }}"
                                                                                 name="quality_criteria[{{ $subCriteria['id'] }}]"
                                                                                 value="1"
-                                                                                data-score="{{ $subCriteria['num_score'] ?? 0 }}"
-                                                                                data-sub-criteria-id="{{ $subCriteria['id'] }}"
-                                                                                data-main-criteria-id="{{ $mainCriteria['id'] }}"
-                                                                                data-allow-multiple="{{ !empty($mainCriteria['allow_multiple']) ? '1' : '0' }}"
-                                                                                onchange="handleQualityCheckboxChange(this)"
-                                                                                {{ $shouldBeChecked ? 'checked' : '' }}
-                                                                                class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
+                                                        data-score="{{ $subCriteria['num_score'] ?? 0 }}"
+                                                        data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                        data-main-criteria-id="{{ $mainCriteria['id'] }}"
+                                                        data-allow-multiple="{{ !empty($mainCriteria['allow_multiple']) ? '1' : '0' }}"
+                                                        data-quality-checkbox
+                                                        {{ $shouldBeChecked ? 'checked' : '' }}
+                                                        class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                                             <label for="evaluator-quality-criteria-{{ $subCriteria['id'] }}" class="text-base text-gray-800 break-words">
                                                                                 {!! \App\Support\SafeHtml::richText($subCriteria['name']) !!}
                                                                                 @if(!empty($subCriteria['description']))

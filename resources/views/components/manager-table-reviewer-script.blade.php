@@ -54,4 +54,24 @@
     };
 
     window.bindManagerReviewerModal();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-manager-reviewer-open]').forEach((button) => {
+            button.addEventListener('click', function () {
+                let reviewers = [];
+
+                try {
+                    reviewers = JSON.parse(this.dataset.managerReviewers || '[]');
+                } catch (error) {
+                    reviewers = [];
+                }
+
+                window.openManagerReviewerModal(reviewers);
+            });
+        });
+
+        document.querySelectorAll('[data-manager-reviewer-close]').forEach((button) => {
+            button.addEventListener('click', window.closeManagerReviewerModal);
+        });
+    });
 </script>

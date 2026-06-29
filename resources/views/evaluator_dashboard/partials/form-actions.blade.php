@@ -11,6 +11,6 @@
         buttonType="button"
         text="รับรองผล"
         icon="fas fa-check-circle"
-        onclick="confirmSubmit()"
+        data-form-submit-confirm
     />
 </div>

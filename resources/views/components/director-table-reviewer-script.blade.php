@@ -54,4 +54,24 @@
     };
 
     window.bindDirectorReviewerModal();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('[data-director-reviewer-open]').forEach((button) => {
+            button.addEventListener('click', function () {
+                let reviewers = [];
+
+                try {
+                    reviewers = JSON.parse(this.dataset.directorReviewers || '[]');
+                } catch (error) {
+                    reviewers = [];
+                }
+
+                window.openDirectorReviewerModal(reviewers);
+            });
+        });
+
+        document.querySelectorAll('[data-director-reviewer-close]').forEach((button) => {
+            button.addEventListener('click', window.closeDirectorReviewerModal);
+        });
+    });
 </script>

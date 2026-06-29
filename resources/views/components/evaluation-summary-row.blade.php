@@ -40,8 +40,10 @@
                 @if ($row['additional_reviewer_count'] > 0)
                     <button
                         type="button"
+                        data-evaluatee-reviewer-open
+                        data-evaluatee-reviewers='@json($row["reviewers"])'
                         class="mt-1 text-xs font-medium text-blue-600 underline hover:text-blue-800"
-                        onclick='window.openEvaluateeReviewerModal(@json($row['reviewers']))'>
+                    >
                         เพิ่มเติม ({{ $row['additional_reviewer_count'] }} คน)
                     </button>
                 @endif

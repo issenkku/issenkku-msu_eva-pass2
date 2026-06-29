@@ -1,11 +1,10 @@
-{{-- มุมมองตารางสรุปสถานะการประเมินของผู้ประเมิน --}}
+﻿{{-- มุมมองตารางสรุปสถานะการประเมินของผู้ประเมิน --}}
 @props(['evaluations', 'statusCounts', 'years'])
 
 @php
     use Carbon\Carbon;
 
-    function formatThaiDate($date)
-    {
+    $formatThaiDate = function ($date) {
         if (!$date) {
             return '-';
         }
@@ -21,7 +20,7 @@
             'date' => "{$thaiMonth} {$buddhistYear}",
             'time' => "{$time} น.",
         ];
-    }
+    };
 
     // เรียงรายการล่าสุดขึ้นก่อน
     $sortedEvaluations = $evaluations->sortByDesc(function ($evaluatorAssignment) {
@@ -105,6 +104,7 @@
 
             <a href="{{ $url }}"
                 data-evaluator-ajax-link
+                @if ($isActive) aria-current="true" @endif
                 class="inline-block rounded-full px-3 py-1 text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </a>
@@ -158,8 +158,8 @@
 
                             $evaluateeName = optional($evaluatee)->name ?? '-';
 
-                            $startFormatted = formatThaiDate($start);
-                            $endFormatted = formatThaiDate($end);
+                            $startFormatted = $formatThaiDate($start);
+                            $endFormatted = $formatThaiDate($end);
 
                             $isRecent = false;
                             if ($end && $end->gt(Carbon::now()->subDays(10))) {
@@ -288,3 +288,4 @@
         </div>
     </div>
 </div>
+

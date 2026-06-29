@@ -68,6 +68,15 @@ class AssignmentDataTest extends TestCase
             ->assertViewIs('assignment-data.index');
     }
 
+    public function test_assignment_form_includes_stage_order_auto_normalizer(): void
+    {
+        $this->actingAs($this->admin, 'web')
+            ->get(route('assignment-data.create'))
+            ->assertStatus(200)
+            ->assertSee('data-stage-order-select', false)
+            ->assertSee('normalizeStageOrdersAfterChange', false);
+    }
+
     public function test_non_admin_cannot_access_assignment_data_routes()
     {
         $department = \Database\Factories\DepartmentFactory::new()->create();

@@ -110,4 +110,24 @@ window.bindEvaluateeReviewerModal = window.bindEvaluateeReviewerModal || functio
 };
 
 window.bindEvaluateeReviewerModal();
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-evaluatee-reviewer-open]').forEach((button) => {
+        button.addEventListener('click', function () {
+            let reviewers = [];
+
+            try {
+                reviewers = JSON.parse(this.dataset.evaluateeReviewers || '[]');
+            } catch (error) {
+                reviewers = [];
+            }
+
+            window.openEvaluateeReviewerModal(reviewers);
+        });
+    });
+
+    document.querySelectorAll('[data-evaluatee-reviewer-close]').forEach((button) => {
+        button.addEventListener('click', window.closeEvaluateeReviewerModal);
+    });
+});
 </script>

@@ -67,9 +67,29 @@ function recalculateSummaryScores() {
 
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll(
-        'input[name^="quantity_list"][name$="[score_C]"], input[name^="quantity_list"][name$="[score_D]"], input[name^="quality_list"][name$="[score]"]'
+        'input[name^="quantity_list"][name$="[score_D]"], input[name^="quality_list"][name$="[score]"]'
     ).forEach(input => {
         input.addEventListener('input', recalculateSummaryScores);
+    });
+
+    if (!window.__quantityScoreInputBound) {
+        window.__quantityScoreInputBound = true;
+
+        document.addEventListener('input', function(event) {
+            const input = event.target.closest('[data-quantity-score-input]');
+            if (!input) {
+                return;
+            }
+
+            calculateScoreD(input);
+            recalculateSummaryScores();
+        });
+    }
+
+    document.querySelectorAll('[data-quantity-score-input]').forEach(input => {
+        if (input.value !== '') {
+            calculateScoreD(input);
+        }
     });
 
     recalculateSummaryScores();
@@ -103,7 +123,20 @@ function handleQualityCheckboxChange(checkbox) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('input[name*="quality_criteria"]');
+    if (!window.__qualityCheckboxBound) {
+        window.__qualityCheckboxBound = true;
+
+        document.addEventListener('change', function(event) {
+            const checkbox = event.target.closest('[data-quality-checkbox]');
+            if (!checkbox) {
+                return;
+            }
+
+            handleQualityCheckboxChange(checkbox);
+        });
+    }
+
+    const checkboxes = document.querySelectorAll('[data-quality-checkbox]');
     checkboxes.forEach(checkbox => {
         if (checkbox.checked) {
             handleQualityCheckboxChange(checkbox);

@@ -375,13 +375,13 @@
                                                                                 id="unified-quality-criteria-{{ $subCriteria['id'] }}"
                                                                                 name="quality_criteria[{{ $subCriteria['id'] }}]"
                                                                                 value="1"
-                                                                                data-score="{{ $subCriteria['num_score'] ?? 0 }}"
-                                                                                data-sub-criteria-id="{{ $subCriteria['id'] }}"
-                                                                                data-main-criteria-id="{{ $mainCriteria['id'] }}"
-                                                                                data-allow-multiple="{{ !empty($mainCriteria['allow_multiple']) ? '1' : '0' }}"
-                                                                                onchange="handleQualityCheckboxChange(this)"
-                                                                                {{ $shouldBeChecked ? 'checked' : '' }}
-                                                                                class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
+                                                        data-score="{{ $subCriteria['num_score'] ?? 0 }}"
+                                                        data-sub-criteria-id="{{ $subCriteria['id'] }}"
+                                                        data-main-criteria-id="{{ $mainCriteria['id'] }}"
+                                                        data-allow-multiple="{{ !empty($mainCriteria['allow_multiple']) ? '1' : '0' }}"
+                                                        data-quality-checkbox
+                                                        {{ $shouldBeChecked ? 'checked' : '' }}
+                                                        class="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mr-3">
                                                                             <label
                                                                                 for="unified-quality-criteria-{{ $subCriteria['id'] }}"
                                                                                 class="text-base text-gray-800 break-words">

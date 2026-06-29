@@ -82,7 +82,7 @@
                                         data-sub-criteria-id="{{ $item['sub_criteria_id'] }}"
                                         data-main-criteria-id="{{ $item['main_criteria_id'] ?? '' }}"
                                         data-allow-multiple="{{ !empty($item['allow_multiple']) ? '1' : '0' }}"
-                                        onchange="handleQualityCheckboxChange(this)"
+                                        data-quality-checkbox
                                         {{ $shouldBeChecked ? 'checked' : '' }}
                                         class="mt-1 mr-3 h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500">
                                     <label for="quality-criteria-{{ $item['sub_criteria_id'] }}" class="text-base text-gray-800">

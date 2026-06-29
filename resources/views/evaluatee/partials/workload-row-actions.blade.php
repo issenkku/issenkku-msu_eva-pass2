@@ -21,7 +21,8 @@
         <button
             type="button"
             class="workload-mini-btn workload-delete-btn"
-            onclick="confirmDelete({{ $rowView['id'] }})"
+            data-delete-trigger
+            data-delete-id="{{ $rowView['id'] }}"
         >
             <i class="fas fa-trash-alt"></i>
             <span>&#3621;&#3610;</span>

@@ -62,5 +62,11 @@
                 evaluationForm.submit();
             }, 350);
         });
+
+        document.querySelectorAll('[data-form-status-trigger]').forEach((button) => {
+            button.addEventListener('click', function () {
+                setFormStatus(this.dataset.formStatus || '');
+            });
+        });
     });
 </script>

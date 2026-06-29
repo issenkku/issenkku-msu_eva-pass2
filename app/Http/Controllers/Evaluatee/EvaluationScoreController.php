@@ -17,6 +17,7 @@ use App\Support\QuantityScoreHistoryRecorder;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Facades\Activity;
 
@@ -95,7 +96,10 @@ class EvaluationScoreController extends Controller
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
             ]);
 
-            if (($validated['status'] ?? 'Draft') === 'Pending') {
+            if (
+                ($validated['status'] ?? 'Draft') === 'Pending'
+                && Schema::hasColumn('quality_main_criterias', 'require_evidence')
+            ) {
                 $selectedQualitySubIds = collect($validated['quality_list'] ?? [])
                     ->filter(function ($item) {
                         return array_key_exists('score', $item)

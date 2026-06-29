@@ -6,7 +6,7 @@
                     <h3 class="text-lg font-semibold text-slate-900">รายชื่อผู้ประเมิน</h3>
                     <p class="text-sm text-slate-500">แสดงผู้ประเมินทั้งหมดตามลำดับที่กำหนด</p>
                 </div>
-                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="window.closeEvaluateeReviewerModal()">
+                <button type="button" class="text-slate-400 hover:text-slate-600" data-evaluatee-reviewer-close>
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>

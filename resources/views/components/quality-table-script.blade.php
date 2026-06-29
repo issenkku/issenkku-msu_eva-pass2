@@ -76,6 +76,19 @@ function initializeCheckboxStates() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    if (!window.__qualityCheckboxBound) {
+        window.__qualityCheckboxBound = true;
+
+        document.addEventListener('change', function(event) {
+            const checkbox = event.target.closest('[data-quality-checkbox]');
+            if (!checkbox) {
+                return;
+            }
+
+            handleQualityCheckboxChange(checkbox);
+        });
+    }
+
     initializeCheckboxStates();
     updateQualityTotalScore();
 });

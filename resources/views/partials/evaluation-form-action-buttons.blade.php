@@ -7,12 +7,13 @@
         :href="$backHref" />
 
     @unless ($readonly)
-        <x-button
-            type="secondary"
-            buttonType="submit"
-            text="บันทึกร่าง"
-            onclick="setFormStatus('{{ $draftStatus }}')"
-            icon="fas fa-save" />
+    <x-button
+        type="secondary"
+        buttonType="submit"
+        text="บันทึกร่าง"
+        data-form-status-trigger
+        data-form-status="{{ $draftStatus }}"
+        icon="fas fa-save" />
         <x-button
             type="primary"
             buttonType="button"

@@ -144,6 +144,8 @@ class DirectorTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('director_dashboard.director');
         $response->assertViewHas('readonly', false);
+        $response->assertSee('data-quantity-score-input', false);
+        $response->assertDontSee('oninput="calculateScoreD(this)"', false);
     }
 
     public function test_director_can_access_report_with_director_draft_status(): void
