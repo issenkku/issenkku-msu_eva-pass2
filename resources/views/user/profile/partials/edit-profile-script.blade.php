@@ -7,7 +7,7 @@ function educationHistoryRowTemplate(index, entry = {}) {
             <input type="text" name="education_history[${index}][graduation_year]" value="${entry.graduation_year ?? ''}" placeholder="ปีที่จบ" maxlength="4" autocomplete="off" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
             <input type="text" name="education_history[${index}][degree]" value="${entry.degree ?? ''}" placeholder="วุฒิการศึกษา" autocomplete="organization-title" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
             <input type="text" name="education_history[${index}][university]" value="${entry.university ?? ''}" placeholder="มหาวิทยาลัยที่จบ" autocomplete="organization" class="block w-full rounded-md border border-black px-3 py-2 shadow-sm focus:border-black focus:ring-black">
-            <button type="button" onclick="removeEducationHistoryRow(this)" class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50">ลบ</button>
+            <button type="button" data-remove-education-row class="rounded-md border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50">ลบ</button>
         </div>
     `;
 }
@@ -30,6 +30,16 @@ function removeEducationHistoryRow(button) {
 
     renderEducationHistoryRows(rows);
 }
+
+document.addEventListener('click', function (event) {
+    const removeButton = event.target.closest('[data-remove-education-row]');
+
+    if (!removeButton) {
+        return;
+    }
+
+    removeEducationHistoryRow(removeButton);
+});
 
 document.getElementById('addEducationHistoryRow').addEventListener('click', function() {
     const container = document.getElementById('educationHistoryRows');

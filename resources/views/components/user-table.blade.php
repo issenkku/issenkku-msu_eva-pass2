@@ -31,6 +31,15 @@
 @endphp
 
 <tr class="border-b">
+    <td class="p-4 text-center">
+        <input
+            type="checkbox"
+            class="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+            value="{{ $employee['id'] }}"
+            aria-label="เลือก {{ trim(collect([$employee['prefix'] ?? '', $employee['name'] ?? ''])->filter()->implode(' ')) }}"
+            data-user-bulk-checkbox
+        >
+    </td>
     <td class="p-4 text-center">{{ $index }}</td>
     <td class="p-4">
         {{ trim(collect([$employee['prefix'] ?? '', $employee['name'] ?? ''])->filter()->implode(' ')) }}

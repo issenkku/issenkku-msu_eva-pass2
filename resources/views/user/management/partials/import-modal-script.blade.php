@@ -180,6 +180,82 @@
         }, 200);
     }
 
+    document.addEventListener('click', function(event) {
+        const importOpenButton = event.target.closest('[data-import-modal-open]');
+        if (importOpenButton) {
+            event.preventDefault();
+            openImportModal(importOpenButton);
+            return;
+        }
+
+        const importCloseButton = event.target.closest('[data-import-modal-close]');
+        if (importCloseButton) {
+            event.preventDefault();
+            closeImportModal();
+            return;
+        }
+
+        const dropZone = event.target.closest('[data-import-drop-zone]');
+        if (dropZone) {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        const removeFileButton = event.target.closest('[data-import-remove-file]');
+        if (removeFileButton) {
+            event.preventDefault();
+            removeFile();
+        }
+    });
+
+    document.addEventListener('dragover', function(event) {
+        const dropZone = event.target.closest?.('[data-import-drop-zone]');
+        if (!dropZone) {
+            return;
+        }
+
+        handleDragOver({
+            preventDefault: () => event.preventDefault(),
+            currentTarget: dropZone,
+        });
+    });
+
+    document.addEventListener('dragleave', function(event) {
+        const dropZone = event.target.closest?.('[data-import-drop-zone]');
+        if (!dropZone) {
+            return;
+        }
+
+        handleDragLeave({
+            preventDefault: () => event.preventDefault(),
+            currentTarget: dropZone,
+        });
+    });
+
+    document.addEventListener('drop', function(event) {
+        const dropZone = event.target.closest?.('[data-import-drop-zone]');
+        if (!dropZone) {
+            return;
+        }
+
+        handleDrop({
+            preventDefault: () => event.preventDefault(),
+            currentTarget: dropZone,
+            dataTransfer: event.dataTransfer,
+        });
+    });
+
+    document.addEventListener('change', function(event) {
+        const fileInput = event.target.closest?.('[data-import-file-input]');
+        if (!fileInput) {
+            return;
+        }
+
+        handleFileSelect({ target: fileInput });
+    });
+
     document.getElementById('importForm')?.addEventListener('submit', function(e) {
         if (!selectedFile) {
             e.preventDefault();

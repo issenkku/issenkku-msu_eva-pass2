@@ -2,10 +2,7 @@
 <div class="space-y-6">
     <div
         class="file-drop-zone border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 cursor-pointer"
-        ondrop="handleDrop(event)"
-        ondragover="handleDragOver(event)"
-        ondragleave="handleDragLeave(event)"
-        onclick="document.getElementById('fileInput').click()"
+        data-import-drop-zone
     >
         <div id="dropZoneContent">
             <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -21,7 +18,7 @@
             name="import_file"
             accept=".xlsx,.xls,.csv"
             class="hidden"
-            onchange="handleFileSelect(event)"
+            data-import-file-input
             required
         >
     </div>
@@ -38,7 +35,7 @@
                 </div>
             </div>
 
-            <button type="button" onclick="removeFile()" class="text-red-500 hover:text-red-700">
+            <button type="button" data-import-remove-file class="text-red-500 hover:text-red-700">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>

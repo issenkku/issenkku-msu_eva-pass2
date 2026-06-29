@@ -66,9 +66,39 @@ class AuthController extends Controller
             ->withProperties(['ip' => $request->ip()])
             ->log('ผู้ใช้เข้าสู่ระบบ');
 
-        $redirect = route($user->defaultDashboardRoute() ?? 'home', [], false);
+        $redirectRoute = $this->resolveDashboardRoute($user);
+        $redirect = route($redirectRoute, [], false);
 
-        return response()->json(['redirect' => $redirect]);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['redirect' => $redirect]);
+        }
+
+        return redirect()->to($redirect);
+    }
+
+    private function resolveDashboardRoute(User $user): string
+    {
+        if ($user->hasRole('admin')) {
+            return 'dashboard';
+        }
+
+        if ($user->hasRole('เธเธนเนเธเธฃเธดเธซเธฒเธฃ')) {
+            return 'manager.dashboard';
+        }
+
+        if ($user->hasRole('เธเธฃเธฃเธกเธเธฒเธฃ')) {
+            return 'director.dashboard';
+        }
+
+        if ($user->hasRole('เธเธนเนเธเธฃเธฐเน€เธกเธดเธ')) {
+            return 'evaluator.index';
+        }
+
+        if ($user->hasRole('เธเธนเนเธฃเธฑเธเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธ')) {
+            return 'evaluatee.dashboard';
+        }
+
+        return 'home';
     }
 
     public function logout(Request $request)

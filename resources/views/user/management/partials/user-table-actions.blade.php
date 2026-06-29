@@ -5,15 +5,16 @@
         text="แก้ไข"
         class="text-sm"
         icon="fas fa-edit"
-        onclick="openEditModalFromButton(this)"
+        data-user-edit-trigger
         data-user="{{ $editUserPayloadEncoded }}"
     />
     <x-button
         type="danger"
         text="ลบ"
-        buttonType="submit"
+        buttonType="button"
         class="text-sm"
         icon="fas fa-trash-alt"
-        onclick="confirmDelete({{ $employee['id'] }})"
+        data-user-delete-trigger
+        data-user-id="{{ $employee['id'] }}"
     />
 </div>

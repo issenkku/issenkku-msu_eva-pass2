@@ -18,19 +18,37 @@ class AuthenticateTest extends TestCase
     {
         parent::setUp();
 
-        // Create roles for testing
         Role::create(['name' => 'admin']);
-        Role::create(['name' => 'ผู้บริหาร']);
-        Role::create(['name' => 'กรรมการ']);
-        Role::create(['name' => 'ผู้ประเมิน']);
-        Role::create(['name' => 'ผู้รับการประเมิน']);
+        Role::create(['name' => 'เธเธนเนเธเธฃเธดเธซเธฒเธฃ']);
+        Role::create(['name' => 'เธเธฃเธฃเธกเธเธฒเธฃ']);
+        Role::create(['name' => 'เธเธนเนเธเธฃเธฐเน€เธกเธดเธ']);
+        Role::create(['name' => 'เธเธนเนเธฃเธฑเธเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธ']);
+    }
+
+    private function loginPage(): void
+    {
+        $this->get('/login')->assertStatus(200);
+    }
+
+    private function loginPayload(array $overrides = []): array
+    {
+        $this->loginPage();
+
+        return array_merge([
+            '_token' => session()->token(),
+            'employee_id' => 'EMP001',
+            'password' => 'password123',
+        ], $overrides);
+    }
+
+    private function ajaxHeaders(): array
+    {
+        return ['Accept' => 'application/json', 'X-Requested-With' => 'XMLHttpRequest'];
     }
 
     public function test_login_page_is_accessible()
     {
-        $response = $this->get('/login');
-
-        $response->assertStatus(200);
+        $this->loginPage();
     }
 
     public function test_user_can_login_with_valid_credentials()
@@ -45,21 +63,30 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Visit login page first to establish session
-        $loginResponse = $this->get('/login');
-        $loginResponse->assertStatus(200);
-
-        // Extract CSRF token from the session or generate one
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
-            'employee_id' => 'EMP001',
-            'password' => 'password123',
-        ]);
+        $response = $this->post('/login', $this->loginPayload(), $this->ajaxHeaders());
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['redirect']);
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_user_can_login_with_valid_credentials_via_plain_form_post()
+    {
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
+        $user = User::factory()->create([
+            'employee_id' => 'EMP002',
+            'password' => bcrypt('password123'),
+            'status' => 'active',
+            'department_id' => $department->id,
+            'position_id' => $position->id,
+        ]);
+
+        $response = $this->post('/login', $this->loginPayload([
+            'employee_id' => 'EMP002',
+        ]));
+
+        $response->assertRedirect(route('home'));
         $this->assertAuthenticatedAs($user);
     }
 
@@ -67,7 +94,7 @@ class AuthenticateTest extends TestCase
     {
         $department = DepartmentFactory::new()->create();
         $position = PositionFactory::new()->create();
-        $user = User::factory()->create([
+        User::factory()->create([
             'employee_id' => 'EMP001',
             'password' => bcrypt('password123'),
             'status' => 'active',
@@ -75,15 +102,9 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
-            'employee_id' => 'EMP001',
+        $response = $this->post('/login', $this->loginPayload([
             'password' => 'wrongpassword',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(401);
         $response->assertJson([
@@ -96,7 +117,7 @@ class AuthenticateTest extends TestCase
     {
         $department = DepartmentFactory::new()->create();
         $position = PositionFactory::new()->create();
-        $user = User::factory()->create([
+        User::factory()->create([
             'employee_id' => 'EMP001',
             'password' => bcrypt('password123'),
             'status' => 'inactive',
@@ -104,14 +125,7 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
-            'employee_id' => 'EMP001',
-            'password' => 'password123',
-        ]);
+        $response = $this->post('/login', $this->loginPayload(), $this->ajaxHeaders());
 
         $response->assertStatus(413);
         $response->assertJson(['message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ']);
@@ -122,7 +136,7 @@ class AuthenticateTest extends TestCase
     {
         $department = DepartmentFactory::new()->create();
         $position = PositionFactory::new()->create();
-        $user = User::factory()->create([
+        User::factory()->create([
             'employee_id' => 'EMP001',
             'password' => bcrypt('password123'),
             'status' => 'active',
@@ -130,30 +144,19 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Clear any existing rate limits
         RateLimiter::clear('emp001|127.0.0.1');
 
-        // Visit login page to establish session
-        $this->get('/login');
-
-        // Attempt login 5 times with wrong password (this should trigger throttling)
         for ($i = 0; $i < 5; $i++) {
-            $token = session()->token();
-            $response = $this->post('/login', [
-                '_token' => $token,
-                'employee_id' => 'EMP001',
+            $response = $this->post('/login', $this->loginPayload([
                 'password' => 'wrongpassword',
-            ]);
+            ]), $this->ajaxHeaders());
+
             $response->assertStatus(401);
         }
 
-        // 6th attempt should be throttled
-        $token = session()->token();
-        $response = $this->post('/login', [
-            '_token' => $token,
-            'employee_id' => 'EMP001',
+        $response = $this->post('/login', $this->loginPayload([
             'password' => 'wrongpassword',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(429);
         $response->assertJson([
@@ -174,23 +177,14 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Assign admin role
         $user->assignRole('admin');
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
+        $response = $this->post('/login', $this->loginPayload([
             'employee_id' => 'ADMIN001',
-            'password' => 'password123',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'redirect' => '/dashboard',
-        ]);
+        $response->assertJson(['redirect' => '/dashboard']);
         $this->assertAuthenticatedAs($user);
     }
 
@@ -206,23 +200,14 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Assign manager role
-        $user->assignRole('ผู้บริหาร');
+        $user->assignRole('เธเธนเนเธเธฃเธดเธซเธฒเธฃ');
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
+        $response = $this->post('/login', $this->loginPayload([
             'employee_id' => 'MGR001',
-            'password' => 'password123',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'redirect' => '/manager-dashboard',
-        ]);
+        $response->assertJson(['redirect' => '/manager-dashboard']);
         $this->assertAuthenticatedAs($user);
     }
 
@@ -238,23 +223,14 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Assign director role
-        $user->assignRole('กรรมการ');
+        $user->assignRole('เธเธฃเธฃเธกเธเธฒเธฃ');
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
+        $response = $this->post('/login', $this->loginPayload([
             'employee_id' => 'DIR001',
-            'password' => 'password123',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'redirect' => '/director-dashboard',
-        ]);
+        $response->assertJson(['redirect' => '/director-dashboard']);
         $this->assertAuthenticatedAs($user);
     }
 
@@ -270,23 +246,14 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Assign evaluator role
-        $user->assignRole('ผู้ประเมิน');
+        $user->assignRole('เธเธนเนเธเธฃเธฐเน€เธกเธดเธ');
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-
-        $response = $this->post('/login', [
-            '_token' => $token,
+        $response = $this->post('/login', $this->loginPayload([
             'employee_id' => 'EVA001',
-            'password' => 'password123',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'redirect' => '/evaluator-dashboard',
-        ]);
+        $response->assertJson(['redirect' => '/evaluator-dashboard']);
         $this->assertAuthenticatedAs($user);
     }
 
@@ -302,22 +269,14 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Assign evaluatee role
-        $user->assignRole('ผู้รับการประเมิน');
+        $user->assignRole('เธเธนเนเธฃเธฑเธเธเธฒเธฃเธเธฃเธฐเน€เธกเธดเธ');
 
-        // Visit login page first to establish session
-        $this->get('/login');
-        $token = session()->token();
-        $response = $this->post('/login', [
-            '_token' => $token,
+        $response = $this->post('/login', $this->loginPayload([
             'employee_id' => 'EVE001',
-            'password' => 'password123',
-        ]);
+        ]), $this->ajaxHeaders());
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'redirect' => '/evaluatee-dashboard',
-        ]);
+        $response->assertJson(['redirect' => '/evaluatee-dashboard']);
         $this->assertAuthenticatedAs($user);
     }
 
@@ -333,31 +292,23 @@ class AuthenticateTest extends TestCase
             'position_id' => $position->id,
         ]);
 
-        // Act as user
         $this->actingAs($user, 'web');
-
         $this->assertAuthenticatedAs($user);
 
-        // Grab CSRF token from session
         $this->get('/login');
         $token = session()->token();
 
-        // Perform logout with token
         $response = $this->post('/logout', [
             '_token' => $token,
         ]);
 
-        // Assert redirect and flash message
         $response->assertRedirect('/login');
         $response->assertSessionHas('success', 'ออกจากระบบสำเร็จ');
-
-        // Ensure user is logged out
         $this->assertGuest();
     }
 
     protected function tearDown(): void
     {
-        // Clear rate limiter after each test
         RateLimiter::clear('emp001|127.0.0.1');
         parent::tearDown();
     }

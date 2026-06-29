@@ -191,7 +191,7 @@
                     <button
                         type="button"
                         class="rounded border border-red-300 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-                        onclick="this.closest('[data-education-row]').remove(); window.reindexEducationHistoryRows();">
+                        data-user-education-remove>
                         ลบ
                     </button>
                 </div>
@@ -237,6 +237,14 @@
                 modal.classList.remove('flex');
             }
         };
+
+        function removeEducationRow(button) {
+            const row = button.closest('[data-education-row]');
+            if (row) {
+                row.remove();
+                window.reindexEducationHistoryRows();
+            }
+        }
 
         window.openCreateModal = function (button = null) {
             if (!modal || !form || !methodInput) {
@@ -334,6 +342,52 @@
         modal?.addEventListener('click', (event) => {
             if (event.target === modal) {
                 window.closeModal();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            const closeButton = event.target.closest('[data-user-modal-close]');
+            if (closeButton) {
+                event.preventDefault();
+                window.closeModal();
+                return;
+            }
+
+            const createButton = event.target.closest('[data-create-modal-open]');
+            if (createButton) {
+                event.preventDefault();
+                window.openCreateModal(createButton);
+                return;
+            }
+
+            const editButton = event.target.closest('[data-user-edit-trigger]');
+            if (editButton) {
+                event.preventDefault();
+                window.openEditModalFromButton(editButton);
+                return;
+            }
+
+            const deleteButton = event.target.closest('[data-user-delete-trigger]');
+            if (deleteButton) {
+                event.preventDefault();
+                const userId = deleteButton.dataset.userId;
+                if (userId && typeof window.confirmDelete === 'function') {
+                    window.confirmDelete(userId);
+                }
+                return;
+            }
+
+            const addEducationButton = event.target.closest('[data-user-education-add]');
+            if (addEducationButton) {
+                event.preventDefault();
+                window.addEducationHistoryRow();
+                return;
+            }
+
+            const removeEducationButton = event.target.closest('[data-user-education-remove]');
+            if (removeEducationButton) {
+                event.preventDefault();
+                removeEducationRow(removeEducationButton);
             }
         });
 

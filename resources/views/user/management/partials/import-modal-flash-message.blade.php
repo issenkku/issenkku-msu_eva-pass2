@@ -6,7 +6,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
             <span>{{ session('success') }}</span>
-            <button type="button" onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+            <button type="button" aria-label="ปิดข้อความแจ้งเตือน" title="ปิดข้อความแจ้งเตือน" data-flash-close class="ml-2 text-white hover:text-gray-200">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -22,7 +22,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <span>{{ session('warning') }}</span>
-            <button type="button" onclick="this.parentElement.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">
+            <button type="button" aria-label="ปิดข้อความแจ้งเตือน" title="ปิดข้อความแจ้งเตือน" data-flash-close class="ml-2 text-white hover:text-gray-200">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -41,7 +41,7 @@
                 <div class="font-medium">เกิดข้อผิดพลาด</div>
                 <div class="text-sm mt-1">{{ session('error') }}</div>
             </div>
-            <button type="button" onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+            <button type="button" aria-label="ปิดข้อความแจ้งเตือน" title="ปิดข้อความแจ้งเตือน" data-flash-close class="ml-4 text-white hover:text-gray-200">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>

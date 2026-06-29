@@ -7,7 +7,7 @@
                 <h2 class="text-xl font-semibold text-purple-700">นำเข้าข้อมูลผู้ใช้งาน</h2>
                 <p class="text-sm text-gray-600 mt-1">อัปโหลดไฟล์ Excel หรือ CSV เพื่อนำเข้าข้อมูลผู้ใช้งานจำนวนมาก</p>
             </div>
-            <button type="button" onclick="closeImportModal()" class="text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
+            <button type="button" data-import-modal-close class="text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
         </div>
 
         <form id="importForm" action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
@@ -22,7 +22,7 @@
                 <x-button
                     type="secondary"
                     text="ย้อนกลับ"
-                    onclick="closeImportModal()"
+                    data-import-modal-close
                     icon="fas fa-arrow-left" />
 
                 <button

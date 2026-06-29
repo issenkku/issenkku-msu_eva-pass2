@@ -10,7 +10,7 @@
 @php($educationHistory = $user->education_history_entries)
 
     <div class="toolbar">
-        <button type="button" onclick="window.print()">พิมพ์เอกสาร</button>
+        <button type="button" data-profile-print>พิมพ์เอกสาร</button>
     </div>
 
     <main class="page">
@@ -86,5 +86,17 @@
             @endif
         </section>
     </main>
+
+    <script>
+        document.addEventListener('click', function (event) {
+            const printButton = event.target.closest('[data-profile-print]');
+
+            if (!printButton) {
+                return;
+            }
+
+            window.print();
+        });
+    </script>
 </body>
 </html>
