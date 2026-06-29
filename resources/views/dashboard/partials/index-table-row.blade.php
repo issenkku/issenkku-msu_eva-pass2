@@ -2,12 +2,18 @@
 @php
     $evaluateeName = $evaluation->evaluateeName ?? '-';
     $evaluatorName = $evaluation->evaluatorName ?? '-';
+    $reportTitle = optional(optional($evaluation->report)->reportData)->report_title ?? '-';
+    $status = $evaluation->report->report_status ?? ($evaluation->report->status ?? 'UNKNOWN');
     $reviewerEntries = collect($evaluation->reviewerEntries ?? []);
     $primaryReviewer = $reviewerEntries->first();
     $additionalReviewerCount = max($reviewerEntries->count() - 1, 0);
     $score = $evaluation->report->score ?? 0;
-
-    $status = $evaluation->report->report_status ?? ($evaluation->report->status ?? 'UNKNOWN');
+    $searchText = collect([
+        $evaluateeName,
+        $evaluatorName,
+        $reportTitle,
+        $status,
+    ])->filter()->implode(' ');
     $statusMapping = [
         'Assigned' => 'ยังไม่ประเมิน',
         'Draft' => 'เริ่มกรอกข้อมูล',
@@ -42,7 +48,7 @@
     };
 @endphp
 
-<tr data-dashboard-row data-status-group="{{ $statusGroup }}" class="text-gray-900 transition-colors duration-150 hover:bg-gray-50">
+<tr data-dashboard-row data-status-group="{{ $statusGroup }}" data-search-text="{{ $searchText }}" class="text-gray-900 transition-colors duration-150 hover:bg-gray-50">
     <td class="whitespace-nowrap px-6 py-4 text-center">
         {{ $loop->iteration }}
     </td>

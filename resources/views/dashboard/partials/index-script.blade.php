@@ -1,4 +1,4 @@
-{{-- สคริปต์ของหน้า dashboard overview --}}
+{{-- เธชเธเธฃเธดเธเธ•เนเธเธญเธเธซเธเนเธฒ dashboard overview --}}
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script>
     function resetFilters() {
@@ -18,7 +18,6 @@
         const closeReviewerModal = document.getElementById('closeReviewerModal');
         const reviewerButtons = Array.from(document.querySelectorAll('[data-reviewer-modal-button]'));
         const statusFilterButtons = Array.from(document.querySelectorAll('.dashboard-status-filter'));
-        const overviewFilterButtons = Array.from(document.querySelectorAll('[data-overview-filter]'));
         const tableRows = Array.from(document.querySelectorAll('[data-dashboard-row]'));
         const searchInput = document.getElementById('searchInput');
         const emptyState = document.getElementById('empty-state');
@@ -28,6 +27,22 @@
             toggle.addEventListener('click', function () {
                 panel.classList.toggle('hidden');
                 chevron.classList.toggle('rotate-180');
+                const isExpanded = !panel.classList.contains('hidden');
+                toggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+                panel.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+            });
+        }
+
+        if (!window.__dashboardResetFiltersBound) {
+            window.__dashboardResetFiltersBound = true;
+
+            document.addEventListener('click', function (event) {
+                const resetButton = event.target.closest('[data-reset-filters]');
+                if (!resetButton) {
+                    return;
+                }
+
+                resetFilters();
             });
         }
 
@@ -45,10 +60,7 @@
                 button.classList.toggle('ring-2', isActive);
                 button.classList.toggle('ring-offset-2', isActive);
                 button.classList.toggle('ring-blue-300', isActive);
-            });
-
-            overviewFilterButtons.forEach((button) => {
-                button.classList.toggle('is-active', button.dataset.overviewFilter === status);
+                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             });
         };
 
@@ -58,9 +70,8 @@
 
             tableRows.forEach((row) => {
                 const statusMatches = activeStatusFilter === 'all' || row.dataset.statusGroup === activeStatusFilter;
-                const nameCell = row.querySelector('td:nth-child(2) .text-sm.font-medium');
-                const userName = nameCell ? nameCell.textContent.toLowerCase() : '';
-                const searchMatches = !searchTerm || userName.includes(searchTerm);
+                const searchText = (row.dataset.searchText || '').toLowerCase();
+                const searchMatches = !searchTerm || searchText.includes(searchTerm);
                 const matches = statusMatches && searchMatches;
 
                 row.style.display = matches ? '' : 'none';
@@ -92,7 +103,7 @@
 
             reviewerModalBody.innerHTML = reviewers.map((reviewer, index) => `
                 <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">ลำดับที่ ${index + 1}</div>
+                    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">เธฅเธณเธ”เธฑเธเธ—เธตเน ${index + 1}</div>
                     <div class="mt-1 text-sm font-semibold text-slate-900">${reviewer.label}: ${reviewer.name}</div>
                     <div class="mt-1 text-xs text-slate-500">${reviewer.position ?? '-'}</div>
                 </div>
@@ -130,42 +141,6 @@
         const centerValueEl = document.getElementById('overviewChartCenterValue');
         const centerLabelEl = document.getElementById('overviewChartCenterLabel');
         const centerSubLabelEl = document.getElementById('overviewChartCenterSubLabel');
-        const overviewFilterStateEl = document.getElementById('overviewFilterState');
-        const overviewClearFilterButton = document.getElementById('overviewClearFilterButton');
-        const overviewFilterStateClasses = {
-            'มอบหมาย': ['bg-red-50', 'text-red-700'],
-            'เริ่มกรอกข้อมูล': ['bg-orange-50', 'text-orange-700'],
-            'กำลังดำเนินการ': ['bg-blue-50', 'text-blue-700'],
-            'ประเมินเสร็จสิ้น': ['bg-green-50', 'text-green-700'],
-        };
-
-        const applyStatusFilter = (status) => {
-            clearStatusQuery();
-            activeStatusFilter = status || 'all';
-            setActiveStatusButton(activeStatusFilter);
-            applyDashboardFilters();
-
-            if (overviewFilterStateEl) {
-                Object.values(overviewFilterStateClasses).flat().forEach((className) => {
-                    overviewFilterStateEl.classList.remove(className);
-                });
-
-                if (activeStatusFilter !== 'all') {
-                    overviewFilterStateEl.textContent = `กรองอยู่: ${activeStatusFilter}`;
-                    (overviewFilterStateClasses[activeStatusFilter] || ['bg-blue-50', 'text-blue-700']).forEach((className) => {
-                        overviewFilterStateEl.classList.add(className);
-                    });
-                    overviewFilterStateEl.classList.remove('hidden');
-                } else {
-                    overviewFilterStateEl.textContent = '';
-                    overviewFilterStateEl.classList.add('hidden');
-                }
-            }
-
-            if (overviewClearFilterButton) {
-                overviewClearFilterButton.classList.toggle('hidden', activeStatusFilter === 'all');
-            }
-        };
 
         const resetOverviewCenter = () => {
             if (centerValueEl) {
@@ -240,14 +215,10 @@
                     },
                     onClick(event, elements, chart) {
                         if (!elements.length) {
-                            applyStatusFilter('all');
                             resetOverviewCenter();
                             return;
                         }
 
-                        const index = elements[0].index;
-                        const nextFilter = overviewChart.filters?.[index] || 'all';
-                        applyStatusFilter(activeStatusFilter === nextFilter ? 'all' : nextFilter);
                         updateOverviewCenter(chart, elements[0]);
                     },
                 },
@@ -260,25 +231,18 @@
             });
         });
 
-        overviewFilterButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const nextFilter = button.dataset.overviewFilter || 'all';
-                applyStatusFilter(activeStatusFilter === nextFilter ? 'all' : nextFilter);
-            });
-        });
-
-        if (overviewClearFilterButton) {
-            overviewClearFilterButton.addEventListener('click', () => {
-                applyStatusFilter('all');
-                resetOverviewCenter();
-            });
-        }
-
         if (searchInput) {
             searchInput.addEventListener('input', function () {
                 applyDashboardFilters();
             });
         }
+
+        const applyStatusFilter = (status) => {
+            clearStatusQuery();
+            activeStatusFilter = status || 'all';
+            setActiveStatusButton(activeStatusFilter);
+            applyDashboardFilters();
+        };
 
         applyStatusFilter(activeStatusFilter);
         resetOverviewCenter();

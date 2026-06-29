@@ -4,7 +4,7 @@
     <div class="evaluation-list-toolbar flex flex-col border-b pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="evaluation-toolbar-search flex flex-col gap-3 sm:flex-row">
             <div class="relative">
-                <x-search-bar placeholder="ค้นหาชื่อ, รายงาน..." />
+                <x-search-bar placeholder="ค้นหาในหน้านี้: ชื่อ, ชื่องาน, ผู้ประเมิน..." />
             </div>
         </div>
         <div class="evaluation-toolbar-actions flex flex-wrap justify-between gap-2">

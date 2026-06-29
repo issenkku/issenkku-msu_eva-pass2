@@ -11,6 +11,10 @@
 @endphp
 
 <div class="mx-4 flex flex-wrap justify-between gap-2 pt-3">
+    <div class="mb-3">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">กรองแบบเร็ว</div>
+        <div class="mt-1 text-sm text-slate-600">แตะป้ายสถานะเพื่อกรองตารางรายชื่อด้านล่าง</div>
+    </div>
     <div class="mb-6 flex flex-wrap gap-3">
         @foreach ($statusCounts as $status => $count)
             @php
@@ -18,11 +22,14 @@
                 $isActive = $isShowAll;
                 $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
                 $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
+                $ariaLabel = ($isShowAll ? 'แสดงทั้งหมด' : 'กรองสถานะ ' . $status) . ' จำนวน ' . $count . ' รายการ';
             @endphp
 
             <button
                 type="button"
                 data-status-filter="{{ $isShowAll ? 'all' : $status }}"
+                aria-pressed="{{ $isActive ? 'true' : 'false' }}"
+                aria-label="{{ $ariaLabel }}"
                 class="dashboard-status-filter inline-block rounded-full px-3 py-1 text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
             </button>

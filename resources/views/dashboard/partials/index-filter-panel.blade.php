@@ -3,6 +3,8 @@
     <button
         type="button"
         id="dashboardFilterToggle"
+        aria-controls="dashboardFilterPanel"
+        aria-expanded="{{ $hasDashboardFilters ? 'true' : 'false' }}"
         class="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-slate-50">
         <div class="flex items-center gap-2.5">
             <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -29,7 +31,10 @@
         </div>
     </button>
 
-    <div id="dashboardFilterPanel" class="{{ $hasDashboardFilters ? '' : 'hidden' }} border-t border-gray-100 px-5 pb-5 pt-2">
+    <div
+        id="dashboardFilterPanel"
+        aria-hidden="{{ $hasDashboardFilters ? 'false' : 'true' }}"
+        class="{{ $hasDashboardFilters ? '' : 'hidden' }} border-t border-gray-100 px-5 pb-5 pt-2">
         <form id="filterForm" method="get" class="space-y-1">
             <div class="flex flex-col space-y-3 md:flex-row md:space-x-4 md:space-y-0">
                 <div>
@@ -96,7 +101,7 @@
             <div class="flex flex-col space-y-3 pt-2 md:flex-row md:justify-end md:space-x-2 md:space-y-0 lg:justify-end">
                 <button
                     type="button"
-                    onclick="resetFilters()"
+                    data-reset-filters
                     class="rounded-lg bg-gray-200 px-5 py-2 text-gray-800 transition hover:bg-gray-300">
                     ล้างค่า
                 </button>

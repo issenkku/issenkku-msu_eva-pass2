@@ -5,25 +5,6 @@
     @php
         use Carbon\Carbon;
 
-        function formatThaiDate($date)
-        {
-            if (!$date) {
-                return '-';
-            }
-
-            Carbon::setLocale('th');
-            setlocale(LC_TIME, 'th_TH.UTF-8');
-
-            $thaiMonth = $date->translatedFormat('j F');
-            $buddhistYear = $date->year + 543;
-            $time = $date->format('H:i');
-
-            return [
-                'date' => "{$thaiMonth} {$buddhistYear}",
-                'time' => "{$time} น.",
-            ];
-        }
-
         // เรียงรายการประเมินจากใหม่ไปเก่าเพื่อให้ติดตามงานล่าสุดได้ง่าย
         $sortedEvaluations = $evaluations->sortByDesc(function ($evaluatorAssignment) {
             $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
