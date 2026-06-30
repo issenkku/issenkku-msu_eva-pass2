@@ -38,7 +38,14 @@ class ActivityLogController extends Controller
         }
 
         if ($request->filled('event') && $request->event !== 'all') {
-            $query->where('event', $request->event);
+            $event = (string) $request->event;
+            $query->where(function ($q) use ($event) {
+                $q->where('event', $event)
+                    ->orWhere(function ($manualQuery) use ($event) {
+                        $manualQuery->whereNull('event')
+                            ->where('description', $event);
+                    });
+            });
         }
 
         if ($request->filled('actor') && $request->actor !== 'all') {
@@ -107,12 +114,18 @@ class ActivityLogController extends Controller
             $activity->thai_created_at = $formatThai($date);
             $activity->thai_time = $date->format('H:i:s');
             $activity->ip_address = data_get($activity->properties?->toArray() ?? [], 'ip', '-');
+            $activity->event_label = $activity->event ? ucfirst($activity->event) : $activity->description;
 
             return $activity;
         });
 
         $logNames = Activity::query()->distinct()->pluck('log_name')->filter()->sort()->values();
-        $eventNames = Activity::query()->distinct()->pluck('event')->filter()->sort()->values();
+        $eventNames = Activity::query()->distinct()->pluck('event')
+            ->merge(Activity::query()->whereNull('event')->distinct()->pluck('description'))
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
         $activeFilterLabels = $this->activeFilterLabels($request, $logNames, $eventNames);
 
         return view('user.management.log', compact('activities', 'logNames', 'eventNames', 'activeFilterLabels'));

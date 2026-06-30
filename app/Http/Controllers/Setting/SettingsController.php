@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Setting;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting\Settings;
+use App\Support\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,6 +25,14 @@ class SettingsController extends Controller
             ? Settings::findOrFail($request->id)
             : Settings::first();
         $nameRequirement = $existingSetting ? 'sometimes' : 'required';
+        $before = $existingSetting?->only([
+            'university',
+            'faculty',
+            'notification_days',
+            'logo_path',
+            'background_path',
+            'use_white_background',
+        ]) ?? [];
 
         $request->validate([
             'university' => [
@@ -181,12 +190,39 @@ class SettingsController extends Controller
                 $data['background_path'] = null;
             }
 
-            Settings::updateOrCreate(
+            $setting = Settings::updateOrCreate(
                 ['id' => 1], // เงื่อนไขค้นหา
                 $data
             );
             $this->deleteBackgroundFiles($deleteBackgroundPaths->all());
             $message = 'บันทึกข้อมูลสำเร็จ!';
+        }
+
+        $setting->refresh();
+        $after = $setting->only([
+            'university',
+            'faculty',
+            'notification_days',
+            'logo_path',
+            'background_path',
+            'use_white_background',
+        ]);
+        $changes = collect($after)
+            ->filter(fn ($value, $key) => ($before[$key] ?? null) !== $value)
+            ->map(fn ($value, $key) => [
+                'old' => $before[$key] ?? null,
+                'new' => $value,
+            ])
+            ->all();
+
+        if ($changes !== []) {
+            AuditLog::record('ตั้งค่าระบบ', 'แก้ไขตั้งค่าระบบ', [
+                'setting_id' => $setting->id,
+                'changes' => $changes,
+                'deleted_background_paths' => $deleteBackgroundPaths->values()->all(),
+                'removed_logo' => $request->boolean('remove_logo'),
+                'removed_background' => $request->boolean('remove_background'),
+            ], $setting, $request->user());
         }
 
         return redirect()->route('settings.index')->with('success', $message);

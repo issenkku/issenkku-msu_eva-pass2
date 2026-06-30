@@ -8,6 +8,7 @@ use App\Models\Setting\Departments;
 use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Models\User;
+use App\Support\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -503,6 +504,8 @@ class UserController extends Controller
         }
 
         $validated = $request->validate($rules);
+        $rolesBefore = $user->roles()->pluck('name')->sort()->values()->all();
+        $passwordChanged = $request->filled('password');
         $educationHistory = $this->normalizeEducationHistory($validated['education_history'] ?? []);
         $validated['education_history'] = $educationHistory;
         $validated['bio'] = $this->buildEducationBio($educationHistory, $validated['bio'] ?? null);
@@ -516,6 +519,26 @@ class UserController extends Controller
         $user->save();
         // syncRoles เพื่อบันทึกบทบาทที่เลือกไว้
         $user->syncRoles($request->input('roles', []));
+        $rolesAfter = $user->roles()->pluck('name')->sort()->values()->all();
+
+        if ($rolesBefore !== $rolesAfter) {
+            AuditLog::record('สิทธิ์การใช้งาน', 'เปลี่ยนบทบาทผู้ใช้', [
+                'target_user_id' => $user->id,
+                'target_employee_id' => $user->employee_id,
+                'target_user_name' => $user->name,
+                'roles_before' => $rolesBefore,
+                'roles_after' => $rolesAfter,
+            ], $user, $request->user());
+        }
+
+        if ($passwordChanged) {
+            AuditLog::record('ความปลอดภัย', 'เปลี่ยนรหัสผ่านผู้ใช้', [
+                'target_user_id' => $user->id,
+                'target_employee_id' => $user->employee_id,
+                'target_user_name' => $user->name,
+                'changed_by_admin' => $request->user()?->id !== $user->id,
+            ], $user, $request->user());
+        }
 
         return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
@@ -546,7 +569,24 @@ class UserController extends Controller
                 ->with('error', 'ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้');
         }
 
+        $targets = User::whereIn('id', $userIds)
+            ->get(['id', 'employee_id', 'name'])
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'employee_id' => $user->employee_id,
+                'name' => $user->name,
+            ])
+            ->values()
+            ->all();
+
         $deletedCount = User::whereIn('id', $userIds)->delete();
+
+        AuditLog::record('จัดการผู้ใช้', 'ลบผู้ใช้แบบกลุ่ม', [
+            'deleted_count' => $deletedCount,
+            'target_user_ids' => $userIds->all(),
+            'targets' => $targets,
+            'skipped_current_user_id' => in_array($currentUserId, $validated['user_ids'], true) ? $currentUserId : null,
+        ], null, $request->user());
 
         return redirect()
             ->route('users.index')

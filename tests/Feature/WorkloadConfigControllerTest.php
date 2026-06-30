@@ -10,6 +10,7 @@ use App\Models\WorkloadFormField;
 use App\Models\WorkloadFormItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 
 test('workload config save skips item require subject when column is missing', function () {
@@ -341,5 +342,89 @@ test('workload config save stays within a query budget for a single existing gro
         ->assertOk()
         ->assertJson(['success' => true]);
 
-    expect(collect($queries)->count())->toBeLessThanOrEqual(18);
+    expect(collect($queries)->count())->toBeLessThanOrEqual(22);
+});
+
+test('workload config save creates audit log with actor', function () {
+    Role::create(['name' => 'admin']);
+    $admin = User::factory()->create([
+        'name' => 'Audit Admin',
+        'email' => 'audit-admin@example.test',
+    ]);
+    $admin->assignRole('admin');
+
+    $criteriaVersion = CriteriaVersion::factory()->create([
+        'created_by' => $admin->id,
+    ]);
+    $evaluationList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+    $quantityMainCriteria = QuantityMainCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'name' => 'ภาระงานหลัก',
+    ]);
+    $quantitySubCriteria = QuantitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $evaluationList->id,
+        'quantity_main_criteria_id' => $quantityMainCriteria->id,
+        'name' => '1.1 ภาระงานในหน้าที่',
+    ]);
+
+    $payload = [
+        'quant_sub_criteria_id' => $quantitySubCriteria->id,
+        'groups' => [
+            [
+                'id' => null,
+                'group_name' => 'เกณฑ์ปริมาณย่อย',
+                'sequence' => 1,
+                'items' => [
+                    [
+                        'id' => null,
+                        'item_name' => '1.1 ภาระงานในหน้าที่',
+                        'sequence' => 1,
+                        'require_subject' => false,
+                        'formula_logic' => 'A * C / B',
+                        'fields' => [
+                            [
+                                'label' => 'ค่าน้ำหนักคะแนน',
+                                'variable_name' => 'A',
+                                'field_type' => 'number',
+                            ],
+                            [
+                                'label' => 'หน่วยภาระงานมาตรฐาน',
+                                'variable_name' => 'B',
+                                'field_type' => 'number',
+                            ],
+                            [
+                                'label' => 'จำนวนภาระงาน',
+                                'variable_name' => 'C',
+                                'field_type' => 'number',
+                            ],
+                        ],
+                        'form_items' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $this->actingAs($admin, 'web')
+        ->postJson(route('workload-config.save'), $payload)
+        ->assertOk()
+        ->assertJson(['success' => true]);
+
+    $activity = Activity::query()
+        ->where('log_name', 'ตั้งค่าภาระงาน')
+        ->where('description', 'แก้ไขตั้งค่าภาระงาน')
+        ->latest('id')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->causer_id)->toBe($admin->id)
+        ->and($activity->causer_type)->toBe($admin->getMorphClass())
+        ->and($activity->subject_id)->toBe($quantitySubCriteria->id)
+        ->and($activity->subject_type)->toBe($quantitySubCriteria->getMorphClass())
+        ->and($activity->properties->get('quantity_sub_criteria_name'))->toBe('1.1 ภาระงานในหน้าที่')
+        ->and($activity->properties->get('groups_count'))->toBe(1)
+        ->and($activity->properties->get('items_count'))->toBe(1);
 });

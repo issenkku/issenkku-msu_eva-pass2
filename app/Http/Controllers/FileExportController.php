@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\ReportsExport;
 use App\Exports\SingleReportExport;
 use App\Models\Reports;
+use App\Support\AuditLog;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -21,12 +22,24 @@ class FileExportController extends Controller
             $query = $this->filteredAssignmentsQuery($request);
         }
 
+        AuditLog::record('ส่งออกข้อมูล', 'ส่งออกรายงานภาพรวม', [
+            'export_type' => 'dashboard',
+            'scope' => 'role_aware',
+            'filters' => $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']),
+        ], null, $user);
+
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
     public function adminExportDashboard(Request $request)
     {
         $query = $this->adminFilteredAssignmentsQuery($request);
+
+        AuditLog::record('ส่งออกข้อมูล', 'ส่งออกรายงานภาพรวม', [
+            'export_type' => 'dashboard',
+            'scope' => 'admin',
+            'filters' => $request->only(['search', 'year', 'start_time', 'end_time', 'department_name']),
+        ], null, $request->user());
 
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }

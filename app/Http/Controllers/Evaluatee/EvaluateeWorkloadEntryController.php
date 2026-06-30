@@ -25,7 +25,7 @@ class EvaluateeWorkloadEntryController extends Controller
     public function store(StoreWorkloadEntryRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $this->ensureReportEditable((int) $validated['report_id']);
+        $this->ensureReportEditable((int) $validated['report_id'], (int) $request->user()->id);
 
         if (empty($validated['workload_form_id']) && $request->filled('workload_form_item_id')) {
             $item = WorkloadFormItem::findOrFail($request->input('workload_form_item_id'));
@@ -92,7 +92,7 @@ class EvaluateeWorkloadEntryController extends Controller
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
-            $this->ensureReportEditable((int) $entry->report_id);
+            $this->ensureReportEditable((int) $entry->report_id, (int) $request->user()->id);
 
             $validated = $request->validated();
             unset($validated['report_id']);
@@ -168,7 +168,7 @@ class EvaluateeWorkloadEntryController extends Controller
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
-            $this->ensureReportEditable((int) $entry->report_id);
+            $this->ensureReportEditable((int) $entry->report_id, (int) request()->user()->id);
 
             EvidenceAnswer::where('workload_entry_id', $entry->id)->delete();
             $entry->delete();
@@ -350,11 +350,11 @@ class EvaluateeWorkloadEntryController extends Controller
         return (int) $subCriteria->evaluation_list_id;
     }
 
-    private function ensureReportEditable(int $reportId): void
+    private function ensureReportEditable(int $reportId, int $userId): void
     {
         $report = Reports::findOrFail($reportId);
         $isAssignedToUser = Assignments::where('report_id', $reportId)
-            ->where('evaluatee_id', auth()->id())
+            ->where('evaluatee_id', $userId)
             ->exists();
 
         if (! $isAssignedToUser) {

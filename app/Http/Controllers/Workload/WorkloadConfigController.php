@@ -10,6 +10,7 @@ use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use App\Models\WorkloadFormItem;
 use App\Services\WorkloadFormulaEvaluator;
+use App\Support\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -299,6 +300,17 @@ class WorkloadConfigController extends Controller
                 QuantitySubCriteriaGroup::whereIn('id', $deleteGroupIds)->delete();
             }
         });
+
+        AuditLog::record('ตั้งค่าภาระงาน', 'แก้ไขตั้งค่าภาระงาน', [
+            'quantity_sub_criteria_id' => $subCriteria->id,
+            'quantity_sub_criteria_name' => $subCriteria->name,
+            'quantity_main_criteria_id' => $subCriteria->quantity_main_criteria_id,
+            'quantity_main_criteria_name' => optional($subCriteria->mainCriteria)->name,
+            'criteria_version_id' => $subCriteria->criteria_version_id,
+            'groups_count' => count($validated['groups']),
+            'items_count' => collect($validated['groups'])
+                ->sum(fn (array $group) => count($group['items'] ?? [])),
+        ], $subCriteria, $request->user());
 
         return response()->json(['success' => true]);
     }

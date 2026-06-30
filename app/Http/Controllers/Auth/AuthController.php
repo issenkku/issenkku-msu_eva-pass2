@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Setting\Settings;
 use App\Models\User;
+use App\Support\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,12 @@ class AuthController extends Controller
         $decaySeconds = 60;
 
         if (RateLimiter::tooManyAttempts($key, $maxAttempts)) {
+            AuditLog::record('ความปลอดภัย', 'เข้าสู่ระบบถูกจำกัดชั่วคราว', [
+                'employee_id' => $request->input('employee_id'),
+                'ip' => $request->ip(),
+                'reason' => 'rate_limited',
+            ]);
+
             return response()->json([
                 'message' => 'คุณพยายามเข้าสู่ระบบมากเกินไป กรุณารอ 1 นาทีแล้วลองใหม่อีกครั้ง.',
             ], 429);
@@ -43,6 +50,12 @@ class AuthController extends Controller
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             RateLimiter::hit($key, $decaySeconds);
+            AuditLog::record('ความปลอดภัย', 'เข้าสู่ระบบไม่สำเร็จ', [
+                'employee_id' => $employeeId,
+                'ip' => $request->ip(),
+                'reason' => 'invalid_credentials',
+                'attempts' => RateLimiter::attempts($key),
+            ], $user);
 
             return response()->json([
                 'message' => 'กรุณากรอกหมายเลขประจำตัวและรหัสผ่านให้ถูกต้อง',
@@ -50,6 +63,12 @@ class AuthController extends Controller
         }
 
         if ($user->status === 'inactive') {
+            AuditLog::record('ความปลอดภัย', 'เข้าสู่ระบบไม่สำเร็จ', [
+                'employee_id' => $employeeId,
+                'ip' => $request->ip(),
+                'reason' => 'inactive_user',
+            ], $user);
+
             return response()->json([
                 'message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
             ], 413);

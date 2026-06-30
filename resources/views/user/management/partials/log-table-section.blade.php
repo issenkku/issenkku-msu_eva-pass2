@@ -69,7 +69,7 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <span class="badge {{ $eventClass }} px-3 py-2">
-                                                {{ $activity->event ? ucfirst($activity->event) : '-' }}
+                                                {{ $activity->event_label }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3">

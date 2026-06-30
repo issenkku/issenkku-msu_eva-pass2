@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -95,11 +97,24 @@ class RoleAndPermissionController extends Controller
             'users' => 'nullable|array',
         ]);
 
+        $roleNameBefore = $role->name;
+        $permissionsBefore = $role->permissions()->pluck('name')->sort()->values()->all();
+        $usersBefore = DB::table('model_has_roles')
+            ->where('role_id', $role->id)
+            ->where('model_type', User::class)
+            ->pluck('model_id')
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->values()
+            ->all();
+
         $role->update(['name' => $request->name]);
         $role->syncPermissions($request->permissions ?? []);
 
         // Get IDs of selected users
-        $selectedUserIds = $request->users ?? [];
+        $selectedUserIds = collect($request->users ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
         // Assign this role to newly selected users (if they don't already have it)
         foreach ($selectedUserIds as $userId) {
@@ -110,13 +125,37 @@ class RoleAndPermissionController extends Controller
         }
 
         // Optionally: Remove role from users who are no longer selected
-        $previousUsers = $role->users()->pluck('id')->toArray();
+        $previousUsers = DB::table('model_has_roles')
+            ->where('role_id', $role->id)
+            ->where('model_type', User::class)
+            ->pluck('model_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
         $toRemove = array_diff($previousUsers, $selectedUserIds);
 
         foreach ($toRemove as $userId) {
             $user = User::find($userId);
             $user->removeRole($role->name);
         }
+
+        $assignedUserIds = DB::table('model_has_roles')
+            ->where('role_id', $role->id)
+            ->where('model_type', User::class)
+            ->pluck('model_id')
+            ->map(fn ($id) => (int) $id)
+            ->sort()
+            ->values()
+            ->all();
+
+        AuditLog::record('สิทธิ์การใช้งาน', 'แก้ไขบทบาทและสิทธิ์', [
+            'role_id' => $role->id,
+            'role_name_before' => $roleNameBefore,
+            'role_name_after' => $role->name,
+            'permissions_before' => $permissionsBefore,
+            'permissions_after' => $role->permissions()->pluck('name')->sort()->values()->all(),
+            'user_ids_before' => $usersBefore,
+            'assigned_user_ids' => $assignedUserIds,
+        ], $role, $request->user());
 
         return redirect()->route('roles.index')->with('success', 'Role updated.');
     }
