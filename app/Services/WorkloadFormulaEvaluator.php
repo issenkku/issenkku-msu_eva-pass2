@@ -310,6 +310,9 @@ class WorkloadFormulaEvaluator
             if ($identifier === 'if') {
                 return $this->parseIfFunction($tokens, $index, $variables);
             }
+            if (in_array($identifier, ['sum', 'max', 'min'], true)) {
+                return $this->parseAggregateFunction($identifier, $tokens, $index, $variables);
+            }
 
             if (! array_key_exists($identifier, $variables)) {
                 throw ValidationException::withMessages([
@@ -363,6 +366,34 @@ class WorkloadFormulaEvaluator
         }
 
         return $this->toBool($condition) ? $trueValue : $falseValue;
+    }
+
+    private function parseAggregateFunction(string $function, array $tokens, int &$index, array $variables): float
+    {
+        if (! $this->matchTokenType($tokens, $index, '(')) {
+            throw ValidationException::withMessages([
+                'formula_logic' => ["รูปแบบ {$function} ไม่ถูกต้อง"],
+            ]);
+        }
+
+        $values = [];
+        $values[] = $this->toNumber($this->parseExpression($tokens, $index, $variables));
+
+        while ($this->matchTokenType($tokens, $index, ',')) {
+            $values[] = $this->toNumber($this->parseExpression($tokens, $index, $variables));
+        }
+
+        if (! $this->matchTokenType($tokens, $index, ')')) {
+            throw ValidationException::withMessages([
+                'formula_logic' => ["รูปแบบ {$function} ไม่ถูกต้อง (ต้องปิดวงเล็บ)"],
+            ]);
+        }
+
+        return match ($function) {
+            'sum' => array_sum($values),
+            'max' => max($values),
+            'min' => min($values),
+        };
     }
 
     private function matchTokenType(array $tokens, int &$index, string $type): bool

@@ -428,3 +428,67 @@ test('workload config save creates audit log with actor', function () {
         ->and($activity->properties->get('groups_count'))->toBe(1)
         ->and($activity->properties->get('items_count'))->toBe(1);
 });
+
+test('workload config save accepts sum max and min formula functions', function () {
+    Role::create(['name' => 'admin']);
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $criteriaVersion = CriteriaVersion::factory()->create([
+        'created_by' => $admin->id,
+    ]);
+    $evaluationList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+    $quantityMainCriteria = QuantityMainCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+    $quantitySubCriteria = QuantitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $evaluationList->id,
+        'quantity_main_criteria_id' => $quantityMainCriteria->id,
+    ]);
+
+    $payload = [
+        'quant_sub_criteria_id' => $quantitySubCriteria->id,
+        'groups' => [
+            [
+                'id' => null,
+                'group_name' => 'Aggregate group',
+                'sequence' => 1,
+                'items' => [
+                    [
+                        'id' => null,
+                        'item_name' => 'Aggregate item',
+                        'sequence' => 1,
+                        'require_subject' => false,
+                        'formula_logic' => 'SUM(A, MAX(B, C), MIN(A, C))',
+                        'fields' => [
+                            [
+                                'label' => 'A',
+                                'variable_name' => 'A',
+                                'field_type' => 'number',
+                            ],
+                            [
+                                'label' => 'B',
+                                'variable_name' => 'B',
+                                'field_type' => 'number',
+                            ],
+                            [
+                                'label' => 'C',
+                                'variable_name' => 'C',
+                                'field_type' => 'number',
+                            ],
+                        ],
+                        'form_items' => [],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    $this->actingAs($admin, 'web')
+        ->postJson(route('workload-config.save'), $payload)
+        ->assertOk()
+        ->assertJson(['success' => true]);
+});

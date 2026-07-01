@@ -215,6 +215,9 @@
                                                     <button class="chip" type="button">&lt;=</button>
                                                     <button class="chip" type="button">&gt;=</button>
                                                     <button class="chip" type="button">IF</button>
+                                                    <button class="chip" type="button">SUM</button>
+                                                    <button class="chip" type="button">MAX</button>
+                                                    <button class="chip" type="button">MIN</button>
                                                     <button class="chip" type="button">==</button>
                                                     <button class="chip" type="button">!=</button>
                                                 </div>

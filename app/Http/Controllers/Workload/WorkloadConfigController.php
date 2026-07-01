@@ -318,7 +318,7 @@ class WorkloadConfigController extends Controller
     protected function validateFormulaLogic(string $formula, array $fields): void
     {
         $allowedFunctions = [
-            'if', 'and', 'or', 'not', 'xor', 'xnor', 'nand', 'nor', 'true', 'false',
+            'if', 'sum', 'max', 'min', 'and', 'or', 'not', 'xor', 'xnor', 'nand', 'nor', 'true', 'false',
         ];
 
         $formula = preg_replace('/(?<![A-Za-z0-9_])item_\\*(?![A-Za-z0-9_])/i', 'item_star', $formula);
