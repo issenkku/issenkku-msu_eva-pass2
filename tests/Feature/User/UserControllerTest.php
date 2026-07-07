@@ -45,7 +45,11 @@ class UserControllerTest extends TestCase
         $this->actingAs($this->admin, 'web')
             ->get(route('users.index'))
             ->assertStatus(200)
-            ->assertViewIs('user.management.index');
+            ->assertViewIs('user.management.index')
+            ->assertSee('data-user-bulk-status-form', false)
+            ->assertSee('data-user-status-badge', false)
+            ->assertSee('bulkStatusUsersModal', false)
+            ->assertSee('status_filter_control', false);
     }
 
     public function test_non_admin_cannot_access_users_routes()
@@ -264,5 +268,212 @@ class UserControllerTest extends TestCase
         $this->assertDatabaseMissing('users', ['id' => $users[0]->id]);
         $this->assertDatabaseMissing('users', ['id' => $users[1]->id]);
         $this->assertDatabaseHas('users', ['id' => $this->admin->id]);
+    }
+
+    public function test_bulk_delete_keeps_one_active_admin()
+    {
+        $secondAdmin = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+        $secondAdmin->assignRole('admin');
+
+        $staff = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+        $staff->assignRole('staff');
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('users.bulk-destroy'), [
+                'user_ids' => [
+                    $this->admin->id,
+                    $secondAdmin->id,
+                    $staff->id,
+                ],
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(1, User::role('admin')->where('status', 'active')->count());
+        $this->assertDatabaseHas('users', ['id' => $this->admin->id, 'status' => 'active']);
+        $this->assertDatabaseMissing('users', ['id' => $secondAdmin->id]);
+        $this->assertDatabaseMissing('users', ['id' => $staff->id]);
+    }
+
+    public function test_admin_can_filter_users_by_status()
+    {
+        User::factory()->create([
+            'name' => 'Active Filter User',
+            'employee_id' => 'ACTIVE-FILTER',
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Inactive Filter User',
+            'employee_id' => 'INACTIVE-FILTER',
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'inactive',
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->get(route('users.index', ['status' => ['inactive']]))
+            ->assertStatus(200)
+            ->assertSee('Inactive Filter User')
+            ->assertDontSee('Active Filter User')
+            ->assertDontSee('ADMIN001');
+    }
+
+    public function test_admin_can_bulk_update_user_status()
+    {
+        $users = User::factory()->count(2)->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->patch(route('users.bulk-status'), [
+                'user_ids' => [
+                    $users[0]->id,
+                    $users[1]->id,
+                ],
+                'status' => 'inactive',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('users', ['id' => $users[0]->id, 'status' => 'inactive']);
+        $this->assertDatabaseHas('users', ['id' => $users[1]->id, 'status' => 'inactive']);
+    }
+
+    public function test_admin_cannot_bulk_deactivate_self()
+    {
+        $user = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->patch(route('users.bulk-status'), [
+                'user_ids' => [
+                    $user->id,
+                    $this->admin->id,
+                ],
+                'status' => 'inactive',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'status' => 'inactive']);
+        $this->assertDatabaseHas('users', ['id' => $this->admin->id, 'status' => 'active']);
+    }
+
+    public function test_bulk_inactive_keeps_one_active_admin()
+    {
+        $secondAdmin = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+        $secondAdmin->assignRole('admin');
+
+        $staff = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->position->id,
+            'status' => 'active',
+        ]);
+        $staff->assignRole('staff');
+
+        $this->actingAs($this->admin, 'web')
+            ->patch(route('users.bulk-status'), [
+                'user_ids' => [
+                    $this->admin->id,
+                    $secondAdmin->id,
+                    $staff->id,
+                ],
+                'status' => 'inactive',
+            ])
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(1, User::role('admin')->where('status', 'active')->count());
+        $this->assertDatabaseHas('users', ['id' => $this->admin->id, 'status' => 'active']);
+        $this->assertDatabaseHas('users', ['id' => $secondAdmin->id, 'status' => 'inactive']);
+        $this->assertDatabaseHas('users', ['id' => $staff->id, 'status' => 'inactive']);
+    }
+
+    public function test_admin_cannot_delete_the_last_active_admin()
+    {
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('users.destroy', $this->admin->id))
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->admin->id,
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_admin_cannot_update_the_last_active_admin_to_inactive()
+    {
+        $payload = [
+            'prefix' => $this->admin->prefix,
+            'name' => $this->admin->name,
+            'employee_id' => $this->admin->employee_id,
+            'phone' => $this->admin->phone,
+            'personnel_type' => $this->admin->personnel_type,
+            'bio' => $this->admin->bio,
+            'status' => 'inactive',
+            'position_id' => $this->admin->position_id,
+            'department_id' => $this->admin->department_id,
+            'email' => $this->admin->email,
+            'roles' => ['admin'],
+        ];
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('users.update', $this->admin->id), $payload)
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $this->admin->id,
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_admin_cannot_remove_admin_role_from_the_last_active_admin()
+    {
+        $payload = [
+            'prefix' => $this->admin->prefix,
+            'name' => $this->admin->name,
+            'employee_id' => $this->admin->employee_id,
+            'phone' => $this->admin->phone,
+            'personnel_type' => $this->admin->personnel_type,
+            'bio' => $this->admin->bio,
+            'status' => 'active',
+            'position_id' => $this->admin->position_id,
+            'department_id' => $this->admin->department_id,
+            'email' => $this->admin->email,
+            'roles' => ['staff'],
+        ];
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('users.update', $this->admin->id), $payload)
+            ->assertRedirect(route('users.index'))
+            ->assertSessionHas('error');
+
+        $this->assertTrue($this->admin->fresh()->hasRole('admin'));
+        $this->assertDatabaseHas('users', [
+            'id' => $this->admin->id,
+            'status' => 'active',
+        ]);
     }
 }

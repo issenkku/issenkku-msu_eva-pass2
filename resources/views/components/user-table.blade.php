@@ -10,6 +10,18 @@
     };
 
     // payload กลางสำหรับส่งเข้า modal แก้ไขผู้ใช้จากปุ่มในแต่ละแถว
+    $status = $employee['status'] ?? 'active';
+    $statusClass = match ($status) {
+        'active' => 'bg-green-100 text-green-700',
+        'inactive' => 'bg-gray-200 text-gray-700',
+        default => 'bg-gray-100 text-gray-700',
+    };
+    $statusLabel = match ($status) {
+        'active' => 'Active',
+        'inactive' => 'Inactive',
+        default => $status,
+    };
+
     $editUserPayload = [
         'id' => $employee['id'],
         'prefix' => $employee['prefix'] ?? '',
@@ -53,6 +65,11 @@
     <td class="p-4 text-center">{{ $employee['job_level'] ?? '-' }}</td>
     <td class="p-4 text-center">
         <span class="{{ $typeClass }} rounded-full px-3 py-1 text-sm">{{ $employee['type'] }}</span>
+    </td>
+    <td class="p-4 text-center">
+        <span class="{{ $statusClass }} rounded-full px-3 py-1 text-sm font-medium" data-user-status-badge>
+            {{ $statusLabel }}
+        </span>
     </td>
     <td class="p-4 text-center">{{ $employee['contact'] }}</td>
     <td class="space-x-2 p-4 text-center">

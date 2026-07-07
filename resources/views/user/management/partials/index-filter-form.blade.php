@@ -31,4 +31,9 @@
         label="ระดับตำแหน่งงาน"
         :options="$jobLevels->pluck('name', 'id')->toArray()"
     />
+    <x-filter
+        name="status"
+        label="สถานะ"
+        :options="['active' => 'Active', 'inactive' => 'Inactive']"
+    />
 </form>

@@ -15,6 +15,7 @@
         <th class="p-4 text-center">ตำแหน่งงาน</th>
         <th class="p-4 text-center">ระดับตำแหน่งงาน</th>
         <th class="p-4 text-center">ประเภท</th>
+        <th class="p-4 text-center">สถานะ</th>
         <th class="p-4 text-center">ติดต่อ</th>
         <th class="p-4 text-center">การดำเนินการ</th>
     </tr>

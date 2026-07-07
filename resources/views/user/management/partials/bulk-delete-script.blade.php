@@ -6,7 +6,14 @@
             const bulkDeleteButton = document.querySelector('[data-user-bulk-delete-open]');
             const selectedCount = document.querySelector('[data-user-bulk-delete-selected-count]');
             const selectedInputs = document.querySelector('[data-user-bulk-delete-selected-inputs]');
+            const bulkStatusForm = document.querySelector('[data-user-bulk-status-form]');
+            const bulkStatusInputs = document.querySelector('[data-user-bulk-status-selected-inputs]');
+            const bulkStatusValue = document.querySelector('[data-user-bulk-status-value]');
             const modalElement = document.getElementById('bulkDeleteUsersModal');
+            const statusModalElement = document.getElementById('bulkStatusUsersModal');
+            const statusModalCount = document.querySelector('[data-user-bulk-status-selected-count]');
+            const statusModalLabel = document.querySelector('[data-user-bulk-status-label]');
+            const statusConfirmButton = document.querySelector('[data-user-bulk-status-confirm]');
 
             const getSelectedIds = () => getCheckboxes()
                 .filter((checkbox) => checkbox.checked)
@@ -19,6 +26,10 @@
 
                 if (bulkDeleteButton) {
                     bulkDeleteButton.classList.toggle('hidden', selectedTotal === 0);
+                }
+
+                if (bulkStatusForm) {
+                    bulkStatusForm.classList.toggle('hidden', selectedTotal === 0);
                 }
 
                 if (selectedCount) {
@@ -46,6 +57,21 @@
                 });
             };
 
+            const fillBulkStatusInputs = () => {
+                if (!bulkStatusInputs) {
+                    return;
+                }
+
+                bulkStatusInputs.innerHTML = '';
+                getSelectedIds().forEach((id) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'user_ids[]';
+                    input.value = id;
+                    bulkStatusInputs.appendChild(input);
+                });
+            };
+
             selectAll?.addEventListener('change', () => {
                 getCheckboxes().forEach((checkbox) => {
                     checkbox.checked = selectAll.checked;
@@ -68,6 +94,45 @@
 
                 fillSelectedInputs();
                 bootstrap.Modal.getOrCreateInstance(modalElement).show();
+            });
+
+            bulkStatusForm?.addEventListener('submit', (event) => {
+                const submitter = event.submitter?.closest('[data-user-bulk-status-option]');
+                const status = submitter?.value || '';
+                const selectedTotal = getSelectedIds().length;
+                const statusLabel = submitter?.textContent?.trim() || status;
+
+                event.preventDefault();
+
+                if (bulkStatusValue) {
+                    bulkStatusValue.value = status;
+                }
+
+                if (selectedTotal === 0 || !status) {
+                    return;
+                }
+
+                fillBulkStatusInputs();
+
+                if (statusModalCount) {
+                    statusModalCount.textContent = String(selectedTotal);
+                }
+
+                if (statusModalLabel) {
+                    statusModalLabel.textContent = statusLabel;
+                }
+
+                if (statusModalElement) {
+                    bootstrap.Modal.getOrCreateInstance(statusModalElement).show();
+                }
+            });
+
+            statusConfirmButton?.addEventListener('click', () => {
+                if (!bulkStatusForm || !bulkStatusValue?.value || getSelectedIds().length === 0) {
+                    return;
+                }
+
+                bulkStatusForm.submit();
             });
 
             updateBulkDeleteState();

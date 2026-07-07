@@ -67,6 +67,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/', [UserController::class, 'store'])->name('store');
         Route::post('/import', [UserController::class, 'import'])->name('import');
         Route::delete('/bulk-destroy', [UserController::class, 'bulkDestroy'])->name('bulk-destroy');
+        Route::patch('/bulk-status', [UserController::class, 'bulkUpdateStatus'])->name('bulk-status');
         Route::put('/{user:id}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user:id}', [UserController::class, 'destroy'])->name('destroy');
         Route::post('/check-unique', [UserController::class, 'checkUnique'])->name('users.check-unique');

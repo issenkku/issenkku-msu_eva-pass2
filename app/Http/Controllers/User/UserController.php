@@ -510,6 +510,12 @@ class UserController extends Controller
         $validated['education_history'] = $educationHistory;
         $validated['bio'] = $this->buildEducationBio($educationHistory, $validated['bio'] ?? null);
 
+        if ($this->wouldRemoveLastActiveAdmin($user, $validated['status'], $request->input('roles', []))) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน');
+        }
+
         $user->fill(collect($validated)->except('password')->toArray());
 
         if ($request->filled('password')) {
@@ -545,6 +551,12 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($this->wouldRemoveLastActiveAdmin($user, 'inactive', [])) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน');
+        }
+
         $user->delete();
 
         return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
@@ -562,6 +574,7 @@ class UserController extends Controller
             ->map(fn ($id) => (int) $id)
             ->reject(fn (int $id) => $id === $currentUserId)
             ->values();
+        $userIds = $this->skipAdminsNeededToKeepOneActiveAdmin($userIds, $currentUserId);
 
         if ($userIds->isEmpty()) {
             return redirect()
@@ -591,6 +604,107 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->with('success', "ลบเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ");
+    }
+
+    public function bulkUpdateStatus(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'distinct', 'exists:users,id'],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        $currentUserId = (int) $request->user()->id;
+        $status = $validated['status'];
+        $userIds = collect($validated['user_ids'])
+            ->map(fn ($id) => (int) $id)
+            ->when($status === 'inactive', fn ($ids) => $ids->reject(fn (int $id) => $id === $currentUserId))
+            ->values();
+
+        if ($status === 'inactive') {
+            $userIds = $this->skipAdminsNeededToKeepOneActiveAdmin($userIds, $currentUserId);
+        }
+
+        if ($userIds->isEmpty()) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'ไม่สามารถปิดใช้งานบัญชีที่กำลังใช้งานอยู่ได้');
+        }
+
+        $targets = User::whereIn('id', $userIds)
+            ->get(['id', 'employee_id', 'name', 'status'])
+            ->map(fn (User $user) => [
+                'id' => $user->id,
+                'employee_id' => $user->employee_id,
+                'name' => $user->name,
+                'status_before' => $user->status,
+            ])
+            ->values()
+            ->all();
+
+        $updatedCount = User::whereIn('id', $userIds)->update(['status' => $status]);
+
+        AuditLog::record('จัดการผู้ใช้', 'เปลี่ยนสถานะผู้ใช้แบบกลุ่ม', [
+            'updated_count' => $updatedCount,
+            'target_user_ids' => $userIds->all(),
+            'targets' => $targets,
+            'status_after' => $status,
+            'skipped_current_user_id' => $status === 'inactive' && in_array($currentUserId, $validated['user_ids'], true)
+                ? $currentUserId
+                : null,
+        ], null, $request->user());
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', "เปลี่ยนสถานะเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$updatedCount} รายการ");
+    }
+
+    private function wouldRemoveLastActiveAdmin(User $user, string $nextStatus, array $nextRoles): bool
+    {
+        if ($user->status !== 'active' || ! $user->hasRole('admin')) {
+            return false;
+        }
+
+        $keepsActiveAdmin = $nextStatus === 'active' && in_array('admin', $nextRoles, true);
+        if ($keepsActiveAdmin) {
+            return false;
+        }
+
+        return User::role('admin')
+            ->where('status', 'active')
+            ->where('id', '!=', $user->id)
+            ->doesntExist();
+    }
+
+    private function skipAdminsNeededToKeepOneActiveAdmin($userIds, ?int $preferredUserId = null)
+    {
+        $userIds = collect($userIds)->map(fn ($id) => (int) $id)->values();
+        $activeAdminIds = User::role('admin')
+            ->where('status', 'active')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id);
+
+        if ($activeAdminIds->isEmpty()) {
+            return $userIds;
+        }
+
+        $selectedActiveAdminIds = $userIds->intersect($activeAdminIds)->values();
+        if ($selectedActiveAdminIds->isEmpty()) {
+            return $userIds;
+        }
+
+        $remainingActiveAdminIds = $activeAdminIds->diff($selectedActiveAdminIds);
+        if ($remainingActiveAdminIds->isNotEmpty()) {
+            return $userIds;
+        }
+
+        $adminIdToKeep = $preferredUserId && $selectedActiveAdminIds->contains($preferredUserId)
+            ? $preferredUserId
+            : $selectedActiveAdminIds->first();
+
+        return $userIds
+            ->reject(fn (int $id) => $id === $adminIdToKeep)
+            ->values();
     }
 
     private function normalizeEducationHistory(array $entries): ?array
