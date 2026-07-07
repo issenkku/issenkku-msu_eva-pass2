@@ -8,6 +8,7 @@ use App\Models\Setting\Positions;
 use App\Models\Setting\Departments;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -120,6 +121,30 @@ class PositionSettingTest extends TestCase
             ])
             ->assertRedirect(route('positions.index'))
             ->assertSessionHas('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+
+        $this->assertDatabaseMissing('positions', [
+            'id' => $position->id,
+        ]);
+    }
+
+    public function test_admin_can_delete_position_when_assignment_position_columns_are_missing()
+    {
+        Schema::dropIfExists('assignments');
+        Schema::dropIfExists('assignment_datas');
+        Schema::create('assignment_datas', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('evaluator_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->date('start_time');
+            $table->date('end_time');
+            $table->timestamps();
+        });
+
+        $position = Positions::create(['name' => 'เธเธญเธฅเธฑเธกเธเนเธซเธฒเธข']);
+
+        $this->actingAs($this->admin, 'web')
+            ->delete(route('positions.destroy', $position->id))
+            ->assertRedirect(route('positions.index'))
+            ->assertSessionHas('success');
 
         $this->assertDatabaseMissing('positions', [
             'id' => $position->id,

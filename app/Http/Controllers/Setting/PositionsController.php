@@ -113,9 +113,16 @@ class PositionsController extends Controller
             return redirect()->route('positions.index')->with('error', 'ไม่พบข้อมูลตำแหน่งที่ต้องการลบ อาจถูกลบไปแล้ว');
         }
 
+        $hasEvaluatorPositionColumn = Schema::hasColumn('assignment_datas', 'evaluator_position_id');
+        $hasEvaluateePositionColumn = Schema::hasColumn('assignment_datas', 'evaluatee_position_id');
+
         $userCount = $positions->user()->count();
-        $evaluatorAssignmentCount = AssignmentData::where('evaluator_position_id', $positions->id)->count();
-        $evaluateeAssignmentCount = AssignmentData::where('evaluatee_position_id', $positions->id)->count();
+        $evaluatorAssignmentCount = $hasEvaluatorPositionColumn
+            ? AssignmentData::where('evaluator_position_id', $positions->id)->count()
+            : 0;
+        $evaluateeAssignmentCount = $hasEvaluateePositionColumn
+            ? AssignmentData::where('evaluatee_position_id', $positions->id)->count()
+            : 0;
 
         $bindings = [];
 
