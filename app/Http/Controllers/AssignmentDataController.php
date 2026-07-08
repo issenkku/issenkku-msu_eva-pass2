@@ -47,6 +47,11 @@ class AssignmentDataController extends Controller
      */
     public function create()
     {
+        return $this->renderCreateForm();
+    }
+
+    private function renderCreateForm(array $prefill = [])
+    {
         $report_data = $this->availableReportData();
         $users = User::with(['roles', 'position', 'department'])->get();
         $evaluatorUsers = $users->filter(fn ($user) => $user->hasRole('ผู้ประเมิน'))->values();
@@ -58,8 +63,39 @@ class AssignmentDataController extends Controller
             'users',
             'evaluatorUsers',
             'directorUsers',
-            'managerUsers'
+            'managerUsers',
+            'prefill'
         ));
+    }
+
+    public function copy(AssignmentData $assignmentData)
+    {
+        $assignmentData->load(['assignments.report']);
+
+        return $this->renderCreateForm($this->buildCopyPrefill($assignmentData));
+    }
+
+    private function buildCopyPrefill(AssignmentData $assignmentData): array
+    {
+        $stageOrder = collect(AssignmentFlow::stagesFor($assignmentData))
+            ->values()
+            ->mapWithKeys(fn (string $stage, int $index) => [$stage => $index + 1])
+            ->all();
+
+        return [
+            'start_time' => $assignmentData->start_time
+                ? Carbon::parse($assignmentData->start_time)->addYearNoOverflow()->toDateString()
+                : null,
+            'end_time' => $assignmentData->end_time
+                ? Carbon::parse($assignmentData->end_time)->addYearNoOverflow()->toDateString()
+                : null,
+            'report_data_id' => $assignmentData->assignments->first()?->report?->report_data_id,
+            'evaluator_id' => $assignmentData->evaluator_id,
+            'director_id' => $assignmentData->director_id,
+            'manager_id' => $assignmentData->manager_id,
+            'stage_order' => $stageOrder,
+            'evaluatees' => $assignmentData->assignments->pluck('evaluatee_id')->values()->all(),
+        ];
     }
 
     /**

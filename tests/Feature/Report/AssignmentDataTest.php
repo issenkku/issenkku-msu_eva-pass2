@@ -3,10 +3,12 @@
 namespace Tests\Feature\Report;
 
 use Tests\TestCase;
+use App\Models\Assignments;
 use App\Models\User;
 use App\Models\AssignmentData;
 use App\Models\CriteriaVersion;
 use App\Models\ReportData;
+use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +77,74 @@ class AssignmentDataTest extends TestCase
             ->assertStatus(200)
             ->assertSee('data-stage-order-select', false)
             ->assertSee('normalizeStageOrdersAfterChange', false);
+    }
+
+    public function test_admin_can_open_copy_assignment_form_prefilled_from_existing_round(): void
+    {
+        $evaluateeOne = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluateeTwo = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $director = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $manager = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+
+        $assignmentData = AssignmentData::factory()->create([
+            'evaluator_id' => $evaluator->id,
+            'evaluator_position_id' => $evaluator->position_id,
+            'director_id' => $director->id,
+            'director_position_id' => $director->position_id,
+            'manager_id' => $manager->id,
+            'manager_position_id' => $manager->position_id,
+            'evaluation_flow' => ['director', 'evaluator', 'manager'],
+            'start_time' => '2025-08-01',
+            'end_time' => '2025-08-31',
+        ]);
+
+        foreach ([$evaluateeOne, $evaluateeTwo] as $evaluatee) {
+            $report = Reports::factory()->create([
+                'report_data_id' => $this->reportData->id,
+                'status' => 'Completed',
+            ]);
+
+            Assignments::factory()->create([
+                'assignment_data_id' => $assignmentData->id,
+                'report_id' => $report->id,
+                'evaluatee_id' => $evaluatee->id,
+            ]);
+        }
+
+        $this->actingAs($this->admin, 'web')
+            ->get(route('assignment-data.copy', $assignmentData))
+            ->assertStatus(200)
+            ->assertViewIs('assignment-data.create')
+            ->assertViewHas('prefill', function (array $prefill) use ($evaluateeOne, $evaluateeTwo, $evaluator, $director, $manager) {
+                return $prefill['start_time'] === '2026-08-01'
+                    && $prefill['end_time'] === '2026-08-31'
+                    && $prefill['report_data_id'] === $this->reportData->id
+                    && $prefill['evaluator_id'] === $evaluator->id
+                    && $prefill['director_id'] === $director->id
+                    && $prefill['manager_id'] === $manager->id
+                    && $prefill['stage_order'] === ['director' => 1, 'evaluator' => 2, 'manager' => 3]
+                    && $prefill['evaluatees'] === [$evaluateeOne->id, $evaluateeTwo->id];
+            });
+
+        $this->assertDatabaseCount('assignment_datas', 1);
+        $this->assertDatabaseCount('reports', 2);
+        $this->assertDatabaseCount('assignments', 2);
     }
 
     public function test_non_admin_cannot_access_assignment_data_routes()

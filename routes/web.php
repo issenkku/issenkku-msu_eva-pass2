@@ -85,6 +85,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::get('/', [AssignmentDataController::class, 'index'])->name('index');
         Route::get('/create', [AssignmentDataController::class, 'create'])->name('create');
         Route::post('/', [AssignmentDataController::class, 'store'])->name('store');
+        Route::get('/{assignmentData}/copy', [AssignmentDataController::class, 'copy'])->name('copy');
         Route::get('/{assignmentData}', [AssignmentDataController::class, 'show'])->name('show');
         Route::get('/{assignmentData}/edit', [AssignmentDataController::class, 'edit'])->name('edit');
         Route::put('/{assignmentData}', [AssignmentDataController::class, 'update'])->name('update');

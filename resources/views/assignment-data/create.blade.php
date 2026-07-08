@@ -9,9 +9,10 @@
     <div class="bg-gray-50 min-h-screen py-8">
         <div class="py-12 max-w-6xl mx-auto px-4">
             @php
-                $startTimeValue = old('start_time');
-                $endTimeValue = old('end_time');
-                $currentReportDataId = null;
+                $prefill = $prefill ?? [];
+                $startTimeValue = old('start_time', $prefill['start_time'] ?? null);
+                $endTimeValue = old('end_time', $prefill['end_time'] ?? null);
+                $currentReportDataId = $prefill['report_data_id'] ?? null;
             @endphp
 
             @include('assignment-data.partials.create-page-header')
@@ -27,7 +28,7 @@
                     $departmentOptions = $users->pluck('department.department_name')->filter()->unique()->sort()->values();
                     $positionOptions = $users->pluck('position.name')->filter()->unique()->sort()->values();
                     // เก็บค่าที่ผู้ใช้เลือกไว้ผ่าน old() เพื่อให้ฟอร์มไม่รีเซ็ตเมื่อ validation ไม่ผ่าน
-                    $selectedEvaluatees = collect(old('evaluatees', []))->map(fn ($id) => (int) $id)->all();
+                    $selectedEvaluatees = collect(old('evaluatees', $prefill['evaluatees'] ?? []))->map(fn ($id) => (int) $id)->all();
                     $selectedEvaluateeUsers = $users->whereIn('id', $selectedEvaluatees);
                     // config นี้คุมเฉพาะหน้าตา/โครง UI ของ block ผู้รับการประเมิน
                     $evaluateesUi = [
@@ -54,7 +55,8 @@
                             'empty_text' => 'ยังไม่ได้เลือกผู้ประเมิน/หัวหน้างาน',
                             'selected_label' => 'ผู้ประเมิน/หัวหน้างานที่เลือก',
                             'available_count' => $evaluatorUsers->count(),
-                            'order' => old('stage_order.evaluator', 1),
+                            'order' => old('stage_order.evaluator', $prefill['stage_order']['evaluator'] ?? 1),
+                            'value' => old('evaluator_id', $prefill['evaluator_id'] ?? null),
                             'wrapper_class' => 'bg-green-50 border-green-200',
                             'badge_class' => 'bg-green-600',
                             'focus_class' => 'focus:ring-green-500',
@@ -73,7 +75,8 @@
                             'empty_text' => 'ยังไม่ได้เลือกกรรมการ',
                             'selected_label' => 'กรรมการที่เลือก',
                             'available_count' => $directorUsers->count(),
-                            'order' => old('stage_order.director', 2),
+                            'order' => old('stage_order.director', $prefill['stage_order']['director'] ?? 2),
+                            'value' => old('director_id', $prefill['director_id'] ?? null),
                             'wrapper_class' => 'bg-amber-50 border-amber-200',
                             'badge_class' => 'bg-amber-600',
                             'focus_class' => 'focus:ring-amber-500',
@@ -92,7 +95,8 @@
                             'empty_text' => 'ยังไม่ได้เลือกผู้บริหาร',
                             'selected_label' => 'ผู้บริหารที่เลือก',
                             'available_count' => $managerUsers->count(),
-                            'order' => old('stage_order.manager', 3),
+                            'order' => old('stage_order.manager', $prefill['stage_order']['manager'] ?? 3),
+                            'value' => old('manager_id', $prefill['manager_id'] ?? null),
                             'wrapper_class' => 'bg-rose-50 border-rose-200',
                             'badge_class' => 'bg-rose-600',
                             'focus_class' => 'focus:ring-rose-500',

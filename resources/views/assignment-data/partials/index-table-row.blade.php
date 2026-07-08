@@ -73,22 +73,51 @@
         </span>
     </td>
 
-    <td class="px-4 py-3 align-top text-sm font-medium">
-        <div class="flex items-center space-x-2">
-            <a
-                href="{{ route('assignment-data.edit', $assignmentRow['model']->id) }}"
-                class="px-3 py-1.5 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600 shadow-sm transition-all flex items-center"
-            >
-                <i class="fas fa-edit mr-1"></i>แก้ไข
-            </a>
+    <td class="px-4 py-3 align-top text-sm font-medium whitespace-nowrap">
+        <div class="dropdown">
             <button
                 type="button"
-                data-delete-assignment
-                data-assignment-id="{{ $assignmentRow['model']->id }}"
-                class="px-3 py-1.5 bg-red-500 text-white text-xs rounded-lg hover:bg-red-600 shadow-sm transition-all flex items-center"
+                class="inline-flex h-9 min-w-24 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 shadow-sm transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                data-bs-toggle="dropdown"
+                data-bs-boundary="viewport"
+                aria-expanded="false"
             >
-                <i class="fas fa-trash mr-1"></i>ลบ
+                <i class="fas fa-ellipsis-h"></i>
+                <span>จัดการ</span>
             </button>
+
+            <ul class="dropdown-menu dropdown-menu-end min-w-[10rem] rounded-lg border border-slate-200 p-1 shadow-lg">
+                <li>
+                    <a
+                        href="{{ route('assignment-data.edit', $assignmentRow['model']->id) }}"
+                        class="dropdown-item flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700"
+                    >
+                        <i class="fas fa-edit text-yellow-500"></i>
+                        <span>แก้ไข</span>
+                    </a>
+                </li>
+                <li>
+                    <a
+                        href="{{ route('assignment-data.copy', $assignmentRow['model']->id) }}"
+                        class="dropdown-item flex items-center gap-2 rounded-md px-3 py-2 text-sm text-slate-700"
+                    >
+                        <i class="fas fa-copy text-blue-500"></i>
+                        <span>คัดลอก</span>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                    <button
+                        type="button"
+                        data-delete-assignment
+                        data-assignment-id="{{ $assignmentRow['model']->id }}"
+                        class="dropdown-item flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-red-600"
+                    >
+                        <i class="fas fa-trash"></i>
+                        <span>ลบ</span>
+                    </button>
+                </li>
+            </ul>
         </div>
     </td>
 </tr>
