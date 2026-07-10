@@ -10,6 +10,28 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
+test('login assets use https behind the trusted local UAT proxy', function () {
+    $response = $this
+        ->withServerVariables([
+            'REMOTE_ADDR' => '127.0.0.1',
+            'HTTP_HOST' => 'msu-eva.test:8443',
+            'SERVER_NAME' => 'msu-eva.test',
+            'SERVER_PORT' => '8000',
+        ])
+        ->withHeaders([
+            'Host' => 'msu-eva.test:8443',
+            'X-Forwarded-Host' => 'msu-eva.test:8443',
+            'X-Forwarded-Port' => '8443',
+            'X-Forwarded-Proto' => 'https',
+        ])
+        ->get('/login');
+
+    $response
+        ->assertOk()
+        ->assertSee('https://msu-eva.test:8443/favicon-msu.png', false)
+        ->assertDontSee('http://msu-eva.test:8443/favicon-msu.png', false);
+});
+
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
@@ -19,8 +41,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertOk();
-    $response->assertJsonStructure(['redirect']);
+    $response->assertRedirect(route('home'));
 });
 
 test('users can not authenticate with invalid password', function () {
