@@ -4,19 +4,6 @@
             <h2>{{ $groupView['name'] ?? '' }}</h2>
         </div>
         <div class="workload-panel-body">
-            <div class="workload-toolbar">
-                <span class="workload-select">
-                    <span>{{ $groupView['name'] ?? '' }}</span>
-                </span>
-                <div class="workload-toolbar-columns">
-                    @forelse(($groupView['field_definitions'] ?? []) as $fieldLabel)
-                        <span>{{ $fieldLabel }}</span>
-                    @empty
-                        <span>-</span>
-                    @endforelse
-                </div>
-            </div>
-
             @forelse(($groupView['items'] ?? []) as $itemView)
                 <details class="workload-item-dropdown">
                     <summary class="workload-item-summary">

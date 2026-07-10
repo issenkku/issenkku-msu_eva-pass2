@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Evaluatee;
 
 use App\Http\Controllers\Controller;
+use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
 use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
@@ -10,6 +11,7 @@ use App\Models\Reports;
 use App\Models\Subject;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
+use App\Services\PreviousWorkloadImportService;
 use App\Support\EvaluateeWorkloadModalData;
 use App\Support\EvaluateeWorkloadViewData;
 use Illuminate\Http\Request;
@@ -18,7 +20,7 @@ class EvaluationWorkloadController extends Controller
 {
     private array $editableStatuses = ['Draft', 'Assigned'];
 
-    public function index(Request $request)
+    public function index(Request $request, PreviousWorkloadImportService $previousWorkloadImporter)
     {
         $reportId = $request->query('report_id');
         $quantitySubCriteriaId = $request->query('quantity_sub_criteria_id');
@@ -31,6 +33,7 @@ class EvaluationWorkloadController extends Controller
         $subjects = Subject::where('is_active', true)
             ->orderBy('code')
             ->get();
+        $importablePreviousReports = collect();
 
         if ($reportId) {
             $report = Reports::with([
@@ -38,6 +41,11 @@ class EvaluationWorkloadController extends Controller
             ])->find($reportId);
 
             $readonly = ! $this->canEditReport($report);
+
+            if ($report && ! $readonly && $request->user()) {
+                $importablePreviousReports = $previousWorkloadImporter
+                    ->candidatePreviousReports($report, (int) $request->user()->id);
+            }
 
             if ($report && $report->reportData && $report->reportData->criteriaVersion) {
                 $quantitySubCriterias = $report->reportData
@@ -131,6 +139,7 @@ class EvaluationWorkloadController extends Controller
             'evidenceLinksByEntryId' => $evidenceLinksByEntryId,
             'workloadView' => $workloadView,
             'workloadModal' => $workloadModal,
+            'importablePreviousReports' => $importablePreviousReports,
         ]);
     }
 
@@ -189,6 +198,49 @@ class EvaluationWorkloadController extends Controller
         return redirect()
             ->back()
             ->with('success', 'บันทึกคะแนนภาระงานรวมเรียบร้อยแล้ว');
+    }
+
+    public function importPreviousWorkload(Request $request, int $id, PreviousWorkloadImportService $importer)
+    {
+        $report = Reports::findOrFail($id);
+
+        if (! $this->canEditReport($report)) {
+            abort(403, 'Report is readonly');
+        }
+
+        $isAssignedToUser = Assignments::where('report_id', $report->id)
+            ->where('evaluatee_id', $request->user()->id)
+            ->exists();
+
+        if (! $isAssignedToUser) {
+            abort(403, 'Unauthorized evaluatee');
+        }
+
+        $validated = $request->validate([
+            'source_report_id' => 'nullable|integer|exists:reports,id',
+        ]);
+
+        $result = $importer->importForReport(
+            $report,
+            (int) $request->user()->id,
+            isset($validated['source_report_id']) ? (int) $validated['source_report_id'] : null
+        );
+
+        if (! $result['source_report_id']) {
+            return redirect()
+                ->back()
+                ->with('info', 'ไม่พบข้อมูลจากรอบก่อนหน้าที่สามารถนำเข้าได้');
+        }
+
+        if ($result['copied_entries'] === 0) {
+            return redirect()
+                ->back()
+                ->with('info', 'ข้อมูลจากรอบก่อนหน้ามีอยู่ในรอบนี้แล้ว');
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "นำเข้าข้อมูลจากรอบก่อนหน้า {$result['copied_entries']} รายการเรียบร้อยแล้ว");
     }
 
     private function canEditReport(?Reports $report): bool

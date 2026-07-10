@@ -1,4 +1,30 @@
 {{-- ความคิดเห็นจากผู้ประเมินในหน้าผู้ถูกประเมิน แยกจากหน้าแม่เพื่อลด block HTML ซ้ำ --}}
+@php
+    $roleComments = collect([
+        [
+            'title' => 'ความคิดเห็นจากผู้ประเมิน',
+            'value' => data_get($report, 'evaluator_comment'),
+        ],
+        [
+            'title' => 'ความคิดเห็นจากกรรมการ',
+            'value' => data_get($report, 'director_comment'),
+        ],
+        [
+            'title' => 'ความคิดเห็นจากผู้บริหาร',
+            'value' => data_get($report, 'manager_comment'),
+        ],
+    ])->filter(fn (array $comment) => filled($comment['value']))->values();
+
+    if ($roleComments->isEmpty() && filled(data_get($report, 'comment'))) {
+        $roleComments = collect([
+            [
+                'title' => 'ความคิดเห็นจากผู้ประเมิน',
+                'value' => data_get($report, 'comment'),
+            ],
+        ]);
+    }
+@endphp
+
 <div class="mt-8 rounded-lg border border-blue-200 bg-purple-50 p-6">
     <h3 class="mb-4 flex items-center text-lg font-semibold text-purple-900">
         <svg class="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -12,15 +38,22 @@
         ความคิดเห็นจากผู้ประเมิน
     </h3>
 
-    @if (isset($report->comment) && !empty($report->comment))
-        <div class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-            <div class="prose max-w-none text-gray-700">
-                {!! nl2br(e($report->comment)) !!}
-            </div>
+    @if ($roleComments->isNotEmpty())
+        <div class="space-y-4">
+            @foreach ($roleComments as $comment)
+                <div class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
+                    <div class="mb-2 text-sm font-semibold text-gray-800">{{ $comment['title'] }}</div>
+                    <div class="prose max-w-none text-gray-700">
+                        {!! nl2br(e($comment['value'])) !!}
+                    </div>
+                </div>
+            @endforeach
         </div>
     @else
         <div class="rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
-            <p class="italic text-gray-500">ไม่มีความคิดเห็นเพิ่มเติม</p>
+            <div class="italic text-gray-500">
+                ไม่มีความคิดเห็นเพิ่มเติม
+            </div>
         </div>
     @endif
 </div>

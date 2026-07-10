@@ -117,6 +117,24 @@ test('evaluation form action buttons render data-hook based draft submit trigger
         ->not->toContain('onclick="setFormStatus(\'Draft\')"');
 });
 
+test('evaluatee evaluator comment partial renders all filled role comments', function () {
+    $report = (object) [
+        'comment' => 'legacy combined comment',
+        'evaluator_comment' => 'evaluator says good',
+        'director_comment' => null,
+        'manager_comment' => 'manager says read books',
+    ];
+
+    $html = view('partials.evaluatee-evaluator-comment', [
+        'report' => $report,
+    ])->render();
+
+    expect($html)
+        ->toContain('evaluator says good')
+        ->toContain('manager says read books')
+        ->not->toContain('legacy combined comment');
+});
+
 test('evaluator dashboard form actions render data-hook based submit trigger', function () {
     $html = view('evaluator_dashboard.partials.form-actions')->render();
 
@@ -158,4 +176,28 @@ test('quality table renders data-hook based checkboxes', function () {
     expect($html)
         ->toContain('data-quality-checkbox')
         ->not->toContain('onchange="handleQualityCheckboxChange(this)"');
+});
+
+test('workload unsaved back confirmation uses system modal instead of native confirm', function () {
+    $actionsHtml = view('evaluatee.partials.workload-actions', [
+        'readonly' => false,
+        'reportId' => 10,
+        'workloadTotalScore' => 3,
+        'savedWorkloadScoreC' => null,
+        'quantitySubCriteriaId' => 5,
+        'importablePreviousReports' => collect(),
+    ])->render();
+    $scriptHtml = view('evaluatee.partials.workload-script-save-reminder')->render();
+
+    expect($actionsHtml)
+        ->toContain('data-workload-unsaved-modal')
+        ->toContain('data-workload-unsaved-confirm')
+        ->toContain('ยังไม่ได้บันทึกภาระงาน')
+        ->toContain('อยู่หน้านี้ต่อ')
+        ->toContain('ย้อนกลับ');
+
+    expect($scriptHtml)
+        ->toContain('data-workload-unsaved-modal')
+        ->not->toContain('window.confirm')
+        ->not->toContain('confirm(');
 });

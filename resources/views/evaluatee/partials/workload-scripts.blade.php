@@ -7,5 +7,6 @@
 @include('evaluatee.partials.workload-script-subject-modal')
 @include('evaluatee.partials.workload-script-subject-form')
 @include('evaluatee.partials.workload-script-evidence-links')
+@include('evaluatee.partials.workload-script-import-previous')
 @include('evaluatee.partials.workload-script-flash-autohide')
 @include('evaluatee.partials.workload-script-save-reminder')

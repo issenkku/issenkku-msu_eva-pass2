@@ -13,6 +13,19 @@
     </a>
 
     @unless($readonly)
+        <form
+            method="POST"
+            action="{{ route('evaluatee.import-previous-workload', $reportId) }}"
+            data-import-previous-workload-form
+        >
+            @csrf
+            <input type="hidden" name="source_report_id" value="" data-import-previous-workload-source-input>
+            <button type="submit" class="workload-import-btn">
+                <i class="fas fa-file-import"></i>
+                นำเข้าจากรอบก่อนหน้า
+            </button>
+        </form>
+
         <form method="POST" id="workloadScoreForm" action="{{ route('evaluatee.workload-score.store') }}">
             @csrf
             <input type="hidden" name="report_id" value="{{ $reportId }}">
@@ -24,3 +37,90 @@
         </form>
     @endunless
 </div>
+
+@unless($readonly)
+    <div class="workload-unsaved-confirm" data-workload-unsaved-modal hidden>
+        <div class="workload-unsaved-confirm-backdrop" data-workload-unsaved-cancel></div>
+        <div
+            class="workload-unsaved-confirm-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="workloadUnsavedConfirmTitle"
+        >
+            <div class="workload-unsaved-confirm-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div class="workload-unsaved-confirm-content">
+                <h2 id="workloadUnsavedConfirmTitle">ยังไม่ได้บันทึกภาระงาน</h2>
+                <p>
+                    มีข้อมูลภาระงานที่ยังไม่ได้บันทึก หากย้อนกลับตอนนี้ข้อมูลล่าสุดอาจไม่ถูกบันทึกไว้
+                </p>
+            </div>
+            <div class="workload-unsaved-confirm-actions">
+                <button type="button" class="workload-unsaved-confirm-cancel" data-workload-unsaved-cancel>
+                    อยู่หน้านี้ต่อ
+                </button>
+                <button type="button" class="workload-unsaved-confirm-submit" data-workload-unsaved-confirm>
+                    <i class="fas fa-arrow-left"></i>
+                    ย้อนกลับ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="workload-import-confirm" data-import-previous-workload-modal hidden>
+        <div class="workload-import-confirm-backdrop" data-import-previous-workload-cancel></div>
+        <div
+            class="workload-import-confirm-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="workloadImportConfirmTitle"
+        >
+            <div class="workload-import-confirm-icon">
+                <i class="fas fa-file-import"></i>
+            </div>
+            <div class="workload-import-confirm-content">
+                <h2 id="workloadImportConfirmTitle">นำเข้าข้อมูลจากรอบก่อนหน้า</h2>
+                <p>
+                    ระบบจะเติมเฉพาะรายการที่ยังไม่มีในรอบนี้ และจะไม่ทับข้อมูลที่คุณกรอกไว้แล้ว
+                </p>
+                @if(($importablePreviousReports ?? collect())->isNotEmpty())
+                    <label class="workload-import-confirm-label" for="workloadImportSourceReport">
+                        เลือกรอบที่ต้องการนำเข้า
+                    </label>
+                    <select
+                        id="workloadImportSourceReport"
+                        class="workload-import-confirm-select"
+                        data-import-previous-workload-source-select
+                    >
+                        @foreach($importablePreviousReports as $sourceReport)
+                            @php
+                                $sourceAssignmentData = $sourceReport->assignments?->assignmentData;
+                                $sourceStart = $sourceAssignmentData?->start_time;
+                                $sourceEnd = $sourceAssignmentData?->end_time;
+                                $sourceStartLabel = $sourceStart ? $sourceStart->format('d/m/') . ($sourceStart->year + 543) : '-';
+                                $sourceEndLabel = $sourceEnd ? $sourceEnd->format('d/m/') . ($sourceEnd->year + 543) : '-';
+                            @endphp
+                            <option value="{{ $sourceReport->id }}">
+                                {{ $sourceStartLabel }} - {{ $sourceEndLabel }}
+                            </option>
+                        @endforeach
+                    </select>
+                @else
+                    <div class="workload-import-confirm-empty">
+                        ยังไม่พบรอบก่อนหน้าที่มีเกณฑ์เดียวกัน
+                    </div>
+                @endif
+            </div>
+            <div class="workload-import-confirm-actions">
+                <button type="button" class="workload-import-confirm-cancel" data-import-previous-workload-cancel>
+                    ยกเลิก
+                </button>
+                <button type="button" class="workload-import-confirm-submit" data-import-previous-workload-confirm>
+                    <i class="fas fa-check"></i>
+                    นำเข้า
+                </button>
+            </div>
+        </div>
+    </div>
+@endunless
