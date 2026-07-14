@@ -104,3 +104,23 @@ test('subjects index and subject modal render create hooks without inline handle
         ->toContain('data-modal-submit-trigger')
         ->not->toContain('onclick="submitForm()"');
 });
+
+test('setting modal openers reuse bootstrap instances without cleanup races', function () {
+    $scripts = [
+        resource_path('views/departments/partials/index-script.blade.php'),
+        resource_path('views/positions/partials/index-script.blade.php'),
+        resource_path('views/Job Level/partials/index-script.blade.php'),
+        resource_path('views/subjects/partials/index-script.blade.php'),
+    ];
+
+    foreach ($scripts as $scriptPath) {
+        $script = file_get_contents($scriptPath);
+
+        expect(substr_count($script, 'bootstrap.Modal.getOrCreateInstance(modalEl)'))
+            ->toBe(2)
+            ->and($script)
+            ->not->toContain('new bootstrap.Modal(modalEl)')
+            ->not->toMatch('/function openCreateModal\(\)\s*\{\s*clearModalBackdrop\(\);/')
+            ->not->toMatch('/function handleEdit\([^)]*\)\s*\{\s*clearModalBackdrop\(\);/');
+    }
+});

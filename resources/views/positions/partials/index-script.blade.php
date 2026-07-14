@@ -46,8 +46,6 @@
 
     // เปิด modal สำหรับเพิ่มตำแหน่งใหม่ และรีเซ็ตฟอร์มกลับเป็นสถานะเริ่มต้น
     function openCreateModal() {
-        clearModalBackdrop();
-
         const form = document.getElementById('positionForm');
         const modalTitle = document.getElementById('positionModalLabel');
         if (!form || !modalTitle) return;
@@ -58,7 +56,7 @@
         modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มตำแหน่ง';
 
         const modalEl = document.getElementById('positionModal');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         modalEl.addEventListener('shown.bs.modal', function() {
@@ -68,8 +66,6 @@
 
     // ดึงข้อมูลเดิมจากปุ่มในตารางมาเติมใน modal เพื่อแก้ไขตำแหน่งเดิม
     function handleEdit(id, name) {
-        clearModalBackdrop();
-
         const form = document.getElementById('positionForm');
         const modalTitle = document.getElementById('positionModalLabel');
         if (!form || !modalTitle) return;
@@ -86,7 +82,7 @@
         setTimeout(() => validateForm(), 100);
 
         const modalEl = document.getElementById('positionModal');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         modalEl.addEventListener('shown.bs.modal', function() {

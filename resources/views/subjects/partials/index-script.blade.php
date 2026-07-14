@@ -133,8 +133,6 @@
 
     // เปิด modal เพิ่มรายวิชาโดยรีเซ็ตสถานะทั้งหมดกลับเป็นค่าเริ่มต้น
     function openCreateModal() {
-        clearModalBackdrop();
-
         const form = document.getElementById('subjectForm');
         const modalTitle = document.getElementById('subjectModalLabel');
         if (!form || !modalTitle) return;
@@ -145,7 +143,7 @@
         modalTitle.innerHTML = '<i class="fas fa-plus me-2"></i>เพิ่มรายวิชา';
 
         const modalEl = document.getElementById('subjectModal');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         modalEl.addEventListener('shown.bs.modal', function() {
@@ -155,8 +153,6 @@
 
     // เติมข้อมูลเดิมลง modal เพื่อแก้ไขรายวิชาโดยใช้ dataset จากปุ่มในตาราง
     function handleEdit(id, code, nameTh, nameEn, credits, lectureCredits, labCredits, selfStudyCredits) {
-        clearModalBackdrop();
-
         const form = document.getElementById('subjectForm');
         const modalTitle = document.getElementById('subjectModalLabel');
         if (!form || !modalTitle) return;
@@ -180,7 +176,7 @@
         }, 100);
 
         const modalEl = document.getElementById('subjectModal');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
 
         modalEl.addEventListener('shown.bs.modal', function() {
