@@ -33,6 +33,7 @@ test('facilitator documents cover timing, recovery, and decision capture', () =>
     assert.match(runbook, /Parking Lot/);
     assert.match(runbook, /ฟีเจอร์หลักของ Phase 2/);
     assert.match(runbook, /ภายในระบบประเมินเดิม/);
+    assert.match(runbook, /เมื่อดำเนินงานครบตามแผน สิ่งส่งมอบหลักจะประกอบด้วย/);
     assert.doesNotMatch(runbook + checklist, /เชื่อมต่อ Phase 1|วิธีเชื่อม Phase 1|ระบบภายนอก/);
     assert.match(minutes, /มติ.*ผู้รับผิดชอบ.*กำหนด/s);
     assert.match(checklist, /08:15/);
@@ -84,10 +85,19 @@ test('tailored kickoff PowerPoint keeps five slides and the Phase 2 feature page
     const archive = await JSZip.loadAsync(bytes);
     const slidePaths = Object.keys(archive.files).filter((entry) => /^ppt\/slides\/slide\d+\.xml$/.test(entry));
     const slide3 = await archive.file('ppt/slides/slide3.xml').async('string');
+    const slide5 = await archive.file('ppt/slides/slide5.xml').async('string');
+    const slide5Text = [...slide5.matchAll(/<a:t>(.*?)<\/a:t>/gs)].map(([, text]) => text).join('');
 
     assert.equal(slidePaths.length, 5);
     assert.match(slide3, /ฟีเจอร์หลักของ Phase 2/);
     assert.match(slide3, /โมดูลบริหารจัดการภาระงานภายในระบบประเมินเดิม/);
     assert.match(slide3, /รายงานและส่งออกข้อมูลภาระงาน/);
     assert.doesNotMatch(slide3, /พร้อมสาธิต|ยืนยันด้วยหลักฐาน|อยู่ในแผน|✓/);
+    assert.match(slide5Text, /สิ่งส่งมอบหลัก/);
+    assert.match(slide5Text, /Source Code และฐานข้อมูล/);
+    assert.match(slide5Text, /คู่มือผู้ใช้งาน/);
+    assert.match(slide5Text, /ผลการทดสอบ UAT/);
+    assert.match(slide5Text, /การติดตั้ง อบรม และดูแลหลังขึ้นระบบ/);
+    assert.match(slide5Text, /5\/5/);
+    assert.doesNotMatch(slide5Text, /5\/6/);
 });
