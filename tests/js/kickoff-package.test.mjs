@@ -40,12 +40,33 @@ test('facilitator documents cover timing, recovery, and decision capture', () =>
 test('kickoff deck has six Thai sections, correct timing, and safe content', () => {
     const { AGENDA_MINUTES, SLIDES } = require('../../scripts/generate-kickoff-pptx.cjs');
     const text = JSON.stringify(SLIDES);
+    const featureSlide = SLIDES.find(({ id }) => id === 'features');
 
     assert.equal(SLIDES.length, 6);
     assert.equal(AGENDA_MINUTES.reduce((sum, value) => sum + value, 0), 60);
     assert.match(text, /เป้าหมายโครงการ/);
-    assert.match(text, /พร้อมสาธิต/);
     assert.match(text, /แผนดำเนินงาน 90 วัน/);
+    assert.equal(featureSlide.title, 'ฟีเจอร์หลักของ Phase 2');
+    assert.equal(featureSlide.subtitle, 'โมดูลบริหารจัดการภาระงานภายในระบบประเมินเดิม');
+    assert.equal(featureSlide.features.length, 6);
+
+    for (const feature of [
+        'กำหนดแบบฟอร์มภาระงาน',
+        'กำหนดสูตรคำนวณคะแนน',
+        'บันทึกและแก้ไขข้อมูลภาระงาน',
+        'แนบลิงก์หลักฐาน',
+        'คำนวณคะแนนและนำไปใช้ในแบบประเมิน',
+        'รายงานและส่งออกข้อมูลภาระงาน',
+    ]) {
+        assert.match(JSON.stringify(featureSlide), new RegExp(feature));
+    }
+
+    for (const role of ['ผู้ดูแลระบบ', 'ผู้รับการประเมิน', 'ระบบ', 'ผู้บริหาร', 'กรรมการ', 'ผู้ประเมิน']) {
+        assert.match(JSON.stringify(featureSlide), new RegExp(role));
+    }
+
+    assert.doesNotMatch(JSON.stringify(featureSlide), /พร้อมสาธิต|ยืนยันด้วยหลักฐาน|อยู่ในแผน|✓/);
+    assert.doesNotMatch(text, /ระบบภายนอก|เชื่อมต่อ Phase 1|วิธีเชื่อม Phase 1/);
     assert.doesNotMatch(text, /เลขที่บัญชี|188-8-99289-4|200,000|ลายเซ็น/);
 });
 
