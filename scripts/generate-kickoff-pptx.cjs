@@ -42,37 +42,52 @@ const SLIDES = [
         id: 'objective',
         title: 'ปัญหาและเป้าหมายโครงการ',
         problems: [
-            { number: '01', title: 'คำนวณนอกระบบ', text: 'ผู้ใช้ต้องคำนวณคะแนนภาระงานจากภายนอก' },
-            { number: '02', title: 'บันทึกข้อมูลซ้ำ', text: 'นำคะแนนและหลักฐานกลับมากรอกในระบบหลัก' },
+            { number: '01', title: 'คำนวณนอกโมดูล', text: 'คำนวณคะแนนภาระงานแยกจากแบบประเมิน' },
+            { number: '02', title: 'กรอกคะแนนซ้ำ', text: 'นำคะแนนกลับมากรอกซ้ำในแบบประเมิน' },
             { number: '03', title: 'ตรวจสอบยาก', text: 'ใช้เวลาและเสี่ยงต่อความคลาดเคลื่อนของข้อมูล' },
         ],
-        goal: 'Phase 2 ทำให้กำหนดแบบฟอร์ม บันทึกภาระงาน แนบหลักฐาน และคำนวณคะแนนได้ใน Workflow เดียว',
+        goal: 'Phase 2 เพิ่มการบันทึกภาระงาน การแนบหลักฐาน และการคำนวณคะแนนอัตโนมัติภายในระบบประเมินเดิม',
         notes:
-            'อธิบายปัญหาเดิมอย่างกระชับ แล้วเน้นว่า Integration กับ Phase 1 ต้องยืนยันวิธีเชื่อมต่อและทดสอบร่วมกันก่อนกล่าวว่าเสร็จสมบูรณ์',
+            'อธิบายปัญหาการคำนวณคะแนนภาระงานนอกโมดูลและการนำคะแนนกลับมากรอกซ้ำ แล้วเน้นว่า Phase 2 ทำงานภายในระบบประเมินเดิม',
     },
     {
         id: 'features',
-        title: 'ฟีเจอร์เทียบกับข้อกำหนด TOR',
-        statuses: [
+        title: 'ฟีเจอร์หลักของ Phase 2',
+        subtitle: 'โมดูลบริหารจัดการภาระงานภายในระบบประเมินเดิม',
+        features: [
             {
-                label: 'พร้อมสาธิต',
+                roles: ['ผู้ดูแลระบบ'],
+                title: 'กำหนดแบบฟอร์มภาระงาน',
                 color: 'green',
-                items: ['Admin กำหนดแบบฟอร์มและ Field', 'สูตรและพรีวิวที่อ่านง่าย', 'Evaluatee บันทึกภาระงาน', 'คำนวณคะแนนจากข้อมูล'],
             },
             {
-                label: 'ยืนยันด้วยหลักฐาน',
+                roles: ['ผู้ดูแลระบบ'],
+                title: 'กำหนดสูตรคำนวณคะแนน',
                 color: 'blue',
-                items: ['ลิงก์หลักฐานและการตรวจ URL', 'Roles and Permissions', 'Audit Log', 'ชุดทดสอบประสิทธิภาพและ Login'],
             },
             {
-                label: 'อยู่ในแผน/รอข้อสรุป',
-                color: 'amber',
-                items: ['เชื่อมต่อ Phase 1', 'รายงานภาระงาน PDF/Excel', 'UAT อย่างเป็นทางการ', 'คู่มือ อบรม ติดตั้ง และ Hypercare'],
+                roles: ['ผู้รับการประเมิน'],
+                title: 'บันทึกและแก้ไขข้อมูลภาระงาน',
+                color: 'teal',
+            },
+            {
+                roles: ['ผู้รับการประเมิน'],
+                title: 'แนบลิงก์หลักฐาน',
+                color: 'green',
+            },
+            {
+                roles: ['ระบบ'],
+                title: 'คำนวณคะแนนและนำไปใช้ในแบบประเมิน',
+                color: 'blue',
+            },
+            {
+                roles: ['ผู้ดูแลระบบ', 'ผู้บริหาร', 'กรรมการ', 'ผู้ประเมิน'],
+                title: 'รายงานและส่งออกข้อมูลภาระงาน',
+                color: 'teal',
             },
         ],
-        note: 'สถานะจากระบบและหลักฐานใน repository — ไม่ใช่การรับรองว่าส่งมอบครบ TOR แล้ว',
         notes:
-            'อธิบายสามสถานะจากซ้ายไปขวา ใช้คำว่า “พร้อมสาธิต” เฉพาะสิ่งที่เปิดให้เห็นได้จริง และย้ำว่างานเชื่อมต่อ Phase 1 ยังต้องได้ข้อสรุปร่วมกัน',
+            'Phase 2 มีฟีเจอร์หลักหกส่วนที่ทำงานต่อเนื่องกันครับ เริ่มจากผู้ดูแลระบบกำหนดแบบฟอร์มภาระงานและสูตรคำนวณคะแนน จากนั้นผู้รับการประเมินบันทึกหรือแก้ไขข้อมูลภาระงานพร้อมแนบลิงก์หลักฐาน เมื่อบันทึกแล้วระบบจะคำนวณคะแนนอัตโนมัติและนำคะแนนไปใช้ในแบบประเมิน สุดท้ายผู้ที่มีสิทธิ์สามารถดูรายงานและส่งออกข้อมูลภาระงานได้ ทั้งหมดนี้ทำงานอยู่ภายในระบบประเมินเดิมครับ',
     },
     {
         id: 'demo',
@@ -84,9 +99,9 @@ const SLIDES = [
             { label: 'หลักฐาน', detail: 'แนบลิงก์อ้างอิง' },
             { label: 'คะแนน', detail: 'คำนวณอัตโนมัติ' },
         ],
-        guardrail: 'เดโมเฉพาะส่วนที่ตรวจสอบแล้ว • ไม่แก้ข้อมูลจริง • ไม่กล่าวว่า Phase 1 เชื่อมต่อสมบูรณ์',
+        guardrail: 'เดโมด้วยข้อมูลตัวอย่าง • ไม่แก้ข้อมูลจริง • แสดงคะแนนในรายงานและแบบประเมินเดียวกัน',
         notes:
-            'เดโมตามลำดับเดียว ไม่เปิดเมนูที่ไม่เกี่ยวข้อง เริ่มจาก Workload Config ชี้ Field และสูตร จากนั้นไปมุม Evaluatee ชี้ข้อมูล หลักฐาน และคะแนน ปิดด้วย Audit evidence หรือคำอธิบายจากชุดทดสอบ',
+            'เดโมตามลำดับเดียว ไม่เปิดเมนูที่ไม่เกี่ยวข้อง เริ่มจาก Workload Config ชี้ Field และสูตร จากนั้นไปมุมผู้รับการประเมินเพื่อชี้ข้อมูล หลักฐาน และคะแนน ปิดด้วยการแสดงว่าคะแนนภาระงานถูกบันทึกและนำไปใช้กับรายงานการประเมินเดียวกัน',
     },
     {
         id: 'timeline',
@@ -94,7 +109,7 @@ const SLIDES = [
         phases: [
             { weeks: 'สัปดาห์ 1–2', title: 'Analysis & Design', detail: 'เก็บความต้องการและยืนยันแบบฟอร์ม/สูตร' },
             { weeks: 'สัปดาห์ 3–8', title: 'Development', detail: 'พัฒนา Backend และ Frontend' },
-            { weeks: 'สัปดาห์ 9–10', title: 'Integration & UAT', detail: 'เชื่อมระบบ ทดสอบ และรวบรวมข้อแก้ไข' },
+            { weeks: 'สัปดาห์ 9–10', title: 'ทดสอบ Workflow & UAT', detail: 'ทดสอบกับกระบวนการประเมินและรวบรวมข้อแก้ไข' },
             { weeks: 'สัปดาห์ 11–12', title: 'Deploy & Hypercare', detail: 'แก้ไข ติดตั้ง คู่มือ อบรม และดูแลระบบ' },
         ],
         decision: 'ต้องยืนยันวันเริ่มนับ 90 วัน: วันลงนาม 29 มิ.ย. 2569 หรือวัน Kickoff 15 ก.ค. 2569',
@@ -108,7 +123,7 @@ const SLIDES = [
         decisions: [
             'แบบฟอร์มและสูตรชุดแรก พร้อมผู้อนุมัติ',
             'การปัดเศษ ข้อมูลว่าง และกรณีสูตรผิดพลาด',
-            'วิธีเชื่อม Phase 1 รหัสจับคู่ และ Technical Contact',
+            'การจับคู่คะแนนกับรายงาน เกณฑ์ย่อย และผู้ตรวจสอบความถูกต้อง',
             'รูปแบบรายงาน PDF/Excel และข้อมูลตัวอย่าง',
             'คณะกรรมการ UAT ผู้รับรอง และนิยาม Critical',
             'วันเริ่มนับ 90 วัน ช่องทางสื่อสาร และกำหนดตอบกลับ',
@@ -382,73 +397,85 @@ function renderObjective(slide, definition) {
     });
 }
 
-function statusPalette(name) {
+function featurePalette(name) {
     if (name === 'green') return { strong: COLORS.green, light: COLORS.greenLight };
     if (name === 'blue') return { strong: COLORS.blue, light: COLORS.blueLight };
-    return { strong: COLORS.amber, light: COLORS.amberLight };
+    return { strong: COLORS.teal, light: COLORS.tealLight };
 }
 
 function renderFeatures(slide, definition) {
-    definition.statuses.forEach((status, index) => {
-        const palette = statusPalette(status.color);
-        const x = 0.62 + index * 4.13;
-        addCard(slide, x, 1.35, 3.78, 4.85, COLORS.white, COLORS.border);
+    addText(slide, definition.subtitle, {
+        x: 0.7,
+        y: 1.16,
+        w: 11.9,
+        h: 0.35,
+        fontSize: 14,
+        color: COLORS.slate,
+        align: 'center',
+    });
+
+    definition.features.forEach((feature, index) => {
+        const palette = featurePalette(feature.color);
+        const column = index % 3;
+        const row = Math.floor(index / 3);
+        const x = 0.62 + column * 4.13;
+        const y = 1.72 + row * 2.36;
+        const cardWidth = 3.78;
+        const cardHeight = 2.08;
+        const hasMultipleRoles = feature.roles.length > 1;
+
+        addCard(slide, x, y, cardWidth, cardHeight, COLORS.white, COLORS.border);
         slide.addShape('rect', {
             x,
-            y: 1.35,
-            w: 3.78,
-            h: 0.68,
-            fill: { color: palette.light },
-            line: { color: palette.light },
-        });
-        slide.addShape('ellipse', {
-            x: x + 0.24,
-            y: 1.57,
-            w: 0.2,
-            h: 0.2,
+            y,
+            w: cardWidth,
+            h: 0.12,
             fill: { color: palette.strong },
             line: { color: palette.strong },
         });
-        addText(slide, status.label, {
-            x: x + 0.56,
-            y: 1.48,
-            w: 2.92,
-            h: 0.32,
-            fontSize: 15,
-            bold: true,
-            color: palette.strong,
-        });
-        status.items.forEach((item, itemIndex) => {
-            addText(slide, '✓', {
-                x: x + 0.27,
-                y: 2.35 + itemIndex * 0.82,
-                w: 0.28,
-                h: 0.35,
-                fontSize: 14,
+
+        feature.roles.forEach((role, roleIndex) => {
+            const pillColumn = hasMultipleRoles ? roleIndex % 2 : 0;
+            const pillRow = hasMultipleRoles ? Math.floor(roleIndex / 2) : 0;
+            const pillWidth = hasMultipleRoles ? 1.48 : role === 'ผู้รับการประเมิน' ? 1.62 : 1.28;
+            const pillX = hasMultipleRoles ? x + 0.29 + pillColumn * 1.62 : x + 0.24;
+            const pillY = y + 0.3 + pillRow * 0.36;
+
+            slide.addShape('roundRect', {
+                x: pillX,
+                y: pillY,
+                w: pillWidth,
+                h: 0.28,
+                rectRadius: 0.06,
+                fill: { color: palette.light },
+                line: { color: palette.light },
+            });
+            addText(slide, role, {
+                x: pillX + 0.05,
+                y: pillY + 0.035,
+                w: pillWidth - 0.1,
+                h: 0.2,
+                fontSize: hasMultipleRoles ? 9 : 10,
                 bold: true,
                 color: palette.strong,
-                valign: 'top',
-            });
-            addText(slide, item, {
-                x: x + 0.62,
-                y: 2.28 + itemIndex * 0.82,
-                w: 2.83,
-                h: 0.6,
-                fontSize: 14,
-                color: COLORS.slate,
-                valign: 'top',
+                align: 'center',
+                valign: 'mid',
+                margin: 0,
             });
         });
-    });
-    addText(slide, definition.note, {
-        x: 0.76,
-        y: 6.47,
-        w: 11.6,
-        h: 0.34,
-        fontSize: 12,
-        italic: true,
-        color: COLORS.muted,
-        align: 'center',
+
+        addText(slide, feature.title, {
+            x: x + 0.24,
+            y: y + (hasMultipleRoles ? 1.03 : 0.82),
+            w: cardWidth - 0.48,
+            h: hasMultipleRoles ? 0.78 : 0.9,
+            fontSize: hasMultipleRoles ? 16.5 : 18,
+            bold: true,
+            color: COLORS.navy,
+            align: 'center',
+            valign: 'mid',
+            margin: 0.04,
+        });
     });
 }
 
