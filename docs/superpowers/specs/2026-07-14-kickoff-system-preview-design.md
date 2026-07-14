@@ -1,136 +1,136 @@
-# Kickoff + System Preview Design
+# แบบออกแบบชุดประชุม Kickoff และสาธิตระบบ
 
-- **Meeting:** Workload Management Module Phase 2 kickoff
-- **Date:** 15 July 2026
-- **Facilitator:** Project Team Lead
-**Audience:** Faculty executives, instructors, system users, and the development team
+- **การประชุม:** Kickoff โครงการ Workload Management Module Phase 2
+- **วันที่:** 15 กรกฎาคม 2569
+- **ผู้นำประชุม:** Team Lead โครงการ
+- **ผู้เข้าร่วม:** ผู้บริหารคณะ อาจารย์ ผู้ใช้งานระบบ และทีมพัฒนา
 
-## Purpose
+## เป้าหมาย
 
-Prepare a complete Thai-language meeting package that lets a first-time Team Lead run the kickoff confidently, explain the product features, relate the current system to the TOR, present the contractual delivery plan, and leave the meeting with explicit decisions and owners.
+จัดทำชุดเอกสารภาษาไทยที่ช่วยให้ Team Lead ซึ่งนำประชุมเป็นครั้งแรกสามารถดำเนินการประชุมได้อย่างมั่นใจ อธิบายฟีเจอร์ เชื่อมโยงระบบปัจจุบันกับข้อกำหนดใน TOR นำเสนอแผนดำเนินงานตามสัญญา และจบการประชุมด้วยมติ ผู้รับผิดชอบ และกำหนดเวลาที่ชัดเจน
 
-The package must help the facilitator guide the discussion without implying that every TOR item is already complete. Statements about implementation status must be supported by the current application, routes, tests, or an observable demo path.
+ชุดเอกสารต้องช่วยให้ผู้นำประชุมควบคุมประเด็นได้โดยไม่ทำให้ผู้เข้าร่วมเข้าใจว่าข้อกำหนดใน TOR ทุกข้อพัฒนาเสร็จแล้ว การระบุสถานะฟีเจอร์ต้องมีหลักฐานจากระบบปัจจุบัน เส้นทางการใช้งาน ชุดทดสอบ หรือพฤติกรรมที่ตรวจสอบได้จริง
 
-## Meeting assumptions
+## สมมติฐานของการประชุม
 
-- The invitation contains both 08:30 and 08:45. The facilitator should join at 08:15, have the room and demo ready by 08:30, and confirm the formal opening time with the host.
-- No end time is stated. The primary agenda is designed for 60 minutes and includes a 30-minute compressed path.
-- The meeting is held in Microsoft Teams.
-- All stakeholder groups are expected in the same meeting, so the language should remain understandable to non-technical participants.
-- Commercial details and payment account information are excluded from the main presentation. They are discussed only if the project owner raises them.
+- ในนัดหมายมีเวลา 08:30 น. และ 08:45 น. ไม่ตรงกัน ผู้นำประชุมควรเข้า Teams เวลา 08:15 น. เตรียมห้องและระบบให้พร้อมภายใน 08:30 น. และยืนยันเวลาเปิดประชุมอย่างเป็นทางการกับอาจารย์หรือเจ้าภาพ
+- ไม่มีการระบุเวลาสิ้นสุด จึงออกแบบวาระหลักสำหรับ 60 นาที และมีรูปแบบย่อสำหรับ 30 นาที
+- ประชุมผ่าน Microsoft Teams
+- ผู้มีส่วนเกี่ยวข้องทุกกลุ่มคาดว่าจะเข้าร่วมพร้อมกัน ภาษาที่ใช้จึงต้องเข้าใจได้สำหรับผู้เข้าร่วมที่ไม่ใช่สายเทคนิค
+- ไม่นำรายละเอียดราคา เงื่อนไขการชำระเงิน หรือข้อมูลบัญชีธนาคารขึ้นสไลด์หลัก เว้นแต่เจ้าของโครงการเป็นผู้เปิดประเด็น
 
-## Deliverables
+## สิ่งที่จะจัดทำ
 
-1. A six-section PowerPoint presentation in Thai for screen sharing.
-2. A facilitator runbook with exact opening, transitions, demo narration, recovery phrases, time checks, and closing script.
-3. A TOR-to-system demo matrix that identifies what can be shown live, what can be explained with evidence, and what remains planned.
-4. A meeting-minutes template for decisions, action items, risks, questions, and parking-lot topics.
-5. A demo readiness checklist and a fallback path for application, network, or authentication failures.
+1. PowerPoint ภาษาไทย 6 ส่วนสำหรับแชร์หน้าจอในการประชุม
+2. คู่มือผู้นำประชุมที่มีสคริปต์เปิดประชุม ประโยคเชื่อมระหว่างหัวข้อ คำพูดระหว่างเดโม วิธีรับมือเหตุขัดข้อง จุดตรวจเวลา และสคริปต์ปิดประชุม
+3. ตารางเทียบ TOR กับระบบ แยกสิ่งที่สาธิตสดได้ สิ่งที่ยืนยันได้ด้วยหลักฐาน และสิ่งที่ยังอยู่ในแผน
+4. แบบบันทึกการประชุมสำหรับมติ งานที่ต้องทำ ความเสี่ยง คำถาม และประเด็นพักไว้พิจารณาภายหลัง
+5. เช็กลิสต์เตรียมเดโมและแผนสำรองกรณีระบบ อินเทอร์เน็ต หรือการเข้าสู่ระบบมีปัญหา
 
-All generated artifacts will live under `docs/kickoff/` and will be named with the meeting date `2026-07-15`.
+ไฟล์ทั้งหมดจะจัดเก็บใน `docs/kickoff/` และใช้วันที่ประชุม `2026-07-15` ในชื่อไฟล์
 
-## Presentation structure
+## โครงสร้างการนำเสนอ
 
-### 1. Opening and meeting outcomes — 5 minutes
+### 1. เปิดประชุมและแจ้งผลลัพธ์ที่ต้องการ — 5 นาที
 
-- Identify the project and participants.
-- State that this is a combined kickoff and system preview.
-- Set four outcomes: common scope, confirmed plan, required stakeholder decisions, and assigned next actions.
+- แนะนำชื่อโครงการและผู้เข้าร่วม
+- แจ้งว่าเป็นการประชุม Kickoff ร่วมกับการสาธิตภาพรวมระบบ
+- กำหนดผลลัพธ์ 4 ข้อ ได้แก่ เข้าใจขอบเขตตรงกัน ยืนยันแผนงาน ระบุเรื่องที่ต้องตัดสินใจ และมอบหมายงานถัดไป
 
-### 2. Problem and project objective — 5 minutes
+### 2. ปัญหาและเป้าหมายโครงการ — 5 นาที
 
-- Explain the current manual workload-score calculation and subsequent re-entry into the main evaluation system.
-- Position Phase 2 as the module for workload capture, automatic calculation, evidence links, and connection to the 2026 main evaluation system.
-- Avoid technical implementation details at this stage.
+- อธิบายปัญหาการคำนวณคะแนนภาระงานภายนอกระบบและการนำคะแนนกลับมากรอกในระบบประเมินหลัก
+- อธิบายบทบาทของ Phase 2 ว่าใช้บันทึกข้อมูลภาระงาน คำนวณคะแนนอัตโนมัติ แนบลิงก์หลักฐาน และเชื่อมต่อกับระบบประเมินผลการปฏิบัติงานหลัก เวอร์ชัน 2026
+- ยังไม่ลงรายละเอียดทางเทคนิคในช่วงนี้
 
-### 3. Features mapped to the TOR — 10 minutes
+### 3. ฟีเจอร์เทียบกับข้อกำหนด TOR — 10 นาที
 
-Present the feature groups in the user's workflow:
+นำเสนอฟีเจอร์ตามลำดับการทำงานของผู้ใช้:
 
-- Admin defines workload forms, field types, and scoring rules.
-- Evaluatee records workload entries and supporting evidence links.
-- The system calculates workload scores and recalculates after edits.
-- Roles and permissions control access for Admin, Manager, Director, Evaluator, and Evaluatee.
-- Results are prepared for connection to the main evaluation system.
-- Auditability, performance, security, manuals, training, and UAT are delivery concerns.
+- Admin กำหนดแบบฟอร์มภาระงาน ประเภทข้อมูล และหลักเกณฑ์การคำนวณ
+- Evaluatee บันทึกข้อมูลภาระงานและลิงก์หลักฐาน
+- ระบบคำนวณคะแนนและคำนวณใหม่เมื่อข้อมูลเปลี่ยนแปลง
+- Roles and Permissions ควบคุมสิทธิ์ของ Admin, Manager, Director, Evaluator และ Evaluatee
+- เตรียมผลคะแนนสำหรับเชื่อมเข้าสู่ระบบประเมินหลัก
+- การตรวจสอบย้อนหลัง ประสิทธิภาพ ความปลอดภัย คู่มือ การอบรม และ UAT เป็นส่วนหนึ่งของการส่งมอบ
 
-Every feature receives one of three labels: **ready to demonstrate**, **implemented but demonstrated through supporting evidence**, or **planned/awaiting confirmation**.
+ทุกฟีเจอร์ต้องติดสถานะหนึ่งในสามแบบ ได้แก่ **พร้อมสาธิต**, **พัฒนาแล้วและยืนยันด้วยหลักฐาน**, หรือ **อยู่ในแผน/รอข้อสรุป**
 
-### 4. Live system preview — 15 minutes
+### 4. สาธิตระบบ — 15 นาที
 
-The preferred demo follows one coherent scenario instead of visiting unrelated menus:
+เดโมตามเหตุการณ์เดียวที่ต่อเนื่องกัน แทนการเปิดเมนูที่ไม่เกี่ยวข้องหลายหน้า:
 
-1. Sign in as Admin.
-2. Open or configure a workload form.
-3. Show the formula or scoring-rule representation.
-4. Switch to an Evaluatee view.
-5. Add or inspect a workload entry and evidence link.
-6. Show the resulting calculated score.
-7. Show the closest verifiable integration, permission, or audit evidence supported by the current system.
+1. เข้าสู่ระบบในบทบาท Admin
+2. เปิดหรือกำหนดแบบฟอร์มภาระงาน
+3. แสดงสูตรหรือหลักเกณฑ์การคำนวณคะแนน
+4. เปลี่ยนไปยังมุมมองของ Evaluatee
+5. เพิ่มหรือตรวจสอบรายการภาระงานและลิงก์หลักฐาน
+6. แสดงคะแนนที่ระบบคำนวณได้
+7. แสดงหลักฐานด้านการเชื่อมต่อ สิทธิ์ หรือ Audit Log เท่าที่ระบบปัจจุบันยืนยันได้
 
-The demo script must never claim that an unverified integration is complete. If a TOR step is unavailable, the facilitator states its current status and where it sits in the delivery plan.
+สคริปต์เดโมต้องไม่กล่าวว่าการเชื่อมต่อหรือฟีเจอร์ใดเสร็จแล้วหากยังไม่ได้ตรวจสอบ หากข้อกำหนดบางส่วนยังสาธิตไม่ได้ ผู้นำประชุมต้องแจ้งสถานะปัจจุบันและระบุช่วงดำเนินการในแผนงาน
 
-### 5. Contractual 90-day delivery plan — 10 minutes
+### 5. แผนดำเนินงานตามสัญญา 90 วัน — 10 นาที
 
-- Weeks 1–2: analysis and design.
-- Weeks 3–8: backend and frontend development.
-- Weeks 9–10: system integration and UAT.
-- Weeks 11–12: defect correction, deployment, documentation, training, and hypercare.
+- สัปดาห์ที่ 1–2: วิเคราะห์และออกแบบระบบ
+- สัปดาห์ที่ 3–8: พัฒนา Backend และ Frontend
+- สัปดาห์ที่ 9–10: เชื่อมต่อระบบและทำ UAT
+- สัปดาห์ที่ 11–12: แก้ไขข้อบกพร่อง ติดตั้ง จัดทำเอกสาร อบรม และดูแลหลังขึ้นระบบ
 
-The meeting must explicitly confirm the timeline baseline because the agreement was signed on 29 June 2026 while the kickoff invitation is dated 15 July 2026.
+ที่ประชุมต้องยืนยันวันเริ่มนับแผนงาน เนื่องจากสัญญาลงวันที่ 29 มิถุนายน 2569 แต่ประชุม Kickoff วันที่ 15 กรกฎาคม 2569
 
-Required deliverables are summarized as source code and database, Admin manual, Evaluator manual, and Evaluatee manual. UAT acceptance is summarized without overloading the slide: all defined cases executed, critical cases passed, and no critical defect left open, subject to confirmation with the acceptance committee.
+สรุปสิ่งส่งมอบ ได้แก่ Source Code และฐานข้อมูล คู่มือ Admin คู่มือ Evaluator และคู่มือ Evaluatee ส่วนเกณฑ์ UAT ให้สรุปอย่างกระชับว่า ต้องทดสอบครบทุกกรณี กรณี Critical ต้องผ่าน และต้องไม่มีข้อผิดพลาดระดับ Critical ค้างอยู่ โดยต้องยืนยันรายละเอียดกับคณะกรรมการตรวจรับอีกครั้ง
 
-### 6. Decisions and next steps — 15 minutes
+### 6. เรื่องที่ต้องตัดสินใจและขั้นตอนถัดไป — 15 นาที
 
-The facilitator asks for owners and dates for:
+ผู้นำประชุมต้องขอชื่อผู้รับผิดชอบและกำหนดเวลาสำหรับเรื่องต่อไปนี้:
 
-- The first approved workload form and required field types.
-- The authoritative formulas, rounding rules, missing-data behavior, and formula approver.
-- The Phase 1 integration method, identifiers, test environment, and technical contact.
-- Test accounts, sample data, and evidence-link access.
-- The UAT committee, acceptance authority, and defect-severity definitions.
-- The primary communication channel and response expectations.
-- Confirmation of the project timeline baseline.
+- แบบฟอร์มภาระงานชุดแรกที่ได้รับอนุมัติและประเภทข้อมูลที่ต้องใช้
+- สูตรที่เป็นแหล่งอ้างอิงหลัก หลักการปัดเศษ วิธีจัดการข้อมูลว่าง และผู้อนุมัติสูตร
+- วิธีเชื่อมต่อกับ Phase 1 รหัสที่ใช้จับคู่ ระบบทดสอบ และผู้ประสานงานด้านเทคนิค
+- บัญชีทดสอบ ข้อมูลตัวอย่าง และสิทธิ์เข้าถึงลิงก์หลักฐาน
+- คณะกรรมการ UAT ผู้มีอำนาจรับรอง และนิยามระดับความรุนแรงของข้อผิดพลาด
+- ช่องทางประสานงานหลักและระยะเวลาที่คาดหวังในการตอบกลับ
+- การยืนยันวันเริ่มนับแผนงานโครงการ
 
-The section closes with a verbal read-back of decisions and action items.
+ก่อนจบช่วงนี้ ผู้นำประชุมต้องอ่านทวนมติ งานที่ต้องทำ ผู้รับผิดชอบ และกำหนดส่งให้ทุกฝ่ายรับทราบ
 
-## Visual direction
+## แนวทางด้านภาพและรูปแบบ
 
-- Use a restrained university/project style: white or very light background, dark navy headings, muted teal accent, and a single warm accent for risks or pending decisions.
-- Use large Thai type suitable for Teams screen sharing and keep each slide focused on one message.
-- Prefer a simple workflow and a four-phase timeline over dense bullet lists.
-- Do not reproduce personal identity documents, bank details, signatures, or other unnecessary contract imagery.
-- Include a small status legend for ready, evidence-only, and planned items.
+- ใช้รูปแบบสุภาพและเป็นทางการพอเหมาะ: พื้นหลังสีขาวหรือสีอ่อน หัวข้อสีน้ำเงินกรมท่า สีเขียวอมฟ้าสำหรับจุดเน้น และสีอุ่นหนึ่งสีสำหรับความเสี่ยงหรือประเด็นที่รอข้อสรุป
+- ใช้ตัวอักษรภาษาไทยขนาดใหญ่ที่อ่านได้ชัดขณะแชร์หน้าจอผ่าน Teams และให้แต่ละสไลด์สื่อสารเพียงหนึ่งสารหลัก
+- ใช้ภาพลำดับการทำงานและ Timeline สี่ช่วง แทนรายการข้อความยาว
+- ห้ามนำภาพบัตรประชาชน ข้อมูลธนาคาร ลายเซ็น หรือข้อมูลส่วนบุคคลที่ไม่จำเป็นจากเอกสารสัญญามาใช้
+- มีคำอธิบายสัญลักษณ์สถานะสำหรับ พร้อมสาธิต ยืนยันด้วยหลักฐาน และอยู่ในแผน
 
-## Facilitation behavior
+## วิธีนำประชุม
 
-- The Team Lead owns the agenda and action log, not every contractual or policy decision.
-- Unknown answers are captured as action items with an owner and due date.
-- Off-topic issues are placed in a parking lot.
-- Conflicting views are restated as explicit alternatives and routed to the named decision owner.
-- Time warnings occur at approximately 30, 45, and 55 minutes.
+- Team Lead เป็นผู้ควบคุมวาระและบันทึกงานถัดไป แต่ไม่ต้องตัดสินใจแทนผู้มีอำนาจในเรื่องสัญญาหรือนโยบาย
+- หากยังตอบไม่ได้ ให้บันทึกเป็น Action Item พร้อมผู้รับผิดชอบและวันครบกำหนด
+- ประเด็นนอกวาระให้บันทึกใน Parking Lot
+- หากมีความเห็นขัดแย้ง ให้สรุปเป็นทางเลือกที่ชัดเจนและขอให้ผู้มีอำนาจตัดสินใจ
+- แจ้งเตือนเวลาโดยประมาณเมื่อนาทีที่ 30, 45 และ 55
 
-## Failure and fallback handling
+## การรับมือเหตุขัดข้องและแผนสำรอง
 
-- Join Teams at 08:15 and validate screen sharing, audio, application login, test accounts, and browser zoom.
-- Keep the required pages and accounts open before the meeting.
-- Avoid creating or deleting production data during the preview unless explicitly authorized.
-- If authentication or the application fails, continue with prepared screenshots or the TOR-to-system matrix.
-- If the network fails, the facilitator continues with the local deck and records a separate demo follow-up.
-- If time is reduced to 30 minutes, use 3 minutes for opening, 5 for objectives and scope, 10 for the demo, 5 for the plan, and 7 for decisions and next steps.
+- เข้า Teams เวลา 08:15 น. และตรวจสอบการแชร์หน้าจอ เสียง บัญชีทดสอบ การเข้าสู่ระบบ และระดับการซูมของเบราว์เซอร์
+- เปิดหน้าระบบและบัญชีที่ต้องใช้ไว้ล่วงหน้า
+- หลีกเลี่ยงการสร้างหรือลบข้อมูลจริงระหว่างเดโม เว้นแต่ได้รับอนุญาตโดยชัดเจน
+- หากเข้าสู่ระบบหรือเปิดแอปพลิเคชันไม่ได้ ให้ใช้ภาพสำรองหรือตารางเทียบ TOR กับระบบดำเนินการต่อ
+- หากอินเทอร์เน็ตมีปัญหา ให้ใช้สไลด์ที่อยู่ในเครื่องและนัดหมายเดโมเพิ่มเติมภายหลัง
+- หากเหลือเวลาเพียง 30 นาที ให้ใช้ 3 นาทีเปิดประชุม 5 นาทีอธิบายเป้าหมายและขอบเขต 10 นาทีเดโม 5 นาทีอธิบายแผน และ 7 นาทีสรุปมติและขั้นตอนถัดไป
 
-## Verification
+## การตรวจสอบก่อนใช้งาน
 
-Before the artifacts are considered ready:
+ก่อนถือว่าชุดเอกสารพร้อมใช้งาน ต้องตรวจสอบดังนี้:
 
-1. Trace every live-demo claim to a route, view, test, or verified application behavior.
-2. Reconcile terminology with the TOR: Admin, Manager, Director, Evaluator, and Evaluatee.
-3. Check that the 60-minute sections total 60 minutes and the compressed sections total 30 minutes.
-4. Verify the deck renders Thai text correctly and remains readable when shared in Teams.
-5. Perform a dry run of the preferred demo path without modifying protected data.
-6. Check all artifacts for unfinished placeholders and confidential information.
+1. เชื่อมโยงทุกคำกล่าวในเดโมกับ Route, View, Test หรือพฤติกรรมของระบบที่ตรวจสอบแล้ว
+2. ใช้คำเรียกบทบาทให้ตรงกับ TOR ได้แก่ Admin, Manager, Director, Evaluator และ Evaluatee
+3. ตรวจสอบว่าวาระหลักรวมเป็น 60 นาที และวาระย่อรวมเป็น 30 นาที
+4. ตรวจสอบว่าตัวอักษรไทยในสไลด์แสดงผลถูกต้องและอ่านได้ชัดเมื่อแชร์ผ่าน Teams
+5. ทดลองเดโมตามลำดับจริงโดยไม่แก้ไขข้อมูลที่ต้องป้องกัน
+6. ตรวจสอบว่าไม่มีข้อความร่าง ตำแหน่งว่าง หรือข้อมูลลับอยู่ในไฟล์ที่จะใช้
 
-## Success criteria
+## เกณฑ์ความสำเร็จ
 
-The package is successful when the Team Lead can open the deck and runbook, lead the meeting without inventing technical answers, demonstrate only verified features, explain the 90-day plan, and finish with a written list of decisions, owners, and dates.
+ชุดเอกสารถือว่าประสบความสำเร็จเมื่อ Team Lead สามารถเปิด PowerPoint และคู่มือผู้นำประชุม แล้วดำเนินการประชุมได้โดยไม่ต้องแต่งคำตอบทางเทคนิคขึ้นเอง สาธิตเฉพาะฟีเจอร์ที่ยืนยันแล้ว อธิบายแผน 90 วันได้ และจบการประชุมด้วยรายการมติ ผู้รับผิดชอบ และกำหนดเวลาที่บันทึกไว้ชัดเจน
