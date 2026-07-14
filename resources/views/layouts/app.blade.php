@@ -79,7 +79,7 @@
                         @endif
                         @if(auth()->user() && ($showEvaluateeNavigation ?? false))
                             <li class="nav-item">
-                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าประเมินตัวเอง</a>
+                                <a class="nav-link text-white" href="/evaluatee-dashboard">หน้าประเมินตนเอง</a>
                             </li>
                         @endif
 
@@ -208,7 +208,7 @@
                 @if(auth()->user() && ($showEvaluateeNavigation ?? false))
                     <a href="/evaluatee-dashboard" class="mobile-nav-item">
                         <i class="fas fa-user-check" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าประเมินตัวเอง
+                        หน้าประเมินตนเอง
                     </a>
                 @endif
                 

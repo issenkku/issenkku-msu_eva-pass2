@@ -24,3 +24,16 @@ test('layout app shell renders mobile controls with data hooks instead of inline
         ->assertDontSee('onclick="closeMobileMenu()"', false)
         ->assertDontSee('onclick="toggleMobileDropdown(\'settingsDropdown\')"', false);
 });
+
+test('evaluatee navigation uses formal wording in desktop and mobile menus', function () {
+    $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+
+    preg_match_all(
+        '/<a\b[^>]*href="\/evaluatee-dashboard"[^>]*>.*?หน้าประเมินตนเอง.*?<\/a>/su',
+        $layout,
+        $matchingLinks,
+    );
+
+    expect($matchingLinks[0])->toHaveCount(2)
+        ->and($layout)->not->toContain('หน้าประเมินตัวเอง');
+});
