@@ -73,10 +73,21 @@ test('kickoff deck has six Thai sections, correct timing, and safe content', () 
     assert.doesNotMatch(text, /เลขที่บัญชี|188-8-99289-4|200,000|ลายเซ็น/);
 });
 
-test('generated kickoff PowerPoint is a non-empty OOXML package', () => {
+test('tailored kickoff PowerPoint keeps five slides and the Phase 2 feature page', async () => {
+    const JSZip = require('jszip');
     const file = path.join(root, 'docs/kickoff/2026-07-15-kickoff-system-preview.pptx');
     const bytes = fs.readFileSync(file);
 
     assert.ok(bytes.length > 20000);
     assert.equal(bytes.subarray(0, 2).toString('ascii'), 'PK');
+
+    const archive = await JSZip.loadAsync(bytes);
+    const slidePaths = Object.keys(archive.files).filter((entry) => /^ppt\/slides\/slide\d+\.xml$/.test(entry));
+    const slide3 = await archive.file('ppt/slides/slide3.xml').async('string');
+
+    assert.equal(slidePaths.length, 5);
+    assert.match(slide3, /ฟีเจอร์หลักของ Phase 2/);
+    assert.match(slide3, /โมดูลบริหารจัดการภาระงานภายในระบบประเมินเดิม/);
+    assert.match(slide3, /รายงานและส่งออกข้อมูลภาระงาน/);
+    assert.doesNotMatch(slide3, /พร้อมสาธิต|ยืนยันด้วยหลักฐาน|อยู่ในแผน|✓/);
 });
