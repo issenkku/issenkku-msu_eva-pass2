@@ -64,7 +64,7 @@
 
                         @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                             <li class="nav-item">
-                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/evaluator-dashboard"><i class="fas fa-home"></i><span>หน้าหลัก</span></a>
+                                <a class="nav-link text-white d-flex align-items-center gap-2" href="/evaluator-dashboard"><i class="fas fa-home"></i><span>หน้าประเมินผู้อื่น</span></a>
                             </li>
                         @endif
                         {{-- @if(auth()->user() && auth()->user()->hasRole('ผู้บริหาร') && auth()->user()->position && auth()->user()->position->name == 'คณบดี')
@@ -194,7 +194,7 @@
                 @if(auth()->user() && auth()->user()->hasRole('ผู้ประเมิน'))
                     <a href="/evaluator-dashboard" class="mobile-nav-item">
                         <i class="fas fa-home" style="width: 20px; margin-right: 10px;"></i>
-                        หน้าหลัก
+                        หน้าประเมินผู้อื่น
                     </a>
                 @endif
 
