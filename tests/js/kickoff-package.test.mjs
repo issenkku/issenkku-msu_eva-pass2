@@ -31,6 +31,9 @@ test('facilitator documents cover timing, recovery, and decision capture', () =>
 
     assert.match(runbook, /ขอรับเป็น Action Item/);
     assert.match(runbook, /Parking Lot/);
+    assert.match(runbook, /ฟีเจอร์หลักของ Phase 2/);
+    assert.match(runbook, /ภายในระบบประเมินเดิม/);
+    assert.doesNotMatch(runbook + checklist, /เชื่อมต่อ Phase 1|วิธีเชื่อม Phase 1|ระบบภายนอก/);
     assert.match(minutes, /มติ.*ผู้รับผิดชอบ.*กำหนด/s);
     assert.match(checklist, /08:15/);
     assert.match(checklist, /08:30/);
