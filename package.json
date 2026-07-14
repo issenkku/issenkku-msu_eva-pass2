@@ -6,6 +6,7 @@
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "https:uat": "node scripts/local-https-proxy.mjs",
+        "test:js": "node --test tests/js/*.test.mjs",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
