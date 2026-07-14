@@ -27,7 +27,9 @@ test('workload builder exposes accessible names and collapse states for icon con
         ->and(preg_match_all('/<input[^>]*class="[^"]*workload-main-category[^"]*"[^>]*aria-label="[^"]+"/u', $html))->toBe(1)
         ->and(preg_match_all('/<input[^>]*class="[^"]*workload-sub-category[^"]*"[^>]*aria-label="[^"]+"/u', $html))->toBe(1)
         ->and(preg_match_all('/<input[^>]*class="[^"]*workload-item-name[^"]*"[^>]*aria-label="[^"]+"/u', $html))->toBe(1)
-        ->and(preg_match_all('/<input[^>]*class="[^"]*workload-item-score[^"]*"[^>]*aria-label="[^"]+"/u', $html))->toBe(1);
+        ->and(preg_match_all('/<input[^>]*class="[^"]*workload-item-score[^"]*"[^>]*aria-label="[^"]+"/u', $html))->toBe(1)
+        ->and(preg_match_all('/<div[^>]*class="[^"]*workload-formula-preview-value[^"]*"[^>]*aria-live="polite"[^>]*aria-atomic="true"[^>]*>/u', $html))->toBe(1)
+        ->and(str_contains($html, 'พรีวิวสูตร'))->toBeTrue();
 
     expect($html)
         ->toContain("toggleButton.setAttribute('aria-expanded'")
@@ -38,5 +40,9 @@ test('workload builder exposes accessible names and collapse states for icon con
         ->and($html)
         ->toContain("button.setAttribute('aria-label'")
         ->and($html)
-        ->toContain("navList.setAttribute('aria-busy', 'false')");
+        ->toContain("navList.setAttribute('aria-busy', 'false')")
+        ->and($html)
+        ->toContain('updateFormulaPreview')
+        ->and($html)
+        ->toContain("formulaText.addEventListener('input', updateFormulaPreview)");
 });

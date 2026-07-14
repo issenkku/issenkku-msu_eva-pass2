@@ -369,6 +369,7 @@
                 const nextPos = start + token.length;
                 textarea.setSelectionRange(nextPos, nextPos);
                 textarea.focus();
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
                 markDirty();
             };
 
@@ -564,6 +565,7 @@
                 });
                 const formulaList = card.querySelector('.workload-formula-list');
                 const formulaText = card.querySelector('.workload-formula-text');
+                const formulaPreview = card.querySelector('.workload-formula-preview-value');
                 const addItemButton = card.querySelector('.workload-add-item');
                 const addVariableButton = card.querySelector('.workload-add-variable');
                 const cancelVariableEditButton = card.querySelector('.workload-cancel-variable-edit');
@@ -576,6 +578,30 @@
                 const subCategoryInput = card.querySelector('.workload-sub-category');
                 const requireSubjectInput = card.querySelector('.workload-require-subject');
                 let editingFormulaRow = null;
+
+                const updateFormulaPreview = () => {
+                    if (!formulaPreview || !window.WorkloadFormulaPreview) {
+                        return;
+                    }
+
+                    const labels = {};
+                    formulaList?.querySelectorAll('.formula-item').forEach((row) => {
+                        const variableName = row.querySelector('.formula-value')?.textContent.trim().toLowerCase();
+                        const label = row.querySelector('.formula-item-label')?.textContent.trim();
+                        if (variableName && label) {
+                            labels[variableName] = label;
+                        }
+                    });
+
+                    formulaPreview.textContent = window.WorkloadFormulaPreview.format(
+                        formulaText?.value ?? '',
+                        labels
+                    );
+                };
+
+                if (formulaText) {
+                    formulaText.addEventListener('input', updateFormulaPreview);
+                }
 
                 syncSubCardSummary(card);
                 if (subCategoryInput && subCategoryInput.dataset.summaryBound !== 'true') {
@@ -770,6 +796,7 @@
                         }
                         row.remove();
                         syncVariableChips();
+                        updateFormulaPreview();
                         markDirty();
                     });
 
@@ -789,6 +816,7 @@
                     });
                     formulaList.appendChild(row);
                     syncVariableChips();
+                    updateFormulaPreview();
                 };
 
                 // ฟังก์ชันย่อย: updateItemSequence
@@ -942,6 +970,7 @@
                                 defaultValueEl.remove();
                             }
 
+                            updateFormulaPreview();
                             resetVariableForm();
                             markDirty();
                             return;
@@ -970,6 +999,7 @@
                         if (row) {
                             row.remove();
                             syncVariableChips();
+                            updateFormulaPreview();
                             markDirty();
                         }
                     });
@@ -988,11 +1018,13 @@
 
                 updateItemSequence(card);
                 syncVariableChips();
+                updateFormulaPreview();
                 initItemRowSort(card);
 
                 card.__workload = {
                     addFormulaItem,
                     syncVariableChips,
+                    updateFormulaPreview,
                     updateItemSequence,
                 };
                 card.dataset.initialized = 'true';
@@ -1241,6 +1273,7 @@
                         });
                         api.syncVariableChips();
                     }
+                    api?.updateFormulaPreview?.();
                     if (cardSubitemTable && Array.isArray(form?.items)) {
                         const firstRow = subCard.querySelector('.workload-item-row');
                         if (firstRow) {

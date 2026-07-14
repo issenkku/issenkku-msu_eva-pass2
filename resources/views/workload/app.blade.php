@@ -197,6 +197,13 @@
                                             <label for="workload-formula-text" class="form-label">สร้างการคำนวณ</label>
 
                                             <textarea class="form-control formula-text workload-formula-text" rows="4" id="workload-formula-text"></textarea>
+
+                                            <div class="workload-formula-preview mt-2">
+                                                <div class="workload-formula-preview-label">พรีวิวสูตร</div>
+                                                <div class="workload-formula-preview-value" aria-live="polite" aria-atomic="true">
+                                                    พรีวิวจะแสดงเมื่อระบุสูตรการคำนวณ
+                                                </div>
+                                            </div>
                                         </div>
 
                                         {{-- แถบเครื่องมือช่วยเขียนสูตร --}}

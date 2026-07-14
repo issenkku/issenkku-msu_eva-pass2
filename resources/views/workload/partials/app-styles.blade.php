@@ -615,6 +615,27 @@
             border-radius: 12px;
         }
 
+        .workload-formula-preview {
+            border: 1px solid #dbe4f0;
+            border-radius: 10px;
+            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+        }
+
+        .workload-formula-preview-label {
+            color: #64748b;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .workload-formula-preview-value {
+            color: #0f172a;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
         .formula-builder-bar {
             display: grid;
             grid-template-columns: 1fr auto;
