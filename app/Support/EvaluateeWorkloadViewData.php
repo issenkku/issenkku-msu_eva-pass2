@@ -60,7 +60,10 @@ class EvaluateeWorkloadViewData
                     if ($itemEntry?->subject) {
                         $subjectDisplay = trim(collect([
                             $itemEntry->subject->code ?? null,
-                            $itemEntry->subject->name_th ?? null,
+                            $itemEntry->subject->display_name
+                                ?? $itemEntry->subject->name_th
+                                ?? $itemEntry->subject->name_en
+                                ?? null,
                         ])->filter()->implode(' '));
                     }
 

@@ -28,9 +28,9 @@
                         data-lab-credits="{{ $subjectView['lab_credits'] }}"
                         data-self-study-credits="{{ $subjectView['self_study_credits'] }}"
                         data-search="{{ $subjectView['search'] }}"
-                    >
+                        >
                         <span class="workload-subject-option-name">
-                            {{ $subjectView['code'] }} {{ $subjectView['name_th'] }}{{ !empty($subjectView['name_en']) ? ' ' . $subjectView['name_en'] : '' }}
+                            {{ $subjectView['code'] }} {{ $subjectView['display_name'] }}{{ !empty($subjectView['secondary_name']) ? ' ' . $subjectView['secondary_name'] : '' }}
                         </span>
                         <span class="workload-subject-option-credit">
                             (&#3619;&#3623;&#3617; {{ $subjectView['credits'] ?: '-' }} &#3627;&#3609;&#3656;&#3623;&#3618;&#3585;&#3636;&#3605; | &#3610; {{ $subjectView['lecture_credits'] }} / &#3611; {{ $subjectView['lab_credits'] }} / &#3624; {{ $subjectView['self_study_credits'] }})

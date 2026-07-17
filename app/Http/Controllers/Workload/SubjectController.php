@@ -42,6 +42,8 @@ class SubjectController extends Controller
             ->when($status === 'active', fn ($query) => $query->where('is_active', true))
             ->when($status === 'inactive', fn ($query) => $query->where('is_active', false));
 
+        $displayNameExpression = "COALESCE(NULLIF(name_th, ''), name_en)";
+
         match ($sort) {
             'manual' => $hasSortOrder
                 ? $subjects->orderBy('sort_order')->orderBy('id')
@@ -49,8 +51,8 @@ class SubjectController extends Controller
             'latest' => $subjects->orderByDesc('id'),
             'oldest' => $subjects->orderBy('id'),
             'code_desc' => $subjects->orderByDesc('code'),
-            'name_asc' => $subjects->orderBy('name_th'),
-            'name_desc' => $subjects->orderByDesc('name_th'),
+            'name_asc' => $subjects->orderByRaw("{$displayNameExpression} ASC")->orderBy('code'),
+            'name_desc' => $subjects->orderByRaw("{$displayNameExpression} DESC")->orderBy('code'),
             default => $subjects->orderBy('code'),
         };
 

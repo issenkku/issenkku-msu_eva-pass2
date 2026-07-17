@@ -2,6 +2,7 @@
 
 use App\Models\Subject;
 use App\Models\User;
+use App\Support\EvaluateeWorkloadModalData;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
@@ -83,4 +84,43 @@ test('manual update can replace a Thai name with an English-only long name', fun
 
     expect($subject->fresh()->name_th)->toBeNull()
         ->and($subject->fresh()->name_en)->toBe($longEnglishName);
+});
+
+test('subject index displays searches and sorts English-only names', function () {
+    Subject::create(flexibleSubjectPayload([
+        'code' => 'FLEX-Z', 'name_th' => null, 'name_en' => 'Zulu Health',
+    ]));
+    Subject::create(flexibleSubjectPayload([
+        'code' => 'FLEX-A', 'name_th' => null, 'name_en' => 'Alpha Health',
+    ]));
+    $admin = flexibleSubjectAdmin();
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.index', ['sort' => 'name_asc']))
+        ->assertOk()
+        ->assertSeeInOrder(['Alpha Health', 'Zulu Health']);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.index', ['search' => 'Zulu']))
+        ->assertOk()
+        ->assertSee('Zulu Health')
+        ->assertDontSee('Alpha Health');
+});
+
+test('workload picker exposes one primary English fallback without duplication', function () {
+    $subject = new Subject(flexibleSubjectPayload([
+        'name_th' => null,
+        'name_en' => 'English Only',
+    ]));
+    $subject->id = 99;
+
+    $modal = EvaluateeWorkloadModalData::build(
+        (object) ['groups' => []],
+        collect(),
+        collect([$subject]),
+    );
+
+    expect($modal['subjects'][0]['display_name'])->toBe('English Only')
+        ->and($modal['subjects'][0]['secondary_name'])->toBeNull()
+        ->and($modal['subjects'][0]['search'])->toContain('english only');
 });

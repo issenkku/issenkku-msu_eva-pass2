@@ -21,6 +21,8 @@ class EvaluateeWorkloadModalData
                     'code' => $subject->code,
                     'name_th' => $subject->name_th,
                     'name_en' => $subject->name_en,
+                    'display_name' => $subject->display_name,
+                    'secondary_name' => $subject->name_th !== null ? $subject->name_en : null,
                     'credits' => $subject->credits ?? '',
                     'lecture_credits' => $subject->lecture_credits ?? 0,
                     'lab_credits' => $subject->lab_credits ?? 0,

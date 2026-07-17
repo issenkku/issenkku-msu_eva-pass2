@@ -33,16 +33,20 @@
                 </thead>
                 <tbody data-reorder-body>
                     @foreach ($subjects as $index => $subject)
+                        @php
+                            $displayName = $subject->display_name ?? $subject->name_th ?? $subject->name_en ?? '';
+                            $secondaryName = !empty($subject->name_th) ? ($subject->name_en ?? null) : null;
+                        @endphp
                         <tr class="reorder-row" data-id="{{ $subject->id }}">
                             <td class="text-center align-middle">
-                                <input type="checkbox" class="form-check-input" value="{{ $subject->id }}" aria-label="เลือก {{ $subject->code }} {{ $subject->name_th }}" data-bulk-checkbox>
+                                <input type="checkbox" class="form-check-input" value="{{ $subject->id }}" aria-label="เลือก {{ $subject->code }} {{ $displayName }}" data-bulk-checkbox>
                             </td>
                             <td class="text-center align-middle"><span class="reorder-handle" data-drag-handle title="ลากเพื่อจัดอันดับ">⋮⋮</span></td>
                             <td class="align-middle" data-sequence>{{ $subjects->firstItem() + $index }}</td>
                             <td class="text-start align-middle">
-                                <strong>{{ $subject->code }}: {{ $subject->name_th }}</strong>
-                                @if (!empty($subject->name_en))
-                                    <div class="text-muted text-sm">{{ $subject->name_en }}</div>
+                                <strong>{{ $subject->code }}: {{ $displayName }}</strong>
+                                @if (!empty($secondaryName))
+                                    <div class="text-muted text-sm">{{ $secondaryName }}</div>
                                 @endif
                             </td>
                             <td class="align-middle">
