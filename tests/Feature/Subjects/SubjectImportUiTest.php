@@ -37,3 +37,26 @@ test('subject index renders complete import result groups', function () {
     expect($html)->toContain('CS100', 'CS101', 'CS102', 'CS103')
         ->toContain('นำเข้าข้อมูลรายวิชาสำเร็จ');
 });
+
+test('Preview renders summaries diffs errors and safe selection hooks', function () {
+    $preview = [
+        'new' => [['row' => ['excel_row' => 2, 'code' => 'CS100', 'name_th' => 'ใหม่']]],
+        'changed' => [[
+            'row' => ['excel_row' => 3, 'code' => 'CS101', 'name_th' => 'ใหม่'],
+            'current' => ['id' => 1, 'name_th' => 'เดิม'],
+            'fingerprint' => 'hash',
+            'diff' => ['name_th' => ['old' => 'เดิม', 'new' => 'ใหม่']],
+        ]],
+        'unchanged' => [['row' => ['excel_row' => 4, 'code' => 'CS102', 'name_th' => 'เหมือนเดิม']]],
+        'errors' => [['excelRow' => 5, 'code' => 'BAD', 'column' => 'หน่วยกิตรวม', 'value' => 'x', 'message' => 'ต้องเป็นจำนวนเต็ม']],
+    ];
+    $html = view('subjects.imports.show', ['token' => 'token', 'preview' => $preview])->render();
+
+    expect($html)->toContain('CS100', 'CS101', 'CS102', 'BAD')
+        ->toContain('เดิม', 'ใหม่')
+        ->toContain('data-subject-import-conflict')
+        ->toContain('data-subject-import-select-all')
+        ->toContain('data-subject-import-select-none')
+        ->toContain('disabled')
+        ->not->toContain('onclick=');
+});
