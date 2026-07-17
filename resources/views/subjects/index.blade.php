@@ -63,6 +63,10 @@
 
     <x-subject-modal />
     @include('subjects.partials.import-modal')
+    @include('subjects.imports.preview-modal', [
+        'importPreview' => $importPreview ?? null,
+        'importPreviewToken' => $importPreviewToken ?? null,
+    ])
 
     <x-delete-warning-modal
         text="รายวิชา"

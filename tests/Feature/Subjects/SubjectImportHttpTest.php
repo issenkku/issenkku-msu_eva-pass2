@@ -131,3 +131,21 @@ test('subjects index rejects a Preview token owned by another user', function ()
         ->get(route('subjects.index', ['import_preview' => $token]))
         ->assertNotFound();
 });
+
+test('subjects index renders an owned Preview in the modal', function () {
+    $admin = importAdmin();
+    $token = app(SubjectImportSnapshotStore::class)->put($admin->id, 'subjects.xlsx', [
+        'new' => [[
+            'row' => ['excel_row' => 2, 'code' => 'CS100', 'name_th' => 'รายวิชาใหม่', 'name_en' => null],
+        ]],
+        'changed' => [],
+        'unchanged' => [],
+        'errors' => [],
+    ]);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.index', ['import_preview' => $token]))
+        ->assertOk()
+        ->assertSee('subjectImportPreviewModal', false)
+        ->assertSee('CS100');
+});
