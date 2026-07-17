@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Workload\StoreSubjectRequest;
 use App\Http\Requests\Workload\UpdateSubjectRequest;
 use App\Models\Subject;
+use App\Services\Subjects\SubjectImportResultStore;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class SubjectController extends Controller
         return Schema::hasColumn('subjects', 'sort_order');
     }
 
-    public function index(Request $request)
+    public function index(Request $request, SubjectImportResultStore $results)
     {
         if ($request->expectsJson()) {
             return response()->json(Subject::all());
@@ -54,8 +55,12 @@ class SubjectController extends Controller
         };
 
         $subjects = $subjects->paginate(10)->withQueryString();
+        $resultToken = $request->session()->pull('subject_import_result_token');
+        $importResult = is_string($resultToken)
+            ? $results->pullForUser($resultToken, $request->user()->id)
+            : null;
 
-        return view('subjects.index', compact('subjects'));
+        return view('subjects.index', compact('subjects', 'importResult'));
     }
 
     public function show($id)

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportStructureController;
 use App\Http\Controllers\Workload\SubjectController;
+use App\Http\Controllers\Workload\SubjectImportController;
 use App\Http\Controllers\Workload\WorkloadConfigController;
 use App\Http\Controllers\Workload\WorkloadEntryController;
 use App\Http\Controllers\Workload\WorkloadFormController;
@@ -59,12 +60,21 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     Route::prefix('subjects')->name('subjects.')->group(function () {
         Route::get('/', [SubjectController::class, 'index'])->name('index');
+        Route::get('/import/template', [SubjectImportController::class, 'template'])->name('import.template');
+        Route::get('/import/export', [SubjectImportController::class, 'export'])->name('import.export');
+        Route::post('/import/preview', [SubjectImportController::class, 'storePreview'])->name('import.preview.store');
         Route::get('/{id}', [SubjectController::class, 'show'])->name('show');
         Route::post('/', [SubjectController::class, 'store'])->name('store');
         Route::post('/reorder', [SubjectController::class, 'reorder'])->name('reorder');
         Route::delete('/bulk-destroy', [SubjectController::class, 'bulkDestroy'])->name('bulk-destroy');
         Route::put('/{id}', [SubjectController::class, 'update'])->name('update');
         Route::delete('/{id}', [SubjectController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('subject-imports/{token}')->where(['token' => '[A-Za-z0-9]{64}'])->name('subjects.import.')->group(function () {
+        Route::get('/', [SubjectImportController::class, 'showPreview'])->name('preview.show');
+        Route::post('/confirm', [SubjectImportController::class, 'confirm'])->name('confirm');
+        Route::delete('/', [SubjectImportController::class, 'cancel'])->name('cancel');
     });
 
     Route::prefix('workload-forms')->name('workload-forms.')->group(function () {
