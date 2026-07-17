@@ -18,7 +18,6 @@ use App\Support\Subjects\SubjectCode;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -53,7 +52,7 @@ final class SubjectImportController extends Controller
             $preview = $this->previews->build($read);
             $token = $this->snapshots->put($request->user()->id, $file->getClientOriginalName(), $preview);
 
-            return redirect()->route('subjects.import.preview.show', $token);
+            return redirect()->route('subjects.index', ['import_preview' => $token]);
         } catch (SubjectWorkbookException $exception) {
             return redirect()->route('subjects.index')->withErrors([
                 'import_file' => $exception->getMessage(),
@@ -61,12 +60,12 @@ final class SubjectImportController extends Controller
         }
     }
 
-    public function showPreview(Request $request, string $token): View
+    public function showPreview(Request $request, string $token): RedirectResponse
     {
         $snapshot = $this->snapshots->getForUser($token, $request->user()->id);
         abort_if($snapshot === null, 404);
 
-        return view('subjects.imports.show', ['token' => $token, 'preview' => $snapshot['preview']]);
+        return redirect()->route('subjects.index', ['import_preview' => $token]);
     }
 
     public function confirm(ConfirmSubjectImportRequest $request, string $token): RedirectResponse

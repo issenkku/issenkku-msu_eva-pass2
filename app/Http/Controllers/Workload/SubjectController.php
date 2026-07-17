@@ -7,6 +7,7 @@ use App\Http\Requests\Workload\StoreSubjectRequest;
 use App\Http\Requests\Workload\UpdateSubjectRequest;
 use App\Models\Subject;
 use App\Services\Subjects\SubjectImportResultStore;
+use App\Services\Subjects\SubjectImportSnapshotStore;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +20,11 @@ class SubjectController extends Controller
         return Schema::hasColumn('subjects', 'sort_order');
     }
 
-    public function index(Request $request, SubjectImportResultStore $results)
-    {
+    public function index(
+        Request $request,
+        SubjectImportResultStore $results,
+        SubjectImportSnapshotStore $snapshots,
+    ) {
         if ($request->expectsJson()) {
             return response()->json(Subject::all());
         }
@@ -62,7 +66,23 @@ class SubjectController extends Controller
             ? $results->pullForUser($resultToken, $request->user()->id)
             : null;
 
-        return view('subjects.index', compact('subjects', 'importResult'));
+        $importPreviewToken = $request->query('import_preview');
+        $importPreview = null;
+
+        if (is_string($importPreviewToken) && $importPreviewToken !== '') {
+            $snapshot = $snapshots->getForUser($importPreviewToken, $request->user()->id);
+            abort_if($snapshot === null, 404);
+            $importPreview = $snapshot['preview'];
+        } else {
+            $importPreviewToken = null;
+        }
+
+        return view('subjects.index', compact(
+            'subjects',
+            'importResult',
+            'importPreview',
+            'importPreviewToken',
+        ));
     }
 
     public function show($id)

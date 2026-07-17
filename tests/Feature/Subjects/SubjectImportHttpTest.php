@@ -77,14 +77,19 @@ test('upload rejects non xlsx and files larger than ten megabytes in the named e
     ])->assertSessionHasErrorsIn('subjectImport', ['import_file']);
 });
 
-test('admin uploads a valid workbook and receives a Preview redirect', function () {
+test('admin upload redirects to the subjects index with a Preview token', function () {
     $path = httpWorkbook([['CS100', 'ใหม่', '', 3, 2, 1, 0]]);
     $file = new UploadedFile($path, 'subjects.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
 
     $response = $this->actingAs(importAdmin(), 'web')
-        ->post(route('subjects.import.preview.store'), ['import_file' => $file]);
+        ->post(route('subjects.import.preview.store'), ['import_file' => $file])
+        ->assertRedirect();
 
-    $response->assertRedirectContains('/subject-imports/');
+    $location = $response->headers->get('Location');
+    parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+    expect(parse_url($location, PHP_URL_PATH))->toBe('/subjects')
+        ->and($query['import_preview'] ?? null)->toMatch('/^[A-Za-z0-9]{64}$/');
     @unlink($path);
 });
 
@@ -102,4 +107,27 @@ test('confirm consumes a token and flashes only a result token', function () {
 
     expect(Subject::where('code', 'CS100')->exists())->toBeTrue()
         ->and(app(SubjectImportSnapshotStore::class)->getForUser($token, $admin->id))->toBeNull();
+});
+
+test('legacy Preview route redirects to the subjects index query', function () {
+    $admin = importAdmin();
+    $token = app(SubjectImportSnapshotStore::class)->put($admin->id, 'subjects.xlsx', [
+        'new' => [], 'changed' => [], 'unchanged' => [], 'errors' => [],
+    ]);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.import.preview.show', $token))
+        ->assertRedirect(route('subjects.index', ['import_preview' => $token]));
+});
+
+test('subjects index rejects a Preview token owned by another user', function () {
+    $owner = importAdmin();
+    $other = importAdmin();
+    $token = app(SubjectImportSnapshotStore::class)->put($owner->id, 'subjects.xlsx', [
+        'new' => [], 'changed' => [], 'unchanged' => [], 'errors' => [],
+    ]);
+
+    $this->actingAs($other, 'web')
+        ->get(route('subjects.index', ['import_preview' => $token]))
+        ->assertNotFound();
 });
