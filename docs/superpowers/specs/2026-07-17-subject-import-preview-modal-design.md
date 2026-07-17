@@ -66,7 +66,8 @@
 - ปุ่ม “ยืนยันการนำเข้า” เรียก Confirm route เดิม
 - ปุ่มยืนยัน disabled เมื่อ Preview มีข้อผิดพลาด
 - ปุ่มปิดที่ header ทำหน้าที่เดียวกับ Cancel เพื่อไม่ให้ snapshot ค้างโดยผู้ใช้เข้าใจว่า workflow ถูกยกเลิกแล้ว
-- ป้องกันการปิดด้วย backdrop หรือ Escape ที่จะซ่อน Modal โดยไม่ยกเลิก token ผู้ใช้ต้องเลือก Cancel/ปิดอย่างชัดเจน
+- การกด Escape ทำหน้าที่เดียวกับ Cancel: ส่ง request ลบ Preview token แล้วกลับหน้ารายวิชา
+- การคลิก backdrop ไม่ปิด Modal เพื่อป้องกันการซ่อน workflow โดยไม่ยกเลิก token
 
 ## การเชื่อมต่อฝั่งเซิร์ฟเวอร์
 
@@ -83,6 +84,7 @@ Confirm, Cancel, stale-preview protection, database transaction และ result
 - Modal มี `aria-labelledby` เชื่อมกับหัวข้อที่ไม่ซ้ำกัน
 - เมื่อเปิด Modal focus ย้ายไปที่หัวข้อหรือ control แรกที่ใช้งานได้
 - Bootstrap focus trap เก็บ focus อยู่ภายใน Modal
+- ปุ่ม Escape ปิด dialog ผ่าน Cancel route และล้าง token ไม่ใช่เพียงซ่อน Modal
 - หลัง Cancel และกลับหน้ารายวิชา focus เริ่มตาม navigation ปกติของหน้า
 - ปุ่ม icon-only มี accessible name ภาษาไทย
 - สถานะทั้งสี่อ่านเป็นข้อความและจำนวน ไม่ใช้สีแทนความหมาย
@@ -119,7 +121,8 @@ Confirm, Cancel, stale-preview protection, database transaction และ result
 7. token ของผู้ใช้อื่นหรือ token หมดอายุไม่แสดง Preview และตอบ 404
 8. เส้นทาง Preview เดิม redirect ไปหน้ารายวิชาพร้อม token
 9. Select all/none และ checkbox รายการซ้ำยังทำงาน
-10. Modal มี label, focus behavior, scroll และข้อกำหนดการปิดที่ตรวจสอบได้จาก view contract
+10. Modal มี label, focus behavior และ scroll ที่ตรวจสอบได้จาก view contract
+11. การกด Escape ส่ง Cancel form เพื่อลบ token ขณะที่ backdrop ไม่ปิด Modal
 
 ## เกณฑ์ยอมรับ
 
@@ -129,4 +132,3 @@ Confirm, Cancel, stale-preview protection, database transaction และ result
 - Confirm และ Cancel ใช้ token และผลลัพธ์เดิมอย่างปลอดภัย
 - Modal ใช้งานได้ด้วย keyboard, screen reader และหน้าจอขนาดเล็ก
 - Refresh หน้าที่มี token เปิด Preview Modal เดิมได้ตราบใดที่ token ยังไม่หมดอายุ
-
