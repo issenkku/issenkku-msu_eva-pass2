@@ -138,3 +138,18 @@ test('setting modal openers reuse bootstrap instances without cleanup races', fu
             ->not->toMatch('/function handleEdit\([^)]*\)\s*\{\s*clearModalBackdrop\(\);/');
     }
 });
+
+test('subject forms do not calculate total credits from component fields', function () {
+    $subjectScript = file_get_contents(resource_path('views/subjects/partials/index-script.blade.php'));
+    $evaluateeScript = file_get_contents(resource_path('views/evaluatee/partials/workload-script-subject-form.blade.php'));
+
+    expect($subjectScript)
+        ->not->toContain('function updateTotalCredits')
+        ->not->toContain('updateTotalCredits()')
+        ->not->toMatch('/totalInput\.value\s*=/');
+
+    expect($evaluateeScript)
+        ->not->toContain('function updateSubjectCreditTotal')
+        ->not->toContain("addEventListener('input', updateSubjectCreditTotal)")
+        ->not->toMatch('/totalInput\.value\s*=/');
+});

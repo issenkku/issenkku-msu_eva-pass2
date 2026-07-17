@@ -2,26 +2,6 @@
 <script>
     let isFormValid = false;
 
-    // คำนวณหน่วยกิตรวมจากบรรยาย ปฏิบัติ และศึกษาด้วยตนเองทุกครั้งที่กรอกข้อมูล
-    function updateTotalCredits() {
-        const lectureInput = document.getElementById('lecture_credits');
-        const labInput = document.getElementById('lab_credits');
-        const selfStudyInput = document.getElementById('self_study_credits');
-        const totalInput = document.getElementById('credits');
-
-        if (!lectureInput || !labInput || !selfStudyInput || !totalInput) {
-            return 0;
-        }
-
-        const lecture = Number(lectureInput.value || 0);
-        const lab = Number(labInput.value || 0);
-        const selfStudy = Number(selfStudyInput.value || 0);
-        const total = lecture + lab + selfStudy;
-
-        totalInput.value = Number.isNaN(total) ? 0 : total;
-        return totalInput.value;
-    }
-
     // ตรวจฟอร์มก่อนเปิดให้กดบันทึก เพื่อคุมทั้ง create และ edit ใช้กติกาเดียวกัน
     function validateForm() {
         const codeInput = document.getElementById('code');
@@ -321,15 +301,8 @@
         [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput].forEach((input) => {
             if (!input) return;
 
-            input.addEventListener('input', function() {
-                updateTotalCredits();
-                validateForm();
-            });
-
-            input.addEventListener('blur', function() {
-                updateTotalCredits();
-                validateForm();
-            });
+            input.addEventListener('input', validateForm);
+            input.addEventListener('blur', validateForm);
 
             input.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {

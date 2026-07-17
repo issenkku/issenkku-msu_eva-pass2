@@ -14,21 +14,6 @@
             return;
         }
 
-        function updateSubjectCreditTotal() {
-            const lectureInput = document.getElementById('lecture_credits');
-            const labInput = document.getElementById('lab_credits');
-            const selfStudyInput = document.getElementById('self_study_credits');
-            const totalInput = document.getElementById('credits');
-
-            if (!lectureInput || !labInput || !selfStudyInput || !totalInput) {
-                return;
-            }
-
-            totalInput.value = Number(lectureInput.value || 0)
-                + Number(labInput.value || 0)
-                + Number(selfStudyInput.value || 0);
-        }
-
         function toggleError(input, errorId, isValid) {
             const errorEl = document.getElementById(errorId);
             input.classList.toggle('is-invalid', !isValid);
@@ -87,13 +72,5 @@
             form.submit();
         };
 
-        ['lecture_credits', 'lab_credits', 'self_study_credits'].forEach(function (id) {
-            const input = document.getElementById(id);
-            if (!input) {
-                return;
-            }
-
-            input.addEventListener('input', updateSubjectCreditTotal);
-        });
     });
 </script>
