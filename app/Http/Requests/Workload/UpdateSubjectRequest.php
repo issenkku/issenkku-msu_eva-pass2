@@ -13,17 +13,7 @@ class UpdateSubjectRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $credits = (int) ($this->input('credits') ?: 0);
-        $lectureCredits = (int) ($this->input('lecture_credits') ?: 0);
-        $labCredits = (int) ($this->input('lab_credits') ?: 0);
-        $selfStudyCredits = (int) ($this->input('self_study_credits') ?: 0);
-
-        $normalized = [
-            'credits' => $credits,
-            'lecture_credits' => $lectureCredits,
-            'lab_credits' => $labCredits,
-            'self_study_credits' => $selfStudyCredits,
-        ];
+        $normalized = [];
 
         foreach (['name_th', 'name_en'] as $field) {
             if ($this->exists($field)) {

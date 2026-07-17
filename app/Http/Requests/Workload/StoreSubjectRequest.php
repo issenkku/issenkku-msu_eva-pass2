@@ -12,11 +12,6 @@ class StoreSubjectRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $credits = (int) ($this->input('credits') ?: 0);
-        $lectureCredits = (int) ($this->input('lecture_credits') ?: 0);
-        $labCredits = (int) ($this->input('lab_credits') ?: 0);
-        $selfStudyCredits = (int) ($this->input('self_study_credits') ?: 0);
-
         $normalized = [
             'name_th' => is_scalar($this->input('name_th')) || $this->input('name_th') === null
                 ? SubjectName::normalize($this->input('name_th'))
@@ -24,10 +19,6 @@ class StoreSubjectRequest extends FormRequest
             'name_en' => is_scalar($this->input('name_en')) || $this->input('name_en') === null
                 ? SubjectName::normalize($this->input('name_en'))
                 : $this->input('name_en'),
-            'credits' => $credits,
-            'lecture_credits' => $lectureCredits,
-            'lab_credits' => $labCredits,
-            'self_study_credits' => $selfStudyCredits,
         ];
 
         if ($this->exists('code')) {
