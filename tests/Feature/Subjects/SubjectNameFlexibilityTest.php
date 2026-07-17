@@ -41,3 +41,46 @@ test('subject names use nullable text storage and an English display fallback', 
         ->and($subject->fresh()->name_en)->toBe($longEnglishName)
         ->and($subject->fresh()->display_name)->toBe($longEnglishName);
 });
+
+test('manual create accepts an English-only name longer than 255 characters', function () {
+    $longEnglishName = trim(str_repeat('Public Health Administration ', 15));
+
+    $this->actingAs(flexibleSubjectAdmin(), 'web')
+        ->post(route('subjects.store'), flexibleSubjectPayload([
+            'name_th' => ' ',
+            'name_en' => " {$longEnglishName} ",
+        ]))
+        ->assertSessionDoesntHaveErrors();
+
+    $subject = Subject::where('code', 'FLEX101')->firstOrFail();
+    expect($subject->name_th)->toBeNull()
+        ->and($subject->name_en)->toBe($longEnglishName);
+});
+
+test('manual create rejects a subject with both names blank', function () {
+    $this->actingAs(flexibleSubjectAdmin(), 'web')
+        ->post(route('subjects.store'), flexibleSubjectPayload([
+            'name_th' => ' ',
+            'name_en' => '',
+        ]))
+        ->assertSessionHasErrors([
+            'name_th' => 'กรุณากรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง',
+        ]);
+
+    expect(Subject::where('code', 'FLEX101')->exists())->toBeFalse();
+});
+
+test('manual update can replace a Thai name with an English-only long name', function () {
+    $subject = Subject::create(flexibleSubjectPayload());
+    $longEnglishName = trim(str_repeat('Environmental and Occupational Health ', 10));
+
+    $this->actingAs(flexibleSubjectAdmin(), 'web')
+        ->put(route('subjects.update', $subject->id), [
+            'name_th' => '',
+            'name_en' => $longEnglishName,
+        ])
+        ->assertSessionDoesntHaveErrors();
+
+    expect($subject->fresh()->name_th)->toBeNull()
+        ->and($subject->fresh()->name_en)->toBe($longEnglishName);
+});

@@ -3,8 +3,10 @@
 namespace App\Http\Requests\Workload;
 
 use App\Support\Subjects\SubjectCode;
+use App\Support\Subjects\SubjectName;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreSubjectRequest extends FormRequest
 {
@@ -16,6 +18,12 @@ class StoreSubjectRequest extends FormRequest
         $selfStudyCredits = (int) ($this->input('self_study_credits') ?: 0);
 
         $normalized = [
+            'name_th' => is_scalar($this->input('name_th')) || $this->input('name_th') === null
+                ? SubjectName::normalize($this->input('name_th'))
+                : $this->input('name_th'),
+            'name_en' => is_scalar($this->input('name_en')) || $this->input('name_en') === null
+                ? SubjectName::normalize($this->input('name_en'))
+                : $this->input('name_en'),
             'credits' => $credits,
             'lecture_credits' => $lectureCredits,
             'lab_credits' => $labCredits,
@@ -48,13 +56,22 @@ class StoreSubjectRequest extends FormRequest
     {
         return [
             'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')],
-            'name_th' => ['required', 'string', 'max:255'],
-            'name_en' => ['nullable', 'string', 'max:255'],
+            'name_th' => ['nullable', 'string'],
+            'name_en' => ['nullable', 'string'],
             'credits' => ['required', 'integer', 'min:0'],
             'lecture_credits' => ['required', 'integer', 'min:0'],
             'lab_credits' => ['required', 'integer', 'min:0'],
             'self_study_credits' => ['required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];
+    }
+
+    public function after(): array
+    {
+        return [function (Validator $validator): void {
+            if (! SubjectName::hasAtLeastOne($this->input('name_th'), $this->input('name_en'))) {
+                $validator->errors()->add('name_th', SubjectName::REQUIRED_MESSAGE);
+            }
+        }];
     }
 }
