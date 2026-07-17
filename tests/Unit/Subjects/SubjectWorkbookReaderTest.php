@@ -55,11 +55,12 @@ test('reader reports formulas and duplicate normalized codes with every row numb
         ->toContain('แถว 3, 4');
 });
 
-test('reader rejects more than five thousand non-empty rows', function () {
+test('reader enforces a configured row limit and production remains limited to five thousand', function () {
+    expect(SubjectWorkbookSchema::MAX_ROWS)->toBe(5000);
     $row = ['CS101', 'ชื่อ', '', 3, 2, 1, 0];
-    $path = subjectWorkbook(array_fill(0, 5001, $row));
+    $path = subjectWorkbook([$row, $row, $row]);
 
-    expect(fn () => (new SubjectWorkbookReader(new SubjectImportRowValidator))->read($path))
-        ->toThrow(SubjectWorkbookException::class, '5,000');
+    expect(fn () => (new SubjectWorkbookReader(new SubjectImportRowValidator, 2))->read($path))
+        ->toThrow(SubjectWorkbookException::class, '2');
     @unlink($path);
 });

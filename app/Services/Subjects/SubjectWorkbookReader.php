@@ -13,7 +13,10 @@ use Throwable;
 
 final class SubjectWorkbookReader
 {
-    public function __construct(private SubjectImportRowValidator $validator) {}
+    public function __construct(
+        private SubjectImportRowValidator $validator,
+        private int $maxRows = SubjectWorkbookSchema::MAX_ROWS,
+    ) {}
 
     public function read(string $path): SubjectWorkbookReadResult
     {
@@ -49,8 +52,8 @@ final class SubjectWorkbookReader
                     continue;
                 }
                 $nonEmptyRows++;
-                if ($nonEmptyRows > SubjectWorkbookSchema::MAX_ROWS) {
-                    throw new SubjectWorkbookException('ไฟล์ต้องมีข้อมูลไม่เกิน 5,000 แถว');
+                if ($nonEmptyRows > $this->maxRows) {
+                    throw new SubjectWorkbookException('ไฟล์ต้องมีข้อมูลไม่เกิน '.number_format($this->maxRows).' แถว');
                 }
                 $codesByRow[$excelRow] = SubjectCode::normalize($values[0] ?? null);
 
