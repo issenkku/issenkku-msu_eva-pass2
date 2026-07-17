@@ -86,7 +86,7 @@ $fieldLabels = [
                 <tr>
                     <td>{{ $item['row']['excel_row'] }}</td>
                     <td>{{ $item['row']['code'] }}</td>
-                    <td>{{ $item['row']['name_th'] }}</td>
+                    <td>{{ $item['row']['name_th'] ?: $item['row']['name_en'] }}</td>
                 </tr>
             @empty
                 <tr><td colspan="3" class="text-center">ไม่มีรายการ</td></tr>

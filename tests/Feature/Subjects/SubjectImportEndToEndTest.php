@@ -54,7 +54,7 @@ test('invalid row shows every error and cannot be confirmed', function () {
     $token = tokenFromRedirect($response);
 
     $this->actingAs($admin, 'web')->get(route('subjects.import.preview.show', $token))
-        ->assertOk()->assertSee('ข้อผิดพลาด')->assertSee('ชื่อรายวิชา (ไทย)')->assertSee('หน่วยกิตรวม');
+        ->assertOk()->assertSee('ข้อผิดพลาด')->assertSee('ชื่อรายวิชา (ไทย/อังกฤษ)')->assertSee('หน่วยกิตรวม');
     $this->actingAs($admin, 'web')->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
         ->assertSessionHasErrors('selected_codes');
     expect(Subject::count())->toBe(0);
@@ -124,4 +124,26 @@ test('successful import result appears once after redirect', function () {
         ->assertOk()->assertSee('นำเข้าข้อมูลรายวิชาสำเร็จ')->assertSee('CS100');
     $this->actingAs($admin, 'web')->get(route('subjects.index'))
         ->assertOk()->assertDontSee('นำเข้าข้อมูลรายวิชาสำเร็จ');
+});
+
+test('English-only long names survive preview and confirm without copying languages', function () {
+    $admin = e2eAdmin();
+    $longEnglishName = trim(str_repeat('Environmental Health and Safety ', 12));
+    $response = $this->actingAs($admin, 'web')->post(route('subjects.import.preview.store'), [
+        'import_file' => e2eUpload([['ENV101', '', $longEnglishName, 3, 2, 1, 0]]),
+    ])->assertRedirect();
+    $token = tokenFromRedirect($response);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.import.preview.show', $token))
+        ->assertOk()
+        ->assertSee($longEnglishName);
+
+    $this->actingAs($admin, 'web')
+        ->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
+        ->assertRedirect(route('subjects.index'));
+
+    $subject = Subject::where('code', 'ENV101')->firstOrFail();
+    expect($subject->name_th)->toBeNull()
+        ->and($subject->name_en)->toBe($longEnglishName);
 });

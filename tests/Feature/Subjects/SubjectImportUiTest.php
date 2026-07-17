@@ -40,7 +40,10 @@ test('subject index renders complete import result groups', function () {
 
 test('Preview renders summaries diffs errors and safe selection hooks', function () {
     $preview = [
-        'new' => [['row' => ['excel_row' => 2, 'code' => 'CS100', 'name_th' => 'ใหม่']]],
+        'new' => [
+            ['row' => ['excel_row' => 2, 'code' => 'CS100', 'name_th' => 'ใหม่']],
+            ['row' => ['excel_row' => 6, 'code' => 'EN100', 'name_th' => null, 'name_en' => 'English Only']],
+        ],
         'changed' => [[
             'row' => ['excel_row' => 3, 'code' => 'CS101', 'name_th' => 'ใหม่'],
             'current' => ['id' => 1, 'name_th' => 'เดิม'],
@@ -52,7 +55,7 @@ test('Preview renders summaries diffs errors and safe selection hooks', function
     ];
     $html = view('subjects.imports.show', ['token' => 'token', 'preview' => $preview])->render();
 
-    expect($html)->toContain('CS100', 'CS101', 'CS102', 'BAD')
+    expect($html)->toContain('CS100', 'CS101', 'CS102', 'EN100', 'English Only', 'BAD')
         ->toContain('เดิม', 'ใหม่')
         ->toContain('data-subject-import-conflict')
         ->toContain('data-subject-import-select-all')
