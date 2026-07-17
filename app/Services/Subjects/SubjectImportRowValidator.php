@@ -42,11 +42,6 @@ final class SubjectImportRowValidator
             }
         }
 
-        if ($numbers[3] !== null && $numbers[4] !== null && $numbers[5] !== null && $numbers[6] !== null
-            && $numbers[3] !== $numbers[4] + $numbers[5] + $numbers[6]) {
-            $errors[] = $this->error($excelRow, $code, 3, $values[3], 'หน่วยกิตรวมต้องเท่ากับผลรวมของหน่วยกิตย่อย');
-        }
-
         if ($errors !== []) {
             return ['row' => null, 'errors' => $errors];
         }

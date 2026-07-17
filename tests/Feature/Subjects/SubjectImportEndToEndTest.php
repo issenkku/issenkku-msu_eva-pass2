@@ -49,7 +49,7 @@ function tokenFromRedirect($response): string
 test('invalid row shows every error and cannot be confirmed', function () {
     $admin = e2eAdmin();
     $response = $this->actingAs($admin, 'web')->post(route('subjects.import.preview.store'), [
-        'import_file' => e2eUpload([['BAD', '', '', 4, 2, 1, 0]]),
+        'import_file' => e2eUpload([['BAD', '', '', 'x', 2, 1, 0]]),
     ])->assertRedirect();
     $token = tokenFromRedirect($response);
 
@@ -146,4 +146,27 @@ test('English-only long names survive preview and confirm without copying langua
     $subject = Subject::where('code', 'ENV101')->firstOrFail();
     expect($subject->name_th)->toBeNull()
         ->and($subject->name_en)->toBe($longEnglishName);
+});
+
+test('independent credit values survive preview and confirm', function () {
+    $admin = e2eAdmin();
+    $response = $this->actingAs($admin, 'web')->post(route('subjects.import.preview.store'), [
+        'import_file' => e2eUpload([['ENV301', 'อนามัยสิ่งแวดล้อม', '', 3, 3, 0, 6]]),
+    ])->assertRedirect();
+    $token = tokenFromRedirect($response);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.import.preview.show', $token))
+        ->assertOk()->assertSee('ENV301')
+        ->assertDontSee('หน่วยกิตรวมต้องเท่ากับผลรวมของหน่วยกิตย่อย');
+
+    $this->actingAs($admin, 'web')
+        ->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
+        ->assertRedirect(route('subjects.index'));
+
+    $subject = Subject::where('code', 'ENV301')->firstOrFail();
+    expect((int) $subject->credits)->toBe(3)
+        ->and((int) $subject->lecture_credits)->toBe(3)
+        ->and((int) $subject->lab_credits)->toBe(0)
+        ->and((int) $subject->self_study_credits)->toBe(6);
 });

@@ -17,6 +17,8 @@ test('blank template has data and instructions sheets without sample data', func
         ->and($sheets[0]->array())->toBe([])
         ->and($sheets[1]->title())->toBe(SubjectWorkbookSchema::INSTRUCTIONS_SHEET)
         ->and($instructions)->toContain('อย่างน้อยหนึ่งช่อง')
+        ->and($instructions)->toContain('ทั้งสี่ค่าเป็นอิสระต่อกัน')
+        ->and($instructions)->not->toContain('รวมต้องเท่ากับผลรวมสามช่องย่อย')
         ->and($instructions)->not->toContain('255 ตัวอักษร');
 });
 

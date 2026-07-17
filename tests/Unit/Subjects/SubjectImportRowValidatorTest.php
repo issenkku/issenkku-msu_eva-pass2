@@ -26,11 +26,19 @@ test('validator reports every invalid field in one pass', function () {
         ->toContain('รหัสรายวิชา', 'ชื่อรายวิชา (ไทย/อังกฤษ)', 'หน่วยกิตศึกษาด้วยตนเอง');
 });
 
-test('validator rejects a total that does not equal the three component credits', function () {
-    $result = (new SubjectImportRowValidator)->validate(8, validSubjectImportValues([3 => 4]));
+test('validator accepts independent credit values', function () {
+    $result = (new SubjectImportRowValidator)->validate(8, validSubjectImportValues([
+        3 => 3, 4 => 3, 5 => 0, 6 => 6,
+    ]));
 
-    expect($result['row'])->toBeNull()
-        ->and(collect($result['errors'])->pluck('column')->all())->toContain('หน่วยกิตรวม');
+    expect($result['errors'])->toBe([])
+        ->and($result['row'])->not->toBeNull()
+        ->and($result['row']->attributes())->toMatchArray([
+            'credits' => 3,
+            'lecture_credits' => 3,
+            'lab_credits' => 0,
+            'self_study_credits' => 6,
+        ]);
 });
 
 test('validator accepts unicode names without language restrictions', function () {
