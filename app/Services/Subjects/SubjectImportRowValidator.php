@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Services\Subjects;
+
+use App\Data\Subjects\SubjectImportError;
+use App\Data\Subjects\SubjectImportRow;
+use App\Support\Subjects\SubjectCode;
+
+final class SubjectImportRowValidator
+{
+    private const COLUMNS = [
+        'รหัสรายวิชา', 'ชื่อรายวิชา (ไทย)', 'ชื่อรายวิชา (อังกฤษ)', 'หน่วยกิตรวม',
+        'หน่วยกิตบรรยาย', 'หน่วยกิตปฏิบัติ', 'หน่วยกิตศึกษาด้วยตนเอง',
+    ];
+
+    public function validate(int $excelRow, array $values): array
+    {
+        $code = SubjectCode::normalize($values[0] ?? null);
+        $nameTh = trim((string) ($values[1] ?? ''));
+        $nameEnRaw = trim((string) ($values[2] ?? ''));
+        $errors = [];
+
+        if ($code === '' || mb_strlen($code) > 255) {
+            $errors[] = $this->error($excelRow, $code, 0, $values[0] ?? null, 'ต้องกรอกรหัสไม่เกิน 255 ตัวอักษร');
+        }
+        if ($nameTh === '' || mb_strlen($nameTh) > 255) {
+            $errors[] = $this->error($excelRow, $code, 1, $values[1] ?? null, 'ต้องกรอกชื่อไม่เกิน 255 ตัวอักษร');
+        }
+        if (mb_strlen($nameEnRaw) > 255) {
+            $errors[] = $this->error($excelRow, $code, 2, $values[2] ?? null, 'ชื่อต้องไม่เกิน 255 ตัวอักษร');
+        }
+
+        $numbers = [];
+        foreach ([3, 4, 5, 6] as $column) {
+            $numbers[$column] = $this->integer($values[$column] ?? null);
+            if ($numbers[$column] === null) {
+                $errors[] = $this->error($excelRow, $code, $column, $values[$column] ?? null, 'ต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป');
+            }
+        }
+
+        if ($numbers[3] !== null && $numbers[4] !== null && $numbers[5] !== null && $numbers[6] !== null
+            && $numbers[3] !== $numbers[4] + $numbers[5] + $numbers[6]) {
+            $errors[] = $this->error($excelRow, $code, 3, $values[3], 'หน่วยกิตรวมต้องเท่ากับผลรวมของหน่วยกิตย่อย');
+        }
+
+        if ($errors !== []) {
+            return ['row' => null, 'errors' => $errors];
+        }
+
+        return ['row' => new SubjectImportRow(
+            $excelRow, $code, $nameTh, $nameEnRaw === '' ? null : $nameEnRaw,
+            $numbers[3], $numbers[4], $numbers[5], $numbers[6],
+        ), 'errors' => []];
+    }
+
+    private function integer(mixed $value): ?int
+    {
+        if (is_int($value) && $value >= 0) {
+            return $value;
+        }
+        if (is_float($value) && $value >= 0 && floor($value) === $value) {
+            return (int) $value;
+        }
+        if (is_string($value) && preg_match('/^\d+$/', trim($value)) === 1) {
+            return (int) trim($value);
+        }
+
+        return null;
+    }
+
+    private function error(int $row, ?string $code, int $column, mixed $value, string $message): SubjectImportError
+    {
+        return new SubjectImportError($row, $code ?: null, self::COLUMNS[$column], $value, $message);
+    }
+}
