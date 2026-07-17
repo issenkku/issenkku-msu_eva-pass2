@@ -210,7 +210,7 @@ Static import routes ต้องประกาศก่อน route `/subjects
 
 ### Preview Snapshot
 
-หลัง parse สำเร็จ ระบบลบไฟล์อัปโหลดดิบและเก็บ parsed snapshot ฝั่งเซิร์ฟเวอร์ใน Laravel cache ด้วย token สุ่มที่คาดเดาไม่ได้
+หลัง parse สำเร็จ ระบบลบไฟล์อัปโหลดดิบและเก็บ parsed snapshot ฝั่งเซิร์ฟเวอร์ใน Laravel `database` cache store ด้วย token สุ่มที่คาดเดาไม่ได้ ต้องระบุ store นี้โดยตรงแทนการใช้ default cache store เพราะค่า default ของ repo อาจเป็น `array` ซึ่งไม่คงอยู่ข้าม HTTP request ตาราง `cache` และ `cache_locks` ที่มีอยู่รองรับทั้ง snapshot และ atomic lock โดยไม่ต้องเพิ่ม staging table
 
 Snapshot ประกอบด้วย:
 
@@ -227,7 +227,7 @@ Snapshot หมดอายุ 30 นาที และถูกลบทัน
 
 ### Result Summary
 
-รายการ code อาจมีได้ถึง 5,000 ค่า จึงไม่เก็บ summary ทั้งหมดใน flash session หลัง commit ระบบเก็บ result summary ใน cache แยกต่างหากเป็นเวลา 10 นาทีด้วย result token ที่ผูกกับผู้ยืนยัน แล้ว flash เฉพาะ token ขนาดเล็กกลับหน้ารายวิชา
+รายการ code อาจมีได้ถึง 5,000 ค่า จึงไม่เก็บ summary ทั้งหมดใน flash session หลัง commit ระบบเก็บ result summary ใน `database` cache store แยกต่างหากเป็นเวลา 10 นาทีด้วย result token ที่ผูกกับผู้ยืนยัน แล้ว flash เฉพาะ token ขนาดเล็กกลับหน้ารายวิชา
 
 หน้ารายวิชาอ่าน result token หนึ่งครั้ง แสดงจำนวนและรายการ code แบบพับ/ขยายได้ แล้วลบ result cache ค่า flash message ทั่วไปยังใช้ component เดิม
 
