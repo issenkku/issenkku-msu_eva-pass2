@@ -20,14 +20,19 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="name_th" class="form-label">ชื่อรายวิชา (ไทย) <span class="text-danger">*</span></label>
-                        <input type="text" id="name_th" name="name_th" class="form-control" required placeholder="กรุณาระบุชื่อรายวิชาภาษาไทย">
-                        <div class="text-red-500 text-sm mt-1 hidden" id="nameThError">กรุณากรอกชื่อรายวิชา</div>
+                        <label for="name_th" class="form-label">ชื่อรายวิชา (ไทย)</label>
+                        <input type="text" id="name_th" name="name_th" class="form-control" aria-describedby="subjectNameHelp subjectNameError" placeholder="กรุณาระบุชื่อรายวิชาภาษาไทย">
                     </div>
 
                     <div class="mb-3">
                         <label for="name_en" class="form-label">ชื่อรายวิชา (อังกฤษ)</label>
-                        <input type="text" id="name_en" name="name_en" class="form-control" placeholder="กรุณาระบุชื่อรายวิชาภาษาอังกฤษ (ถ้ามี)">
+                        <input type="text" id="name_en" name="name_en" class="form-control" aria-describedby="subjectNameHelp subjectNameError" placeholder="กรุณาระบุชื่อรายวิชาภาษาอังกฤษ (ถ้ามี)">
+                        <div id="subjectNameHelp" class="form-text">
+                            กรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง
+                        </div>
+                        <div class="text-red-500 text-sm mt-1 hidden" id="subjectNameError" role="alert">
+                            กรุณากรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง
+                        </div>
                     </div>
 
                     <div class="mb-3">

@@ -26,25 +26,27 @@
     function validateForm() {
         const codeInput = document.getElementById('code');
         const nameThInput = document.getElementById('name_th');
+        const nameEnInput = document.getElementById('name_en');
         const lectureCreditsInput = document.getElementById('lecture_credits');
         const labCreditsInput = document.getElementById('lab_credits');
         const selfStudyCreditsInput = document.getElementById('self_study_credits');
         const creditsInput = document.getElementById('credits');
         const codeError = document.getElementById('codeError');
-        const nameThError = document.getElementById('nameThError');
+        const subjectNameError = document.getElementById('subjectNameError');
         const lectureCreditsError = document.getElementById('lectureCreditsError');
         const labCreditsError = document.getElementById('labCreditsError');
         const selfStudyCreditsError = document.getElementById('selfStudyCreditsError');
         const creditsError = document.getElementById('creditsError');
         const submitBtn = document.getElementById('subjectSubmitBtn');
 
-        if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput ||
-            !codeError || !nameThError || !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !creditsError || !submitBtn) {
+        if (!codeInput || !nameThInput || !nameEnInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput ||
+            !codeError || !subjectNameError || !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !creditsError || !submitBtn) {
             return false;
         }
 
         const codeValue = codeInput.value.trim();
         const nameThValue = nameThInput.value.trim();
+        const nameEnValue = nameEnInput.value.trim();
         const lectureCreditsValue = lectureCreditsInput.value.trim();
         const labCreditsValue = labCreditsInput.value.trim();
         const selfStudyCreditsValue = selfStudyCreditsInput.value.trim();
@@ -61,14 +63,20 @@
             codeError.style.display = 'none';
         }
 
-        if (nameThValue === '') {
+        if (nameThValue === '' && nameEnValue === '') {
             nameThInput.classList.add('is-invalid');
-            nameThError.style.display = 'block';
-            nameThError.textContent = 'กรุณากรอกชื่อรายวิชา';
+            nameEnInput.classList.add('is-invalid');
+            nameThInput.setAttribute('aria-invalid', 'true');
+            nameEnInput.setAttribute('aria-invalid', 'true');
+            subjectNameError.style.display = 'block';
+            subjectNameError.textContent = 'กรุณากรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง';
             isValid = false;
         } else {
             nameThInput.classList.remove('is-invalid');
-            nameThError.style.display = 'none';
+            nameEnInput.classList.remove('is-invalid');
+            nameThInput.removeAttribute('aria-invalid');
+            nameEnInput.removeAttribute('aria-invalid');
+            subjectNameError.style.display = 'none';
         }
 
         if (lectureCreditsValue === '' || Number.isNaN(Number(lectureCreditsValue))) {
@@ -223,9 +231,10 @@
 
         form.querySelectorAll('.form-control').forEach((input) => {
             input.classList.remove('is-invalid');
+            input.removeAttribute('aria-invalid');
         });
 
-        ['codeError', 'nameThError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError', 'creditsError'].forEach((errorId) => {
+        ['codeError', 'subjectNameError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError', 'creditsError'].forEach((errorId) => {
             const errorEl = document.getElementById(errorId);
             if (errorEl) {
                 errorEl.style.display = 'none';
@@ -292,6 +301,7 @@
 
         const codeInput = document.getElementById('code');
         const nameThInput = document.getElementById('name_th');
+        const nameEnInput = document.getElementById('name_en');
         const lectureCreditsInput = document.getElementById('lecture_credits');
         const labCreditsInput = document.getElementById('lab_credits');
         const selfStudyCreditsInput = document.getElementById('self_study_credits');
@@ -302,10 +312,11 @@
             codeInput.addEventListener('blur', validateForm);
         }
 
-        if (nameThInput) {
-            nameThInput.addEventListener('input', validateForm);
-            nameThInput.addEventListener('blur', validateForm);
-        }
+        [nameThInput, nameEnInput].forEach((input) => {
+            if (!input) return;
+            input.addEventListener('input', validateForm);
+            input.addEventListener('blur', validateForm);
+        });
 
         [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput].forEach((input) => {
             if (!input) return;

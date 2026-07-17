@@ -103,6 +103,20 @@ test('subjects index and subject modal render create hooks without inline handle
     expect($modalHtml)
         ->toContain('data-modal-submit-trigger')
         ->not->toContain('onclick="submitForm()"');
+
+    expect($modalHtml)
+        ->toContain('id="subjectNameHelp"')
+        ->toContain('id="subjectNameError"')
+        ->toContain('กรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง')
+        ->not->toMatch('/id="name_(?:th|en)"[^>]*\srequired/');
+
+    $subjectScript = file_get_contents(resource_path('views/subjects/partials/index-script.blade.php'));
+    expect($subjectScript)
+        ->toContain("document.getElementById('name_en')")
+        ->toContain("document.getElementById('subjectNameError')")
+        ->toContain("nameThValue === '' && nameEnValue === ''")
+        ->toContain("setAttribute('aria-invalid', 'true')")
+        ->toContain("removeAttribute('aria-invalid')");
 });
 
 test('setting modal openers reuse bootstrap instances without cleanup races', function () {
