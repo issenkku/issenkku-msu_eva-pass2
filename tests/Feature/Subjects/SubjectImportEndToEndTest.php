@@ -57,6 +57,8 @@ test('invalid row shows every error and cannot be confirmed', function () {
 
     $this->actingAs($admin, 'web')->get(route('subjects.import.preview.show', $token))
         ->assertRedirect(route('subjects.index', ['import_preview' => $token]));
+    $this->actingAs($admin, 'web')->get(route('subjects.index', ['import_preview' => $token]))
+        ->assertOk()->assertSee('ข้อผิดพลาด')->assertSee('ชื่อรายวิชา (ไทย/อังกฤษ)')->assertSee('หน่วยกิตรวม');
     $this->actingAs($admin, 'web')->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
         ->assertSessionHasErrors('selected_codes');
     expect(Subject::count())->toBe(0);
@@ -139,6 +141,10 @@ test('English-only long names survive preview and confirm without copying langua
     $this->actingAs($admin, 'web')
         ->get(route('subjects.import.preview.show', $token))
         ->assertRedirect(route('subjects.index', ['import_preview' => $token]));
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.index', ['import_preview' => $token]))
+        ->assertOk()
+        ->assertSee($longEnglishName);
 
     $this->actingAs($admin, 'web')
         ->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
@@ -159,6 +165,10 @@ test('independent credit values survive preview and confirm', function () {
     $this->actingAs($admin, 'web')
         ->get(route('subjects.import.preview.show', $token))
         ->assertRedirect(route('subjects.index', ['import_preview' => $token]));
+    $this->actingAs($admin, 'web')
+        ->get(route('subjects.index', ['import_preview' => $token]))
+        ->assertOk()->assertSee('ENV301')
+        ->assertDontSee('หน่วยกิตรวมต้องเท่ากับผลรวมของหน่วยกิตย่อย');
 
     $this->actingAs($admin, 'web')
         ->post(route('subjects.import.confirm', $token), ['selected_codes' => []])
