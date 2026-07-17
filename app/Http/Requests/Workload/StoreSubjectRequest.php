@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Workload;
 
+use App\Support\Subjects\SubjectCode;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSubjectRequest extends FormRequest
 {
@@ -13,12 +15,18 @@ class StoreSubjectRequest extends FormRequest
         $labCredits = (int) ($this->input('lab_credits') ?: 0);
         $selfStudyCredits = (int) ($this->input('self_study_credits') ?: 0);
 
-        $this->merge([
+        $normalized = [
             'credits' => $credits,
             'lecture_credits' => $lectureCredits,
             'lab_credits' => $labCredits,
             'self_study_credits' => $selfStudyCredits,
-        ]);
+        ];
+
+        if ($this->exists('code')) {
+            $normalized['code'] = SubjectCode::normalize($this->input('code'));
+        }
+
+        $this->merge($normalized);
     }
 
     protected function getRedirectUrl()
@@ -39,7 +47,7 @@ class StoreSubjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'code' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', Rule::unique('subjects', 'code')],
             'name_th' => ['required', 'string', 'max:255'],
             'name_en' => ['nullable', 'string', 'max:255'],
             'credits' => ['required', 'integer', 'min:0'],
