@@ -7,7 +7,7 @@ final readonly class SubjectImportRow
     public function __construct(
         public int $excelRow,
         public string $code,
-        public string $nameTh,
+        public ?string $nameTh,
         public ?string $nameEn,
         public int $credits,
         public int $lectureCredits,

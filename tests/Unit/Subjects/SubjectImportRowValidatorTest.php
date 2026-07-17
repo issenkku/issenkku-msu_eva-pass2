@@ -23,7 +23,7 @@ test('validator reports every invalid field in one pass', function () {
 
     expect($result['row'])->toBeNull()
         ->and(collect($result['errors'])->pluck('column')->all())
-        ->toContain('รหัสรายวิชา', 'ชื่อรายวิชา (ไทย)', 'หน่วยกิตศึกษาด้วยตนเอง');
+        ->toContain('รหัสรายวิชา', 'ชื่อรายวิชา (ไทย/อังกฤษ)', 'หน่วยกิตศึกษาด้วยตนเอง');
 });
 
 test('validator rejects a total that does not equal the three component credits', function () {
@@ -42,4 +42,29 @@ test('validator accepts unicode names without language restrictions', function (
     expect($result['errors'])->toBe([])
         ->and($result['row']->nameTh)->toBe('情報科学')
         ->and($result['row']->nameEn)->toBe('علوم الحاسوب');
+});
+
+test('validator accepts an English-only name longer than 255 characters', function () {
+    $longEnglishName = trim(str_repeat('Environmental Health ', 20));
+    $result = (new SubjectImportRowValidator)->validate(2, validSubjectImportValues([
+        1 => ' ',
+        2 => " {$longEnglishName} ",
+    ]));
+
+    expect($result['errors'])->toBe([])
+        ->and($result['row']->nameTh)->toBeNull()
+        ->and($result['row']->nameEn)->toBe($longEnglishName);
+});
+
+test('validator reports one combined error when both names are blank', function () {
+    $result = (new SubjectImportRowValidator)->validate(7, validSubjectImportValues([
+        1 => ' ',
+        2 => null,
+    ]));
+
+    expect($result['row'])->toBeNull()
+        ->and($result['errors'])->toHaveCount(1)
+        ->and($result['errors'][0]->column)->toBe('ชื่อรายวิชา (ไทย/อังกฤษ)')
+        ->and($result['errors'][0]->message)
+        ->toBe('กรุณากรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง');
 });

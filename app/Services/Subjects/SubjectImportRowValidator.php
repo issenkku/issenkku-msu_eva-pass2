@@ -5,6 +5,7 @@ namespace App\Services\Subjects;
 use App\Data\Subjects\SubjectImportError;
 use App\Data\Subjects\SubjectImportRow;
 use App\Support\Subjects\SubjectCode;
+use App\Support\Subjects\SubjectName;
 
 final class SubjectImportRowValidator
 {
@@ -16,18 +17,21 @@ final class SubjectImportRowValidator
     public function validate(int $excelRow, array $values): array
     {
         $code = SubjectCode::normalize($values[0] ?? null);
-        $nameTh = trim((string) ($values[1] ?? ''));
-        $nameEnRaw = trim((string) ($values[2] ?? ''));
+        $nameTh = SubjectName::normalize($values[1] ?? null);
+        $nameEn = SubjectName::normalize($values[2] ?? null);
         $errors = [];
 
         if ($code === '' || mb_strlen($code) > 255) {
             $errors[] = $this->error($excelRow, $code, 0, $values[0] ?? null, 'ต้องกรอกรหัสไม่เกิน 255 ตัวอักษร');
         }
-        if ($nameTh === '' || mb_strlen($nameTh) > 255) {
-            $errors[] = $this->error($excelRow, $code, 1, $values[1] ?? null, 'ต้องกรอกชื่อไม่เกิน 255 ตัวอักษร');
-        }
-        if (mb_strlen($nameEnRaw) > 255) {
-            $errors[] = $this->error($excelRow, $code, 2, $values[2] ?? null, 'ชื่อต้องไม่เกิน 255 ตัวอักษร');
+        if (! SubjectName::hasAtLeastOne($nameTh, $nameEn)) {
+            $errors[] = new SubjectImportError(
+                $excelRow,
+                $code === '' ? null : $code,
+                'ชื่อรายวิชา (ไทย/อังกฤษ)',
+                null,
+                SubjectName::REQUIRED_MESSAGE,
+            );
         }
 
         $numbers = [];
@@ -48,7 +52,7 @@ final class SubjectImportRowValidator
         }
 
         return ['row' => new SubjectImportRow(
-            $excelRow, $code, $nameTh, $nameEnRaw === '' ? null : $nameEnRaw,
+            $excelRow, $code, $nameTh, $nameEn,
             $numbers[3], $numbers[4], $numbers[5], $numbers[6],
         ), 'errors' => []];
     }
