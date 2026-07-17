@@ -95,3 +95,18 @@ test('Preview uses compact text statuses instead of summary cards', function () 
         ->not->toContain('class="card')
         ->not->toContain('row g-3');
 });
+
+test('Preview modal script opens focuses and cancels with Escape', function () {
+    $script = file_get_contents(resource_path('views/subjects/imports/partials/script.blade.php'));
+
+    expect($script)
+        ->toContain("document.getElementById('subjectImportPreviewModal')")
+        ->toContain("document.getElementById('subjectImportCancelForm')")
+        ->toContain('bootstrap.Modal.getOrCreateInstance(modalElement)')
+        ->toContain("modalElement.addEventListener('shown.bs.modal'")
+        ->toContain("event.key === 'Escape'")
+        ->toContain('cancelForm.requestSubmit()')
+        ->toContain('modal.show()')
+        ->toContain('data-subject-import-select-all')
+        ->toContain('data-subject-import-select-none');
+});
