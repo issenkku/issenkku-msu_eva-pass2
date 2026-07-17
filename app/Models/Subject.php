@@ -27,4 +27,11 @@ class Subject extends Model
     {
         return Attribute::make(set: fn (mixed $value): string => SubjectCode::normalize($value));
     }
+
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
 }
