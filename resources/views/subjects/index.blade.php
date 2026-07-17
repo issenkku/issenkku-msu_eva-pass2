@@ -10,6 +10,8 @@
             text="ระบบจัดการข้อมูลรายวิชา"
             icon="fas fa-book" />
 
+        @include('subjects.partials.import-result', ['importResult' => $importResult ?? null])
+
         <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
             <x-button
                 type="danger"
@@ -18,6 +20,12 @@
                 class="hidden"
                 data-bulk-delete-open
                 icon="fas fa-trash-alt" />
+            <x-button
+                type="secondary"
+                buttonType="button"
+                text="นำเข้าจาก Excel"
+                icon="fas fa-file-import"
+                data-subject-import-open />
             <x-button
                 type="primary"
                 buttonType="button"
@@ -54,6 +62,7 @@
     </div>
 
     <x-subject-modal />
+    @include('subjects.partials.import-modal')
 
     <x-delete-warning-modal
         text="รายวิชา"
@@ -67,6 +76,7 @@
         formAction="{{ route('subjects.bulk-destroy') }}" />
 
     @include('subjects.partials.index-flash-message')
+    @include('subjects.partials.import-modal-script')
     @include('subjects.partials.index-script')
     @include('partials.table-reorder-script')
 @endsection
