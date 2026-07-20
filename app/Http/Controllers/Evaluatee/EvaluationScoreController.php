@@ -12,8 +12,10 @@ use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\User;
+use App\Services\SupportScoreService;
 use App\Support\AssignmentFlow;
 use App\Support\QuantityScoreHistoryRecorder;
+use App\Support\SupportScoreRules;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +26,8 @@ use Spatie\Activitylog\Facades\Activity;
 class EvaluationScoreController extends Controller
 {
     protected $allowedEditStatuses = ['Assigned', 'Draft'];
+
+    public function __construct(private SupportScoreService $supportScoreService) {}
 
     protected function checkReportEditableStatus(Reports $report, $action)
     {
@@ -94,6 +98,8 @@ class EvaluationScoreController extends Controller
                 'evidence_list_flat.*.link' => 'required|string',
 
                 'status' => 'required|string|in:Draft,Pending,Assigned,Submitted',
+
+                ...SupportScoreRules::validation(),
             ]);
 
             if (
@@ -160,7 +166,10 @@ class EvaluationScoreController extends Controller
             // Delete existing records for this report
             QuantityScore::where('report_id', $reportId)->delete();
             QualityScore::where('report_id', $reportId)->delete();
-            EvidenceAnswer::where('report_id', $reportId)->delete();
+            EvidenceAnswer::where('report_id', $reportId)
+                ->whereNull('support_criteria_id')
+                ->whereNull('workload_entry_id')
+                ->delete();
 
             $newQuantityScores = [];
             if (isset($validated['quantity_list'])) {
@@ -294,6 +303,14 @@ class EvaluationScoreController extends Controller
                 $newEvidences[] = $item;
             }
 
+            $supportResult = $this->supportScoreService->persist(
+                $report,
+                $validated['support_list'] ?? [],
+                $request->user(),
+                null,
+                false
+            );
+
             $statusMessages = [
                 'Draft' => 'ผู้รับประเมินกรอกข้อมูล',
                 'Pending' => 'ผู้รับประเมินส่งข้อมูล',
@@ -324,6 +341,9 @@ class EvaluationScoreController extends Controller
                     'อัพเดตคะแนนเชิงคุณภาพ' => $newQualityScores,
                     'หลักฐานก่อนหน้า' => $oldEvidences,
                     'อัพเดตหลักฐาน' => $newEvidences,
+                    'คะแนนสายสนับสนุนก่อนหน้า' => $supportResult['old_scores'],
+                    'อัพเดตคะแนนสายสนับสนุน' => $supportResult['new_scores'],
+                    'ผลรวมคะแนนสายสนับสนุนจริง' => $supportResult['support_score_total'],
                 ])
                 ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
@@ -338,14 +358,9 @@ class EvaluationScoreController extends Controller
             return redirect('/evaluatee-dashboard')->with('success', $message);
 
         } catch (ValidationException $e) {
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors' => $e->errors(),
-                ], 422);
-            }
+            DB::rollBack();
 
-            return back()->withErrors($e->errors())->withInput();
+            throw $e;
         } catch (Exception $e) {
             DB::rollback();
 
