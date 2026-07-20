@@ -20,6 +20,24 @@
         border-bottom: 1px solid #e5e7eb;
     }
 
+    /* Tailwind preflight removes list markers; restore them in rich text. */
+    .note-editor .note-editable ul,
+    .support-criteria-rich-text ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+    }
+
+    .note-editor .note-editable ol,
+    .support-criteria-rich-text ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+    }
+
+    .note-editor .note-editable li,
+    .support-criteria-rich-text li {
+        display: list-item;
+    }
+
     * {
         font-family: 'Kanit', sans-serif;
     }

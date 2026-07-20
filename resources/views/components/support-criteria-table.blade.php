@@ -42,8 +42,8 @@
                         @endphp
                         <tr>
                             <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
-                            <td class="break-words px-2 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
-                            <td class="break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
+                            <td class="support-criteria-rich-text break-words px-2 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
+                            <td class="support-criteria-rich-text break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
                             <td class="px-2 py-4 text-right font-semibold tabular-nums"
@@ -93,7 +93,7 @@
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">รายการ {{ $item['sequence'] }}</span>
-                            <h4 class="mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
+                            <h4 class="support-criteria-rich-text mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
                         </div>
                         @if (!empty($item['require_evidence']))
                             <span class="shrink-0 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
@@ -104,7 +104,7 @@
                     <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <div class="col-span-2">
                             <dt class="text-xs font-medium text-slate-500">ตัวชี้วัด/เกณฑ์การประเมิน</dt>
-                            <dd class="mt-1 leading-6 text-slate-800">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</dd>
+                            <dd class="support-criteria-rich-text mt-1 leading-6 text-slate-800">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-slate-500">ระดับค่าเป้าหมาย</dt>
@@ -169,7 +169,7 @@
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">กรอกผลรายการ {{ $item['sequence'] }}</p>
-                            <h4 class="mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
+                            <h4 class="support-criteria-rich-text mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
                         </div>
                         @if (!empty($item['require_evidence']))
                             <span class="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
