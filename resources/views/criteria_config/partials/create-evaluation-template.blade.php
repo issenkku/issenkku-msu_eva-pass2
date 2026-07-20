@@ -86,11 +86,18 @@
                                                 value="quality">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านคุณภาพ</span>
                                         </label>
+                                        <label class="flex items-center">
+                                            <input name="criteria_type_support" type="checkbox"
+                                                class="criteria_type support_criteria_type form-checkbox h-5 w-5 rounded text-amber-600 focus:ring-amber-500"
+                                                value="support">
+                                            <span class="ml-2 text-sm">เกณฑ์สำหรับสายสนับสนุน</span>
+                                        </label>
                                     </div>
                                 </div>
 
                                 @include('criteria_config.partials.create-quantity-template')
                                 @include('criteria_config.partials.create-quality-template')
+                                @include('criteria_config.partials.support-criteria-template')
                             </div>
                         </div>
 

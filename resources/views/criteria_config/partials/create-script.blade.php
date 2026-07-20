@@ -297,10 +297,11 @@
             
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
             node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
+            node.querySelectorAll('.support_criteria_id').forEach(input => input.value = '');
             node.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
             node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
-                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
+                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child), .support_criteria_block:not(:first-child)'
             ).forEach(e => e.remove());
 
             if (blockSelector === '.evaluation_list_block') {
@@ -309,6 +310,7 @@
                 setSequenceInputValue(node.querySelector('.eval_sequence'), index);
                 node.querySelector('.quantity_main_criterias_container').classList.add('hidden');
                 node.querySelector('.quality_main_criterias_container').classList.add('hidden');
+                node.querySelector('.support_criterias_container').classList.add('hidden');
             }
             if (blockSelector === '.category_block') {
                 const container = document.getElementById('categories_container');
@@ -376,11 +378,15 @@
 
                 const quantityContainer = evalBlock.querySelector('.quantity_main_criterias_container');
                 const qualityContainer = evalBlock.querySelector('.quality_main_criterias_container');
+                const supportContainer = evalBlock.querySelector('.support_criterias_container');
                 if (quantityContainer) {
                     updateQuantMainSequence(quantityContainer, evalPrefix);
                 }
                 if (qualityContainer) {
                     updateQualMainSequence(qualityContainer, evalPrefix);
+                }
+                if (supportContainer) {
+                    updateSupportSequence(supportContainer, evalPrefix);
                 }
             });
         }
@@ -449,6 +455,13 @@
             });
         }
 
+        function updateSupportSequence(container, evalPrefix = '') {
+            container.querySelectorAll('.support_criteria_block').forEach((block, index) => {
+                const supportPrefix = evalPrefix ? `${evalPrefix}.${index + 1}` : `${index + 1}`;
+                setSequenceInputValue(block.querySelector('.support_sequence'), supportPrefix);
+            });
+        }
+
         let draggedBlock = null;
 
         function refreshOrderUI() {
@@ -457,6 +470,7 @@
             updateButtonStates('.evaluation_list_block', '.move_eval_up_btn', '.move_eval_down_btn');
             updateButtonStates('.quant_criteria_block', '.move_quant_up_btn', '.move_quant_down_btn');
             updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
+            updateButtonStates('.support_criteria_block', '.move_support_up_btn', '.move_support_down_btn');
         }
 
         document.addEventListener('pointerdown', function (e) {
@@ -711,6 +725,18 @@
             } else {
                 showValidationErrorModal('ต้องมีเกณฑ์คุณภาพย่อยอย่างน้อย 1 รายการ');
             }
+
+            if (e.target.closest('.delete_support_criteria_btn')) {
+                const block = e.target.closest('.support_criteria_block');
+                const container = block.closest('.support_criteria_items');
+                if (container.querySelectorAll('.support_criteria_block').length > 1) {
+                    block.remove();
+                    refreshOrderUI();
+                    markDirty();
+                } else {
+                    showValidationErrorModal('ต้องมีเกณฑ์สายสนับสนุนอย่างน้อย 1 รายการ');
+                }
+            }
             }
 
             if (e.target.closest('.move_category_up_btn')) {
@@ -803,6 +829,26 @@
                     block.parentNode.insertBefore(next, block);
                     updateButtonStates('.qual_criteria_block', '.move_qual_up_btn', '.move_qual_down_btn');
                     updateQualMainSequence(container);
+                    markDirty();
+                }
+            }
+
+            if (e.target.closest('.move_support_up_btn')) {
+                const block = e.target.closest('.support_criteria_block');
+                const previous = block.previousElementSibling;
+                if (previous && previous.classList.contains('support_criteria_block')) {
+                    block.parentNode.insertBefore(block, previous);
+                    refreshOrderUI();
+                    markDirty();
+                }
+            }
+
+            if (e.target.closest('.move_support_down_btn')) {
+                const block = e.target.closest('.support_criteria_block');
+                const next = block.nextElementSibling;
+                if (next && next.classList.contains('support_criteria_block')) {
+                    block.parentNode.insertBefore(next, block);
+                    refreshOrderUI();
                     markDirty();
                 }
             }
@@ -966,6 +1012,21 @@
                     block: 'start'
                 });
             }
+
+            if (e.target.closest('.add_support_criteria_btn')) {
+                const evaluationBlock = e.target.closest('.evaluation_list_block');
+                const container = evaluationBlock.querySelector('.support_criteria_items');
+                const newBlock = cloneAndClear('.support_criteria_block');
+                container.appendChild(newBlock);
+                refreshOrderUI();
+                markDirty();
+                ensureRuntimeFormFieldIdentifiers(newBlock);
+                ensureRuntimeLabelAssociations(newBlock);
+                newBlock.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
         });
 
         document.addEventListener('change', function(e) {
@@ -973,10 +1034,13 @@
                 const evalBlock = e.target.closest('.evaluation_list_block');
                 const quantityContainer = evalBlock.querySelector('.quantity_main_criterias_container');
                 const qualityContainer = evalBlock.querySelector('.quality_main_criterias_container');
+                const supportContainer = evalBlock.querySelector('.support_criterias_container');
                 const quantityCheckbox = evalBlock.querySelector('.quantity_criteria_type');
                 const qualityCheckbox = evalBlock.querySelector('.quality_criteria_type');
+                const supportCheckbox = evalBlock.querySelector('.support_criteria_type');
                 quantityContainer.classList.toggle('hidden', !quantityCheckbox.checked);
                 qualityContainer.classList.toggle('hidden', !qualityCheckbox.checked);
+                supportContainer.classList.toggle('hidden', !supportCheckbox.checked);
             }
         });
 
@@ -988,7 +1052,7 @@
                     confirmBtn.onclick = function() {
                         document.getElementById('custom-alert-modal').style.display = 'none';
                         document.getElementById('jsonForm').reset();
-                        document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container')
+                        document.querySelectorAll('.quantity_main_criterias_container, .quality_main_criterias_container, .support_criterias_container')
                             .forEach(container => container.classList.add('hidden'));
                         updateCategorySequence(document.getElementById('categories_container'));
                         document.querySelectorAll('.evaluation_lists_container').forEach(updateEvalSequence);
@@ -996,6 +1060,7 @@
                         document.querySelectorAll('.quant_sub_criteria_container').forEach(updateQuantSubSequence);
                         document.querySelectorAll('.quality_main_criterias_container').forEach(updateQualMainSequence);
                         document.querySelectorAll('.qual_sub_criterias_container').forEach(updateQualSubSequence);
+                        document.querySelectorAll('.support_criterias_container').forEach(updateSupportSequence);
                     };
                 }
             }, 100);
@@ -1076,6 +1141,8 @@
                     const quantityChecked = evalBlock.querySelector('.quantity_criteria_type')
                         .checked;
                     const qualityChecked = evalBlock.querySelector('.quality_criteria_type')
+                        .checked;
+                    const supportChecked = evalBlock.querySelector('.support_criteria_type')
                         .checked;
 
                     let evalList = {
@@ -1227,6 +1294,47 @@
                                 evalList.quality_main_criterias.push(qualMain);
                             }
                         });
+                        if (!valid) return;
+                    }
+
+                    if (supportChecked) {
+                        let valid = true;
+                        evalList.support_criterias = [];
+                        Array.from(evalBlock.querySelectorAll('.support_criteria_block'))
+                            .sort((left, right) => compareSequenceValues(
+                                getSequenceValue(left, '.support_sequence', `${catI + 1}.${evalI + 1}.1`),
+                                getSequenceValue(right, '.support_sequence', `${catI + 1}.${evalI + 1}.1`)
+                            ))
+                            .forEach((supportBlock, supportIndex) => {
+                                const activityName = supportBlock.querySelector('.support_activity_name').value.trim();
+                                const indicator = supportBlock.querySelector('.support_indicator').value.trim();
+                                const targetValue = supportBlock.querySelector('.support_target_value').value;
+                                const weight = supportBlock.querySelector('.support_weight').value;
+
+                                if (!activityName || !indicator || targetValue === '' || weight === '') {
+                                    showValidationErrorModal(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
+                                    valid = false;
+                                    return;
+                                }
+                                if (Number(targetValue) < 0) {
+                                    showValidationErrorModal(`ระดับค่าเป้าหมายของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องไม่ติดลบ`);
+                                    valid = false;
+                                    return;
+                                }
+                                if (Number(weight) <= 0 || Number(weight) > 100) {
+                                    showValidationErrorModal(`น้ำหนักของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องมากกว่า 0 และไม่เกิน 100`);
+                                    valid = false;
+                                    return;
+                                }
+
+                                evalList.support_criterias.push({
+                                    sequence: supportIndex + 1,
+                                    activity_name: activityName,
+                                    indicator,
+                                    target_value: Number(targetValue),
+                                    weight: Number(weight)
+                                });
+                            });
                         if (!valid) return;
                     }
 
