@@ -53,46 +53,89 @@
             if (totalSummary) totalSummary.textContent = (quantity + quality + cappedSupport).toFixed(2);
         };
 
-        window.validateSupportCriteria = function validateSupportCriteria() {
+        const validateSupportItem = (item) => {
             const errors = [];
-
-            document.querySelectorAll('[data-support-item]').forEach((item) => {
-                const input = item.querySelector('[data-support-score]');
-                if (!input) return;
-
-                const activity = item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน';
-                const value = input.value.trim();
-                if (value !== '' && (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) < 0)) {
-                    errors.push(`ค่าคะแนนที่ได้ของ "${activity}" ต้องเป็นเลขตั้งแต่ 0 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
-                }
-
-                const evidenceInputs = Array.from(item.querySelectorAll('[data-support-evidence-input]'));
-                const evidenceLinks = evidenceInputs.map((evidenceInput) => evidenceInput.value.trim()).filter(Boolean);
-                const invalidLink = evidenceLinks.some((link) => {
-                    try {
-                        const url = new URL(link);
-                        return !['http:', 'https:'].includes(url.protocol);
-                    } catch (error) {
-                        return true;
-                    }
-                });
-                if (invalidLink) {
-                    errors.push(`ลิงก์หลักฐานของ "${activity}" ต้องเป็น URL ที่ขึ้นต้นด้วย http:// หรือ https://`);
-                }
-
-                const required = item.dataset.supportRequired === '1';
-                if (required && evidenceLinks.length === 0) {
-                    errors.push(`กรุณาแนบหลักฐานสำหรับ "${activity}"`);
-                }
-
-                const requireReason = item.dataset.supportRequireReason === '1';
-                const normalizedCurrent = normalizeScore(value);
-                const normalizedOriginal = normalizeScore(input.dataset.supportOriginalScore);
-                const reason = item.querySelector('[data-support-reason]')?.value.trim() || '';
-                if (requireReason && normalizedCurrent !== normalizedOriginal && reason === '') {
-                    errors.push(`กรุณาระบุเหตุผลการแก้คะแนนของ "${activity}"`);
+            let firstInvalid = null;
+            const modalErrorId = 'support-modal-errors';
+            item.querySelectorAll('[aria-invalid="true"]').forEach((element) => {
+                element.removeAttribute('aria-invalid');
+                const describedBy = (element.getAttribute('aria-describedby') || '')
+                    .split(/\s+/)
+                    .filter((id) => id && id !== modalErrorId);
+                if (describedBy.length > 0) {
+                    element.setAttribute('aria-describedby', describedBy.join(' '));
+                } else {
+                    element.removeAttribute('aria-describedby');
                 }
             });
+            const rememberInvalid = (element) => {
+                if (!firstInvalid && element) firstInvalid = element;
+                if (!element?.matches('input, textarea, select')) return;
+                element.setAttribute('aria-invalid', 'true');
+                const describedBy = new Set((element.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean));
+                describedBy.add(modalErrorId);
+                element.setAttribute('aria-describedby', [...describedBy].join(' '));
+            };
+            const input = item.querySelector('[data-support-score]');
+            if (!input) return { errors, firstInvalid };
+
+            const activity = item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน';
+            const value = input.value.trim();
+            if (value !== '' && (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) < 0)) {
+                errors.push(`ค่าคะแนนที่ได้ของ "${activity}" ต้องเป็นเลขตั้งแต่ 0 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
+                rememberInvalid(input);
+            }
+
+            const evidenceInputs = Array.from(item.querySelectorAll('[data-support-evidence-input]'));
+            const evidenceLinks = evidenceInputs.map((field) => field.value.trim()).filter(Boolean);
+            const invalidEvidenceInput = evidenceInputs.find((field) => {
+                const link = field.value.trim();
+                if (link === '') return false;
+                try {
+                    return !['http:', 'https:'].includes(new URL(link).protocol);
+                } catch (error) {
+                    return true;
+                }
+            });
+            if (invalidEvidenceInput) {
+                errors.push(`ลิงก์หลักฐานของ "${activity}" ต้องเป็น URL ที่ขึ้นต้นด้วย http:// หรือ https://`);
+                rememberInvalid(invalidEvidenceInput);
+            }
+
+            if (item.dataset.supportRequired === '1' && evidenceLinks.length === 0) {
+                errors.push(`กรุณาแนบหลักฐานสำหรับ "${activity}"`);
+                rememberInvalid(item.querySelector('[data-add-support-evidence]') || input);
+            }
+
+            const reason = item.querySelector('[data-support-reason]');
+            const scoreChanged = normalizeScore(value) !== normalizeScore(input.dataset.supportOriginalScore);
+            if (item.dataset.supportRequireReason === '1' && scoreChanged && !reason?.value.trim()) {
+                errors.push(`กรุณาระบุเหตุผลการแก้คะแนนของ "${activity}"`);
+                rememberInvalid(reason || input);
+            }
+
+            return { errors, firstInvalid };
+        };
+
+        window.validateSupportCriteria = function validateSupportCriteria() {
+            const errors = [];
+            let firstInvalidItem = null;
+            let firstInvalidControl = null;
+
+            document.querySelectorAll('[data-support-item]').forEach((item) => {
+                const result = validateSupportItem(item);
+                errors.push(...result.errors);
+                if (!firstInvalidItem && result.errors.length > 0) {
+                    firstInvalidItem = item;
+                    firstInvalidControl = result.firstInvalid;
+                }
+            });
+
+            if (firstInvalidItem) {
+                openSupportModal(firstInvalidItem.dataset.supportId, 'error');
+                renderModalErrors(errors);
+                window.requestAnimationFrame(() => firstInvalidControl?.focus());
+            }
 
             return errors;
         };
@@ -112,6 +155,7 @@
             input.name = `support_list[${criterionId}][evidence_links][]`;
             input.dataset.supportEvidenceInput = '';
             input.placeholder = 'https://example.com/evidence';
+            input.setAttribute('aria-label', 'ลิงก์หลักฐาน');
             input.className = 'block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200';
 
             const removeButton = document.createElement('button');
@@ -181,13 +225,16 @@
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.dataset.supportEvidenceOpen = id;
+                button.setAttribute('aria-label', `ดูหลักฐานของ ${item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน'} ${evidenceLinks.length} ลิงก์`);
                 button.className = 'font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400';
                 button.textContent = `${evidenceLinks.length} ลิงก์`;
                 container.appendChild(button);
             });
 
             document.querySelectorAll(`[data-support-manage-open="${id}"]`).forEach((button) => {
-                button.textContent = score !== '' || evidenceLinks.length > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล';
+                const label = score !== '' || evidenceLinks.length > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล';
+                button.textContent = label;
+                button.setAttribute('aria-label', `${label}สำหรับ ${item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน'}`);
             });
         };
 
@@ -196,6 +243,23 @@
             if (!errors) return;
             errors.replaceChildren();
             errors.classList.add('hidden');
+        };
+
+        const renderModalErrors = (errors) => {
+            const container = modal?.querySelector('[data-support-modal-errors]');
+            if (!container) return;
+            container.replaceChildren();
+            container.classList.toggle('hidden', errors.length === 0);
+            if (errors.length === 0) return;
+
+            const list = document.createElement('ul');
+            list.className = 'list-inside list-disc space-y-1';
+            [...new Set(errors)].forEach((message) => {
+                const entry = document.createElement('li');
+                entry.textContent = message;
+                list.appendChild(entry);
+            });
+            container.appendChild(list);
         };
 
         const closeSupportModal = ({ restore = true } = {}) => {
@@ -219,6 +283,7 @@
 
         const openSupportModal = (criterionId, section = 'score') => {
             if (!modal || !modalBody || !editorStore) return;
+            if (activeItem?.dataset.supportId === String(criterionId)) return;
             if (activeItem) closeSupportModal({ restore: true });
 
             const item = document.querySelector(`[data-support-item][data-support-id="${criterionId}"]`);
@@ -299,6 +364,12 @@
 
         modal?.querySelector('[data-support-modal-save]')?.addEventListener('click', () => {
             if (!activeItem) return;
+            const result = validateSupportItem(activeItem);
+            renderModalErrors(result.errors);
+            if (result.errors.length > 0) {
+                result.firstInvalid?.focus();
+                return;
+            }
             updateSupportRow(activeItem);
             window.recalculateSupportScores();
             closeSupportModal({ restore: false });
@@ -308,8 +379,27 @@
             if (event.target === modal) closeSupportModal({ restore: true });
         });
 
+        const trapSupportModalFocus = (event) => {
+            if (!modal) return;
+            const focusable = Array.from(modal.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            )).filter((element) => element.offsetParent !== null);
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
+
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && activeItem) closeSupportModal({ restore: true });
+            if (event.key === 'Tab' && activeItem) trapSupportModalFocus(event);
         });
 
         if (document.readyState === 'loading') {

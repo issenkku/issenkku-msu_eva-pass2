@@ -51,6 +51,11 @@ test('support criteria component renders one responsive editable form control se
         ->toContain('data-support-modal')
         ->toContain('data-support-modal-body')
         ->toContain('data-support-modal-save')
+        ->toContain('aria-label="แก้ไขข้อมูลสำหรับ จัดทำรายงาน"')
+        ->toContain('aria-label="ดูหลักฐานของ จัดทำรายงาน 1 ลิงก์"')
+        ->toContain('aria-label="ลิงก์หลักฐานสำหรับ จัดทำรายงาน"')
+        ->toContain('id="support-modal-errors"')
+        ->toContain('aria-live="assertive"')
         ->not->toContain('border-t border-amber-200 bg-white p-4 sm:p-5');
 
     expect(substr_count($html, 'data-support-modal role="dialog"'))->toBe(1);
@@ -69,7 +74,11 @@ test('reviewer can edit score with a reason while evidence is preserved read onl
         ->toContain('support_list[7][modification_reason]')
         ->toContain('support_list[7][evidence_links][]')
         ->toContain('type="hidden"')
-        ->toContain('https://example.com/evidence');
+        ->toContain('https://example.com/evidence')
+        ->toContain('data-support-manage-open="7"')
+        ->toContain('data-support-evidence-open="7"')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"');
 });
 
 test('read only support criteria has no editable score or preservation fields', function () {
@@ -84,6 +93,8 @@ test('read only support criteria has no editable score or preservation fields', 
         ->not->toContain('data-support-score')
         ->not->toContain('name="support_list[7][achieved_score]"')
         ->not->toContain('name="support_list[7][evidence_links][]"')
+        ->not->toContain('data-support-modal-save')
+        ->toContain('data-support-evidence-open="7"')
         ->toContain('https://example.com/evidence');
 });
 
@@ -122,7 +133,16 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain("event.key === 'Escape'")
         ->toContain("document.body.style.overflow = 'hidden'")
         ->toContain("'[data-support-evidence-section] a[href]'")
-        ->toContain('previouslyFocusedElement.focus()');
+        ->toContain('previouslyFocusedElement.focus()')
+        ->toContain('const validateSupportItem =')
+        ->toContain('firstInvalid')
+        ->toContain('activeItem?.dataset.supportId === String(criterionId)')
+        ->toContain("openSupportModal(firstInvalidItem.dataset.supportId, 'error')")
+        ->toContain('data-support-modal-errors')
+        ->toContain('const trapSupportModalFocus =')
+        ->toContain("event.key === 'Tab'")
+        ->toContain("setAttribute('aria-invalid', 'true')")
+        ->toContain("'support-modal-errors'");
 
     foreach (['unified-evaluation', 'unified-evaluator', 'unified-director'] as $component) {
         $source = file_get_contents(resource_path("views/components/{$component}.blade.php"));

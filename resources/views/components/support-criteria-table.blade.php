@@ -58,6 +58,7 @@
                                 <span data-support-evidence-count="{{ $item['id'] }}">
                                     @if ($evidenceCount > 0)
                                         <button type="button" data-support-evidence-open="{{ $item['id'] }}"
+                                            aria-label="ดูหลักฐานของ {{ $item['activity_name'] }} {{ $evidenceCount }} ลิงก์"
                                             class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                             {{ $evidenceCount }} ลิงก์
                                         </button>
@@ -69,6 +70,7 @@
                             @if (!$readonly)
                                 <td class="px-3 py-4 text-center">
                                     <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                        aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $item['activity_name'] }}"
                                         class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
                                         {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
                                     </button>
@@ -129,6 +131,7 @@
                             <span class="mt-1 block" data-support-evidence-count="{{ $item['id'] }}">
                                 @if ($evidenceCount > 0)
                                     <button type="button" data-support-evidence-open="{{ $item['id'] }}"
+                                        aria-label="ดูหลักฐานของ {{ $item['activity_name'] }} {{ $evidenceCount }} ลิงก์"
                                         class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         {{ $evidenceCount }} ลิงก์
                                     </button>
@@ -139,6 +142,7 @@
                         </div>
                         @if (!$readonly)
                             <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $item['activity_name'] }}"
                                 class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
                                 {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
                             </button>
@@ -181,13 +185,14 @@
                                 <input id="support-score-{{ $item['id'] }}" type="number" min="0" step="0.01"
                                     name="support_list[{{ $item['id'] }}][achieved_score]"
                                     value="{{ $item['achieved_score'] }}"
+                                    aria-describedby="support-score-help-{{ $item['id'] }}"
                                     data-support-score
                                     data-support-id="{{ $item['id'] }}"
                                     data-support-weight="{{ $item['weight'] }}"
                                     data-support-original-score="{{ $item['achieved_score'] }}"
                                     class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                     placeholder="0.00">
-                                <span class="mt-1 block text-xs font-normal text-slate-500">กรอกได้ตั้งแต่ 0 และทศนิยมไม่เกิน 2 ตำแหน่ง</span>
+                                <span id="support-score-help-{{ $item['id'] }}" class="mt-1 block text-xs font-normal text-slate-500">กรอกได้ตั้งแต่ 0 และทศนิยมไม่เกิน 2 ตำแหน่ง</span>
                             </label>
 
                             <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
@@ -218,6 +223,7 @@
                                         <input type="url" data-support-evidence-input
                                             name="support_list[{{ $item['id'] }}][evidence_links][]"
                                             value="{{ $link }}"
+                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $item['activity_name'] }}"
                                             class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                             placeholder="https://example.com/evidence">
                                         <button type="button" data-remove-support-evidence
@@ -228,6 +234,7 @@
                                     <div class="support-evidence-row flex items-center gap-2">
                                         <input type="url" data-support-evidence-input
                                             name="support_list[{{ $item['id'] }}][evidence_links][]"
+                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $item['activity_name'] }}"
                                             class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                             placeholder="https://example.com/evidence">
                                         <button type="button" data-remove-support-evidence
@@ -308,8 +315,8 @@
                 <button type="button" data-support-modal-cancel aria-label="ปิดหน้าต่าง"
                     class="rounded-lg p-2 text-xl leading-none text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400">×</button>
             </header>
-            <div class="hidden border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700"
-                data-support-modal-errors role="alert"></div>
+            <div id="support-modal-errors" class="hidden border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700"
+                data-support-modal-errors role="alert" aria-live="assertive"></div>
             <div class="overflow-y-auto p-5" data-support-modal-body></div>
             <footer class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4">
                 <button type="button" data-support-modal-cancel
