@@ -14,6 +14,7 @@ use App\Models\QuantitySubCriteria;
 use App\Models\QuantitySubCriteriaGroup;
 use App\Models\QuantitySubCriteriaItem;
 use App\Models\ReportData;
+use App\Models\SupportCriteria;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use App\Models\WorkloadFormItem;
@@ -679,6 +680,7 @@ class ReportStructureController extends Controller
                 $keptQuantSubIds = [];
                 $keptQualMainIds = [];
                 $keptQualSubIds = [];
+                $keptSupportCriteriaIds = [];
                 $processedQualMainIds = [];
 
                 // 2. Update/Create Report Datas
@@ -938,6 +940,35 @@ class ReportStructureController extends Controller
                                     }
                                 }
                             }
+
+                            foreach ($evalListData['support_criterias'] ?? [] as $supportData) {
+                                $supportCriteriaId = $supportData['support_criteria_id'] ?? null;
+                                $supportCriteria = $supportCriteriaId
+                                    ? $evaluationList->supportCriterias()->whereKey($supportCriteriaId)->first()
+                                    : null;
+
+                                if ($supportCriteriaId && ! $supportCriteria) {
+                                    throw ValidationException::withMessages([
+                                        'support_criterias' => ['ไม่พบรายการเกณฑ์สายสนับสนุนเดิมในรายการประเมินนี้'],
+                                    ]);
+                                }
+
+                                $attributes = [
+                                    'sequence' => $supportData['sequence'],
+                                    'activity_name' => $supportData['activity_name'],
+                                    'indicator' => $supportData['indicator'],
+                                    'target_value' => $supportData['target_value'],
+                                    'weight' => $supportData['weight'],
+                                ];
+
+                                if ($supportCriteria) {
+                                    $supportCriteria->update($attributes);
+                                } else {
+                                    $supportCriteria = $evaluationList->supportCriterias()->create($attributes);
+                                }
+
+                                $keptSupportCriteriaIds[] = $supportCriteria->id;
+                            }
                         }
                     }
                 }
@@ -1018,6 +1049,17 @@ class ReportStructureController extends Controller
                         $query->whereNotIn('id', $keptQualMainIds);
                     })
                     ->when(empty($keptQualMainIds), function ($query) {
+                        $query->whereNotNull('id');
+                    })
+                    ->delete();
+
+                SupportCriteria::whereHas('evaluationList', function ($query) use ($version) {
+                    $query->where('criteria_version_id', $version->id);
+                })
+                    ->when(! empty($keptSupportCriteriaIds), function ($query) use ($keptSupportCriteriaIds) {
+                        $query->whereNotIn('id', $keptSupportCriteriaIds);
+                    })
+                    ->when(empty($keptSupportCriteriaIds), function ($query) {
                         $query->whereNotNull('id');
                     })
                     ->delete();

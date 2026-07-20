@@ -140,6 +140,84 @@ class SupportCriteriaTemplateTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_update_add_reorder_and_remove_support_criteria(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([
+            ['sequence' => 1, 'activity_name' => 'เดิมหนึ่ง', 'indicator' => 'ตัวชี้วัดหนึ่ง', 'target_value' => 80, 'weight' => 50],
+            ['sequence' => 2, 'activity_name' => 'เดิมสอง', 'indicator' => 'ตัวชี้วัดสอง', 'target_value' => 90, 'weight' => 50],
+        ]))->assertCreated();
+
+        $versionId = $created->json('data.id');
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias',
+        ])->findOrFail($versionId);
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $kept = $evaluationList->supportCriterias->first();
+        $removed = $evaluationList->supportCriterias->last();
+
+        $payload = $this->payload([
+            [
+                'support_criteria_id' => $kept->id,
+                'sequence' => 2,
+                'activity_name' => 'แก้ไขรายการเดิม',
+                'indicator' => 'ตัวชี้วัดใหม่',
+                'target_value' => 99,
+                'weight' => 70,
+            ],
+            [
+                'sequence' => 1,
+                'activity_name' => 'เพิ่มรายการใหม่',
+                'indicator' => 'ตัวชี้วัดรายการใหม่',
+                'target_value' => 75,
+                'weight' => 30,
+            ],
+        ]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $versionId), $payload)
+            ->assertOk()
+            ->assertJson(['success' => true]);
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $kept->id,
+            'sequence' => 2,
+            'activity_name' => 'แก้ไขรายการเดิม',
+        ]);
+        $this->assertDatabaseHas('support_criterias', [
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => 'เพิ่มรายการใหม่',
+        ]);
+        $this->assertDatabaseMissing('support_criterias', ['id' => $removed->id]);
+    }
+
+    public function test_omitting_support_criteria_on_update_removes_existing_template_rows(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([
+            ['sequence' => 1, 'activity_name' => 'ต้องถูกลบ', 'indicator' => 'ตัวชี้วัด', 'target_value' => 80, 'weight' => 100],
+        ]))->assertCreated();
+
+        $versionId = $created->json('data.id');
+        $version = CriteriaVersion::with(['reportDatas', 'categories.evaluationLists'])->findOrFail($versionId);
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $payload = $this->payload([]);
+        unset($payload['categories'][0]['evaluation_lists'][0]['support_criterias']);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $versionId), $payload)->assertOk();
+
+        $this->assertDatabaseCount('support_criterias', 0);
+    }
+
     private function payload(array $supportCriterias): array
     {
         return [
