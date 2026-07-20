@@ -36,13 +36,24 @@ test('support criteria component renders one responsive editable form control se
         ->toContain('ระดับค่าเป้าหมาย')
         ->toContain('ค่าคะแนนที่ได้')
         ->toContain('คะแนนถ่วงน้ำหนัก')
+        ->toContain('>หลักฐาน<')
+        ->toContain('>จัดการ<')
         ->toContain('hidden md:table')
         ->toContain('md:hidden')
         ->toContain('support_list[7][support_criteria_id]')
         ->toContain('support_list[7][achieved_score]')
         ->toContain('support_list[7][evidence_links][]')
-        ->toContain('บังคับแนบหลักฐาน');
+        ->toContain('บังคับแนบหลักฐาน')
+        ->toContain('data-support-evidence-count="7"')
+        ->toContain('data-support-evidence-open="7"')
+        ->toContain('data-support-manage-open="7"')
+        ->toContain('data-support-editor-store')
+        ->toContain('data-support-modal')
+        ->toContain('data-support-modal-body')
+        ->toContain('data-support-modal-save')
+        ->not->toContain('border-t border-amber-200 bg-white p-4 sm:p-5');
 
+    expect(substr_count($html, 'data-support-modal role="dialog"'))->toBe(1);
     expect(substr_count($html, 'name="support_list[7][achieved_score]"'))->toBe(1);
 });
 
@@ -74,6 +85,22 @@ test('read only support criteria has no editable score or preservation fields', 
         ->not->toContain('name="support_list[7][achieved_score]"')
         ->not->toContain('name="support_list[7][evidence_links][]"')
         ->toContain('https://example.com/evidence');
+});
+
+test('read only support table shows evidence count without management controls', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportViewItem()],
+        'readonly' => true,
+        'evidenceEditable' => false,
+        'requireReason' => false,
+    ])->render();
+
+    expect($html)
+        ->toContain('data-support-evidence-count="7"')
+        ->toContain('data-support-evidence-open="7"')
+        ->not->toContain('data-support-manage-open="7"')
+        ->not->toContain('>จัดการ<')
+        ->not->toContain('data-support-modal-save');
 });
 
 test('shared support script and all role components expose the same contracts', function () {

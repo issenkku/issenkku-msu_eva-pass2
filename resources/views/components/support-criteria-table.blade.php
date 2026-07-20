@@ -29,10 +29,15 @@
                         <th scope="col" class="px-3 py-3 text-right">น้ำหนัก</th>
                         <th scope="col" class="px-3 py-3 text-right">ค่าคะแนนที่ได้</th>
                         <th scope="col" class="px-3 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
+                        <th scope="col" class="px-3 py-3 text-center">หลักฐาน</th>
+                        @if (!$readonly)
+                            <th scope="col" class="px-3 py-3 text-center">จัดการ</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-amber-100 bg-white text-slate-700">
                     @foreach ($items as $item)
+                        @php($evidenceCount = count(array_filter($item['evidence_links'] ?? [])))
                         <tr>
                             <td class="px-3 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
                             <td class="px-3 py-4 font-medium text-slate-900">{{ $item['activity_name'] }}</td>
@@ -49,6 +54,26 @@
                                     {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
                                 </span>
                             </td>
+                            <td class="px-3 py-4 text-center">
+                                <span data-support-evidence-count="{{ $item['id'] }}">
+                                    @if ($evidenceCount > 0)
+                                        <button type="button" data-support-evidence-open="{{ $item['id'] }}"
+                                            class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            {{ $evidenceCount }} ลิงก์
+                                        </button>
+                                    @else
+                                        <span class="text-slate-400">ไม่มีหลักฐาน</span>
+                                    @endif
+                                </span>
+                            </td>
+                            @if (!$readonly)
+                                <td class="px-3 py-4 text-center">
+                                    <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                        class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                        {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
+                                    </button>
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -57,6 +82,7 @@
 
         <div class="space-y-3 p-4 md:hidden">
             @foreach ($items as $item)
+                @php($evidenceCount = count(array_filter($item['evidence_links'] ?? [])))
                 <article class="rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
@@ -97,15 +123,37 @@
                             </dd>
                         </div>
                     </dl>
+                    <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-amber-100 pt-4">
+                        <div>
+                            <span class="block text-xs font-medium text-slate-500">หลักฐาน</span>
+                            <span class="mt-1 block" data-support-evidence-count="{{ $item['id'] }}">
+                                @if ($evidenceCount > 0)
+                                    <button type="button" data-support-evidence-open="{{ $item['id'] }}"
+                                        class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        {{ $evidenceCount }} ลิงก์
+                                    </button>
+                                @else
+                                    <span class="text-sm text-slate-400">ไม่มีหลักฐาน</span>
+                                @endif
+                            </span>
+                        </div>
+                        @if (!$readonly)
+                            <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
+                            </button>
+                        @endif
+                    </div>
                 </article>
             @endforeach
         </div>
 
-        <div class="space-y-4 border-t border-amber-200 bg-white p-4 sm:p-5">
+        <div class="hidden" data-support-editor-store aria-hidden="true">
             @foreach ($items as $item)
                 <article class="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
                     data-support-item
                     data-support-id="{{ $item['id'] }}"
+                    data-support-sequence="{{ $item['sequence'] }}"
                     data-support-activity="{{ $item['activity_name'] }}"
                     data-support-required="{{ !empty($item['require_evidence']) ? '1' : '0' }}"
                     data-support-require-reason="{{ $requireReason ? '1' : '0' }}"
@@ -152,7 +200,7 @@
                         </div>
                     @endif
 
-                    <div class="mt-4">
+                    <div class="mt-4" data-support-evidence-section>
                         <div class="mb-2 flex items-center justify-between gap-3">
                             <h5 class="text-sm font-semibold text-slate-700">หลักฐาน</h5>
                             @if (!$readonly && $evidenceEditable)
@@ -247,4 +295,34 @@
             @endforeach
         </div>
     </section>
+
+    <div class="fixed inset-0 z-[1100] hidden items-center justify-center bg-slate-950/60 p-4"
+        data-support-modal role="dialog" aria-modal="true" aria-labelledby="support-modal-title">
+        <div class="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+            data-support-modal-panel>
+            <header class="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-700" data-support-modal-sequence></p>
+                    <h4 id="support-modal-title" class="mt-1 text-lg font-bold text-slate-950" data-support-modal-title></h4>
+                </div>
+                <button type="button" data-support-modal-cancel aria-label="ปิดหน้าต่าง"
+                    class="rounded-lg p-2 text-xl leading-none text-slate-500 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400">×</button>
+            </header>
+            <div class="hidden border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700"
+                data-support-modal-errors role="alert"></div>
+            <div class="overflow-y-auto p-5" data-support-modal-body></div>
+            <footer class="flex justify-end gap-3 border-t border-slate-200 px-5 py-4">
+                <button type="button" data-support-modal-cancel
+                    class="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                    {{ $readonly ? 'ปิด' : 'ยกเลิก' }}
+                </button>
+                @if (!$readonly)
+                    <button type="button" data-support-modal-save
+                        class="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
+                        บันทึก
+                    </button>
+                @endif
+            </footer>
+        </div>
+    </div>
 @endif
