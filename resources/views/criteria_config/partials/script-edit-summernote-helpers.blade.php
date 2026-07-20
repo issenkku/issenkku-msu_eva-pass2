@@ -17,8 +17,24 @@
                 
                 // Reset any Summernote classes and attributes
                 $(this).removeClass('note-editor note-frame note-editable');
+                $(this).removeData('summernoteInitialized');
                 $(this).removeAttr('style');
                 $(this).show(); // Make sure textarea is visible
+            });
+        }
+
+        function resetSummernoteClone(node) {
+            $(node).find('.richtext-editor').each(function() {
+                const $editor = $(this);
+
+                if (typeof $editor.summernote === 'function' && $editor.next('.note-editor').length > 0) {
+                    $editor.summernote('destroy');
+                }
+
+                $editor.next('.note-editor').remove();
+                $editor.removeData('summernoteInitialized');
+                $editor.removeClass('note-editor note-frame note-editable note-airframe');
+                $editor.removeAttr('style').show().val('');
             });
         }
 

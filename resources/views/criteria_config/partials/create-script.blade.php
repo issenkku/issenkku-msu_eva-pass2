@@ -212,8 +212,10 @@
         }
 
         // Initialize Summernote for rich text editors
-        function initializeSummernote() {
-            $('.richtext-editor').each(function() {
+        function initializeSummernote(container = null) {
+            const targetSelector = container ? $(container).find('.richtext-editor') : $('.richtext-editor');
+
+            targetSelector.each(function() {
                 const $editor = $(this);
                 let placeholder = 'กรุณาใส่คำอธิบายเพิ่มเติม...';
                 
@@ -222,16 +224,19 @@
                     placeholder = 'ใส่คำอธิบายการให้คะแนน';
                 }
                 
+                if ($editor.next('.note-editor').length > 0 || $editor.data('summernoteInitialized') === true) {
+                    return;
+                }
+
                 $editor.summernote({
                     height: 250,
                     toolbar: [
                         ['style', ['style']],
                         ['font', ['bold', 'italic', 'underline', 'clear']],
-                        ['fontname', ['fontname']],
                         ['color', ['color']],
                         ['para', ['ul', 'ol', 'paragraph']],
                         ['table', ['table']],
-                        ['insert', ['link', 'picture']],
+                        ['insert', ['link', 'hr']],
                         ['view', ['fullscreen', 'codeview', 'help']]
                     ],
                     placeholder: placeholder,
@@ -243,6 +248,7 @@
                         }
                     }
                 });
+                $editor.data('summernoteInitialized', true);
 
                 const noteEditor = $editor.next('.note-editor').get(0);
                 if (noteEditor) {
@@ -263,37 +269,25 @@
             }, 100);
         });
 
-        function cloneAndClear(blockSelector) {
-            let node = document.querySelector(blockSelector).cloneNode(true);
-            
-            // Destroy Summernote instances from cloned node
+        function resetSummernoteClone(node) {
             $(node).find('.richtext-editor').each(function() {
                 const $editor = $(this);
-                
-                // Remove Summernote wrapper if it exists
-                if ($editor.parent().hasClass('note-editor')) {
-                    // Get the original textarea
-                    const content = $editor.summernote('code');
+
+                if (typeof $editor.summernote === 'function' && $editor.next('.note-editor').length > 0) {
                     $editor.summernote('destroy');
-                    $editor.val(''); // Clear content after destroying
-                } else if ($editor.next().hasClass('note-editor')) {
-                    // Handle case where editor wrapper is a sibling
-                    $editor.next('.note-editor').remove();
-                    $editor.val('');
                 }
-                
-                // Remove any remaining note-editor wrappers
-                $(this).siblings('.note-editor').remove();
-                $(this).parent('.note-editor').children('textarea').unwrap();
-                
-                // Generate new unique ID for cloned editor
-                const newId = 'editor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                this.id = newId;
-                this.value = ''; // Clear content
-                
-                // Remove any Summernote classes
-                $(this).removeClass('note-editor note-frame note-airframe');
+
+                $editor.next('.note-editor').remove();
+                $editor.removeData('summernoteInitialized');
+                $editor.removeClass('note-editor note-frame note-editable note-airframe');
+                $editor.removeAttr('style').show().val('');
             });
+        }
+
+        function cloneAndClear(blockSelector) {
+            let node = document.querySelector(blockSelector).cloneNode(true);
+
+            resetSummernoteClone(node);
             
             node.querySelectorAll('input[type="checkbox"]').forEach(inp => inp.checked = false);
             node.querySelectorAll('input:not([type="checkbox"])').forEach(inp => inp.value = '');
@@ -1022,6 +1016,7 @@
                 markDirty();
                 ensureRuntimeFormFieldIdentifiers(newBlock);
                 ensureRuntimeLabelAssociations(newBlock);
+                initializeSummernote(newBlock);
                 newBlock.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'

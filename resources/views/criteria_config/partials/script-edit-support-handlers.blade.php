@@ -1,10 +1,14 @@
         function populateSupportCriteria(container, supportData) {
             const template = document.querySelector('.support_criteria_block');
             const itemsContainer = container.querySelector('.support_criteria_items');
-            itemsContainer.querySelectorAll('.support_criteria_block').forEach((block) => block.remove());
+            itemsContainer.querySelectorAll('.support_criteria_block').forEach((block) => {
+                resetSummernoteClone(block);
+                block.remove();
+            });
 
             supportData.forEach((item) => {
                 const block = template.cloneNode(true);
+                resetSummernoteClone(block);
                 block.querySelector('.support_criteria_id').value = item.support_criteria_id || item.id || '';
                 block.querySelector('.support_activity_name').value = item.activity_name || '';
                 block.querySelector('.support_indicator').value = item.indicator || '';
@@ -12,6 +16,7 @@
                 block.querySelector('.support_weight').value = item.weight ?? '';
                 block.querySelector('.support_require_evidence').checked = Boolean(item.require_evidence);
                 itemsContainer.appendChild(block);
+                initializeSummernote(block);
             });
         }
 
@@ -19,12 +24,17 @@
             const container = evaluationBlock.querySelector('.support_criteria_items');
             const template = document.querySelector('.support_criteria_block');
             const block = template.cloneNode(true);
+            resetSummernoteClone(block);
             clearIdentityAttributes(block);
             block.querySelectorAll('input').forEach((input) => {
                 input.value = '';
                 if (input.type === 'checkbox') input.checked = false;
             });
+            block.querySelectorAll('textarea.richtext-editor').forEach((textarea) => {
+                textarea.value = '';
+            });
             container.appendChild(block);
+            initializeSummernote(block);
             updateSequences();
             markDirty();
         }
@@ -36,6 +46,7 @@
                 return;
             }
 
+            resetSummernoteClone(block);
             block.remove();
             updateSequences();
             markDirty();
