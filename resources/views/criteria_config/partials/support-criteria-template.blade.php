@@ -52,6 +52,11 @@
                         placeholder="น้ำหนัก">
                 </label>
             </div>
+            <label class="mt-4 flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input type="checkbox"
+                    class="support_require_evidence h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
+                <span>บังคับแนบหลักฐาน</span>
+            </label>
         </div>
     </div>
 </div>

@@ -12,6 +12,7 @@ test('create evaluation template exposes support criteria controls after quality
         ->toContain('support_indicator')
         ->toContain('support_target_value')
         ->toContain('support_weight')
+        ->toContain('support_require_evidence')
         ->toContain('คะแนนถ่วงน้ำหนัก = น้ำหนัก × คะแนนที่ผู้ถูกประเมินกรอก ÷ 100');
 
     expect(strpos($html, 'quality_criteria_type'))
@@ -29,13 +30,16 @@ test('create script toggles collects and reorders support criteria', function ()
         ->toContain('support_criteria_id')
         ->toContain('support_activity_name')
         ->toContain('support_target_value')
-        ->toContain('support_weight');
+        ->toContain('support_weight')
+        ->toContain('support_require_evidence')
+        ->toContain('require_evidence');
 });
 
 test('edit template loads toggles and collects support criteria', function () {
     $template = view('criteria_config.partials.edit-evaluation-template')->render();
     $editScript = file_get_contents(resource_path('views/criteria_config/partials/edit-script.blade.php'));
     $criteriaHandler = file_get_contents(resource_path('views/criteria_config/partials/script-edit-criteria-type-handler.blade.php'));
+    $supportHandler = file_get_contents(resource_path('views/criteria_config/partials/script-edit-support-handlers.blade.php'));
     $populate = file_get_contents(resource_path('views/criteria_config/partials/script-edit-populate-helpers.blade.php'));
     $collect = file_get_contents(resource_path('views/criteria_config/partials/script-edit-collect-form-data.blade.php'));
 
@@ -47,7 +51,11 @@ test('edit template loads toggles and collects support criteria', function () {
     expect($populate)
         ->toContain('evalData.support_criterias')
         ->toContain('populateSupportCriteria');
+    expect($supportHandler)
+        ->toContain('support_require_evidence')
+        ->toContain('require_evidence');
     expect($collect)
         ->toContain('evalData.support_criterias = []')
-        ->toContain('support_criteria_id');
+        ->toContain('support_criteria_id')
+        ->toContain('require_evidence');
 });

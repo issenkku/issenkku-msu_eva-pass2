@@ -216,6 +216,7 @@
                                             indicator,
                                             target_value: Number(targetValue),
                                             weight: Number(weight),
+                                            require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
                                         };
                                         const supportCriteriaId = supportBlock.querySelector('.support_criteria_id').value;
                                         if (supportCriteriaId) {

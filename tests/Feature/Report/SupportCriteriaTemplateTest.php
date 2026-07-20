@@ -49,6 +49,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'indicator',
             'target_value',
             'weight',
+            'require_evidence',
             'created_at',
             'updated_at',
         ]));
@@ -100,6 +101,7 @@ class SupportCriteriaTemplateTest extends TestCase
                 'indicator' => 'งานเสร็จตามแผน',
                 'target_value' => 95.5,
                 'weight' => 60,
+                'require_evidence' => true,
             ],
             [
                 'sequence' => 2,
@@ -117,12 +119,14 @@ class SupportCriteriaTemplateTest extends TestCase
             'activity_name' => 'พัฒนาระบบบริการ',
             'target_value' => 95.5,
             'weight' => 60,
+            'require_evidence' => true,
         ]);
 
         $this->getJson(route('report-structure.show', $versionId))
             ->assertOk()
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.activity_name', 'พัฒนาระบบบริการ')
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.target_value', 95.5)
+            ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.require_evidence', true)
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
     }
 
@@ -167,6 +171,7 @@ class SupportCriteriaTemplateTest extends TestCase
                 'indicator' => 'ตัวชี้วัดใหม่',
                 'target_value' => 99,
                 'weight' => 70,
+                'require_evidence' => true,
             ],
             [
                 'sequence' => 1,
@@ -189,6 +194,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'id' => $kept->id,
             'sequence' => 2,
             'activity_name' => 'แก้ไขรายการเดิม',
+            'require_evidence' => true,
         ]);
         $this->assertDatabaseHas('support_criterias', [
             'evaluation_list_id' => $evaluationList->id,

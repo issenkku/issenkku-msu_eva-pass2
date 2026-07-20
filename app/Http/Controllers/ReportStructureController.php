@@ -178,7 +178,8 @@ class ReportStructureController extends Controller
                             'activity_name',
                             'indicator',
                             'target_value',
-                            'weight'
+                            'weight',
+                            'require_evidence'
                         )->orderBy('sequence');
                     },
                 ])
@@ -301,6 +302,7 @@ class ReportStructureController extends Controller
                                         'indicator' => $supportCriteria->indicator,
                                         'target_value' => (float) $supportCriteria->target_value,
                                         'weight' => (float) $supportCriteria->weight,
+                                        'require_evidence' => (bool) $supportCriteria->require_evidence,
                                     ];
                                 })->values()->all(),
                             ];
@@ -362,6 +364,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
+            'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
@@ -527,6 +530,7 @@ class ReportStructureController extends Controller
                                     'indicator' => $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => $supportData['weight'],
+                                    'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                 ]);
                             }
                         }
@@ -616,6 +620,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
+            'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
@@ -959,6 +964,7 @@ class ReportStructureController extends Controller
                                     'indicator' => $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => $supportData['weight'],
+                                    'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                 ];
 
                                 if ($supportCriteria) {

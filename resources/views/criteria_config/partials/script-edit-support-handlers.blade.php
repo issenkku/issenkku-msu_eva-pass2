@@ -10,6 +10,7 @@
                 block.querySelector('.support_indicator').value = item.indicator || '';
                 block.querySelector('.support_target_value').value = item.target_value ?? '';
                 block.querySelector('.support_weight').value = item.weight ?? '';
+                block.querySelector('.support_require_evidence').checked = Boolean(item.require_evidence);
                 itemsContainer.appendChild(block);
             });
         }
@@ -19,7 +20,10 @@
             const template = document.querySelector('.support_criteria_block');
             const block = template.cloneNode(true);
             clearIdentityAttributes(block);
-            block.querySelectorAll('input').forEach((input) => input.value = '');
+            block.querySelectorAll('input').forEach((input) => {
+                input.value = '';
+                if (input.type === 'checkbox') input.checked = false;
+            });
             container.appendChild(block);
             updateSequences();
             markDirty();
