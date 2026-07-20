@@ -11,10 +11,28 @@ use App\Models\QuantitySubCriteria;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Services\ScoreService;
+use App\Support\EvaluationScoreSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+test('evaluation summary caps only the support component at one hundred', function () {
+    $summary = EvaluationScoreSummary::fromCategoryItems([[
+        'evaluation_lists' => [[
+            'quantity_items' => [],
+            'quality_items' => [],
+            'support_items' => [
+                ['weighted_score' => 70],
+                ['weighted_score' => 42.5],
+                ['weighted_score' => null],
+            ],
+        ]],
+    ]]);
+
+    expect($summary['support'])->toBe(100.0)
+        ->and($summary['total'])->toBe(100.0);
+});
 
 test('bulk quality score calculation matches single report calculation', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();

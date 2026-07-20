@@ -8,6 +8,7 @@ class EvaluationScoreSummary
     {
         $totalQuantityScore = 0.0;
         $totalQualityScore = 0.0;
+        $totalSupportScore = 0.0;
 
         foreach ($categoryItems as $category) {
             foreach ($category['evaluation_lists'] ?? [] as $evaluationList) {
@@ -37,6 +38,13 @@ class EvaluationScoreSummary
                 }
 
                 $totalQualityScore += $evaluationListQualityTotal;
+
+                foreach ($evaluationList['support_items'] ?? [] as $supportItem) {
+                    $weightedScore = $supportItem['weighted_score'] ?? null;
+                    if ($weightedScore !== null && $weightedScore !== '') {
+                        $totalSupportScore += (float) $weightedScore;
+                    }
+                }
             }
         }
 
@@ -53,10 +61,13 @@ class EvaluationScoreSummary
             $totalQualityScore = $maxQualityScore;
         }
 
+        $cappedSupportScore = min($totalSupportScore, 100.0);
+
         return [
             'quantity' => $totalQuantityScore,
             'quality' => $totalQualityScore,
-            'total' => $totalQuantityScore + $totalQualityScore,
+            'support' => $cappedSupportScore,
+            'total' => $totalQuantityScore + $totalQualityScore + $cappedSupportScore,
         ];
     }
 }

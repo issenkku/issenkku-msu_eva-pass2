@@ -45,6 +45,8 @@
             :workloadMap="$workloadMap"
         />
 
+        @include('partials.evaluator-score-summary', ['scoreSummary' => $scoreSummary])
+
         <x-role-comment-section
             :report="$report"
             :current-role="$currentRole"

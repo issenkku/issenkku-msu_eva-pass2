@@ -1,0 +1,101 @@
+<?php
+
+namespace App\Support;
+
+use App\Models\EvidenceAnswer;
+use App\Models\Reports;
+use App\Models\SupportCriteria;
+use App\Models\SupportScore;
+use App\Models\SupportScoreHistory;
+
+class SupportCriteriaReadModel
+{
+    /**
+     * @return array<int, array<int, array<string, mixed>>>
+     */
+    public function forReport(Reports $report): array
+    {
+        $report->loadMissing('reportData');
+        $criteriaVersionId = $report->reportData?->criteria_version_id;
+
+        if (! $criteriaVersionId) {
+            return [];
+        }
+
+        $criteria = SupportCriteria::query()
+            ->whereHas('evaluationList', function ($query) use ($criteriaVersionId) {
+                $query->where('criteria_version_id', $criteriaVersionId);
+            })
+            ->orderBy('evaluation_list_id')
+            ->orderBy('sequence')
+            ->get();
+
+        if ($criteria->isEmpty()) {
+            return [];
+        }
+
+        $criterionIds = $criteria->pluck('id');
+        $scores = SupportScore::query()
+            ->where('report_id', $report->id)
+            ->whereIn('support_criteria_id', $criterionIds)
+            ->get()
+            ->keyBy('support_criteria_id');
+        $histories = SupportScoreHistory::with('modifierUser:id,prefix,name')
+            ->where('report_id', $report->id)
+            ->whereIn('support_criteria_id', $criterionIds)
+            ->latest()
+            ->get()
+            ->groupBy('support_criteria_id');
+        $evidence = EvidenceAnswer::query()
+            ->where('report_id', $report->id)
+            ->whereIn('support_criteria_id', $criterionIds)
+            ->whereNotNull('support_criteria_id')
+            ->get()
+            ->groupBy('support_criteria_id');
+
+        return $criteria
+            ->groupBy('evaluation_list_id')
+            ->map(function ($listCriteria) use ($scores, $histories, $evidence) {
+                return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence) {
+                    $score = $scores->get($criterion->id);
+
+                    return [
+                        'id' => $criterion->id,
+                        'sequence' => $criterion->sequence,
+                        'activity_name' => $criterion->activity_name,
+                        'indicator' => $criterion->indicator,
+                        'target_value' => $criterion->target_value,
+                        'weight' => $criterion->weight,
+                        'require_evidence' => (bool) $criterion->require_evidence,
+                        'achieved_score' => $score?->achieved_score,
+                        'weighted_score' => $score?->weighted_score,
+                        'modification_reason' => $score?->modification_reason,
+                        'evidence_links' => ($evidence->get($criterion->id) ?? collect())
+                            ->pluck('link')
+                            ->filter()
+                            ->unique()
+                            ->values()
+                            ->all(),
+                        'histories' => ($histories->get($criterion->id) ?? collect())
+                            ->map(function (SupportScoreHistory $history) {
+                                return [
+                                    'previous_achieved_score' => $history->previous_achieved_score,
+                                    'new_achieved_score' => $history->new_achieved_score,
+                                    'previous_weighted_score' => $history->previous_weighted_score,
+                                    'new_weighted_score' => $history->new_weighted_score,
+                                    'reason' => $history->reason,
+                                    'modified_by_name' => $history->modifierUser?->display_name
+                                        ?? $history->modifierUser?->name
+                                        ?? '',
+                                    'modified_by_role' => $history->modifier_role ?? '',
+                                    'created_at' => optional($history->created_at)->format('d/m/Y H:i'),
+                                ];
+                            })
+                            ->values()
+                            ->all(),
+                    ];
+                })->values()->all();
+            })
+            ->all();
+    }
+}

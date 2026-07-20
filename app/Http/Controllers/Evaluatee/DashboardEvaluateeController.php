@@ -18,6 +18,7 @@ use App\Support\EvaluateeDashboardAssignments;
 use App\Support\EvaluateeDashboardOverview;
 use App\Support\EvaluationScoreSummary;
 use App\Support\EvaluationSummaryData;
+use App\Support\SupportCriteriaReadModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -197,7 +198,7 @@ class DashboardEvaluateeController extends Controller
     /**
      * ???????????????????????????????????????
      */
-    public function evaluation(Request $request, $id)
+    public function evaluation(Request $request, $id, SupportCriteriaReadModel $supportCriteriaReadModel)
     {
         $user = $request->user()->load('position', 'department');
 
@@ -206,8 +207,10 @@ class DashboardEvaluateeController extends Controller
             'reportData.criteriaVersion.qualityMainCriterias.qualitySubCriterias.evaluationList',
             'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
             'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
+            'reportData.criteriaVersion.categories.evaluationLists.supportCriterias',
             'assignments.assignmentData.evaluatorUser',
         ])->findOrFail($id);
+        $supportItemsByList = $supportCriteriaReadModel->forReport($report);
 
         // Single assignment per report (report_id is unique in assignments)
         $assignment = $report->assignments;
@@ -258,6 +261,7 @@ class DashboardEvaluateeController extends Controller
             ->keyBy('quality_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
+            ->whereNull('support_criteria_id')
             ->get()
             ->groupBy('evaluation_list_id');
 
@@ -324,6 +328,7 @@ class DashboardEvaluateeController extends Controller
                     $query->with([
                         'quantitySubCriterias.mainCriteria',
                         'qualitySubCriterias.mainCriteria',
+                        'supportCriterias',
                     ])->orderBy('sequence');
                 }])
                 ->orderBy('sequence')
@@ -347,6 +352,7 @@ class DashboardEvaluateeController extends Controller
                         'sequence' => $list->sequence,
                         'quantity_items' => [],
                         'quality_items' => [],
+                        'support_items' => $supportItemsByList[$list->id] ?? [],
                     ];
 
                     // Process quantity items for this evaluation list

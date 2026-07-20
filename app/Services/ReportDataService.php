@@ -1,19 +1,24 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Assignments;
-use App\Models\Reports;
+use App\Models\EvidenceAnswer;
+use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\QuantityScoreHistory;
 use App\Models\QuantitySubCriteria;
-use App\Models\QualityScore;
-use App\Models\EvidenceAnswer;
+use App\Models\Reports;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
-use Illuminate\Support\Facades\DB;
+use App\Support\EvaluationScoreSummary;
+use App\Support\SupportCriteriaReadModel;
+use Carbon\Carbon;
 
 class ReportDataService
 {
+    public function __construct(private SupportCriteriaReadModel $supportCriteriaReadModel) {}
+
     public function getEvaluatorAssignmentForUser($reportId, $user)
     {
         return Assignments::with([
@@ -22,12 +27,12 @@ class ReportDataService
             'evaluateeUser.position',
             'report.reportData.criteriaVersion', // Optional but useful
         ])
-        ->where('report_id', $reportId)
-        ->whereHas('assignmentData', function ($q) use ($user) {
-            $q->where('evaluator_id', $user->id)
-                ->orWhere('evaluator_position_id', $user->position_id);
-        })
-        ->first();
+            ->where('report_id', $reportId)
+            ->whereHas('assignmentData', function ($q) use ($user) {
+                $q->where('evaluator_id', $user->id)
+                    ->orWhere('evaluator_position_id', $user->position_id);
+            })
+            ->first();
     }
 
     public function getReportData($id)
@@ -42,6 +47,7 @@ class ReportDataService
             'assignments.evaluateeUser.position',
             'assignments',
         ])->findOrFail($id);
+        $supportItemsByList = $this->supportCriteriaReadModel->forReport($report);
 
         $assignment = $report->assignments;
         $evaluators = $assignment->assignmentData->evaluatorUser?->name ?? '-';
@@ -61,9 +67,9 @@ class ReportDataService
             if (! $datetime) {
                 return '-';
             }
-            \Carbon\Carbon::setLocale('th');
+            Carbon::setLocale('th');
             setlocale(LC_TIME, 'th_TH.UTF-8');
-            $date = \Carbon\Carbon::parse($datetime);
+            $date = Carbon::parse($datetime);
             $year = $date->year + 543;
 
             return $date->translatedFormat('j F')." {$year}";
@@ -99,6 +105,7 @@ class ReportDataService
             ->keyBy('quality_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
+            ->whereNull('support_criteria_id')
             ->get()
             ->groupBy('evaluation_list_id');
 
@@ -115,7 +122,14 @@ class ReportDataService
             });
 
         // Process categories and their evaluation lists
-        $categoryItems = $this->processCategoryItems($report, $quantityScores, $quantityScoreHistories, $qualityScores, $evidenceMap);
+        $categoryItems = $this->processCategoryItems(
+            $report,
+            $quantityScores,
+            $quantityScoreHistories,
+            $qualityScores,
+            $evidenceMap,
+            $supportItemsByList
+        );
         $workloadMap = $this->buildWorkloadMap($categoryItems, $id);
 
         return [
@@ -137,6 +151,7 @@ class ReportDataService
             'evidenceMap' => $evidenceMap,
             'qualityEvidenceMap' => $qualityEvidenceMap,
             'workloadMap' => $workloadMap,
+            'scoreSummary' => EvaluationScoreSummary::fromCategoryItems($categoryItems),
         ];
     }
 
@@ -207,8 +222,14 @@ class ReportDataService
         return $workloadMap;
     }
 
-    private function processCategoryItems($report, $quantityScores, $quantityScoreHistories, $qualityScores, $evidenceMap)
-    {
+    private function processCategoryItems(
+        $report,
+        $quantityScores,
+        $quantityScoreHistories,
+        $qualityScores,
+        $evidenceMap,
+        $supportItemsByList
+    ) {
         $categoryItems = [];
 
         if ($report && $report->reportData && $report->reportData->criteriaVersion) {
@@ -240,11 +261,12 @@ class ReportDataService
                         'sequence' => $list->sequence,
                         'quantity_items' => [],
                         'quality_items' => [],
+                        'support_items' => $supportItemsByList[$list->id] ?? [],
                     ];
 
                     // Process quantity items
                     $evaluationListData['quantity_items'] = $this->processQuantityItems($list, $quantityScores, $quantityScoreHistories, $evidenceMap);
-                    
+
                     // Process quality items
                     $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $evidenceMap);
 
@@ -273,7 +295,7 @@ class ReportDataService
                         'id' => $mainCriteria->id,
                         'name' => $mainCriteria->name,
                         'tooltips' => $mainCriteria->tooltips,
-                        'formulas' => $mainCriteria->formulas->map(function($formula) {
+                        'formulas' => $mainCriteria->formulas->map(function ($formula) {
                             return [
                                 'id' => $formula->id,
                                 'condition' => $formula->condition,
@@ -353,7 +375,7 @@ class ReportDataService
                     foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                         $qualityScore = $qualityScores[$subCriteria->id] ?? null;
                         $evidenceLinks = $evidenceMap[$list->id] ?? [];
-                        
+
                         $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
                         $userSelected = $hasScore || ($qualityScore && $qualityScore->score !== null);
 
