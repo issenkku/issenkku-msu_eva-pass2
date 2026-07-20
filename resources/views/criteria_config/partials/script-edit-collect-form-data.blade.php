@@ -195,12 +195,12 @@
                                         getSequenceValue(right, '.support_sequence', `${catIndex + 1}.${evalIndex + 1}.1`)
                                     ))
                                     .forEach((supportBlock, supportIndex) => {
-                                        const activityName = supportBlock.querySelector('.support_activity_name').value.trim();
-                                        const indicator = supportBlock.querySelector('.support_indicator').value.trim();
+                                        const activityName = getRichTextValue(supportBlock.querySelector('.support_activity_name'));
+                                        const indicator = getRichTextValue(supportBlock.querySelector('.support_indicator'));
                                         const targetValue = supportBlock.querySelector('.support_target_value').value;
                                         const weight = supportBlock.querySelector('.support_weight').value;
 
-                                        if (!activityName || !indicator || targetValue === '' || weight === '') {
+                                        if (!hasVisibleRichText(activityName) || !hasVisibleRichText(indicator) || targetValue === '' || weight === '') {
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
                                         }
                                         if (Number(targetValue) < 0) {

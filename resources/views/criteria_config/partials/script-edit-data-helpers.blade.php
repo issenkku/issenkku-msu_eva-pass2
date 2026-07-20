@@ -18,3 +18,10 @@
 
             return ($element.val() || '').trim();
         }
+
+        function hasVisibleRichText(value) {
+            const documentFragment = new DOMParser().parseFromString(value || '', 'text/html');
+            const text = (documentFragment.body.textContent || '').replace(/\u00a0/g, ' ');
+
+            return text.trim() !== '';
+        }

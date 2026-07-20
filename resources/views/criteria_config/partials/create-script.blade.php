@@ -258,6 +258,23 @@
             });
         }
 
+        function getRichTextValue(element) {
+            const $element = $(element);
+
+            if ($element.next('.note-editor').length > 0 && typeof $element.summernote === 'function') {
+                return ($element.summernote('code') || '').trim();
+            }
+
+            return (element?.value || '').trim();
+        }
+
+        function hasVisibleRichText(value) {
+            const documentFragment = new DOMParser().parseFromString(value || '', 'text/html');
+            const text = (documentFragment.body.textContent || '').replace(/\u00a0/g, ' ');
+
+            return text.trim() !== '';
+        }
+
         // Initialize Summernote when document is ready
         $(document).ready(function() {
             setupUnsavedChangesProtection();
@@ -1301,12 +1318,12 @@
                                 getSequenceValue(right, '.support_sequence', `${catI + 1}.${evalI + 1}.1`)
                             ))
                             .forEach((supportBlock, supportIndex) => {
-                                const activityName = supportBlock.querySelector('.support_activity_name').value.trim();
-                                const indicator = supportBlock.querySelector('.support_indicator').value.trim();
+                                const activityName = getRichTextValue(supportBlock.querySelector('.support_activity_name'));
+                                const indicator = getRichTextValue(supportBlock.querySelector('.support_indicator'));
                                 const targetValue = supportBlock.querySelector('.support_target_value').value;
                                 const weight = supportBlock.querySelector('.support_weight').value;
 
-                                if (!activityName || !indicator || targetValue === '' || weight === '') {
+                                if (!hasVisibleRichText(activityName) || !hasVisibleRichText(indicator) || targetValue === '' || weight === '') {
                                     showValidationErrorModal(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
                                     valid = false;
                                     return;

@@ -20,3 +20,12 @@ it('keeps summernote lifecycle hooks for dynamic support criteria blocks', funct
         ->toContain("lang: 'th-TH'")
         ->toContain("['insert', ['link', 'hr']]");
 });
+
+it('collects support criteria HTML from create and edit scripts', function () {
+    $html = view('criteria_config.partials.create-script')->render()
+        .file_get_contents(resource_path('views/criteria_config/partials/script-edit-collect-form-data.blade.php'));
+
+    expect($html)
+        ->toContain("getRichTextValue(supportBlock.querySelector('.support_activity_name'))")
+        ->toContain("getRichTextValue(supportBlock.querySelector('.support_indicator'))");
+});
