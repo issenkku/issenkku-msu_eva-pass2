@@ -110,7 +110,19 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain('window.recalculateSupportScores')
         ->toContain('window.validateSupportCriteria')
         ->toContain('Math.min(rawTotal, 100)')
-        ->toContain('__supportCriteriaBound');
+        ->toContain('__supportCriteriaBound')
+        ->toContain('const openSupportModal =')
+        ->toContain('const closeSupportModal =')
+        ->toContain('const snapshotSupportItem =')
+        ->toContain('const restoreSupportItem =')
+        ->toContain('const updateSupportRow =')
+        ->toContain("'[data-support-manage-open]'")
+        ->toContain("'[data-support-evidence-open]'")
+        ->toContain("'[data-support-modal-save]'")
+        ->toContain("event.key === 'Escape'")
+        ->toContain("document.body.style.overflow = 'hidden'")
+        ->toContain("'[data-support-evidence-section] a[href]'")
+        ->toContain('previouslyFocusedElement.focus()');
 
     foreach (['unified-evaluation', 'unified-evaluator', 'unified-director'] as $component) {
         $source = file_get_contents(resource_path("views/components/{$component}.blade.php"));
