@@ -25,14 +25,15 @@
                     <div class="text-sm text-gray-500">คะแนนด้านคุณภาพ</div>
                     <div id="modal-quality-summary" class="mt-1 text-lg font-bold text-purple-900 sm:text-xl">0.00</div>
                 </div>
+                   <div class="rounded-lg border border-amber-100 bg-white p-3">
+                    <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
+                    <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
+                </div>
                 <div class="rounded-lg border border-emerald-100 bg-white p-3">
                     <div class="text-sm text-gray-500">คะแนนรวม</div>
                     <div id="modal-total-summary" class="mt-1 text-lg font-bold text-emerald-700 sm:text-xl">0.00</div>
                 </div>
-                <div class="rounded-lg border border-amber-100 bg-white p-3">
-                    <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
-                    <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
-                </div>
+             
             </div>
 
             <div class="space-y-4">
