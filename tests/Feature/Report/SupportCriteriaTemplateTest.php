@@ -6,13 +6,36 @@ use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
 use App\Models\SupportCriteria;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class SupportCriteriaTemplateTest extends TestCase
 {
     use RefreshDatabase;
+
+    private User $admin;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::create(['name' => 'admin']);
+        $department = \Database\Factories\DepartmentFactory::new()->create();
+        $position = \Database\Factories\PositionFactory::new()->create();
+        $this->admin = User::factory()->create([
+            'employee_id' => 'SUPPORT-ADMIN',
+            'password' => Hash::make('password'),
+            'status' => 'active',
+            'department_id' => $department->id,
+            'position_id' => $position->id,
+        ]);
+        $this->admin->assignRole('admin');
+        $this->actingAs($this->admin, 'web');
+    }
 
     public function test_support_criteria_schema_exists(): void
     {
@@ -64,5 +87,84 @@ class SupportCriteriaTemplateTest extends TestCase
         $evaluationList->delete();
 
         $this->assertDatabaseCount('support_criterias', 0);
+    }
+
+    public function test_admin_can_create_and_show_support_criteria_template(): void
+    {
+        $response = $this->postJson(route('report-structure.store'), $this->payload([
+            [
+                'sequence' => 1,
+                'activity_name' => 'พัฒนาระบบบริการ',
+                'indicator' => 'งานเสร็จตามแผน',
+                'target_value' => 95.5,
+                'weight' => 60,
+            ],
+            [
+                'sequence' => 2,
+                'activity_name' => 'สนับสนุนผู้ใช้งาน',
+                'indicator' => 'แก้ปัญหาภายใน SLA',
+                'target_value' => 90,
+                'weight' => 40,
+            ],
+        ]));
+
+        $response->assertCreated()->assertJson(['success' => true]);
+        $versionId = $response->json('data.id');
+
+        $this->assertDatabaseHas('support_criterias', [
+            'activity_name' => 'พัฒนาระบบบริการ',
+            'target_value' => 95.5,
+            'weight' => 60,
+        ]);
+
+        $this->getJson(route('report-structure.show', $versionId))
+            ->assertOk()
+            ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.activity_name', 'พัฒนาระบบบริการ')
+            ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.target_value', 95.5)
+            ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
+    }
+
+    public function test_support_template_rejects_invalid_numeric_values(): void
+    {
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => 'งานสนับสนุน',
+            'indicator' => 'ตัวชี้วัด',
+            'target_value' => -1,
+            'weight' => 101,
+        ]]));
+
+        $response->assertUnprocessable()->assertJsonValidationErrors([
+            'categories.0.evaluation_lists.0.support_criterias.0.target_value',
+            'categories.0.evaluation_lists.0.support_criterias.0.weight',
+        ]);
+    }
+
+    private function payload(array $supportCriterias): array
+    {
+        return [
+            'version_name' => 'Support Template '.uniqid(),
+            'created_by' => $this->admin->id,
+            'report_datas' => [[
+                'report_title' => 'แบบประเมินสายสนับสนุน',
+                'report_description' => null,
+                'assessment_type' => 'support',
+                'comment' => null,
+            ]],
+            'categories' => [[
+                'main_categories' => 'ผลสัมฤทธิ์ของงาน',
+                'sub_categories' => 'งานตามภารกิจ',
+                'sequence' => 1,
+                'evaluation_lists' => [[
+                    'name' => 'รายการสายสนับสนุน',
+                    'sum_score' => 100,
+                    'sequence' => 1,
+                    'annotation' => null,
+                    'quantity_main_criterias' => [],
+                    'quality_main_criterias' => [],
+                    'support_criterias' => $supportCriterias,
+                ]],
+            ]],
+        ];
     }
 }

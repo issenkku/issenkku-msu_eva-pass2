@@ -169,6 +169,17 @@ class ReportStructureController extends Controller
 
                         $query->select($columns)->orderBy('sequence');
                     },
+                    'categories.evaluationLists.supportCriterias' => function ($query) {
+                        $query->select(
+                            'id',
+                            'evaluation_list_id',
+                            'sequence',
+                            'activity_name',
+                            'indicator',
+                            'target_value',
+                            'weight'
+                        )->orderBy('sequence');
+                    },
                 ])
                 ->where('id', $id)
                 ->first();
@@ -281,6 +292,16 @@ class ReportStructureController extends Controller
                                     ->sortBy('sequence')
                                     ->values()
                                     ->all(),
+                                'support_criterias' => $evalList->supportCriterias->map(function ($supportCriteria) {
+                                    return [
+                                        'support_criteria_id' => $supportCriteria->id,
+                                        'sequence' => $supportCriteria->sequence,
+                                        'activity_name' => $supportCriteria->activity_name,
+                                        'indicator' => $supportCriteria->indicator,
+                                        'target_value' => (float) $supportCriteria->target_value,
+                                        'weight' => (float) $supportCriteria->weight,
+                                    ];
+                                })->values()->all(),
                             ];
                         })->values()->all(),
                     ];
@@ -332,6 +353,14 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
+
+            'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
+            'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => 'required|string|max:255',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
+            'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
@@ -489,6 +518,16 @@ class ReportStructureController extends Controller
                                     }
                                 }
                             }
+
+                            foreach ($evalListData['support_criterias'] ?? [] as $supportData) {
+                                $evaluationList->supportCriterias()->create([
+                                    'sequence' => $supportData['sequence'],
+                                    'activity_name' => $supportData['activity_name'],
+                                    'indicator' => $supportData['indicator'],
+                                    'target_value' => $supportData['target_value'],
+                                    'weight' => $supportData['weight'],
+                                ]);
+                            }
                         }
                     }
                 }
@@ -514,6 +553,7 @@ class ReportStructureController extends Controller
                     // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
                     'categories.evaluationLists.quantitySubCriterias.mainCriteria.formulas',
                     'categories.evaluationLists.qualitySubCriterias.mainCriteria',
+                    'categories.evaluationLists.supportCriterias',
                 ]),
             ], 201);
         } catch (ValidationException $e) {
@@ -567,6 +607,14 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
+
+            'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
+            'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => 'required|string|max:255',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
+            'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
+            'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
