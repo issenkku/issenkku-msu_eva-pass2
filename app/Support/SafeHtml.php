@@ -9,6 +9,7 @@ class SafeHtml
     public static function plainText(?string $html): string
     {
         $decodedHtml = html_entity_decode((string) $html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $decodedHtml = (string) preg_replace('/<(script|style)\b[^>]*>.*?<\/\1>/is', '', $decodedHtml);
 
         return trim((string) preg_replace('/\s+/u', ' ', strip_tags($decodedHtml)));
     }

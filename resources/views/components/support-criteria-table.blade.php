@@ -37,11 +37,14 @@
                 </thead>
                 <tbody class="divide-y divide-amber-100 bg-white text-slate-700">
                     @foreach ($items as $item)
-                        @php($evidenceCount = count(array_filter($item['evidence_links'] ?? [])))
+                        @php
+                            $evidenceCount = count(array_filter($item['evidence_links'] ?? []));
+                            $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                        @endphp
                         <tr>
                             <td class="px-3 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
-                            <td class="px-3 py-4 font-medium text-slate-900">{{ $item['activity_name'] }}</td>
-                            <td class="px-3 py-4 leading-6">{{ $item['indicator'] }}</td>
+                            <td class="px-3 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
+                            <td class="px-3 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
                             <td class="px-3 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
                             <td class="px-3 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
                             <td class="px-3 py-4 text-right font-semibold tabular-nums"
@@ -58,7 +61,7 @@
                                 <span data-support-evidence-count="{{ $item['id'] }}">
                                     @if ($evidenceCount > 0)
                                         <button type="button" data-support-evidence-open="{{ $item['id'] }}"
-                                            aria-label="ดูหลักฐานของ {{ $item['activity_name'] }} {{ $evidenceCount }} ลิงก์"
+                                            aria-label="ดูหลักฐานของ {{ $activityNameText }} {{ $evidenceCount }} ลิงก์"
                                             class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                             {{ $evidenceCount }} ลิงก์
                                         </button>
@@ -70,7 +73,7 @@
                             @if (!$readonly)
                                 <td class="px-3 py-4 text-center">
                                     <button type="button" data-support-manage-open="{{ $item['id'] }}"
-                                        aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $item['activity_name'] }}"
+                                        aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
                                         class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
                                         {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
                                     </button>
@@ -83,13 +86,16 @@
         </div>
 
         <div class="space-y-3 p-4 md:hidden">
-            @foreach ($items as $item)
-                @php($evidenceCount = count(array_filter($item['evidence_links'] ?? [])))
+                    @foreach ($items as $item)
+                @php
+                    $evidenceCount = count(array_filter($item['evidence_links'] ?? []));
+                    $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                @endphp
                 <article class="rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">รายการ {{ $item['sequence'] }}</span>
-                            <h4 class="mt-1 font-bold text-slate-900">{{ $item['activity_name'] }}</h4>
+                            <h4 class="mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
                         </div>
                         @if (!empty($item['require_evidence']))
                             <span class="shrink-0 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
@@ -100,7 +106,7 @@
                     <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <div class="col-span-2">
                             <dt class="text-xs font-medium text-slate-500">ตัวชี้วัด/เกณฑ์การประเมิน</dt>
-                            <dd class="mt-1 leading-6 text-slate-800">{{ $item['indicator'] }}</dd>
+                            <dd class="mt-1 leading-6 text-slate-800">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-slate-500">ระดับค่าเป้าหมาย</dt>
@@ -131,7 +137,7 @@
                             <span class="mt-1 block" data-support-evidence-count="{{ $item['id'] }}">
                                 @if ($evidenceCount > 0)
                                     <button type="button" data-support-evidence-open="{{ $item['id'] }}"
-                                        aria-label="ดูหลักฐานของ {{ $item['activity_name'] }} {{ $evidenceCount }} ลิงก์"
+                                        aria-label="ดูหลักฐานของ {{ $activityNameText }} {{ $evidenceCount }} ลิงก์"
                                         class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
                                         {{ $evidenceCount }} ลิงก์
                                     </button>
@@ -142,7 +148,7 @@
                         </div>
                         @if (!$readonly)
                             <button type="button" data-support-manage-open="{{ $item['id'] }}"
-                                aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $item['activity_name'] }}"
+                                aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
                                 class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
                                 {{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
                             </button>
@@ -158,14 +164,14 @@
                     data-support-item
                     data-support-id="{{ $item['id'] }}"
                     data-support-sequence="{{ $item['sequence'] }}"
-                    data-support-activity="{{ $item['activity_name'] }}"
+                    data-support-activity="{{ $activityNameText }}"
                     data-support-required="{{ !empty($item['require_evidence']) ? '1' : '0' }}"
                     data-support-require-reason="{{ $requireReason ? '1' : '0' }}"
                     data-support-existing-weighted="{{ $item['weighted_score'] ?? '' }}">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">กรอกผลรายการ {{ $item['sequence'] }}</p>
-                            <h4 class="mt-1 font-bold text-slate-900">{{ $item['activity_name'] }}</h4>
+                            <h4 class="mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
                         </div>
                         @if (!empty($item['require_evidence']))
                             <span class="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-700">
@@ -223,7 +229,7 @@
                                         <input type="url" data-support-evidence-input
                                             name="support_list[{{ $item['id'] }}][evidence_links][]"
                                             value="{{ $link }}"
-                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $item['activity_name'] }}"
+                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $activityNameText }}"
                                             class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                             placeholder="https://example.com/evidence">
                                         <button type="button" data-remove-support-evidence
@@ -234,7 +240,7 @@
                                     <div class="support-evidence-row flex items-center gap-2">
                                         <input type="url" data-support-evidence-input
                                             name="support_list[{{ $item['id'] }}][evidence_links][]"
-                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $item['activity_name'] }}"
+                                            aria-label="ลิงก์หลักฐานสำหรับ {{ $activityNameText }}"
                                             class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                             placeholder="https://example.com/evidence">
                                         <button type="button" data-remove-support-evidence

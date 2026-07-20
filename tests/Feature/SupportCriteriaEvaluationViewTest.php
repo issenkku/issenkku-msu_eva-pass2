@@ -62,6 +62,27 @@ test('support criteria component renders one responsive editable form control se
     expect(substr_count($html, 'name="support_list[7][achieved_score]"'))->toBe(1);
 });
 
+test('support criteria activity and indicator render as sanitized rich text', function () {
+    $item = array_replace(supportViewItem(), [
+        'activity_name' => '<p><strong>กิจกรรม</strong></p><script>alert(1)</script>',
+        'indicator' => '<ul><li>ครบตามแผน</li></ul>',
+    ]);
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    expect($html)
+        ->toContain('<strong>กิจกรรม</strong>')
+        ->toContain('<ul>')
+        ->not->toContain('&lt;script&gt;')
+        ->not->toContain('alert(1)')
+        ->not->toContain('aria-label="ดูหลักฐานของ &lt;p&gt;');
+});
+
 test('reviewer can edit score with a reason while evidence is preserved read only', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
