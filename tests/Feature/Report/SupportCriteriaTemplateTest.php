@@ -7,6 +7,8 @@ use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
 use App\Models\SupportCriteria;
 use App\Models\User;
+use Database\Factories\DepartmentFactory;
+use Database\Factories\PositionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
@@ -24,8 +26,8 @@ class SupportCriteriaTemplateTest extends TestCase
         parent::setUp();
 
         Role::create(['name' => 'admin']);
-        $department = \Database\Factories\DepartmentFactory::new()->create();
-        $position = \Database\Factories\PositionFactory::new()->create();
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
         $this->admin = User::factory()->create([
             'employee_id' => 'SUPPORT-ADMIN',
             'password' => Hash::make('password'),
