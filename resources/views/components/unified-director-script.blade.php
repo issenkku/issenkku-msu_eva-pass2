@@ -59,10 +59,12 @@ function recalculateSummaryScores() {
 
     const quantityEl = document.getElementById('quantity-summary');
     const qualityEl = document.getElementById('quality-summary');
+    const supportEl = document.getElementById('support-summary');
     const totalEl = document.getElementById('total-summary');
+    const supportSum = parseFloat(supportEl?.textContent?.replaceAll(',', '') || '0') || 0;
     if (quantityEl) quantityEl.textContent = quantitySum.toFixed(2);
     if (qualityEl) qualityEl.textContent = qualitySum.toFixed(2);
-    if (totalEl) totalEl.textContent = (quantitySum + qualitySum).toFixed(2);
+    if (totalEl) totalEl.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
 }
 
 document.addEventListener('DOMContentLoaded', function() {

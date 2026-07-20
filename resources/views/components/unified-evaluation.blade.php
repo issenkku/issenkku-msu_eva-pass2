@@ -533,6 +533,14 @@
                                         @endforeach
                                     </div>
                             @endif
+
+                            @if (!empty($evaluationList['support_items']))
+                                <x-support-criteria-table
+                                    :items="$evaluationList['support_items']"
+                                    :readonly="$readonly"
+                                    :evidence-editable="true"
+                                    :require-reason="false" />
+                            @endif
                         </div>
                     @if ($hasQualityItems)
                         </details>
@@ -584,3 +592,4 @@
 </div>
 @include('components.unified-evaluation-styles')
 @include('components.unified-evaluation-script')
+@include('components.support-criteria-table-script')

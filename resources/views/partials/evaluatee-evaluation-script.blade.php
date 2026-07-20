@@ -80,6 +80,8 @@
                 });
             }
 
+            errors.push(...(window.validateSupportCriteria?.() ?? []));
+
             return errors;
         }
 

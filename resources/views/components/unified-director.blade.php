@@ -540,6 +540,13 @@
         </div>
 
 @endif
+                            @if (!empty($evaluationList['support_items']))
+                                <x-support-criteria-table
+                                    :items="$evaluationList['support_items']"
+                                    :readonly="$readonly"
+                                    :evidence-editable="false"
+                                    :require-reason="true" />
+                            @endif
                         </div>
                     @if($hasQualityItems)
                     </details>
@@ -591,6 +598,7 @@
     @php
         $totalQuantityScore = 0;
         $totalQualityScore = 0;
+        $totalSupportScore = 0;
 
         foreach($categoryItems as $category) {
             foreach($category['evaluation_lists'] as $evalList) {
@@ -619,12 +627,19 @@
                     $evaluationListQualityTotal = $listMaxScore;
                 }
                 $totalQualityScore += $evaluationListQualityTotal;
+
+                foreach(($evalList['support_items'] ?? []) as $supportItem) {
+                    if (($supportItem['weighted_score'] ?? null) !== null && ($supportItem['weighted_score'] ?? '') !== '') {
+                        $totalSupportScore += floatval($supportItem['weighted_score']);
+                    }
+                }
             }
         }
         if ($qualityMaxScore > 0 && $totalQualityScore > $qualityMaxScore) {
             $totalQualityScore = $qualityMaxScore;
         }
-        $totalScore = $totalQuantityScore + $totalQualityScore;
+        $totalSupportScore = min($totalSupportScore, 100);
+        $totalScore = $totalQuantityScore + $totalQualityScore + $totalSupportScore;
     @endphp
     {{-- ส่วนสรุปคะแนนรวม --}}
     <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
@@ -645,6 +660,10 @@
                 <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
                 <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
             </div>
+            <div class="flex justify-between items-center">
+                <span class="text-base">คะแนนสายสนับสนุน</span>
+                <span id="support-summary" class="font-semibold text-blue-900">{{ number_format($totalSupportScore, 2) }}</span>
+            </div>
         </div>
 
         {{-- คะแนนรวมทั้งหมด --}}
@@ -657,3 +676,4 @@
 
 @include('components.unified-director-styles')
 @include('components.unified-director-script')
+@include('components.support-criteria-table-script')

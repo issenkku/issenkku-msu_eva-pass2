@@ -63,11 +63,13 @@ function recalculateSummaryScores() {
 
     const quantitySummary = document.getElementById('quantity-summary');
     const qualitySummary = document.getElementById('quality-summary');
+    const supportSummary = document.getElementById('support-summary');
     const totalSummary = document.getElementById('total-summary');
+    const supportSum = parseFloat(supportSummary?.textContent?.replaceAll(',', '') || '0') || 0;
 
     if (quantitySummary) quantitySummary.textContent = quantitySum.toFixed(2);
     if (qualitySummary) qualitySummary.textContent = qualitySum.toFixed(2);
-    if (totalSummary) totalSummary.textContent = (quantitySum + qualitySum).toFixed(2);
+    if (totalSummary) totalSummary.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
