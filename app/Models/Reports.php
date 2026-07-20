@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Reports extends Model
 {
@@ -19,11 +20,13 @@ class Reports extends Model
         'evaluator_comment',
         'director_comment',
         'manager_comment',
+        'support_score_total',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'support_score_total' => 'decimal:2',
     ];
 
     public function reportData(): BelongsTo
@@ -39,6 +42,11 @@ class Reports extends Model
     public function qualityScores()
     {
         return $this->hasMany(QualityScore::class, 'report_id');
+    }
+
+    public function supportScores(): HasMany
+    {
+        return $this->hasMany(SupportScore::class, 'report_id');
     }
 
     public function evidenceAnswers()

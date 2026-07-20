@@ -17,6 +17,7 @@ class EvidenceAnswer extends Model
         'quality_main_criteria_id',
         'report_id',
         'workload_entry_id',
+        'support_criteria_id',
         'link',
     ];
 
@@ -43,5 +44,10 @@ class EvidenceAnswer extends Model
     public function workloadEntry(): BelongsTo
     {
         return $this->belongsTo(WorkloadEntry::class, 'workload_entry_id');
+    }
+
+    public function supportCriteria(): BelongsTo
+    {
+        return $this->belongsTo(SupportCriteria::class);
     }
 }
