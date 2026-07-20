@@ -62,7 +62,7 @@ Expected: FAIL because the modal does not contain the support card or support ro
 
 - [ ] **Step 3: Add the fourth card and per-list Support section**
 
-Add a fourth card beside the existing three cards:
+Change the summary grid from `sm:grid-cols-3` to `sm:grid-cols-4`, then add a fourth card beside the existing three cards:
 
 ```blade
 <div class="rounded-lg border border-amber-100 bg-white p-3">
