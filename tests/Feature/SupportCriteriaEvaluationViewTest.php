@@ -38,8 +38,8 @@ test('support criteria component renders one responsive editable form control se
         ->toContain('คะแนนถ่วงน้ำหนัก')
         ->toContain('>หลักฐาน<')
         ->toContain('>จัดการ<')
-        ->toContain('hidden md:table')
-        ->toContain('md:hidden')
+        ->toContain('hidden w-full table-fixed')
+        ->toContain('lg:hidden')
         ->toContain('support_list[7][support_criteria_id]')
         ->toContain('support_list[7][achieved_score]')
         ->toContain('support_list[7][evidence_links][]')
@@ -195,17 +195,20 @@ test('all evaluation form shells use the wider shared layout', function () {
         ->not->toContain('.max-w-4xl');
 });
 
-test('support criteria desktop table reserves readable column widths', function () {
+test('support criteria uses a fixed desktop table and cards without horizontal scrolling', function () {
     $source = file_get_contents(resource_path('views/components/support-criteria-table.blade.php'));
 
     expect($source)
-        ->toContain('min-w-[1180px]')
-        ->toContain('min-w-[240px]')
-        ->toContain('min-w-[360px]')
-        ->toContain('min-w-[110px]')
-        ->toContain('min-w-[80px]')
-        ->toContain('min-w-[100px]')
-        ->toContain('min-w-[120px]')
-        ->toContain('min-w-[90px]')
-        ->not->toContain('table-fixed');
+        ->toContain('hidden w-full table-fixed')
+        ->toContain('lg:table')
+        ->toContain('lg:hidden')
+        ->toContain('w-[19%]')
+        ->toContain('w-[28%]')
+        ->toContain('break-words')
+        ->not->toContain('overflow-x-auto')
+        ->not->toContain('min-w-[1180px]')
+        ->not->toContain('min-w-[240px]')
+        ->not->toContain('min-w-[360px]')
+        ->not->toContain('md:table')
+        ->not->toContain('md:hidden');
 });

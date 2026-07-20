@@ -18,20 +18,19 @@
             </span>
         </div>
 
-        <div class="hidden overflow-x-auto md:block">
-            <table class="hidden md:table min-w-[1180px] w-full border-collapse text-left text-sm">
+            <table class="hidden w-full table-fixed border-collapse text-left text-sm lg:table">
                 <thead class="bg-amber-50 text-xs font-semibold uppercase tracking-wide text-amber-950">
                     <tr>
-                        <th scope="col" class="w-16 px-3 py-3 text-center">ลำดับ</th>
-                        <th scope="col" class="min-w-[240px] px-3 py-3">กิจกรรม/โครงการ/งาน</th>
-                        <th scope="col" class="min-w-[360px] px-3 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
-                        <th scope="col" class="min-w-[110px] px-3 py-3 text-right">ระดับค่าเป้าหมาย</th>
-                        <th scope="col" class="min-w-[80px] px-3 py-3 text-right">น้ำหนัก</th>
-                        <th scope="col" class="min-w-[100px] px-3 py-3 text-right">ค่าคะแนนที่ได้</th>
-                        <th scope="col" class="min-w-[120px] px-3 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
-                        <th scope="col" class="min-w-[90px] px-3 py-3 text-center">หลักฐาน</th>
+                        <th scope="col" class="w-[5%] break-words px-2 py-3 text-center">ลำดับ</th>
+                        <th scope="col" class="w-[19%] break-words px-2 py-3">กิจกรรม/โครงการ/งาน</th>
+                        <th scope="col" class="w-[28%] break-words px-2 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
+                        <th scope="col" class="w-[9%] break-words px-2 py-3 text-right">ระดับค่าเป้าหมาย</th>
+                        <th scope="col" class="w-[7%] break-words px-2 py-3 text-right">น้ำหนัก</th>
+                        <th scope="col" class="w-[8%] break-words px-2 py-3 text-right">ค่าคะแนนที่ได้</th>
+                        <th scope="col" class="w-[9%] break-words px-2 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
+                        <th scope="col" class="w-[7%] break-words px-2 py-3 text-center">หลักฐาน</th>
                         @if (!$readonly)
-                            <th scope="col" class="min-w-[100px] px-3 py-3 text-center">จัดการ</th>
+                            <th scope="col" class="w-[8%] break-words px-2 py-3 text-center">จัดการ</th>
                         @endif
                     </tr>
                 </thead>
@@ -42,22 +41,22 @@
                             $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
                         @endphp
                         <tr>
-                            <td class="px-3 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
-                            <td class="px-3 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
-                            <td class="px-3 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
-                            <td class="px-3 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
-                            <td class="px-3 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
-                            <td class="px-3 py-4 text-right font-semibold tabular-nums"
+                            <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
+                            <td class="break-words px-2 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
+                            <td class="break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
+                            <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
+                            <td class="px-2 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
+                            <td class="px-2 py-4 text-right font-semibold tabular-nums"
                                 data-support-achieved-display="{{ $item['id'] }}">
                                 {{ filled($item['achieved_score']) ? $item['achieved_score'] : '-' }}
                             </td>
-                            <td class="px-3 py-4 text-right">
+                            <td class="px-2 py-4 text-right">
                                 <span class="inline-flex min-w-16 justify-end rounded-full bg-amber-100 px-2.5 py-1 font-bold tabular-nums text-amber-900"
                                     data-support-weighted-display="{{ $item['id'] }}">
                                     {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
                                 </span>
                             </td>
-                            <td class="px-3 py-4 text-center">
+                            <td class="px-2 py-4 text-center">
                                 <span data-support-evidence-count="{{ $item['id'] }}">
                                     @if ($evidenceCount > 0)
                                         <button type="button" data-support-evidence-open="{{ $item['id'] }}"
@@ -71,7 +70,7 @@
                                 </span>
                             </td>
                             @if (!$readonly)
-                                <td class="px-3 py-4 text-center">
+                                <td class="px-2 py-4 text-center">
                                     <button type="button" data-support-manage-open="{{ $item['id'] }}"
                                         aria-label="{{ filled($item['achieved_score']) || $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
                                         class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
@@ -83,9 +82,8 @@
                     @endforeach
                 </tbody>
             </table>
-        </div>
 
-        <div class="space-y-3 p-4 md:hidden">
+        <div class="space-y-3 p-4 lg:hidden">
                     @foreach ($items as $item)
                 @php
                     $evidenceCount = count(array_filter($item['evidence_links'] ?? []));
