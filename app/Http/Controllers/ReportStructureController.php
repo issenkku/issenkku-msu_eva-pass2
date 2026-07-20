@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Rules\HasRichText;
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
@@ -360,8 +361,8 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
             'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => 'required|string|max:255',
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
+            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['required', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
@@ -616,8 +617,8 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
             'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => 'required|string|max:255',
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => 'required|string',
+            'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['required', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',

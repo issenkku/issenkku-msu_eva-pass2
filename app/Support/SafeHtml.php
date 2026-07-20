@@ -6,6 +6,13 @@ use Illuminate\Support\HtmlString;
 
 class SafeHtml
 {
+    public static function plainText(?string $html): string
+    {
+        $decodedHtml = html_entity_decode((string) $html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim((string) preg_replace('/\s+/u', ' ', strip_tags($decodedHtml)));
+    }
+
     public static function richText(?string $html): HtmlString
     {
         if (! filled($html)) {

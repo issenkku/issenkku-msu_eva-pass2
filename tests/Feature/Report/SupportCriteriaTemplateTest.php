@@ -55,6 +55,11 @@ class SupportCriteriaTemplateTest extends TestCase
         ]));
     }
 
+    public function test_activity_name_supports_rich_text_storage(): void
+    {
+        $this->assertSame('text', Schema::getColumnType('support_criterias', 'activity_name'));
+    }
+
     public function test_evaluation_list_owns_ordered_support_criteria_and_cascades_deletes(): void
     {
         $version = CriteriaVersion::factory()->create();
@@ -128,6 +133,40 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.target_value', 95.5)
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.require_evidence', true)
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
+    }
+
+    public function test_admin_can_store_formatted_support_criteria_content(): void
+    {
+        $activityName = '<p><strong>กิจกรรม</strong> '.str_repeat('รายละเอียด ', 40).'</p>';
+        $indicator = '<ul><li>ทำครบตามแผน</li></ul>';
+
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => $activityName,
+            'indicator' => $indicator,
+            'target_value' => 90,
+            'weight' => 100,
+        ]]));
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('support_criterias', [
+            'activity_name' => $activityName,
+            'indicator' => $indicator,
+        ]);
+    }
+
+    public function test_support_criteria_rejects_rich_text_without_visible_text(): void
+    {
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p><br></p>',
+            'indicator' => '<p>เกณฑ์</p>',
+            'target_value' => 90,
+            'weight' => 100,
+        ]]));
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors('categories.0.evaluation_lists.0.support_criterias.0.activity_name');
     }
 
     public function test_support_template_rejects_invalid_numeric_values(): void
