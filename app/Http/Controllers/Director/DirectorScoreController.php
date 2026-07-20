@@ -9,11 +9,14 @@ use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Services\ReportDataService;
+use App\Services\SupportScoreService;
 use App\Support\AssignmentFlow;
 use App\Support\QuantityScoreHistoryRecorder;
+use App\Support\SupportScoreRules;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class DirectorScoreController extends Controller
 {
@@ -21,8 +24,10 @@ class DirectorScoreController extends Controller
 
     protected $reportDataService;
 
-    public function __construct(ReportDataService $reportDataService)
-    {
+    public function __construct(
+        ReportDataService $reportDataService,
+        private SupportScoreService $supportScoreService
+    ) {
         $this->reportDataService = $reportDataService;
     }
 
@@ -95,6 +100,8 @@ class DirectorScoreController extends Controller
 
                 'status' => 'required|string|in:Director_assigned,Manager_assign,Director_draft,Submitted',
                 'comment' => 'nullable|string',
+
+                ...SupportScoreRules::validation(),
             ]);
 
             DB::beginTransaction();
@@ -170,6 +177,14 @@ class DirectorScoreController extends Controller
                 }
             }
 
+            $supportResult = $this->supportScoreService->persist(
+                $report,
+                $validated['support_list'] ?? [],
+                $request->user(),
+                $modifierRole,
+                true
+            );
+
             $statusMessages = [
                 'Director_draft' => 'กรรมการกรอกคะแนน',
                 'Manager_assign' => 'กรรมการอนุมัติ',
@@ -206,6 +221,9 @@ class DirectorScoreController extends Controller
                     'อัพเดตคะแนนเชิงปริมาณ' => $newQuantityScores,
                     'คะแนนเชิงคุณภาพก่อนหน้า' => $oldQualityScores,
                     'อัพเดตคะแนนเชิงคุณภาพ' => $newQualityScores,
+                    'คะแนนสายสนับสนุนก่อนหน้า' => $supportResult['old_scores'],
+                    'อัพเดตคะแนนสายสนับสนุน' => $supportResult['new_scores'],
+                    'ผลรวมคะแนนสายสนับสนุนจริง' => $supportResult['support_score_total'],
                 ])
                 ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
@@ -215,6 +233,10 @@ class DirectorScoreController extends Controller
 
             return redirect('/director-dashboard')->with('success', $message);
 
+        } catch (ValidationException $e) {
+            DB::rollBack();
+
+            throw $e;
         } catch (Exception $e) {
             DB::rollback();
 
