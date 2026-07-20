@@ -187,6 +187,44 @@
                                     });
                             }
 
+                            if (evalBlock.querySelector('.support_criteria_type').checked) {
+                                evalData.support_criterias = [];
+                                Array.from(evalBlock.querySelectorAll('.support_criteria_block'))
+                                    .sort((left, right) => compareSequenceValues(
+                                        getSequenceValue(left, '.support_sequence', `${catIndex + 1}.${evalIndex + 1}.1`),
+                                        getSequenceValue(right, '.support_sequence', `${catIndex + 1}.${evalIndex + 1}.1`)
+                                    ))
+                                    .forEach((supportBlock, supportIndex) => {
+                                        const activityName = supportBlock.querySelector('.support_activity_name').value.trim();
+                                        const indicator = supportBlock.querySelector('.support_indicator').value.trim();
+                                        const targetValue = supportBlock.querySelector('.support_target_value').value;
+                                        const weight = supportBlock.querySelector('.support_weight').value;
+
+                                        if (!activityName || !indicator || targetValue === '' || weight === '') {
+                                            throw new Error(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
+                                        }
+                                        if (Number(targetValue) < 0) {
+                                            throw new Error(`ระดับค่าเป้าหมายของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องไม่ติดลบ`);
+                                        }
+                                        if (Number(weight) <= 0 || Number(weight) > 100) {
+                                            throw new Error(`น้ำหนักของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องมากกว่า 0 และไม่เกิน 100`);
+                                        }
+
+                                        const supportPayload = {
+                                            sequence: supportIndex + 1,
+                                            activity_name: activityName,
+                                            indicator,
+                                            target_value: Number(targetValue),
+                                            weight: Number(weight),
+                                        };
+                                        const supportCriteriaId = supportBlock.querySelector('.support_criteria_id').value;
+                                        if (supportCriteriaId) {
+                                            supportPayload.support_criteria_id = Number(supportCriteriaId);
+                                        }
+                                        evalData.support_criterias.push(supportPayload);
+                                    });
+                            }
+
                             category.evaluation_lists.push(evalData);
                         });
 

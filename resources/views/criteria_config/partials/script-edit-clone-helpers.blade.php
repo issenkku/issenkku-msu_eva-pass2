@@ -6,6 +6,7 @@
                 'data-quantity-main-id',
                 'data-quality-main-id',
                 'data-quality-sub-id',
+                'data-support-criteria-id',
             ];
 
             identityAttrs.forEach(attr => rootElement.removeAttribute(attr));
@@ -13,7 +14,7 @@
                 identityAttrs.forEach(attr => el.removeAttribute(attr));
             });
 
-            rootElement.querySelectorAll('.category_id_value, .evaluation_id_value, .quantity_main_id_value, .quality_main_id_value, .quant_sub_criteria_id').forEach(el => {
+            rootElement.querySelectorAll('.category_id_value, .evaluation_id_value, .quantity_main_id_value, .quality_main_id_value, .quant_sub_criteria_id, .support_criteria_id').forEach(el => {
                 el.value = '';
             });
         }
@@ -41,7 +42,7 @@
             node.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
             node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
-                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child)'
+                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child), .support_criteria_block:not(:first-child)'
             ).forEach(e => e.remove());
 
             if (blockSelector === '.evaluation_list_block') {
@@ -50,6 +51,7 @@
                 setSequenceInputValue(node.querySelector('.eval_sequence'), index);
                 node.querySelector('.quantity_main_criterias_container').classList.add('hidden');
                 node.querySelector('.quality_main_criterias_container').classList.add('hidden');
+                node.querySelector('.support_criterias_container').classList.add('hidden');
             }
 
             if (blockSelector === '.category_block') {

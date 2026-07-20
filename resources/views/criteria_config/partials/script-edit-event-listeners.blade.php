@@ -64,6 +64,14 @@
                     handleAddQualitySubCriteria(e.target.closest('.qual_criteria_block'));
                     markDirty();
                 }
+
+                // Support Criteria buttons
+                if (e.target.closest('.add_support_criteria_btn')) {
+                    addSupportCriteria(e.target.closest('.evaluation_list_block'));
+                }
+                if (e.target.closest('.delete_support_criteria_btn')) {
+                    deleteSupportCriteria(e.target.closest('.support_criteria_block'));
+                }
             });
 
             // Criteria type checkboxes

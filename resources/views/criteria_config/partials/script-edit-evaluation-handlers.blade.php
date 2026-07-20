@@ -37,6 +37,8 @@
                     newBlock.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
                     newBlock.querySelector('.quantity_main_criterias_container')?.classList.add('hidden');
                     newBlock.querySelector('.quality_main_criterias_container')?.classList.add('hidden');
+                    newBlock.querySelector('.support_criterias_container')?.classList.add('hidden');
+                    newBlock.querySelectorAll('.support_criteria_block:not(:first-child)').forEach(e => e.remove());
                     
                     container.appendChild(newBlock);
                     updateSequences();
@@ -77,10 +79,12 @@
             // Hide criteria containers
             newBlock.querySelector('.quantity_main_criterias_container')?.classList.add('hidden');
             newBlock.querySelector('.quality_main_criterias_container')?.classList.add('hidden');
+            newBlock.querySelector('.support_criterias_container')?.classList.add('hidden');
             
             // Remove extra blocks (keep only first of each type)
             newBlock.querySelectorAll('.quant_criteria_block:not(:first-child)').forEach(e => e.remove());
             newBlock.querySelectorAll('.qual_criteria_block:not(:first-child)').forEach(e => e.remove());
+            newBlock.querySelectorAll('.support_criteria_block:not(:first-child)').forEach(e => e.remove());
             
             container.appendChild(newBlock);
             updateSequences();
@@ -90,9 +94,12 @@
         function handleCriteriaTypeChange(evaluationBlock) {
             const quantityContainer = evaluationBlock.querySelector('.quantity_main_criterias_container');
             const qualityContainer = evaluationBlock.querySelector('.quality_main_criterias_container');
+            const supportContainer = evaluationBlock.querySelector('.support_criterias_container');
             const quantityCheckbox = evaluationBlock.querySelector('.quantity_criteria_type');
             const qualityCheckbox = evaluationBlock.querySelector('.quality_criteria_type');
+            const supportCheckbox = evaluationBlock.querySelector('.support_criteria_type');
             
             quantityContainer.classList.toggle('hidden', !quantityCheckbox.checked);
             qualityContainer.classList.toggle('hidden', !qualityCheckbox.checked);
+            supportContainer.classList.toggle('hidden', !supportCheckbox.checked);
         }

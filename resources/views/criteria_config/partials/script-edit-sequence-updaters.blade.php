@@ -48,6 +48,13 @@
                                 });
                             });
                         });
+
+                        evalBlock.querySelectorAll('.support_criteria_block').forEach((supportBlock, supportIndex) => {
+                            setSequenceInputValue(
+                                supportBlock.querySelector('.support_sequence'),
+                                `${evalPrefix}.${supportIndex + 1}`
+                            );
+                        });
                     });
                 });
             });

@@ -59,6 +59,10 @@
                                             <input name="criteria_type_quality" type="checkbox" class="criteria_type quality_criteria_type form-checkbox h-5 w-5 text-purple-600 rounded focus:ring-purple-500" value="quality">
                                             <span class="ml-2 text-sm">เกณฑ์ด้านคุณภาพ</span>
                                         </label>
+                                        <label class="flex items-center">
+                                            <input name="criteria_type_support" type="checkbox" class="criteria_type support_criteria_type form-checkbox h-5 w-5 rounded text-amber-600 focus:ring-amber-500" value="support">
+                                            <span class="ml-2 text-sm">เกณฑ์สำหรับสายสนับสนุน</span>
+                                        </label>
                                     </div>
                                 </div>
 
@@ -316,6 +320,7 @@
                                         </button>
                                     </div>
                                 </div>
+                                @include('criteria_config.partials.support-criteria-template')
                             </div>
                         </div>
                         

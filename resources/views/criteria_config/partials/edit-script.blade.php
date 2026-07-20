@@ -35,6 +35,7 @@
     // Quantity criteria handlers
     @include('criteria_config.partials.script-edit-quantity-handlers')
     @include('criteria_config.partials.script-edit-quality-handlers')
+    @include('criteria_config.partials.script-edit-support-handlers')
     @include('criteria_config.partials.script-edit-fetch-version')
 
     @include('criteria_config.partials.script-edit-populate-helpers')

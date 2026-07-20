@@ -31,3 +31,23 @@ test('create script toggles collects and reorders support criteria', function ()
         ->toContain('support_target_value')
         ->toContain('support_weight');
 });
+
+test('edit template loads toggles and collects support criteria', function () {
+    $template = view('criteria_config.partials.edit-evaluation-template')->render();
+    $editScript = file_get_contents(resource_path('views/criteria_config/partials/edit-script.blade.php'));
+    $criteriaHandler = file_get_contents(resource_path('views/criteria_config/partials/script-edit-criteria-type-handler.blade.php'));
+    $populate = file_get_contents(resource_path('views/criteria_config/partials/script-edit-populate-helpers.blade.php'));
+    $collect = file_get_contents(resource_path('views/criteria_config/partials/script-edit-collect-form-data.blade.php'));
+
+    expect($template)
+        ->toContain('support_criteria_type')
+        ->toContain('support_criterias_container');
+    expect($editScript)->toContain("@include('criteria_config.partials.script-edit-support-handlers')");
+    expect($criteriaHandler)->toContain("querySelector('.support_criteria_type')");
+    expect($populate)
+        ->toContain('evalData.support_criterias')
+        ->toContain('populateSupportCriteria');
+    expect($collect)
+        ->toContain('evalData.support_criterias = []')
+        ->toContain('support_criteria_id');
+});

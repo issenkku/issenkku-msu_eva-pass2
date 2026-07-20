@@ -119,16 +119,21 @@
 
             const hasQuantity = evalData.quantity_main_criterias && evalData.quantity_main_criterias.length > 0;
             const hasQuality = evalData.quality_main_criterias && evalData.quality_main_criterias.length > 0;
+            const hasSupport = Array.isArray(evalData.support_criterias) && evalData.support_criterias.length > 0;
 
             const quantityCheckbox = newBlock.querySelector('.quantity_criteria_type');
             const qualityCheckbox = newBlock.querySelector('.quality_criteria_type');
+            const supportCheckbox = newBlock.querySelector('.support_criteria_type');
             const quantityContainer = newBlock.querySelector('.quantity_main_criterias_container');
             const qualityContainer = newBlock.querySelector('.quality_main_criterias_container');
+            const supportContainer = newBlock.querySelector('.support_criterias_container');
 
             quantityCheckbox.checked = hasQuantity;
             qualityCheckbox.checked = hasQuality;
+            supportCheckbox.checked = hasSupport;
             quantityContainer.classList.toggle('hidden', !hasQuantity);
             qualityContainer.classList.toggle('hidden', !hasQuality);
+            supportContainer.classList.toggle('hidden', !hasSupport);
 
             if (hasQuantity) {
                 populateQuantityCriteria(quantityContainer, evalData.quantity_main_criterias);
@@ -136,6 +141,10 @@
 
             if (hasQuality) {
                 populateQualityCriteria(qualityContainer, evalData.quality_main_criterias);
+            }
+
+            if (hasSupport) {
+                populateSupportCriteria(supportContainer, evalData.support_criterias);
             }
 
             return newBlock;
