@@ -1,5 +1,5 @@
 {{-- โครงฟอร์มรับรองผล ใช้ร่วมกันระหว่างกรรมการและผู้บริหาร --}}
-<div class="mx-auto max-w-4xl space-y-6">
+<div class="evaluation-form-shell mx-auto w-full max-w-7xl space-y-6">
     <x-evaluation-page-header :version-name="$versionName" />
 
     <x-evaluate-report-card

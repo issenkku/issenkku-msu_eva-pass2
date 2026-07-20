@@ -152,3 +152,39 @@ test('shared support script and all role components expose the same contracts', 
             ->toContain('support-criteria-table-script');
     }
 });
+
+test('all evaluation form shells use the wider shared layout', function () {
+    foreach ([
+        'evaluatee/evaluation.blade.php',
+        'partials/evaluation-evaluator-form.blade.php',
+        'partials/evaluation-approval-form.blade.php',
+        'dashboard/admin.blade.php',
+    ] as $viewPath) {
+        $source = file_get_contents(resource_path("views/{$viewPath}"));
+
+        expect($source)
+            ->toContain('evaluation-form-shell')
+            ->toContain('w-full max-w-7xl')
+            ->not->toContain('max-w-4xl');
+    }
+
+    $styles = file_get_contents(resource_path('views/partials/evaluation-form-styles.blade.php'));
+    expect($styles)
+        ->toContain('.evaluation-form-shell')
+        ->not->toContain('.max-w-4xl');
+});
+
+test('support criteria desktop table reserves readable column widths', function () {
+    $source = file_get_contents(resource_path('views/components/support-criteria-table.blade.php'));
+
+    expect($source)
+        ->toContain('min-w-[1180px]')
+        ->toContain('min-w-[240px]')
+        ->toContain('min-w-[360px]')
+        ->toContain('min-w-[110px]')
+        ->toContain('min-w-[80px]')
+        ->toContain('min-w-[100px]')
+        ->toContain('min-w-[120px]')
+        ->toContain('min-w-[90px]')
+        ->not->toContain('table-fixed');
+});

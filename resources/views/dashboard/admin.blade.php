@@ -5,7 +5,7 @@
     @include('partials.evaluation-form-styles')
 
     {{-- หน้าอ่านผลการประเมินสำหรับผู้ดูแลระบบ --}}
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="evaluation-form-shell mx-auto w-full max-w-7xl space-y-6">
         <x-evaluation-page-header :version-name="$versionName" />
 
         <x-evaluate-report-card

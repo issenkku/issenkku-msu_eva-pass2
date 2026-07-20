@@ -5,7 +5,7 @@
             margin-top: 1rem;
         }
 
-        .max-w-4xl {
+        .evaluation-form-shell {
             max-width: 100%;
             padding: 0 1rem;
         }

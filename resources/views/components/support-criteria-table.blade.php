@@ -19,19 +19,19 @@
         </div>
 
         <div class="hidden overflow-x-auto md:block">
-            <table class="hidden md:table w-full table-fixed border-collapse text-left text-sm">
+            <table class="hidden md:table min-w-[1180px] w-full border-collapse text-left text-sm">
                 <thead class="bg-amber-50 text-xs font-semibold uppercase tracking-wide text-amber-950">
                     <tr>
                         <th scope="col" class="w-16 px-3 py-3 text-center">ลำดับ</th>
-                        <th scope="col" class="w-1/5 px-3 py-3">กิจกรรม/โครงการ/งาน</th>
-                        <th scope="col" class="w-1/4 px-3 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
-                        <th scope="col" class="px-3 py-3 text-right">ระดับค่าเป้าหมาย</th>
-                        <th scope="col" class="px-3 py-3 text-right">น้ำหนัก</th>
-                        <th scope="col" class="px-3 py-3 text-right">ค่าคะแนนที่ได้</th>
-                        <th scope="col" class="px-3 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
-                        <th scope="col" class="px-3 py-3 text-center">หลักฐาน</th>
+                        <th scope="col" class="min-w-[240px] px-3 py-3">กิจกรรม/โครงการ/งาน</th>
+                        <th scope="col" class="min-w-[360px] px-3 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
+                        <th scope="col" class="min-w-[110px] px-3 py-3 text-right">ระดับค่าเป้าหมาย</th>
+                        <th scope="col" class="min-w-[80px] px-3 py-3 text-right">น้ำหนัก</th>
+                        <th scope="col" class="min-w-[100px] px-3 py-3 text-right">ค่าคะแนนที่ได้</th>
+                        <th scope="col" class="min-w-[120px] px-3 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
+                        <th scope="col" class="min-w-[90px] px-3 py-3 text-center">หลักฐาน</th>
                         @if (!$readonly)
-                            <th scope="col" class="px-3 py-3 text-center">จัดการ</th>
+                            <th scope="col" class="min-w-[100px] px-3 py-3 text-center">จัดการ</th>
                         @endif
                     </tr>
                 </thead>

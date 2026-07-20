@@ -1,5 +1,5 @@
 {{-- โครงฟอร์มประเมินของ evaluator ใช้ร่วมกับหน้าประเมินของผู้ประเมิน --}}
-<div class="mx-auto max-w-4xl space-y-6">
+<div class="evaluation-form-shell mx-auto w-full max-w-7xl space-y-6">
     <x-evaluation-page-header :version-name="$versionName" :show-version="false" />
 
     <x-evaluate-report-card

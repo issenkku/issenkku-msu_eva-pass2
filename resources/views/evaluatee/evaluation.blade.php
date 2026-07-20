@@ -5,7 +5,7 @@
 @section('content')
 @include('partials.evaluation-form-styles')
 {{-- หน้าแบบประเมินของผู้ถูกประเมิน มี modal ตรวจสอบก่อนส่งเฉพาะหน้า แต่ใช้ partial กลางร่วมกับหน้าอื่น --}}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="evaluation-form-shell mx-auto w-full max-w-7xl space-y-6">
     <x-evaluation-page-header :version-name="$versionName" :show-version="false" />
 
     <x-evaluate-report-card
