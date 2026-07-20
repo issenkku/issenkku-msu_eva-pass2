@@ -16,7 +16,7 @@
         </div>
 
         <div class="mb-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-left sm:mb-4 sm:px-4 sm:py-4">
-            <div class="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
+            <div class="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4 sm:gap-3">
                 <div class="rounded-lg border border-blue-100 bg-white p-3">
                     <div class="text-sm text-gray-500">คะแนนด้านปริมาณ</div>
                     <div id="modal-quantity-summary" class="mt-1 text-lg font-bold text-blue-900 sm:text-xl">0.00</div>
@@ -28,6 +28,10 @@
                 <div class="rounded-lg border border-emerald-100 bg-white p-3">
                     <div class="text-sm text-gray-500">คะแนนรวม</div>
                     <div id="modal-total-summary" class="mt-1 text-lg font-bold text-emerald-700 sm:text-xl">0.00</div>
+                </div>
+                <div class="rounded-lg border border-amber-100 bg-white p-3">
+                    <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
+                    <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
                 </div>
             </div>
 
@@ -107,6 +111,29 @@
                                                 </div>
                                                 <div class="text-sm font-semibold text-purple-800">
                                                     <span id="summary-quality-score-{{ $mainCriteria['id'] }}">0.00</span>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if (count($evaluationList['support_items']) > 0)
+                                <div class="mt-3">
+                                    <div class="mb-2 text-xs font-bold uppercase tracking-wide text-amber-700">Support</div>
+                                    <div class="space-y-2">
+                                        @foreach ($evaluationList['support_items'] as $supportItem)
+                                            <div class="flex flex-col gap-2 rounded-lg border border-amber-100 bg-amber-50/60 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+                                                data-summary-support-main
+                                                data-list-id="{{ $evaluationList['id'] }}"
+                                                data-support-id="{{ $supportItem['id'] }}"
+                                                data-support-weight="{{ $supportItem['weight'] ?? 0 }}">
+                                                <div class="min-w-0">
+                                                    <div class="text-sm font-medium text-gray-800">{{ \App\Support\SafeHtml::plainText($supportItem['activity_name'] ?? '') }}</div>
+                                                    <div id="summary-support-status-{{ $supportItem['id'] }}" class="mt-1 text-xs text-gray-500">ยังไม่มีข้อมูล</div>
+                                                </div>
+                                                <div class="text-sm font-semibold text-amber-800">
+                                                    <span id="summary-support-score-{{ $supportItem['id'] }}">0.00</span>
                                                 </div>
                                             </div>
                                         @endforeach
