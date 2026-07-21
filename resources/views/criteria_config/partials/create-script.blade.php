@@ -275,6 +275,62 @@
             return text.trim() !== '';
         }
 
+        function toggleSupportIndicatorMode(block) {
+            const allow = block.querySelector('.support_allow_activity_entries');
+            const grouped = block.querySelector('.support_group_by_indicator');
+            if (!allow || !grouped) return;
+
+            if (!allow.checked) grouped.checked = false;
+            grouped.disabled = !allow.checked;
+            block.querySelector('[data-support-legacy-indicator]')
+                ?.classList.toggle('hidden', grouped.checked);
+            block.querySelector('.support_indicator_items')
+                ?.classList.toggle('hidden', !grouped.checked);
+        }
+
+        function updateSupportIndicatorItemSequences(block) {
+            block.querySelectorAll('.support_indicator_item_block').forEach((item, index) => {
+                item.querySelector('.support_indicator_sequence').value = index + 1;
+            });
+        }
+
+        function collectSupportIndicatorItems(block) {
+            return Array.from(block.querySelectorAll('.support_indicator_item_block'))
+                .map((item, index) => ({
+                    ...(item.querySelector('.support_indicator_item_id').value
+                        ? { support_indicator_item_id: Number(item.querySelector('.support_indicator_item_id').value) }
+                        : {}),
+                    sequence: index + 1,
+                    code: item.querySelector('.support_indicator_code').value.trim(),
+                    description: getRichTextValue(item.querySelector('.support_indicator_description')),
+                }));
+        }
+
+        function addSupportIndicatorItem(block) {
+            const list = block.querySelector('.support_indicator_item_list');
+            const item = list.querySelector('.support_indicator_item_block').cloneNode(true);
+            resetSummernoteClone(item);
+            item.querySelectorAll('input').forEach((input) => input.value = '');
+            item.querySelector('.support_indicator_description').value = '';
+            list.appendChild(item);
+            updateSupportIndicatorItemSequences(block);
+            initializeSummernote(item);
+            markDirty();
+        }
+
+        function deleteSupportIndicatorItem(item) {
+            const block = item.closest('.support_criteria_block');
+            if (block.querySelectorAll('.support_indicator_item_block').length === 1) {
+                showValidationErrorModal('ต้องมีตัวชี้วัดย่อยอย่างน้อย 1 ข้อ');
+                return;
+            }
+
+            resetSummernoteClone(item);
+            item.remove();
+            updateSupportIndicatorItemSequences(block);
+            markDirty();
+        }
+
         // Initialize Summernote when document is ready
         $(document).ready(function() {
             setupUnsavedChangesProtection();
@@ -312,7 +368,7 @@
             node.querySelectorAll('textarea:not(.quant_formula):not(.richtext-editor)').forEach(textarea => textarea.value = '');
             node.querySelectorAll('textarea.quant_formula').forEach(textarea => textarea.value = 'D = A × C / B');
             node.querySelectorAll(
-                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child), .support_criteria_block:not(:first-child)'
+                '.evaluation_list_block:not(:first-child), .quant_criteria_block:not(:first-child), .qual_criteria_block:not(:first-child), .quant_sub_criteria_block:not(:first-child), .qual_sub_criteria_block:not(:first-child), .support_criteria_block:not(:first-child), .support_indicator_item_block:not(:first-child)'
             ).forEach(e => e.remove());
 
             if (blockSelector === '.evaluation_list_block') {
@@ -750,6 +806,14 @@
             }
             }
 
+            if (e.target.closest('.add_support_indicator_item_btn')) {
+                addSupportIndicatorItem(e.target.closest('.support_criteria_block'));
+            }
+
+            if (e.target.closest('.delete_support_indicator_item_btn')) {
+                deleteSupportIndicatorItem(e.target.closest('.support_indicator_item_block'));
+            }
+
             if (e.target.closest('.move_category_up_btn')) {
                 const block = e.target.closest('.category_block');
                 const previous = block.previousElementSibling;
@@ -1029,6 +1093,7 @@
                 const container = evaluationBlock.querySelector('.support_criteria_items');
                 const newBlock = cloneAndClear('.support_criteria_block');
                 container.appendChild(newBlock);
+                toggleSupportIndicatorMode(newBlock);
                 refreshOrderUI();
                 markDirty();
                 ensureRuntimeFormFieldIdentifiers(newBlock);
@@ -1042,6 +1107,12 @@
         });
 
         document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('support_allow_activity_entries')
+                || e.target.classList.contains('support_group_by_indicator')) {
+                toggleSupportIndicatorMode(e.target.closest('.support_criteria_block'));
+                markDirty();
+            }
+
             if (e.target.classList.contains('criteria_type')) {
                 const evalBlock = e.target.closest('.evaluation_list_block');
                 const quantityContainer = evalBlock.querySelector('.quantity_main_criterias_container');
@@ -1322,9 +1393,21 @@
                                 const indicator = getRichTextValue(supportBlock.querySelector('.support_indicator'));
                                 const targetValue = supportBlock.querySelector('.support_target_value').value;
                                 const weight = supportBlock.querySelector('.support_weight').value;
+                                const grouped = supportBlock.querySelector('.support_group_by_indicator')?.checked || false;
+                                const indicatorItems = grouped ? collectSupportIndicatorItems(supportBlock) : [];
 
-                                if (!hasVisibleRichText(activityName) || !hasVisibleRichText(indicator) || targetValue === '' || weight === '') {
+                                if (!hasVisibleRichText(activityName)
+                                    || (!grouped && !hasVisibleRichText(indicator))
+                                    || targetValue === '' || weight === '') {
                                     showValidationErrorModal(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
+                                    valid = false;
+                                    return;
+                                }
+                                const indicatorCodes = indicatorItems.map((item) => item.code);
+                                if (grouped && (indicatorItems.length === 0
+                                    || indicatorItems.some((item) => !item.code || !hasVisibleRichText(item.description))
+                                    || new Set(indicatorCodes).size !== indicatorCodes.length)) {
+                                    showValidationErrorModal(`กรุณากรอกตัวชี้วัดย่อยของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบและไม่ใช้รหัสซ้ำ`);
                                     valid = false;
                                     return;
                                 }
@@ -1342,11 +1425,13 @@
                                 evalList.support_criterias.push({
                                     sequence: supportIndex + 1,
                                     activity_name: activityName,
-                                    indicator,
+                                    indicator: grouped ? null : indicator,
                                     target_value: Number(targetValue),
                                     weight: Number(weight),
                                     require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
-                                    allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false
+                                    allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false,
+                                    group_activity_entries_by_indicator: grouped,
+                                    indicator_items: indicatorItems
                                 });
                             });
                         if (!valid) return;

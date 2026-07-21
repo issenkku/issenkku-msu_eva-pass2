@@ -199,9 +199,19 @@
                                         const indicator = getRichTextValue(supportBlock.querySelector('.support_indicator'));
                                         const targetValue = supportBlock.querySelector('.support_target_value').value;
                                         const weight = supportBlock.querySelector('.support_weight').value;
+                                        const grouped = supportBlock.querySelector('.support_group_by_indicator')?.checked || false;
+                                        const indicatorItems = grouped ? collectSupportIndicatorItems(supportBlock) : [];
 
-                                        if (!hasVisibleRichText(activityName) || !hasVisibleRichText(indicator) || targetValue === '' || weight === '') {
+                                        if (!hasVisibleRichText(activityName)
+                                            || (!grouped && !hasVisibleRichText(indicator))
+                                            || targetValue === '' || weight === '') {
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
+                                        }
+                                        const indicatorCodes = indicatorItems.map((item) => item.code);
+                                        if (grouped && (indicatorItems.length === 0
+                                            || indicatorItems.some((item) => !item.code || !hasVisibleRichText(item.description))
+                                            || new Set(indicatorCodes).size !== indicatorCodes.length)) {
+                                            throw new Error(`กรุณากรอกตัวชี้วัดย่อยของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบและไม่ใช้รหัสซ้ำ`);
                                         }
                                         if (Number(targetValue) < 0) {
                                             throw new Error(`ระดับค่าเป้าหมายของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องไม่ติดลบ`);
@@ -213,11 +223,13 @@
                                         const supportPayload = {
                                             sequence: supportIndex + 1,
                                             activity_name: activityName,
-                                            indicator,
+                                            indicator: grouped ? null : indicator,
                                             target_value: Number(targetValue),
                                             weight: Number(weight),
                                             require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
                                             allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false,
+                                            group_activity_entries_by_indicator: grouped,
+                                            indicator_items: indicatorItems,
                                         };
                                         const supportCriteriaId = supportBlock.querySelector('.support_criteria_id').value;
                                         if (supportCriteriaId) {

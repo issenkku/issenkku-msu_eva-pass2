@@ -72,10 +72,22 @@
                 if (e.target.closest('.delete_support_criteria_btn')) {
                     deleteSupportCriteria(e.target.closest('.support_criteria_block'));
                 }
+                if (e.target.closest('.add_support_indicator_item_btn')) {
+                    addSupportIndicatorItem(e.target.closest('.support_criteria_block'));
+                }
+                if (e.target.closest('.delete_support_indicator_item_btn')) {
+                    deleteSupportIndicatorItem(e.target.closest('.support_indicator_item_block'));
+                }
             });
 
             // Criteria type checkboxes
             document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('support_allow_activity_entries')
+                    || e.target.classList.contains('support_group_by_indicator')) {
+                    toggleSupportIndicatorMode(e.target.closest('.support_criteria_block'));
+                    markDirty();
+                }
+
                 if (e.target.classList.contains('criteria_type')) {
                     handleCriteriaTypeChange(e.target.closest('.evaluation_list_block'));
                 }

@@ -27,7 +27,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label class="text-sm font-medium text-gray-700">
+                <label class="text-sm font-medium text-gray-700" data-support-legacy-indicator>
                     กิจกรรม/โครงการ/งาน <span class="text-red-500">*</span>
                     <textarea rows="8"
                         class="support_activity_name richtext-editor mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
@@ -62,6 +62,44 @@
                     class="support_allow_activity_entries h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500">
                 <span>อนุญาตให้ผู้ถูกประเมินเพิ่มกิจกรรม/โครงการ</span>
             </label>
+            <label class="mt-3 flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input type="checkbox"
+                    class="support_group_by_indicator h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    disabled>
+                <span>แยกโครงการตามตัวชี้วัดย่อย</span>
+            </label>
+
+            <section class="support_indicator_items mt-4 hidden rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <h6 class="font-semibold text-amber-950">ตัวชี้วัดย่อย</h6>
+                    <button type="button"
+                        class="add_support_indicator_item_btn rounded-lg bg-white px-3 py-2 text-sm font-semibold text-amber-900 shadow-sm ring-1 ring-amber-200 transition hover:bg-amber-100">
+                        + เพิ่มตัวชี้วัดย่อย
+                    </button>
+                </div>
+                <div class="support_indicator_item_list space-y-3">
+                    <article class="support_indicator_item_block rounded-lg border border-amber-200 bg-white p-3">
+                        <input type="hidden" class="support_indicator_item_id" value="">
+                        <input type="hidden" class="support_indicator_sequence" value="1">
+                        <label class="block text-sm font-medium text-gray-700">
+                            รหัสข้อ <span class="text-red-500">*</span>
+                            <input type="text" maxlength="50"
+                                class="support_indicator_code mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
+                                placeholder="เช่น 2.1">
+                        </label>
+                        <label class="mt-3 block text-sm font-medium text-gray-700">
+                            รายละเอียดตัวชี้วัด <span class="text-red-500">*</span>
+                            <textarea rows="5"
+                                class="support_indicator_description richtext-editor mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
+                                placeholder="รายละเอียดตัวชี้วัด/เกณฑ์การประเมิน"></textarea>
+                        </label>
+                        <button type="button"
+                            class="delete_support_indicator_item_btn mt-3 text-sm font-semibold text-red-600 transition hover:text-red-800">
+                            ลบข้อย่อย
+                        </button>
+                    </article>
+                </div>
+            </section>
         </div>
     </div>
 </div>

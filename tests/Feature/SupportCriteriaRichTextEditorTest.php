@@ -6,8 +6,8 @@ it('renders both support criteria fields as rich text textareas', function () {
     expect($html)
         ->toContain('class="support_activity_name richtext-editor')
         ->toContain('class="support_indicator richtext-editor')
-        ->toContain('<textarea')
-        ->not->toContain('<input type="text"');
+        ->toContain('class="support_indicator_description richtext-editor')
+        ->toContain('<textarea');
 });
 
 it('keeps summernote lifecycle hooks for dynamic support criteria blocks', function () {
@@ -27,7 +27,8 @@ it('collects support criteria HTML from create and edit scripts', function () {
 
     expect($html)
         ->toContain("getRichTextValue(supportBlock.querySelector('.support_activity_name'))")
-        ->toContain("getRichTextValue(supportBlock.querySelector('.support_indicator'))");
+        ->toContain("getRichTextValue(supportBlock.querySelector('.support_indicator'))")
+        ->toContain("getRichTextValue(item.querySelector('.support_indicator_description'))");
 });
 
 it('restores list markers inside summernote and rendered rich text', function () {
