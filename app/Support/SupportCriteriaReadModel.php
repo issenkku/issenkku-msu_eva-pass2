@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\EvidenceAnswer;
 use App\Models\Reports;
+use App\Models\SupportActivityEntry;
+use App\Models\SupportActivityEntryHistory;
 use App\Models\SupportCriteria;
 use App\Models\SupportScore;
 use App\Models\SupportScoreHistory;
@@ -52,11 +54,20 @@ class SupportCriteriaReadModel
             ->whereNotNull('support_criteria_id')
             ->get()
             ->groupBy('support_criteria_id');
+        $activityEntries = SupportActivityEntry::query()
+            ->with('histories.modifierUser:id,prefix,name')
+            ->where('report_id', $report->id)
+            ->whereIn('support_criteria_id', $criterionIds)
+            ->orderBy('support_criteria_id')
+            ->orderBy('sequence')
+            ->orderBy('id')
+            ->get()
+            ->groupBy('support_criteria_id');
 
         return $criteria
             ->groupBy('evaluation_list_id')
-            ->map(function ($listCriteria) use ($scores, $histories, $evidence) {
-                return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence) {
+            ->map(function ($listCriteria) use ($scores, $histories, $evidence, $activityEntries) {
+                return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence, $activityEntries) {
                     $score = $scores->get($criterion->id);
 
                     return [
@@ -67,6 +78,34 @@ class SupportCriteriaReadModel
                         'target_value' => $criterion->target_value,
                         'weight' => $criterion->weight,
                         'require_evidence' => (bool) $criterion->require_evidence,
+                        'allow_activity_entries' => (bool) $criterion->allow_activity_entries,
+                        'activity_entries' => ! $criterion->allow_activity_entries
+                            ? []
+                            : ($activityEntries->get($criterion->id) ?? collect())
+                                ->map(function (SupportActivityEntry $entry) {
+                                    return [
+                                        'id' => $entry->id,
+                                        'sequence' => $entry->sequence,
+                                        'content' => $entry->content,
+                                        'histories' => $entry->histories
+                                            ->map(function (SupportActivityEntryHistory $history) {
+                                                return [
+                                                    'previous_content' => $history->previous_content,
+                                                    'new_content' => $history->new_content,
+                                                    'reason' => $history->reason,
+                                                    'modified_by_name' => $history->modifierUser?->display_name
+                                                        ?? $history->modifierUser?->name
+                                                        ?? '',
+                                                    'modified_by_role' => $history->modified_by_role ?? '',
+                                                    'created_at' => optional($history->created_at)->format('d/m/Y H:i'),
+                                                ];
+                                            })
+                                            ->values()
+                                            ->all(),
+                                    ];
+                                })
+                                ->values()
+                                ->all(),
                         'achieved_score' => $score?->achieved_score,
                         'weighted_score' => $score?->weighted_score,
                         'modification_reason' => $score?->modification_reason,
