@@ -67,6 +67,51 @@ class ReportStructureController extends Controller
         return $cached;
     }
 
+    private function validateSupportIndicatorConfiguration(array $categories): void
+    {
+        $errors = [];
+
+        foreach ($categories as $categoryIndex => $category) {
+            foreach ($category['evaluation_lists'] ?? [] as $listIndex => $evaluationList) {
+                foreach ($evaluationList['support_criterias'] ?? [] as $criteriaIndex => $supportData) {
+                    $base = "categories.{$categoryIndex}.evaluation_lists.{$listIndex}.support_criterias.{$criteriaIndex}";
+                    $grouped = (bool) ($supportData['group_activity_entries_by_indicator'] ?? false);
+                    $allowActivities = (bool) ($supportData['allow_activity_entries'] ?? false);
+                    $items = array_values($supportData['indicator_items'] ?? []);
+
+                    if ($grouped && ! $allowActivities) {
+                        $errors["{$base}.group_activity_entries_by_indicator"][] =
+                            'ต้องเปิดให้ผู้ถูกประเมินเพิ่มกิจกรรมหรือโครงการก่อนแบ่งตามตัวชี้วัดย่อย';
+                    }
+
+                    if ($grouped && count($items) === 0) {
+                        $errors["{$base}.indicator_items"][] = 'กรุณาเพิ่มตัวชี้วัดย่อยอย่างน้อย 1 ข้อ';
+                    }
+
+                    $firstCodeIndex = [];
+                    foreach ($items as $itemIndex => $item) {
+                        $code = trim((string) ($item['code'] ?? ''));
+                        if ($code !== '' && array_key_exists($code, $firstCodeIndex)) {
+                            $errors["{$base}.indicator_items.{$itemIndex}.code"][] =
+                                'รหัสตัวชี้วัดย่อยห้ามซ้ำกันในเกณฑ์เดียวกัน';
+                        } elseif ($code !== '') {
+                            $firstCodeIndex[$code] = $itemIndex;
+                        }
+                    }
+
+                    if (! $grouped
+                        && \App\Support\SafeHtml::plainText($supportData['indicator'] ?? null) === '') {
+                        $errors["{$base}.indicator"][] = 'กรุณากรอกตัวชี้วัดหรือเกณฑ์การประเมิน';
+                    }
+                }
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
     private function jsonNoStore(array $payload, int $status = 200)
     {
         return response()->json($payload, $status, [
@@ -181,7 +226,17 @@ class ReportStructureController extends Controller
                             'target_value',
                             'weight',
                             'require_evidence',
-                            'allow_activity_entries'
+                            'allow_activity_entries',
+                            'group_activity_entries_by_indicator'
+                        )->orderBy('sequence');
+                    },
+                    'categories.evaluationLists.supportCriterias.indicatorItems' => function ($query) {
+                        $query->select(
+                            'id',
+                            'support_criteria_id',
+                            'sequence',
+                            'code',
+                            'description'
                         )->orderBy('sequence');
                     },
                 ])
@@ -306,6 +361,13 @@ class ReportStructureController extends Controller
                                         'weight' => (float) $supportCriteria->weight,
                                         'require_evidence' => (bool) $supportCriteria->require_evidence,
                                         'allow_activity_entries' => (bool) $supportCriteria->allow_activity_entries,
+                                        'group_activity_entries_by_indicator' => (bool) $supportCriteria->group_activity_entries_by_indicator,
+                                        'indicator_items' => $supportCriteria->indicatorItems->map(fn ($item) => [
+                                            'support_indicator_item_id' => $item->id,
+                                            'sequence' => $item->sequence,
+                                            'code' => $item->code,
+                                            'description' => $item->description,
+                                        ])->values()->all(),
                                     ];
                                 })->values()->all(),
                             ];
@@ -364,11 +426,17 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
             'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['required', 'string', new HasRichText],
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['nullable', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.group_activity_entries_by_indicator' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string|max:50',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.description' => ['required', 'string', new HasRichText],
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
@@ -399,6 +467,8 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.num_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.quality_main_criterias.*.quality_sub_criterias.*.description' => 'nullable|string',
         ]);
+
+        $this->validateSupportIndicatorConfiguration($validated['categories']);
 
         try {
             $version = DB::transaction(function () use ($validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence, $hasQualityAllowMultiple) {
@@ -528,15 +598,24 @@ class ReportStructureController extends Controller
                             }
 
                             foreach ($evalListData['support_criterias'] ?? [] as $supportData) {
-                                $evaluationList->supportCriterias()->create([
+                                $grouped = (bool) ($supportData['group_activity_entries_by_indicator'] ?? false);
+                                $supportCriteria = $evaluationList->supportCriterias()->create([
                                     'sequence' => $supportData['sequence'],
                                     'activity_name' => $supportData['activity_name'],
-                                    'indicator' => $supportData['indicator'],
+                                    'indicator' => $grouped ? null : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
+                                    'group_activity_entries_by_indicator' => $grouped,
                                 ]);
+
+                                app(\App\Services\SupportIndicatorItemService::class)->sync(
+                                    $supportCriteria,
+                                    $grouped,
+                                    $supportData['indicator_items'] ?? [],
+                                    false
+                                );
                             }
                         }
                     }
@@ -563,7 +642,7 @@ class ReportStructureController extends Controller
                     // Now load evaluationLists' sub-criterias, and have each sub-criteria load its main criteria
                     'categories.evaluationLists.quantitySubCriterias.mainCriteria.formulas',
                     'categories.evaluationLists.qualitySubCriterias.mainCriteria',
-                    'categories.evaluationLists.supportCriterias',
+                    'categories.evaluationLists.supportCriterias.indicatorItems',
                 ]),
             ], 201);
         } catch (ValidationException $e) {
@@ -622,11 +701,17 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
             'categories.*.evaluation_lists.*.support_criterias.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['required', 'string', new HasRichText],
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['nullable', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.group_activity_entries_by_indicator' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string|max:50',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.description' => ['required', 'string', new HasRichText],
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
@@ -670,6 +755,8 @@ class ReportStructureController extends Controller
                 'categories' => ['ไม่พบรหัสหมวดหมู่เดิมในข้อมูลที่ส่งมา กรุณาโหลดหน้าใหม่ก่อนบันทึกเพื่อป้องกันข้อมูลซ้ำ'],
             ]);
         }
+
+        $this->validateSupportIndicatorConfiguration($validated['categories']);
 
         try {
             DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence, $hasQualityAllowMultiple) {
@@ -964,14 +1051,17 @@ class ReportStructureController extends Controller
                                     ]);
                                 }
 
+                                $wasGrouped = (bool) ($supportCriteria?->group_activity_entries_by_indicator ?? false);
+                                $grouped = (bool) ($supportData['group_activity_entries_by_indicator'] ?? false);
                                 $attributes = [
                                     'sequence' => $supportData['sequence'],
                                     'activity_name' => $supportData['activity_name'],
-                                    'indicator' => $supportData['indicator'],
+                                    'indicator' => $grouped ? null : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
+                                    'group_activity_entries_by_indicator' => $grouped,
                                 ];
 
                                 if ($supportCriteria) {
@@ -979,6 +1069,13 @@ class ReportStructureController extends Controller
                                 } else {
                                     $supportCriteria = $evaluationList->supportCriterias()->create($attributes);
                                 }
+
+                                app(\App\Services\SupportIndicatorItemService::class)->sync(
+                                    $supportCriteria,
+                                    $grouped,
+                                    $supportData['indicator_items'] ?? [],
+                                    $wasGrouped
+                                );
 
                                 $keptSupportCriteriaIds[] = $supportCriteria->id;
                             }

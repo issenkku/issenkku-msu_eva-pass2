@@ -160,6 +160,85 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
     }
 
+    public function test_admin_can_create_and_show_grouped_support_indicator_items(): void
+    {
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [
+                ['sequence' => 1, 'code' => '2.1', 'description' => '<p>ดำเนินการวิจัย</p>'],
+                ['sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่งานวิจัย</p>'],
+            ],
+        ]]))->assertCreated();
+
+        $criterion = SupportCriteria::with('indicatorItems')->firstOrFail();
+        $this->assertNull($criterion->indicator);
+        $this->assertTrue($criterion->group_activity_entries_by_indicator);
+        $this->assertSame(['2.1', '2.2'], $criterion->indicatorItems->pluck('code')->all());
+
+        $this->getJson(route('report-structure.show', $response->json('data.id')))
+            ->assertOk()
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.code',
+                '2.2'
+            );
+    }
+
+    public function test_grouped_support_indicator_configuration_is_validated(): void
+    {
+        $base = [
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [[
+                'sequence' => 1,
+                'code' => '2.1',
+                'description' => '<p>ดำเนินการวิจัย</p>',
+            ]],
+        ];
+
+        $cases = [
+            'missing items' => [
+                fn (array $criterion) => array_replace($criterion, ['indicator_items' => []]),
+                'categories.0.evaluation_lists.0.support_criterias.0.indicator_items',
+            ],
+            'duplicate codes' => [
+                fn (array $criterion) => array_replace($criterion, ['indicator_items' => [
+                    ['sequence' => 1, 'code' => '2.1', 'description' => '<p>หนึ่ง</p>'],
+                    ['sequence' => 2, 'code' => '2.1', 'description' => '<p>สอง</p>'],
+                ]]),
+                'categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.code',
+            ],
+            'activities disabled' => [
+                fn (array $criterion) => array_replace($criterion, ['allow_activity_entries' => false]),
+                'categories.0.evaluation_lists.0.support_criterias.0.group_activity_entries_by_indicator',
+            ],
+            'legacy indicator missing' => [
+                fn (array $criterion) => array_replace($criterion, [
+                    'group_activity_entries_by_indicator' => false,
+                    'indicator_items' => [],
+                ]),
+                'categories.0.evaluation_lists.0.support_criterias.0.indicator',
+            ],
+        ];
+
+        foreach ($cases as [$mutate, $errorKey]) {
+            $this->postJson(
+                route('report-structure.store'),
+                $this->payload([$mutate($base)])
+            )->assertUnprocessable()->assertJsonValidationErrors($errorKey);
+        }
+    }
+
     public function test_admin_can_store_formatted_support_criteria_content(): void
     {
         $activityName = '<p><strong>กิจกรรม</strong> '.str_repeat('รายละเอียด ', 40).'</p>';
