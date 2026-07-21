@@ -210,20 +210,25 @@
                                             $groupEntries = collect($item['activity_entries'] ?? [])->filter(
                                                 fn ($entry) => (int) ($entry['support_indicator_item_id'] ?? 0) === (int) $indicatorItem['id']
                                             );
+                                            $indicatorReference = preg_split(
+                                                '/\s+/u',
+                                                trim((string) ($indicatorItem['code'] ?? '')),
+                                                2
+                                            )[0] ?? '';
                                         @endphp
                                         <section class="rounded-xl border border-amber-200 bg-amber-50/50 p-4"
                                             data-support-activity-group="{{ $indicatorItem['id'] }}"
                                             data-support-indicator-code="{{ $indicatorItem['code'] }}">
                                             <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
                                                 <div class="min-w-0">
-                                                    <h6 class="font-bold text-amber-950">ข้อ {{ $indicatorItem['code'] }}</h6>
+                                                    <h6 class="font-bold text-amber-950">ข้อ {{ $indicatorReference }}</h6>
                                                 </div>
                                                 @if ($canEditActivities && $activityEntryRole === 'evaluatee')
                                                     <button type="button"
                                                         data-add-support-activity="{{ $item['id'] }}"
                                                         data-support-indicator-item-id="{{ $indicatorItem['id'] }}"
                                                         class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                                                        + เพิ่มโครงการในข้อ {{ $indicatorItem['code'] }}
+                                                        + เพิ่มโครงการในข้อ {{ $indicatorReference }}
                                                     </button>
                                                 @endif
                                             </div>

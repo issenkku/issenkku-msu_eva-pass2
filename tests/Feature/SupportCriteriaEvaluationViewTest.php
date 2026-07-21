@@ -53,14 +53,12 @@ function supportGroupedActivityViewItem(): array
             [
                 'id' => 11,
                 'sequence' => 1,
-                'code' => '2.1',
-                'description' => '<p><strong>ดำเนินการวิจัย</strong></p>',
+                'code' => '2.1 ดำเนินการวิจัยเพื่อพัฒนางาน',
             ],
             [
                 'id' => 12,
                 'sequence' => 2,
-                'code' => '2.2',
-                'description' => '<p>เผยแพร่งานวิจัย</p>',
+                'code' => '2.2 การเผยแพร่งานวิจัย',
             ],
         ],
         'activity_entries' => [
@@ -205,9 +203,12 @@ test('grouped support projects render and edit under their assigned indicator it
         ->toContain('data-support-activity-group="12"')
         ->toContain('+ เพิ่มโครงการในข้อ 2.1')
         ->toContain('+ เพิ่มโครงการในข้อ 2.2')
+        ->toContain('2.1 ดำเนินการวิจัยเพื่อพัฒนางาน')
+        ->toContain('ข้อ 2.1')
+        ->not->toContain('ข้อ 2.1 ดำเนินการวิจัยเพื่อพัฒนางาน')
+        ->not->toContain('ข้อ 2.2 การเผยแพร่งานวิจัย')
         ->toContain('support_list[7][activity_entries][0][support_indicator_item_id]')
         ->toContain('value="11"')
-        ->not->toContain('<strong>ดำเนินการวิจัย</strong>')
         ->not->toContain('ส่งตรงเวลา');
 });
 

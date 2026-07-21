@@ -22,9 +22,14 @@
                             $groupEntries = collect($entries)->filter(
                                 fn ($entry) => (int) ($entry['support_indicator_item_id'] ?? 0) === (int) $indicatorItem['id']
                             );
+                            $indicatorReference = preg_split(
+                                '/\s+/u',
+                                trim((string) ($indicatorItem['code'] ?? '')),
+                                2
+                            )[0] ?? '';
                         @endphp
                         <section data-support-display-group="{{ $indicatorItem['id'] }}">
-                            <p class="text-xs font-semibold text-amber-800">ข้อ {{ $indicatorItem['code'] }}</p>
+                            <p class="text-xs font-semibold text-amber-800">ข้อ {{ $indicatorReference }}</p>
                             <div data-support-display-group-entries>
                                 @if ($groupEntries->isNotEmpty())
                                     <ol class="list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700">
