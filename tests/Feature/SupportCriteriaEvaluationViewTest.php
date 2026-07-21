@@ -136,6 +136,8 @@ test('evaluatee can add edit and delete optional support activity entries', func
     expect($html)
         ->toContain('<strong>โครงการประจำเดือน</strong>')
         ->not->toContain('alert(1)')
+        ->toContain('data-support-manage-open="7"')
+        ->not->toContain('data-support-activity-open')
         ->toContain('data-add-support-activity="7"')
         ->toContain('data-remove-support-activity')
         ->toContain('support_list[7][activity_entries][0][id]')

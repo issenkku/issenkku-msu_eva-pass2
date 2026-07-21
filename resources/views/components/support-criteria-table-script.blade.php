@@ -493,9 +493,7 @@
 
             const target = section === 'evidence'
                 ? item.querySelector('[data-support-evidence-input], [data-support-evidence-section] a, [data-add-support-evidence]')
-                : section === 'activity'
-                    ? item.querySelector('[data-support-activity-content], [data-add-support-activity]')
-                    : item.querySelector('[data-support-score], [data-support-evidence-section] a');
+                : item.querySelector('[data-support-score], [data-support-evidence-section] a');
             window.requestAnimationFrame(() => target?.focus());
         };
 
@@ -509,12 +507,6 @@
             const manageButton = event.target.closest('[data-support-manage-open]');
             if (manageButton) {
                 openSupportModal(manageButton.dataset.supportManageOpen, 'score');
-                return;
-            }
-
-            const activityButton = event.target.closest('[data-support-activity-open]');
-            if (activityButton) {
-                openSupportModal(activityButton.dataset.supportActivityOpen, 'activity');
                 return;
             }
 

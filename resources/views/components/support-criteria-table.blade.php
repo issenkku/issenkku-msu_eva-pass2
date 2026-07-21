@@ -44,8 +44,7 @@
                         <tr>
                             <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
                             <td class="break-words px-2 py-4 align-top">
-                                <x-support-activity-display :item="$item" :readonly="$readonly"
-                                    :activity-entry-role="$activityEntryRole" />
+                                <x-support-activity-display :item="$item" />
                             </td>
                             <td class="support-criteria-rich-text break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
@@ -98,8 +97,7 @@
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">รายการ {{ $item['sequence'] }}</span>
                             <div class="mt-1 font-bold text-slate-900">
-                                <x-support-activity-display :item="$item" :readonly="$readonly"
-                                    :activity-entry-role="$activityEntryRole" />
+                                <x-support-activity-display :item="$item" />
                             </div>
                         </div>
                         @if (!empty($item['require_evidence']))

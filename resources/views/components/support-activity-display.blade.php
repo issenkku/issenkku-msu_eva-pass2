@@ -1,15 +1,10 @@
 @props([
     'item',
-    'readonly' => false,
-    'activityEntryRole' => 'readonly',
 ])
 
 @php
     $criterionId = $item['id'];
     $entries = $item['activity_entries'] ?? [];
-    $canEditActivities = !$readonly
-        && !empty($item['allow_activity_entries'])
-        && in_array($activityEntryRole, ['evaluatee', 'reviewer'], true);
 @endphp
 
 <div class="space-y-2">
@@ -31,12 +26,5 @@
                 <p class="text-xs font-normal text-slate-400">ยังไม่มีกิจกรรม/โครงการเพิ่มเติม</p>
             @endif
         </div>
-
-        @if ($canEditActivities)
-            <button type="button" data-support-activity-open="{{ $criterionId }}"
-                class="rounded-md border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-900 transition hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                {{ $activityEntryRole === 'evaluatee' ? 'จัดการกิจกรรม/โครงการ' : 'แก้ไขกิจกรรม/โครงการ' }}
-            </button>
-        @endif
     @endif
 </div>
