@@ -302,7 +302,6 @@
                         : {}),
                     sequence: index + 1,
                     code: item.querySelector('.support_indicator_code').value.trim(),
-                    description: getRichTextValue(item.querySelector('.support_indicator_description')),
                 }));
         }
 
@@ -311,7 +310,6 @@
             const item = list.querySelector('.support_indicator_item_block').cloneNode(true);
             resetSummernoteClone(item);
             item.querySelectorAll('input').forEach((input) => input.value = '');
-            item.querySelector('.support_indicator_description').value = '';
             list.appendChild(item);
             updateSupportIndicatorItemSequences(block);
             initializeSummernote(item);
@@ -1405,7 +1403,7 @@
                                 }
                                 const indicatorCodes = indicatorItems.map((item) => item.code);
                                 if (grouped && (indicatorItems.length === 0
-                                    || indicatorItems.some((item) => !item.code || !hasVisibleRichText(item.description))
+                                    || indicatorItems.some((item) => !item.code)
                                     || new Set(indicatorCodes).size !== indicatorCodes.length)) {
                                     showValidationErrorModal(`กรุณากรอกตัวชี้วัดย่อยของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบและไม่ใช้รหัสซ้ำ`);
                                     valid = false;

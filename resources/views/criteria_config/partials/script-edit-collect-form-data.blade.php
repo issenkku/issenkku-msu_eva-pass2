@@ -209,7 +209,7 @@
                                         }
                                         const indicatorCodes = indicatorItems.map((item) => item.code);
                                         if (grouped && (indicatorItems.length === 0
-                                            || indicatorItems.some((item) => !item.code || !hasVisibleRichText(item.description))
+                                            || indicatorItems.some((item) => !item.code)
                                             || new Set(indicatorCodes).size !== indicatorCodes.length)) {
                                             throw new Error(`กรุณากรอกตัวชี้วัดย่อยของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบและไม่ใช้รหัสซ้ำ`);
                                         }

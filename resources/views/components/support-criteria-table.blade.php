@@ -217,9 +217,6 @@
                                             <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
                                                 <div class="min-w-0">
                                                     <h6 class="font-bold text-amber-950">ข้อ {{ $indicatorItem['code'] }}</h6>
-                                                    <div class="support-criteria-rich-text mt-1 text-sm text-slate-700">
-                                                        {!! \App\Support\SafeHtml::richText($indicatorItem['description'] ?? '') !!}
-                                                    </div>
                                                 </div>
                                                 @if ($canEditActivities && $activityEntryRole === 'evaluatee')
                                                     <button type="button"

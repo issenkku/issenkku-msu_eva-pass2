@@ -41,7 +41,6 @@ class SupportIndicatorItemService
             $attributes = [
                 'sequence' => $index + 1,
                 'code' => trim((string) $data['code']),
-                'description' => (string) $data['description'],
             ];
 
             if ($id) {

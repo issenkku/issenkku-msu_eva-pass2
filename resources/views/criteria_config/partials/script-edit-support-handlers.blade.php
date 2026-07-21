@@ -25,7 +25,6 @@
                         : {}),
                     sequence: index + 1,
                     code: item.querySelector('.support_indicator_code').value.trim(),
-                    description: getRichTextValue(item.querySelector('.support_indicator_description')),
                 }));
         }
 
@@ -45,7 +44,6 @@
                 row.querySelector('.support_indicator_item_id').value = item.support_indicator_item_id || item.id || '';
                 row.querySelector('.support_indicator_sequence').value = index + 1;
                 row.querySelector('.support_indicator_code').value = item.code || '';
-                row.querySelector('.support_indicator_description').value = item.description || '';
                 list.appendChild(row);
             });
         }
@@ -55,7 +53,6 @@
             const item = list.querySelector('.support_indicator_item_block').cloneNode(true);
             resetSummernoteClone(item);
             item.querySelectorAll('input').forEach((input) => input.value = '');
-            item.querySelector('.support_indicator_description').value = '';
             list.appendChild(item);
             updateSupportIndicatorItemSequences(block);
             initializeSummernote(item);

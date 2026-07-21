@@ -5,9 +5,6 @@
         @foreach ($item['indicator_items'] ?? [] as $indicatorItem)
             <li class="break-words">
                 <span class="font-semibold text-amber-900">{{ $indicatorItem['code'] }}</span>
-                <div class="support-criteria-rich-text mt-1">
-                    {!! \App\Support\SafeHtml::richText($indicatorItem['description'] ?? '') !!}
-                </div>
             </li>
         @endforeach
     </ol>

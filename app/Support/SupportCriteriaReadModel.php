@@ -25,7 +25,7 @@ class SupportCriteriaReadModel
         }
 
         $criteria = SupportCriteria::query()
-            ->with('indicatorItems:id,support_criteria_id,sequence,code,description')
+            ->with('indicatorItems:id,support_criteria_id,sequence,code')
             ->whereHas('evaluationList', function ($query) use ($criteriaVersionId) {
                 $query->where('criteria_version_id', $criteriaVersionId);
             })
@@ -85,7 +85,6 @@ class SupportCriteriaReadModel
                             'id' => $item->id,
                             'sequence' => $item->sequence,
                             'code' => $item->code,
-                            'description' => $item->description,
                         ])->values()->all(),
                         'activity_entries' => ! $criterion->allow_activity_entries
                             ? []

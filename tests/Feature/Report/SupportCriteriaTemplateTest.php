@@ -173,21 +173,27 @@ class SupportCriteriaTemplateTest extends TestCase
             'allow_activity_entries' => true,
             'group_activity_entries_by_indicator' => true,
             'indicator_items' => [
-                ['sequence' => 1, 'code' => '2.1', 'description' => '<p>ดำเนินการวิจัย</p>'],
-                ['sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่งานวิจัย</p>'],
+                ['sequence' => 1, 'code' => '2.1 ดำเนินการวิจัย'],
+                ['sequence' => 2, 'code' => '2.2 เผยแพร่งานวิจัย'],
             ],
         ]]))->assertCreated();
 
         $criterion = SupportCriteria::with('indicatorItems')->firstOrFail();
         $this->assertNull($criterion->indicator);
         $this->assertTrue($criterion->group_activity_entries_by_indicator);
-        $this->assertSame(['2.1', '2.2'], $criterion->indicatorItems->pluck('code')->all());
+        $this->assertSame(
+            ['2.1 ดำเนินการวิจัย', '2.2 เผยแพร่งานวิจัย'],
+            $criterion->indicatorItems->pluck('code')->all()
+        );
 
         $this->getJson(route('report-structure.show', $response->json('data.id')))
             ->assertOk()
             ->assertJsonPath(
                 'data.categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.code',
-                '2.2'
+                '2.2 เผยแพร่งานวิจัย'
+            )
+            ->assertJsonMissingPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.description'
             );
     }
 
@@ -206,7 +212,6 @@ class SupportCriteriaTemplateTest extends TestCase
             'indicator_items' => [[
                 'sequence' => 1,
                 'code' => $longCode,
-                'description' => '<p>Progress report</p>',
             ]],
         ]]))->assertCreated();
 
@@ -232,7 +237,6 @@ class SupportCriteriaTemplateTest extends TestCase
             'indicator_items' => [[
                 'sequence' => 1,
                 'code' => '2.1',
-                'description' => '<p>ดำเนินการวิจัย</p>',
             ]],
         ];
 
@@ -243,8 +247,8 @@ class SupportCriteriaTemplateTest extends TestCase
             ],
             'duplicate codes' => [
                 fn (array $criterion) => array_replace($criterion, ['indicator_items' => [
-                    ['sequence' => 1, 'code' => '2.1', 'description' => '<p>หนึ่ง</p>'],
-                    ['sequence' => 2, 'code' => '2.1', 'description' => '<p>สอง</p>'],
+                    ['sequence' => 1, 'code' => '2.1'],
+                    ['sequence' => 2, 'code' => '2.1'],
                 ]]),
                 'categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.code',
             ],
@@ -431,8 +435,8 @@ class SupportCriteriaTemplateTest extends TestCase
             'allow_activity_entries' => true,
             'group_activity_entries_by_indicator' => true,
             'indicator_items' => [
-                ['sequence' => 1, 'code' => '2.1', 'description' => '<p>ดำเนินการวิจัย</p>'],
-                ['sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่งานวิจัย</p>'],
+                ['sequence' => 1, 'code' => '2.1'],
+                ['sequence' => 2, 'code' => '2.2'],
             ],
         ]]))->assertCreated();
 
@@ -469,7 +473,6 @@ class SupportCriteriaTemplateTest extends TestCase
                 'support_indicator_item_id' => $second->id,
                 'sequence' => 1,
                 'code' => $second->code,
-                'description' => $second->description,
             ]],
         ]]);
         $payload['version_name'] = $version->version_name;

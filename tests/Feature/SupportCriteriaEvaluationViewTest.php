@@ -207,7 +207,7 @@ test('grouped support projects render and edit under their assigned indicator it
         ->toContain('+ เพิ่มโครงการในข้อ 2.2')
         ->toContain('support_list[7][activity_entries][0][support_indicator_item_id]')
         ->toContain('value="11"')
-        ->toContain('<strong>ดำเนินการวิจัย</strong>')
+        ->not->toContain('<strong>ดำเนินการวิจัย</strong>')
         ->not->toContain('ส่งตรงเวลา');
 });
 

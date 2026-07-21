@@ -100,8 +100,8 @@ class SupportEvaluationSchemaTest extends TestCase
             'support_criteria_id',
             'sequence',
             'code',
-            'description',
         ]));
+        $this->assertFalse(Schema::hasColumn('support_indicator_items', 'description'));
         $this->assertContains(
             Schema::getColumnType('support_indicator_items', 'code'),
             ['text', 'longtext']

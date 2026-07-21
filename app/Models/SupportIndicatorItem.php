@@ -12,7 +12,6 @@ class SupportIndicatorItem extends Model
         'support_criteria_id',
         'sequence',
         'code',
-        'description',
     ];
 
     public function supportCriteria(): BelongsTo

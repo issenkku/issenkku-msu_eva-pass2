@@ -87,12 +87,6 @@
                                 class="support_indicator_code mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
                                 placeholder="เช่น 2.1">
                         </label>
-                        <label class="mt-3 block text-sm font-medium text-gray-700">
-                            รายละเอียดตัวชี้วัด <span class="text-red-500">*</span>
-                            <textarea rows="5"
-                                class="support_indicator_description richtext-editor mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
-                                placeholder="รายละเอียดตัวชี้วัด/เกณฑ์การประเมิน"></textarea>
-                        </label>
                         <button type="button"
                             class="delete_support_indicator_item_btn mt-3 text-sm font-semibold text-red-600 transition hover:text-red-800">
                             ลบข้อย่อย

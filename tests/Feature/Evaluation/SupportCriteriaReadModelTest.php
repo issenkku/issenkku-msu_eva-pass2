@@ -191,12 +191,10 @@ class SupportCriteriaReadModelTest extends TestCase
         $firstIndicator = $criterion->indicatorItems()->create([
             'sequence' => 1,
             'code' => '2.1',
-            'description' => '<p>ดำเนินการวิจัย</p>',
         ]);
         $secondIndicator = $criterion->indicatorItems()->create([
             'sequence' => 2,
             'code' => '2.2',
-            'description' => '<p>เผยแพร่งานวิจัย</p>',
         ]);
 
         foreach ([$firstIndicator->id, $firstIndicator->id, $secondIndicator->id] as $index => $indicatorId) {
