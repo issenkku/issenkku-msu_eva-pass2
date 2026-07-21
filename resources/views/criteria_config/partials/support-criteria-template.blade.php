@@ -83,7 +83,7 @@
                         <input type="hidden" class="support_indicator_sequence" value="1">
                         <label class="block text-sm font-medium text-gray-700">
                             รหัสข้อ <span class="text-red-500">*</span>
-                            <input type="text" maxlength="50"
+                            <input type="text"
                                 class="support_indicator_code mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
                                 placeholder="เช่น 2.1">
                         </label>

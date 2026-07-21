@@ -191,6 +191,34 @@ class SupportCriteriaTemplateTest extends TestCase
             );
     }
 
+    public function test_admin_can_store_a_support_indicator_code_longer_than_fifty_characters(): void
+    {
+        $longCode = '2.1 '.rtrim(str_repeat('research progress report ', 4));
+
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>Research</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [[
+                'sequence' => 1,
+                'code' => $longCode,
+                'description' => '<p>Progress report</p>',
+            ]],
+        ]]))->assertCreated();
+
+        $this->assertDatabaseHas('support_indicator_items', ['code' => $longCode]);
+        $this->getJson(route('report-structure.show', $response->json('data.id')))
+            ->assertOk()
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.indicator_items.0.code',
+                $longCode
+            );
+    }
+
     public function test_grouped_support_indicator_configuration_is_validated(): void
     {
         $base = [

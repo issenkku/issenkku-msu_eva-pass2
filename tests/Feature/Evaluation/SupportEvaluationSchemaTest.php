@@ -102,6 +102,16 @@ class SupportEvaluationSchemaTest extends TestCase
             'code',
             'description',
         ]));
+        $this->assertContains(
+            Schema::getColumnType('support_indicator_items', 'code'),
+            ['text', 'longtext']
+        );
+
+        $hasUniqueCodeIndex = collect(Schema::getIndexes('support_indicator_items'))
+            ->contains(fn (array $index): bool => ($index['unique'] ?? false)
+                && in_array('code', $index['columns'] ?? [], true));
+
+        $this->assertFalse($hasUniqueCodeIndex);
         $this->assertTrue(Schema::hasColumn(
             'support_activity_entries',
             'support_indicator_item_id'

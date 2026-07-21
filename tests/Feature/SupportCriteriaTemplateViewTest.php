@@ -28,6 +28,14 @@ test('create evaluation template exposes support criteria controls after quality
         ->toBeLessThan(strpos($html, 'support_criteria_type'));
 });
 
+test('support indicator code input does not impose a character limit', function () {
+    $html = view('criteria_config.partials.create-evaluation-template')->render();
+
+    expect($html)
+        ->toContain('support_indicator_code')
+        ->not->toContain('type="text" maxlength="50"');
+});
+
 test('create script toggles collects and reorders support criteria', function () {
     $script = file_get_contents(resource_path('views/criteria_config/partials/create-script.blade.php'));
 

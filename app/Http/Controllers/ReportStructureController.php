@@ -435,7 +435,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string|max:50',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.description' => ['required', 'string', new HasRichText],
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
@@ -710,7 +710,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
-            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string|max:50',
+            'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.description' => ['required', 'string', new HasRichText],
 
             'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
