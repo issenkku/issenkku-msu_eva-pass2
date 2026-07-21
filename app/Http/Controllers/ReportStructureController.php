@@ -235,8 +235,7 @@ class ReportStructureController extends Controller
                             'id',
                             'support_criteria_id',
                             'sequence',
-                            'code',
-                            'description'
+                            'code'
                         )->orderBy('sequence');
                     },
                 ])

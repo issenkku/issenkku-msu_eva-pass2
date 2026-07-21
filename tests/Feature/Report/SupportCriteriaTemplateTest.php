@@ -12,6 +12,7 @@ use App\Models\User;
 use Database\Factories\DepartmentFactory;
 use Database\Factories\PositionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
@@ -186,6 +187,13 @@ class SupportCriteriaTemplateTest extends TestCase
             $criterion->indicatorItems->pluck('code')->all()
         );
 
+        $indicatorQueries = [];
+        DB::listen(function ($query) use (&$indicatorQueries): void {
+            if (str_contains($query->sql, 'support_indicator_items')) {
+                $indicatorQueries[] = $query->sql;
+            }
+        });
+
         $this->getJson(route('report-structure.show', $response->json('data.id')))
             ->assertOk()
             ->assertJsonPath(
@@ -195,6 +203,11 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonMissingPath(
                 'data.categories.0.evaluation_lists.0.support_criterias.0.indicator_items.1.description'
             );
+
+        $this->assertNotEmpty($indicatorQueries);
+        foreach ($indicatorQueries as $query) {
+            $this->assertStringNotContainsString('description', strtolower($query));
+        }
     }
 
     public function test_admin_can_store_a_support_indicator_code_longer_than_fifty_characters(): void
