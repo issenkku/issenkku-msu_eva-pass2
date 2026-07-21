@@ -3,6 +3,7 @@
     'readonly' => false,
     'evidenceEditable' => false,
     'requireReason' => false,
+    'activityEntryRole' => 'readonly',
 ])
 
 @if (!empty($items))
@@ -42,7 +43,10 @@
                         @endphp
                         <tr>
                             <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
-                            <td class="support-criteria-rich-text break-words px-2 py-4 font-medium text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</td>
+                            <td class="break-words px-2 py-4 align-top">
+                                <x-support-activity-display :item="$item" :readonly="$readonly"
+                                    :activity-entry-role="$activityEntryRole" />
+                            </td>
                             <td class="support-criteria-rich-text break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
@@ -93,7 +97,10 @@
                     <div class="mb-3 flex items-start justify-between gap-3">
                         <div>
                             <span class="text-xs font-semibold uppercase tracking-wide text-amber-700">รายการ {{ $item['sequence'] }}</span>
-                            <h4 class="support-criteria-rich-text mt-1 font-bold text-slate-900">{!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}</h4>
+                            <div class="mt-1 font-bold text-slate-900">
+                                <x-support-activity-display :item="$item" :readonly="$readonly"
+                                    :activity-entry-role="$activityEntryRole" />
+                            </div>
                         </div>
                         @if (!empty($item['require_evidence']))
                             <span class="shrink-0 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-700">
@@ -158,6 +165,12 @@
 
         <div class="hidden" data-support-editor-store aria-hidden="true">
             @foreach ($items as $item)
+                @php
+                    $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                    $canEditActivities = !$readonly
+                        && !empty($item['allow_activity_entries'])
+                        && in_array($activityEntryRole, ['evaluatee', 'reviewer'], true);
+                @endphp
                 <article class="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5"
                     data-support-item
                     data-support-id="{{ $item['id'] }}"
@@ -165,6 +178,7 @@
                     data-support-activity="{{ $activityNameText }}"
                     data-support-required="{{ !empty($item['require_evidence']) ? '1' : '0' }}"
                     data-support-require-reason="{{ $requireReason ? '1' : '0' }}"
+                    data-support-activity-role="{{ $readonly ? 'readonly' : $activityEntryRole }}"
                     data-support-existing-weighted="{{ $item['weighted_score'] ?? '' }}">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -177,6 +191,104 @@
                             </span>
                         @endif
                     </div>
+
+                    @if (!empty($item['allow_activity_entries']))
+                        <section class="mb-5 rounded-xl border border-amber-200 bg-white p-4"
+                            data-support-activity-section>
+                            <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <h5 class="font-semibold text-slate-800">กิจกรรม/โครงการเพิ่มเติม</h5>
+                                    <p class="mt-1 text-xs text-slate-500">รายการนี้เป็นข้อมูลเพิ่มเติมจากหัวข้อที่ Admin กำหนด</p>
+                                </div>
+                                @if ($canEditActivities && $activityEntryRole === 'evaluatee')
+                                    <button type="button" data-add-support-activity="{{ $item['id'] }}"
+                                        class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                        + เพิ่มกิจกรรม/โครงการ
+                                    </button>
+                                @endif
+                            </div>
+
+                            <div class="space-y-4" data-support-activity-container>
+                                @foreach ($item['activity_entries'] ?? [] as $entryIndex => $entry)
+                                    @php
+                                        $safeActivityContent = (string) \App\Support\SafeHtml::richText($entry['content'] ?? '');
+                                    @endphp
+                                    <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                                        data-support-activity-entry
+                                        data-support-activity-entry-id="{{ $entry['id'] }}">
+                                        @if ($canEditActivities)
+                                            <input type="hidden"
+                                                name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][id]"
+                                                value="{{ $entry['id'] }}" data-support-activity-id>
+                                            <label class="block text-sm font-semibold text-slate-700">
+                                                รายการ {{ $entryIndex + 1 }}
+                                                <textarea rows="6"
+                                                    name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][content]"
+                                                    class="support-activity-richtext mt-2 block w-full rounded-lg border border-slate-300 p-2.5"
+                                                    data-support-activity-content
+                                                    data-original-content="{{ $safeActivityContent }}">{{ $safeActivityContent }}</textarea>
+                                            </label>
+
+                                            @if ($activityEntryRole === 'evaluatee')
+                                                <button type="button" data-remove-support-activity
+                                                    class="mt-2 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-100">
+                                                    ลบรายการ
+                                                </button>
+                                            @elseif ($activityEntryRole === 'reviewer')
+                                                <label class="mt-3 block text-sm font-semibold text-slate-700">
+                                                    เหตุผลที่แก้ไขกิจกรรม/โครงการ
+                                                    <textarea rows="2" maxlength="2000"
+                                                        name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][modification_reason]"
+                                                        data-support-activity-reason
+                                                        class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900"
+                                                        placeholder="ระบุเมื่อแก้ไขข้อความเดิม"></textarea>
+                                                </label>
+                                            @endif
+                                        @else
+                                            <div class="support-criteria-rich-text text-sm text-slate-800">
+                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                            </div>
+                                        @endif
+
+                                        @if (!empty($entry['histories']))
+                                            <details class="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+                                                <summary class="cursor-pointer text-sm font-semibold text-slate-700">
+                                                    ประวัติการแก้ไขกิจกรรม/โครงการ ({{ count($entry['histories']) }})
+                                                </summary>
+                                                <div class="mt-3 space-y-3">
+                                                    @foreach ($entry['histories'] as $activityHistory)
+                                                        <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                                                            <p class="font-medium">ข้อความเดิม</p>
+                                                            <div class="support-criteria-rich-text mt-1">
+                                                                {!! \App\Support\SafeHtml::richText($activityHistory['previous_content'] ?? '') !!}
+                                                            </div>
+                                                            <p class="mt-2 font-medium">ข้อความใหม่</p>
+                                                            <div class="support-criteria-rich-text mt-1">
+                                                                {!! \App\Support\SafeHtml::richText($activityHistory['new_content'] ?? '') !!}
+                                                            </div>
+                                                            <p class="mt-2">เหตุผล: {{ $activityHistory['reason'] ?? '-' }}</p>
+                                                            <p class="mt-2 text-xs text-slate-500">
+                                                                แก้ไขโดย {{ $activityHistory['modified_by_name'] ?: '-' }}
+                                                                @if (!empty($activityHistory['modified_by_role']))
+                                                                    ({{ $activityHistory['modified_by_role'] }})
+                                                                @endif
+                                                                · {{ $activityHistory['created_at'] ?? '-' }}
+                                                            </p>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </details>
+                                        @endif
+                                    </article>
+                                @endforeach
+
+                                <p class="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 {{ !empty($item['activity_entries']) ? 'hidden' : '' }}"
+                                    data-support-activity-empty>
+                                    ยังไม่มีกิจกรรม/โครงการเพิ่มเติม
+                                </p>
+                            </div>
+                        </section>
+                    @endif
 
                     @if (!$readonly)
                         <input type="hidden"

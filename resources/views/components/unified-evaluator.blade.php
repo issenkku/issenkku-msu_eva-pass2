@@ -562,7 +562,8 @@
                                     :items="$evaluationList['support_items']"
                                     :readonly="$readonly"
                                     :evidence-editable="false"
-                                    :require-reason="true" />
+                                    :require-reason="true"
+                                    activity-entry-role="reviewer" />
                             @endif
                         </div>
                     @if($hasQualityItems)

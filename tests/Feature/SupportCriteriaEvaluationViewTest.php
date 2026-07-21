@@ -14,12 +14,34 @@ function supportViewItem(): array
         'target_value' => '12.00',
         'weight' => '20.00',
         'require_evidence' => true,
+        'allow_activity_entries' => false,
+        'activity_entries' => [],
         'achieved_score' => '125.50',
         'weighted_score' => '25.10',
         'modification_reason' => null,
         'evidence_links' => ['https://example.com/evidence'],
         'histories' => [],
     ];
+}
+
+function supportActivityViewItem(): array
+{
+    return array_replace(supportViewItem(), [
+        'allow_activity_entries' => true,
+        'activity_entries' => [[
+            'id' => 41,
+            'sequence' => 1,
+            'content' => '<p><strong>โครงการประจำเดือน</strong></p><script>alert(1)</script>',
+            'histories' => [[
+                'previous_content' => '<p>ข้อความเดิม</p><script>alert(2)</script>',
+                'new_content' => '<p>โครงการประจำเดือน</p>',
+                'reason' => 'ปรับตามผลงานจริง',
+                'modified_by_name' => 'นาย ผู้ประเมิน',
+                'modified_by_role' => 'ผู้ประเมิน',
+                'created_at' => '21/07/2026 10:00',
+            ]],
+        ]],
+    ]);
 }
 
 test('support criteria component renders one responsive editable form control set', function () {
@@ -102,6 +124,64 @@ test('reviewer can edit score with a reason while evidence is preserved read onl
         ->toContain('rel="noopener noreferrer"');
 });
 
+test('evaluatee can add edit and delete optional support activity entries', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    expect($html)
+        ->toContain('<strong>โครงการประจำเดือน</strong>')
+        ->not->toContain('alert(1)')
+        ->toContain('data-add-support-activity="7"')
+        ->toContain('data-remove-support-activity')
+        ->toContain('support_list[7][activity_entries][0][id]')
+        ->toContain('support_list[7][activity_entries][0][content]')
+        ->toContain('data-support-activity-content')
+        ->toContain('support-activity-richtext');
+});
+
+test('reviewer can edit existing support activities with a reason but cannot add or delete', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => false,
+        'requireReason' => true,
+        'activityEntryRole' => 'reviewer',
+    ])->render();
+
+    expect($html)
+        ->toContain('support_list[7][activity_entries][0][content]')
+        ->toContain('support_list[7][activity_entries][0][modification_reason]')
+        ->toContain('เหตุผลที่แก้ไขกิจกรรม/โครงการ')
+        ->toContain('ประวัติการแก้ไขกิจกรรม/โครงการ')
+        ->toContain('<p>ข้อความเดิม</p>')
+        ->not->toContain('alert(2)')
+        ->not->toContain('data-add-support-activity')
+        ->not->toContain('data-remove-support-activity');
+});
+
+test('read only support activities show sanitized content without preservation fields', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportActivityViewItem()],
+        'readonly' => true,
+        'evidenceEditable' => false,
+        'requireReason' => false,
+        'activityEntryRole' => 'readonly',
+    ])->render();
+
+    expect($html)
+        ->toContain('<strong>โครงการประจำเดือน</strong>')
+        ->not->toContain('alert(1)')
+        ->not->toContain('support_list[7][activity_entries]')
+        ->not->toContain('data-support-activity-content')
+        ->not->toContain('data-add-support-activity')
+        ->not->toContain('data-remove-support-activity');
+});
+
 test('read only support criteria has no editable score or preservation fields', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
@@ -154,6 +234,15 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain("event.key === 'Escape'")
         ->toContain("document.body.style.overflow = 'hidden'")
         ->toContain("'[data-support-evidence-section] a[href]'")
+        ->toContain('snapshotActivityEntries')
+        ->toContain('restoreActivityEntries')
+        ->toContain('reindexActivityEntries')
+        ->toContain('initializeActivityEditors')
+        ->toContain('destroyActivityEditors')
+        ->toContain('updateActivityDisplays')
+        ->toContain('if (contentFields.length === 0) return;')
+        ->toContain("'[data-add-support-activity]'")
+        ->toContain("'[data-remove-support-activity]'")
         ->toContain('previouslyFocusedElement.focus()')
         ->toContain('const validateSupportItem =')
         ->toContain('firstInvalid')
@@ -171,6 +260,13 @@ test('shared support script and all role components expose the same contracts', 
             ->toContain('support_items')
             ->toContain('support-criteria-table')
             ->toContain('support-criteria-table-script');
+    }
+
+    expect(file_get_contents(resource_path('views/components/unified-evaluation.blade.php')))
+        ->toContain('activity-entry-role="evaluatee"');
+    foreach (['unified-evaluator', 'unified-director'] as $component) {
+        expect(file_get_contents(resource_path("views/components/{$component}.blade.php")))
+            ->toContain('activity-entry-role="reviewer"');
     }
 });
 

@@ -41,3 +41,14 @@ it('restores list markers inside summernote and rendered rich text', function ()
         ->toContain('.support-criteria-rich-text ul')
         ->toContain('.support-criteria-rich-text ol');
 });
+
+it('uses the admin summernote toolbar for evaluatee activity entries', function () {
+    $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
+
+    expect($script)
+        ->toContain("['style', ['style']]")
+        ->toContain("['font', ['bold', 'italic', 'underline', 'clear']]")
+        ->toContain("['insert', ['link', 'hr']]")
+        ->toContain("lang: 'th-TH'")
+        ->toContain('support-activity-richtext');
+});
