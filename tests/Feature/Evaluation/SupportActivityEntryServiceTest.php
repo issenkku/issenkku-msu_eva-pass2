@@ -81,6 +81,110 @@ class SupportActivityEntryServiceTest extends TestCase
         $this->assertDatabaseCount('support_activity_entries', 0);
     }
 
+    public function test_evaluatee_can_create_many_projects_under_one_indicator_and_another_group(): void
+    {
+        $this->criterion->update([
+            'indicator' => null,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $first = $this->criterion->indicatorItems()->create([
+            'sequence' => 1, 'code' => '2.1', 'description' => '<p>วิจัย</p>',
+        ]);
+        $second = $this->criterion->indicatorItems()->create([
+            'sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่</p>',
+        ]);
+        $this->criterion->indicatorItems()->create([
+            'sequence' => 3, 'code' => '2.3', 'description' => '<p>กลุ่มที่ปล่อยว่างได้</p>',
+        ]);
+
+        $this->persist([
+            ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ A</p>'],
+            ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ B</p>'],
+            ['support_indicator_item_id' => $second->id, 'content' => '<p>โครงการ C</p>'],
+        ]);
+
+        $this->assertSame(
+            [$first->id, $first->id, $second->id],
+            SupportActivityEntry::query()->orderBy('sequence')
+                ->pluck('support_indicator_item_id')->all()
+        );
+    }
+
+    public function test_grouped_project_requires_an_indicator_from_the_same_criterion(): void
+    {
+        $this->criterion->update([
+            'indicator' => null,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $otherCriterion = SupportCriteria::create([
+            'evaluation_list_id' => $this->criterion->evaluation_list_id,
+            'sequence' => 2,
+            'activity_name' => 'เกณฑ์อื่น',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 20,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $foreignItem = $otherCriterion->indicatorItems()->create([
+            'sequence' => 1,
+            'code' => '9.1',
+            'description' => '<p>ข้ออื่น</p>',
+        ]);
+
+        foreach ([null, $foreignItem->id] as $indicatorItemId) {
+            try {
+                $this->persist([[
+                    'support_indicator_item_id' => $indicatorItemId,
+                    'content' => '<p>โครงการ</p>',
+                ]]);
+                $this->fail('Expected validation failure');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    'support_list.0.activity_entries.0.support_indicator_item_id',
+                    $exception->errors()
+                );
+            }
+        }
+    }
+
+    public function test_existing_project_cannot_move_to_another_indicator_item(): void
+    {
+        $this->criterion->update([
+            'indicator' => null,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $first = $this->criterion->indicatorItems()->create([
+            'sequence' => 1, 'code' => '2.1', 'description' => '<p>หนึ่ง</p>',
+        ]);
+        $second = $this->criterion->indicatorItems()->create([
+            'sequence' => 2, 'code' => '2.2', 'description' => '<p>สอง</p>',
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'support_indicator_item_id' => $first->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+        ]);
+
+        foreach (['persist', 'persistAsReviewer'] as $method) {
+            try {
+                $this->{$method}([[
+                    'id' => $entry->id,
+                    'support_indicator_item_id' => $second->id,
+                    'content' => '<p>โครงการเดิม</p>',
+                ]]);
+                $this->fail('Expected validation failure');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    'support_list.0.activity_entries.0.support_indicator_item_id',
+                    $exception->errors()
+                );
+            }
+        }
+    }
+
     public function test_evaluatee_can_update_delete_and_append_without_creating_history(): void
     {
         $this->persist([

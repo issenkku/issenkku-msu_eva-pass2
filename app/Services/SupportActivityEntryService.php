@@ -45,6 +45,16 @@ class SupportActivityEntryService
                 continue;
             }
 
+            foreach ($activityEntries as $entryIndex => &$entryData) {
+                $entryData['support_indicator_item_id'] = $this->validateIndicatorAssignment(
+                    $criterion,
+                    $entryData,
+                    $itemIndex,
+                    $entryIndex
+                );
+            }
+            unset($entryData);
+
             $existingEntries = SupportActivityEntry::query()
                 ->where('report_id', $report->id)
                 ->where('support_criteria_id', $criterionId)
@@ -93,6 +103,7 @@ class SupportActivityEntryService
         foreach ($activityEntries as $entryIndex => $entryData) {
             $entryId = isset($entryData['id']) ? (int) $entryData['id'] : null;
             $content = (string) $entryData['content'];
+            $indicatorItemId = $entryData['support_indicator_item_id'];
 
             if ($entryId !== null) {
                 /** @var SupportActivityEntry|null $entry */
@@ -101,6 +112,14 @@ class SupportActivityEntryService
                     throw ValidationException::withMessages([
                         "support_list.{$itemIndex}.activity_entries.{$entryIndex}.id" => [
                             'ไม่พบรายการกิจกรรมในรายงานและเกณฑ์นี้',
+                        ],
+                    ]);
+                }
+
+                if ($entry->support_indicator_item_id !== $indicatorItemId) {
+                    throw ValidationException::withMessages([
+                        "support_list.{$itemIndex}.activity_entries.{$entryIndex}.support_indicator_item_id" => [
+                            'ไม่สามารถย้ายโครงการเดิมไปยังตัวชี้วัดย่อยอื่นได้',
                         ],
                     ]);
                 }
@@ -118,6 +137,7 @@ class SupportActivityEntryService
             $created = SupportActivityEntry::create([
                 'report_id' => $report->id,
                 'support_criteria_id' => $criterion->id,
+                'support_indicator_item_id' => $indicatorItemId,
                 'sequence' => $entryIndex + 1,
                 'content' => $content,
                 'created_by' => $actor?->id,
@@ -158,6 +178,14 @@ class SupportActivityEntryService
         foreach ($activityEntries as $entryIndex => $entryData) {
             /** @var SupportActivityEntry $entry */
             $entry = $existingEntries[$entryIndex];
+            if ($entry->support_indicator_item_id !== $entryData['support_indicator_item_id']) {
+                throw ValidationException::withMessages([
+                    "support_list.{$itemIndex}.activity_entries.{$entryIndex}.support_indicator_item_id" => [
+                        'ผู้ประเมินไม่สามารถย้ายโครงการไปยังตัวชี้วัดย่อยอื่นได้',
+                    ],
+                ]);
+            }
+
             $content = (string) $entryData['content'];
             if ($content === $entry->content) {
                 continue;
@@ -185,5 +213,37 @@ class SupportActivityEntryService
                 'updated_by' => $actor?->id,
             ]);
         }
+    }
+
+    /** @param array<string, mixed> $entryData */
+    private function validateIndicatorAssignment(
+        SupportCriteria $criterion,
+        array $entryData,
+        int|string $itemIndex,
+        int $entryIndex
+    ): ?int {
+        $indicatorItemId = filled($entryData['support_indicator_item_id'] ?? null)
+            ? (int) $entryData['support_indicator_item_id']
+            : null;
+        $errorKey = "support_list.{$itemIndex}.activity_entries.{$entryIndex}.support_indicator_item_id";
+
+        if ($criterion->group_activity_entries_by_indicator) {
+            if (! $indicatorItemId
+                || ! $criterion->indicatorItems->contains('id', $indicatorItemId)) {
+                throw ValidationException::withMessages([
+                    $errorKey => ['กรุณาเลือกตัวชี้วัดย่อยที่อยู่ในเกณฑ์นี้'],
+                ]);
+            }
+
+            return $indicatorItemId;
+        }
+
+        if ($indicatorItemId !== null) {
+            throw ValidationException::withMessages([
+                $errorKey => ['เกณฑ์นี้ไม่ได้แบ่งโครงการตามตัวชี้วัดย่อย'],
+            ]);
+        }
+
+        return null;
     }
 }

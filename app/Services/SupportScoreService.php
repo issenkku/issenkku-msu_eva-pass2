@@ -49,6 +49,7 @@ class SupportScoreService
 
         $criteriaVersionId = $report->reportData()->value('criteria_version_id');
         $allowedCriteria = SupportCriteria::query()
+            ->with('indicatorItems:id,support_criteria_id,sequence,code,description')
             ->whereHas('evaluationList', function ($query) use ($criteriaVersionId) {
                 $query->where('criteria_version_id', $criteriaVersionId);
             })

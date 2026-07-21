@@ -20,6 +20,7 @@ final class SupportScoreRules
             'support_list.*.evidence_links.*' => ['nullable', 'url:http,https'],
             'support_list.*.activity_entries' => ['nullable', 'array'],
             'support_list.*.activity_entries.*.id' => ['nullable', 'integer'],
+            'support_list.*.activity_entries.*.support_indicator_item_id' => ['nullable', 'integer'],
             'support_list.*.activity_entries.*.content' => ['required', 'string', new HasRichText],
             'support_list.*.activity_entries.*.modification_reason' => ['nullable', 'string', 'max:2000'],
         ];
