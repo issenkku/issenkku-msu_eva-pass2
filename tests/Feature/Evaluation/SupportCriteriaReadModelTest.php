@@ -99,9 +99,12 @@ class SupportCriteriaReadModelTest extends TestCase
             'weight' => '20.00',
             'require_evidence' => true,
             'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => false,
+            'indicator_items' => [],
             'activity_entries' => [[
                 'id' => $activityEntry->id,
                 'sequence' => 1,
+                'support_indicator_item_id' => null,
                 'content' => '<p>จัดทำรายงานประจำเดือน</p>',
                 'histories' => [[
                     'previous_content' => '<p>ข้อความเดิม</p>',
@@ -163,5 +166,57 @@ class SupportCriteriaReadModelTest extends TestCase
             'report_id' => $report->id,
             'support_criteria_id' => $criterion->id,
         ]);
+    }
+
+    public function test_it_exposes_grouped_indicator_items_and_project_assignments(): void
+    {
+        $version = CriteriaVersion::factory()->create();
+        $reportData = ReportData::factory()->create(['criteria_version_id' => $version->id]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 20,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $firstIndicator = $criterion->indicatorItems()->create([
+            'sequence' => 1,
+            'code' => '2.1',
+            'description' => '<p>ดำเนินการวิจัย</p>',
+        ]);
+        $secondIndicator = $criterion->indicatorItems()->create([
+            'sequence' => 2,
+            'code' => '2.2',
+            'description' => '<p>เผยแพร่งานวิจัย</p>',
+        ]);
+
+        foreach ([$firstIndicator->id, $firstIndicator->id, $secondIndicator->id] as $index => $indicatorId) {
+            SupportActivityEntry::create([
+                'report_id' => $report->id,
+                'support_criteria_id' => $criterion->id,
+                'support_indicator_item_id' => $indicatorId,
+                'sequence' => $index + 1,
+                'content' => '<p>โครงการ '.($index + 1).'</p>',
+            ]);
+        }
+
+        $item = app(SupportCriteriaReadModel::class)->forReport($report)[$evaluationList->id][0];
+
+        $this->assertTrue($item['group_activity_entries_by_indicator']);
+        $this->assertNull($item['indicator']);
+        $this->assertSame(['2.1', '2.2'], array_column($item['indicator_items'], 'code'));
+        $this->assertSame(
+            [$firstIndicator->id, $firstIndicator->id, $secondIndicator->id],
+            array_column($item['activity_entries'], 'support_indicator_item_id')
+        );
     }
 }

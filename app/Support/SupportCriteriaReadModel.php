@@ -25,6 +25,7 @@ class SupportCriteriaReadModel
         }
 
         $criteria = SupportCriteria::query()
+            ->with('indicatorItems:id,support_criteria_id,sequence,code,description')
             ->whereHas('evaluationList', function ($query) use ($criteriaVersionId) {
                 $query->where('criteria_version_id', $criteriaVersionId);
             })
@@ -79,6 +80,13 @@ class SupportCriteriaReadModel
                         'weight' => $criterion->weight,
                         'require_evidence' => (bool) $criterion->require_evidence,
                         'allow_activity_entries' => (bool) $criterion->allow_activity_entries,
+                        'group_activity_entries_by_indicator' => (bool) $criterion->group_activity_entries_by_indicator,
+                        'indicator_items' => $criterion->indicatorItems->map(fn ($item) => [
+                            'id' => $item->id,
+                            'sequence' => $item->sequence,
+                            'code' => $item->code,
+                            'description' => $item->description,
+                        ])->values()->all(),
                         'activity_entries' => ! $criterion->allow_activity_entries
                             ? []
                             : ($activityEntries->get($criterion->id) ?? collect())
@@ -86,6 +94,7 @@ class SupportCriteriaReadModel
                                     return [
                                         'id' => $entry->id,
                                         'sequence' => $entry->sequence,
+                                        'support_indicator_item_id' => $entry->support_indicator_item_id,
                                         'content' => $entry->content,
                                         'histories' => $entry->histories
                                             ->map(function (SupportActivityEntryHistory $history) {
