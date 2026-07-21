@@ -207,4 +207,48 @@ class SupportScoreServiceTest extends TestCase
             'evidence_links' => [],
         ]], $this->evaluatee, null, false);
     }
+
+    public function test_activity_validation_failure_rolls_back_score_and_evidence_changes(): void
+    {
+        $this->criterion->update(['allow_activity_entries' => false]);
+        SupportScore::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => 80,
+            'weighted_score' => 16,
+        ]);
+        EvidenceAnswer::create([
+            'evaluation_list_id' => $this->criterion->evaluation_list_id,
+            'support_criteria_id' => $this->criterion->id,
+            'report_id' => $this->report->id,
+            'link' => 'https://example.com/original',
+        ]);
+
+        try {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => 90,
+                'evidence_links' => ['https://example.com/replacement'],
+                'activity_entries' => [['content' => '<p>รายการที่ไม่อนุญาต</p>']],
+            ]], $this->evaluatee, null, false);
+            $this->fail('Expected validation failure');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('support_list.0.activity_entries', $exception->errors());
+        }
+
+        $this->assertDatabaseHas('support_scores', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => '80.00',
+            'weighted_score' => '16.00',
+        ]);
+        $this->assertDatabaseHas('evidence_answers', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'link' => 'https://example.com/original',
+        ]);
+        $this->assertDatabaseMissing('evidence_answers', [
+            'link' => 'https://example.com/replacement',
+        ]);
+    }
 }

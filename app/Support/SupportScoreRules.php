@@ -2,10 +2,12 @@
 
 namespace App\Support;
 
+use App\Rules\HasRichText;
+
 final class SupportScoreRules
 {
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public static function validation(): array
     {
@@ -16,6 +18,10 @@ final class SupportScoreRules
             'support_list.*.modification_reason' => ['nullable', 'string', 'max:2000'],
             'support_list.*.evidence_links' => ['nullable', 'array'],
             'support_list.*.evidence_links.*' => ['nullable', 'url:http,https'],
+            'support_list.*.activity_entries' => ['nullable', 'array'],
+            'support_list.*.activity_entries.*.id' => ['nullable', 'integer'],
+            'support_list.*.activity_entries.*.content' => ['required', 'string', new HasRichText],
+            'support_list.*.activity_entries.*.modification_reason' => ['nullable', 'string', 'max:2000'],
         ];
     }
 }

@@ -1,0 +1,189 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Reports;
+use App\Models\SupportActivityEntry;
+use App\Models\SupportActivityEntryHistory;
+use App\Models\SupportCriteria;
+use App\Models\User;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
+
+class SupportActivityEntryService
+{
+    /**
+     * @param  Collection<int, SupportCriteria>  $allowedCriteria
+     * @param  array<int, array<string, mixed>>  $items
+     */
+    public function persist(
+        Reports $report,
+        Collection $allowedCriteria,
+        array $items,
+        ?User $actor,
+        ?string $modifierRole,
+        bool $requireReasonForChanges
+    ): void {
+        foreach ($items as $itemIndex => $item) {
+            $criterionId = (int) $item['support_criteria_id'];
+            /** @var SupportCriteria|null $criterion */
+            $criterion = $allowedCriteria->get($criterionId);
+            if (! $criterion) {
+                continue;
+            }
+
+            $activityEntries = array_values($item['activity_entries'] ?? []);
+            if (! $criterion->allow_activity_entries) {
+                if ($activityEntries !== []) {
+                    throw ValidationException::withMessages([
+                        "support_list.{$itemIndex}.activity_entries" => [
+                            'เกณฑ์นี้ไม่อนุญาตให้เพิ่มกิจกรรมหรือโครงการ',
+                        ],
+                    ]);
+                }
+
+                continue;
+            }
+
+            $existingEntries = SupportActivityEntry::query()
+                ->where('report_id', $report->id)
+                ->where('support_criteria_id', $criterionId)
+                ->orderBy('sequence')
+                ->orderBy('id')
+                ->get();
+
+            if ($requireReasonForChanges) {
+                $this->persistReviewerChanges(
+                    $existingEntries,
+                    $activityEntries,
+                    $itemIndex,
+                    $actor,
+                    $modifierRole
+                );
+
+                continue;
+            }
+
+            $this->persistEvaluateeChanges(
+                $report,
+                $criterion,
+                $existingEntries,
+                $activityEntries,
+                $itemIndex,
+                $actor
+            );
+        }
+    }
+
+    /**
+     * @param  Collection<int, SupportActivityEntry>  $existingEntries
+     * @param  array<int, array<string, mixed>>  $activityEntries
+     */
+    private function persistEvaluateeChanges(
+        Reports $report,
+        SupportCriteria $criterion,
+        Collection $existingEntries,
+        array $activityEntries,
+        int|string $itemIndex,
+        ?User $actor
+    ): void {
+        $existingById = $existingEntries->keyBy('id');
+        $keptIds = [];
+
+        foreach ($activityEntries as $entryIndex => $entryData) {
+            $entryId = isset($entryData['id']) ? (int) $entryData['id'] : null;
+            $content = (string) $entryData['content'];
+
+            if ($entryId !== null) {
+                /** @var SupportActivityEntry|null $entry */
+                $entry = $existingById->get($entryId);
+                if (! $entry || in_array($entryId, $keptIds, true)) {
+                    throw ValidationException::withMessages([
+                        "support_list.{$itemIndex}.activity_entries.{$entryIndex}.id" => [
+                            'ไม่พบรายการกิจกรรมในรายงานและเกณฑ์นี้',
+                        ],
+                    ]);
+                }
+
+                $entry->update([
+                    'sequence' => $entryIndex + 1,
+                    'content' => $content,
+                    'updated_by' => $actor?->id,
+                ]);
+                $keptIds[] = $entryId;
+
+                continue;
+            }
+
+            $created = SupportActivityEntry::create([
+                'report_id' => $report->id,
+                'support_criteria_id' => $criterion->id,
+                'sequence' => $entryIndex + 1,
+                'content' => $content,
+                'created_by' => $actor?->id,
+                'updated_by' => $actor?->id,
+            ]);
+            $keptIds[] = $created->id;
+        }
+
+        $existingEntries
+            ->reject(fn (SupportActivityEntry $entry) => in_array($entry->id, $keptIds, true))
+            ->each(fn (SupportActivityEntry $entry) => $entry->delete());
+    }
+
+    /**
+     * @param  Collection<int, SupportActivityEntry>  $existingEntries
+     * @param  array<int, array<string, mixed>>  $activityEntries
+     */
+    private function persistReviewerChanges(
+        Collection $existingEntries,
+        array $activityEntries,
+        int|string $itemIndex,
+        ?User $actor,
+        ?string $modifierRole
+    ): void {
+        $existingIds = $existingEntries->pluck('id')->map(fn ($id) => (int) $id)->all();
+        $submittedIds = collect($activityEntries)
+            ->map(fn (array $entry) => isset($entry['id']) ? (int) $entry['id'] : null)
+            ->all();
+
+        if ($submittedIds !== $existingIds) {
+            throw ValidationException::withMessages([
+                "support_list.{$itemIndex}.activity_entries" => [
+                    'ผู้ประเมินไม่สามารถเพิ่ม ลบ หรือจัดลำดับรายการกิจกรรมได้',
+                ],
+            ]);
+        }
+
+        foreach ($activityEntries as $entryIndex => $entryData) {
+            /** @var SupportActivityEntry $entry */
+            $entry = $existingEntries[$entryIndex];
+            $content = (string) $entryData['content'];
+            if ($content === $entry->content) {
+                continue;
+            }
+
+            $reason = trim((string) ($entryData['modification_reason'] ?? ''));
+            if ($reason === '') {
+                throw ValidationException::withMessages([
+                    "support_list.{$itemIndex}.activity_entries.{$entryIndex}.modification_reason" => [
+                        'กรุณาระบุเหตุผลที่แก้ไขกิจกรรมหรือโครงการ',
+                    ],
+                ]);
+            }
+
+            SupportActivityEntryHistory::create([
+                'support_activity_entry_id' => $entry->id,
+                'previous_content' => $entry->content,
+                'new_content' => $content,
+                'reason' => $reason,
+                'modified_by' => $actor?->id,
+                'modified_by_role' => $modifierRole,
+            ]);
+            $entry->update([
+                'content' => $content,
+                'updated_by' => $actor?->id,
+            ]);
+        }
+    }
+}

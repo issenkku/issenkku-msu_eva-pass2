@@ -16,6 +16,10 @@ use Illuminate\Validation\ValidationException;
 
 class SupportScoreService
 {
+    public function __construct(
+        private readonly SupportActivityEntryService $activityEntryService
+    ) {}
+
     /**
      * @param  array<int, array<string, mixed>>  $items
      * @return array{old_scores: Collection, new_scores: Collection, support_score_total: float}
@@ -134,6 +138,15 @@ class SupportScoreService
                     ]);
                 }
             }
+
+            $this->activityEntryService->persist(
+                $report,
+                $allowedCriteria,
+                $normalizedItems,
+                $actor,
+                $modifierRole,
+                $requireReasonForChanges
+            );
 
             $supportScoreTotal = round((float) SupportScore::query()
                 ->where('report_id', $report->id)
