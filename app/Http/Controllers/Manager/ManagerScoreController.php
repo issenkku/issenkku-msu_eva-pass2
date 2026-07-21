@@ -77,6 +77,8 @@ class ManagerScoreController extends Controller
 
     public function storeManagerScores(Request $request, $reportId)
     {
+        $transactionStarted = false;
+
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
@@ -108,6 +110,7 @@ class ManagerScoreController extends Controller
             ]);
 
             DB::beginTransaction();
+            $transactionStarted = true;
             $modifierRole = $request->user()?->getRoleNames()->first() ?: 'ผู้บริหาร';
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
@@ -234,17 +237,22 @@ class ManagerScoreController extends Controller
                 ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
             DB::commit();
+            $transactionStarted = false;
 
             $message = $status === 'Manager_draft' ? 'บันทึกข้อมูลเรียบร้อยแล้ว' : 'ส่งรายงานเรียบร้อยแล้ว';
 
             return redirect('/manager-dashboard')->with('success', $message);
 
         } catch (ValidationException $e) {
-            DB::rollBack();
+            if ($transactionStarted) {
+                DB::rollBack();
+            }
 
             throw $e;
         } catch (Exception $e) {
-            DB::rollback();
+            if ($transactionStarted) {
+                DB::rollBack();
+            }
 
             return response()->json(['message' => 'Error processing evaluation scores', 'error' => $e->getMessage()], 500);
         }

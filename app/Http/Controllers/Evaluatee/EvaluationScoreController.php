@@ -42,6 +42,8 @@ class EvaluationScoreController extends Controller
 
     public function storeEvaluationScores(Request $request, $reportId)
     {
+        $transactionStarted = false;
+
         try {
             $reportId = is_array($reportId) ? $reportId[0] : (int) $reportId;
             $report = Reports::findOrFail($reportId);
@@ -158,6 +160,7 @@ class EvaluationScoreController extends Controller
             }
 
             DB::beginTransaction();
+            $transactionStarted = true;
 
             $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
             $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
@@ -352,17 +355,22 @@ class EvaluationScoreController extends Controller
             }
 
             DB::commit();
+            $transactionStarted = false;
 
             $message = $status === 'Draft' ? 'บันทึกข้อมูลเรียบร้อยแล้ว' : 'ส่งรายงานเรียบร้อยแล้ว';
 
             return redirect('/evaluatee-dashboard')->with('success', $message);
 
         } catch (ValidationException $e) {
-            DB::rollBack();
+            if ($transactionStarted) {
+                DB::rollBack();
+            }
 
             throw $e;
         } catch (Exception $e) {
-            DB::rollback();
+            if ($transactionStarted) {
+                DB::rollBack();
+            }
 
             return response()->json(['message' => 'Error processing evaluation scores', 'error' => $e->getMessage()], 500);
         }

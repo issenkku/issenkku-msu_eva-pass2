@@ -16,6 +16,7 @@ use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
 use App\Models\Subject;
+use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
 use App\Models\User;
 use App\Models\WorkloadEntry;
@@ -163,6 +164,7 @@ class EvaluateeTest extends TestCase
             'target_value' => 100,
             'weight' => 20,
             'require_evidence' => false,
+            'allow_activity_entries' => true,
         ]);
 
         Mail::fake();
@@ -573,7 +575,77 @@ class EvaluateeTest extends TestCase
         ]);
     }
 
-    private function supportPayload(string $status, string|int|null $score): array
+    public function test_evaluatee_can_add_update_and_delete_support_activities_across_draft_and_submit(): void
+    {
+        $report = $this->createReportWithStatus('Assigned');
+        $draftPayload = $this->supportPayload('Draft', 100, [
+            ['content' => '<p>โครงการแรก</p>'],
+            ['content' => '<p>โครงการที่จะลบ</p>'],
+        ]);
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $draftPayload)
+            ->assertRedirect('/evaluatee-dashboard');
+
+        $first = SupportActivityEntry::query()
+            ->where('report_id', $report->id)
+            ->orderBy('sequence')
+            ->firstOrFail();
+        $submitPayload = $this->supportPayload('Pending', 100, [
+            ['id' => $first->id, 'content' => '<p>แก้ไขโครงการแรก</p>'],
+            ['content' => '<p>โครงการใหม่</p>'],
+        ]);
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $submitPayload)
+            ->assertRedirect('/evaluatee-dashboard');
+
+        $this->assertSame(
+            ['<p>แก้ไขโครงการแรก</p>', '<p>โครงการใหม่</p>'],
+            SupportActivityEntry::query()
+                ->where('report_id', $report->id)
+                ->orderBy('sequence')
+                ->pluck('content')
+                ->all()
+        );
+        $this->assertDatabaseCount('support_activity_entry_histories', 0);
+        $this->assertSame('Pending', $report->fresh()->status);
+    }
+
+    public function test_invalid_support_activity_rolls_back_the_evaluatee_submission(): void
+    {
+        $report = $this->createReportWithStatus('Assigned');
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $this->supportPayload('Draft', 80, [
+                ['content' => '<p>ข้อมูลเดิม</p>'],
+            ]))
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
+
+        $payload = $this->supportPayload('Pending', 90, [
+            ['content' => '<p><br></p>'],
+        ]);
+        $this->actingAs($this->evaluatee, 'web')
+            ->postJson(route('evaluation_score.store', ['id' => $report->id]), $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                "support_list.{$this->supportCriterion->id}.activity_entries.0.content",
+            ]);
+
+        $this->assertDatabaseHas('support_scores', [
+            'report_id' => $report->id,
+            'support_criteria_id' => $this->supportCriterion->id,
+            'achieved_score' => '80.00',
+        ]);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'report_id' => $report->id,
+            'content' => '<p>ข้อมูลเดิม</p>',
+        ]);
+        $this->assertSame('Draft', $report->fresh()->status);
+    }
+
+    /** @param array<int, array<string, mixed>> $activityEntries */
+    private function supportPayload(string $status, string|int|null $score, array $activityEntries = []): array
     {
         return [
             'support_list' => [
@@ -582,6 +654,7 @@ class EvaluateeTest extends TestCase
                     'achieved_score' => $score,
                     'modification_reason' => null,
                     'evidence_links' => ['https://example.com/support-evidence'],
+                    'activity_entries' => $activityEntries,
                 ],
             ],
             'status' => $status,

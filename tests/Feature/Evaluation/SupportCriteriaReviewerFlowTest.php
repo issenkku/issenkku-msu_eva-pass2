@@ -8,6 +8,7 @@ use App\Models\EvaluationList;
 use App\Models\EvidenceAnswer;
 use App\Models\ReportData;
 use App\Models\Reports;
+use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
 use App\Models\SupportScore;
 use App\Models\User;
@@ -46,6 +47,7 @@ beforeEach(function () {
         'target_value' => 100,
         'weight' => 20,
         'require_evidence' => true,
+        'allow_activity_entries' => true,
     ]);
 
     $this->assignmentData = AssignmentData::factory()->create([
@@ -104,6 +106,61 @@ test('each reviewer role must explain a changed support score and keeps its repo
         'reason' => 'ปรับตามหลักฐาน',
         'modifier_user_id' => $actor->id,
         'modifier_role' => $role,
+    ]);
+    $this->assertSame($comment, $report->fresh()->{$commentField});
+})->with('support reviewer roles');
+
+test('each reviewer role must explain a changed support activity and keeps its report comment', function (
+    string $role,
+    string $initialStatus,
+    string $draftStatus,
+    string $routeName,
+    string $actorProperty,
+    string $commentField
+) {
+    $report = createSupportReviewerReport($this, $initialStatus);
+    $actor = $this->{$actorProperty};
+    $entry = SupportActivityEntry::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $this->criterion->id,
+        'sequence' => 1,
+        'content' => '<p>ข้อความเดิม</p>',
+        'created_by' => $this->evaluatee->id,
+        'updated_by' => $this->evaluatee->id,
+    ]);
+    $comment = "ตรวจแก้กิจกรรมโดย{$role}";
+    $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 80, null, $comment);
+    $payload['support_list'][$this->criterion->id]['activity_entries'] = [[
+        'id' => $entry->id,
+        'content' => '<p>ข้อความที่ผู้ประเมินแก้ไข</p>',
+        'modification_reason' => null,
+    ]];
+
+    $this->actingAs($actor, 'web')
+        ->from('/review-support')
+        ->post(route($routeName, ['id' => $report->id]), $payload)
+        ->assertRedirect('/review-support')
+        ->assertSessionHasErrors([
+            "support_list.{$this->criterion->id}.activity_entries.0.modification_reason",
+        ]);
+
+    $payload['support_list'][$this->criterion->id]['activity_entries'][0]['modification_reason'] = 'ปรับตามผลงานจริง';
+    $this->actingAs($actor, 'web')
+        ->post(route($routeName, ['id' => $report->id]), $payload)
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('support_activity_entries', [
+        'id' => $entry->id,
+        'content' => '<p>ข้อความที่ผู้ประเมินแก้ไข</p>',
+        'updated_by' => $actor->id,
+    ]);
+    $this->assertDatabaseHas('support_activity_entry_histories', [
+        'support_activity_entry_id' => $entry->id,
+        'previous_content' => '<p>ข้อความเดิม</p>',
+        'new_content' => '<p>ข้อความที่ผู้ประเมินแก้ไข</p>',
+        'reason' => 'ปรับตามผลงานจริง',
+        'modified_by' => $actor->id,
+        'modified_by_role' => $role,
     ]);
     $this->assertSame($comment, $report->fresh()->{$commentField});
 })->with('support reviewer roles');
