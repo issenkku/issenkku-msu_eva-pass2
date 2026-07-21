@@ -262,10 +262,16 @@
             });
         };
 
-        const createActivityEntryRow = () => {
+        const createActivityEntryRow = (indicatorItemId = '') => {
             const row = document.createElement('article');
             row.className = 'rounded-lg border border-slate-200 bg-slate-50 p-3';
             row.dataset.supportActivityEntry = '';
+            row.dataset.supportIndicatorItemId = indicatorItemId;
+
+            const indicatorId = document.createElement('input');
+            indicatorId.type = 'hidden';
+            indicatorId.value = indicatorItemId;
+            indicatorId.dataset.supportActivityIndicatorId = '';
 
             const label = document.createElement('label');
             label.className = 'block text-sm font-semibold text-slate-700';
@@ -284,7 +290,7 @@
             removeButton.className = 'mt-2 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-100';
             removeButton.textContent = 'ลบรายการ';
 
-            row.append(label, removeButton);
+            row.append(indicatorId, label, removeButton);
             return row;
         };
 
@@ -296,27 +302,44 @@
                 if (label) label.textContent = `รายการ ${index + 1}`;
 
                 const id = row.querySelector('[data-support-activity-id]');
+                const indicatorId = row.querySelector('[data-support-activity-indicator-id]');
                 const content = row.querySelector('[data-support-activity-content]');
                 const reason = row.querySelector('[data-support-activity-reason]');
                 if (id) id.name = activityTools().activityEntryFieldName(criterionId, index, 'id');
+                if (indicatorId) {
+                    indicatorId.name = activityTools().activityEntryFieldName(
+                        criterionId,
+                        index,
+                        'support_indicator_item_id',
+                    );
+                }
                 if (content) content.name = activityTools().activityEntryFieldName(criterionId, index, 'content');
                 if (reason) reason.name = activityTools().activityEntryFieldName(criterionId, index, 'modification_reason');
             });
 
-            const empty = item.querySelector('[data-support-activity-empty]');
-            empty?.classList.toggle('hidden', rows.length > 0);
+            const groups = Array.from(item.querySelectorAll('[data-support-activity-group]'));
+            if (groups.length > 0) {
+                groups.forEach((group) => {
+                    const groupRows = group.querySelectorAll('[data-support-activity-entry]');
+                    group.querySelector('[data-support-activity-empty]')
+                        ?.classList.toggle('hidden', groupRows.length > 0);
+                });
+            } else {
+                item.querySelector('[data-support-activity-empty]')
+                    ?.classList.toggle('hidden', rows.length > 0);
+            }
         };
 
         const snapshotActivityEntries = (item) => {
-            const container = item.querySelector('[data-support-activity-container]');
-            return container?.cloneNode(true) || null;
+            const section = item.querySelector('[data-support-activity-section]');
+            return section?.cloneNode(true) || null;
         };
 
         const restoreActivityEntries = (item, snapshot) => {
-            const container = item.querySelector('[data-support-activity-container]');
-            if (!container || !snapshot) return;
+            const section = item.querySelector('[data-support-activity-section]');
+            if (!section || !snapshot) return;
             const restored = snapshot.cloneNode(true);
-            container.replaceChildren(...Array.from(restored.childNodes));
+            section.replaceWith(restored);
             reindexActivityEntries(item);
         };
 
@@ -325,10 +348,43 @@
             const contentFields = Array.from(item.querySelectorAll('[data-support-activity-content]'));
             if (contentFields.length === 0) return;
             const contents = contentFields
-                .map((textarea) => textarea.value)
-                .filter((html) => activityTools().activityHtmlHasVisibleText(html));
+                .map((textarea) => ({
+                    html: textarea.value,
+                    indicatorItemId: textarea.closest('[data-support-activity-entry]')
+                        ?.querySelector('[data-support-activity-indicator-id]')?.value || '',
+                }))
+                .filter((entry) => activityTools().activityHtmlHasVisibleText(entry.html));
 
             document.querySelectorAll(`[data-support-activity-list="${id}"]`).forEach((container) => {
+                if (item.dataset.supportGrouped === '1') {
+                    container.querySelectorAll('[data-support-display-group]').forEach((group) => {
+                        const groupEntries = contents.filter(
+                            (entry) => String(entry.indicatorItemId) === group.dataset.supportDisplayGroup,
+                        );
+                        const target = group.querySelector('[data-support-display-group-entries]');
+                        if (!target) return;
+                        target.replaceChildren();
+                        if (groupEntries.length === 0) {
+                            const empty = document.createElement('p');
+                            empty.className = 'text-xs font-normal text-slate-400';
+                            empty.textContent = 'ยังไม่มีโครงการในข้อนี้';
+                            target.appendChild(empty);
+                            return;
+                        }
+
+                        const list = document.createElement('ol');
+                        list.className = 'list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700';
+                        groupEntries.forEach((entryData) => {
+                            const entry = document.createElement('li');
+                            entry.className = 'break-words';
+                            entry.textContent = activityTools().activityHtmlPlainText(entryData.html);
+                            list.appendChild(entry);
+                        });
+                        target.appendChild(list);
+                    });
+                    return;
+                }
+
                 container.replaceChildren();
                 if (contents.length === 0) {
                     const empty = document.createElement('p');
@@ -340,10 +396,10 @@
 
                 const list = document.createElement('ol');
                 list.className = 'list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700';
-                contents.forEach((html) => {
+                contents.forEach((entryData) => {
                     const entry = document.createElement('li');
                     entry.className = 'break-words';
-                    entry.textContent = activityTools().activityHtmlPlainText(html);
+                    entry.textContent = activityTools().activityHtmlPlainText(entryData.html);
                     list.appendChild(entry);
                 });
                 container.appendChild(list);
@@ -524,9 +580,13 @@
             const addActivityButton = event.target.closest('[data-add-support-activity]');
             if (addActivityButton) {
                 const item = addActivityButton.closest('[data-support-item]');
-                const container = item?.querySelector('[data-support-activity-container]');
+                const group = addActivityButton.closest('[data-support-activity-group]');
+                const container = group?.querySelector('[data-support-activity-container]')
+                    || item?.querySelector('[data-support-activity-container]');
                 if (!item || !container || item.dataset.supportActivityRole !== 'evaluatee') return;
-                const row = createActivityEntryRow();
+                const row = createActivityEntryRow(
+                    addActivityButton.dataset.supportIndicatorItemId || '',
+                );
                 container.appendChild(row);
                 reindexActivityEntries(item);
                 initializeActivityEditors(row);

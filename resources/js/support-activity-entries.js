@@ -26,11 +26,21 @@ export function activityEntryIdsKeepOriginalOrder(submittedIds, originalIds) {
         && submittedIds.every((id, index) => id === originalIds[index]);
 }
 
+export function groupActivityEntries(indicatorItems, entries) {
+    return indicatorItems.map((item) => ({
+        ...item,
+        activity_entries: entries.filter(
+            (entry) => Number(entry.support_indicator_item_id) === Number(item.id),
+        ),
+    }));
+}
+
 if (typeof window !== 'undefined') {
     window.SupportActivityEntries = {
         activityEntryFieldName,
         activityEntryIdsKeepOriginalOrder,
         activityHtmlHasVisibleText,
         activityHtmlPlainText,
+        groupActivityEntries,
     };
 }

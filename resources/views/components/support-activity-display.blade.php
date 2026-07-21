@@ -13,8 +13,35 @@
     </div>
 
     @if (!empty($item['allow_activity_entries']))
-        <div data-support-activity-list="{{ $criterionId }}">
-            @if (!empty($entries))
+        <div data-support-activity-list="{{ $criterionId }}"
+            data-support-activity-grouped="{{ !empty($item['group_activity_entries_by_indicator']) ? '1' : '0' }}">
+            @if (!empty($item['group_activity_entries_by_indicator']))
+                <div class="space-y-3">
+                    @foreach ($item['indicator_items'] ?? [] as $indicatorItem)
+                        @php
+                            $groupEntries = collect($entries)->filter(
+                                fn ($entry) => (int) ($entry['support_indicator_item_id'] ?? 0) === (int) $indicatorItem['id']
+                            );
+                        @endphp
+                        <section data-support-display-group="{{ $indicatorItem['id'] }}">
+                            <p class="text-xs font-semibold text-amber-800">ข้อ {{ $indicatorItem['code'] }}</p>
+                            <div data-support-display-group-entries>
+                                @if ($groupEntries->isNotEmpty())
+                                    <ol class="list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700">
+                                        @foreach ($groupEntries as $entry)
+                                            <li class="support-criteria-rich-text break-words">
+                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                            </li>
+                                        @endforeach
+                                    </ol>
+                                @else
+                                    <p class="text-xs font-normal text-slate-400">ยังไม่มีโครงการในข้อนี้</p>
+                                @endif
+                            </div>
+                        </section>
+                    @endforeach
+                </div>
+            @elseif (!empty($entries))
                 <ol class="list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700">
                     @foreach ($entries as $entry)
                         <li class="support-criteria-rich-text break-words">

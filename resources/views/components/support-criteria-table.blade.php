@@ -46,7 +46,9 @@
                             <td class="break-words px-2 py-4 align-top">
                                 <x-support-activity-display :item="$item" />
                             </td>
-                            <td class="support-criteria-rich-text break-words px-2 py-4 leading-6">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</td>
+                            <td class="break-words px-2 py-4 leading-6">
+                                <x-support-indicator-display :item="$item" />
+                            </td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
                             <td class="px-2 py-4 text-right font-semibold tabular-nums"
@@ -109,7 +111,9 @@
                     <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                         <div class="col-span-2">
                             <dt class="text-xs font-medium text-slate-500">ตัวชี้วัด/เกณฑ์การประเมิน</dt>
-                            <dd class="support-criteria-rich-text mt-1 leading-6 text-slate-800">{!! \App\Support\SafeHtml::richText($item['indicator'] ?? '') !!}</dd>
+                            <dd class="mt-1 leading-6 text-slate-800">
+                                <x-support-indicator-display :item="$item" />
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-slate-500">ระดับค่าเป้าหมาย</dt>
@@ -177,6 +181,7 @@
                     data-support-required="{{ !empty($item['require_evidence']) ? '1' : '0' }}"
                     data-support-require-reason="{{ $requireReason ? '1' : '0' }}"
                     data-support-activity-role="{{ $readonly ? 'readonly' : $activityEntryRole }}"
+                    data-support-grouped="{{ !empty($item['group_activity_entries_by_indicator']) ? '1' : '0' }}"
                     data-support-existing-weighted="{{ $item['weighted_score'] ?? '' }}">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -193,6 +198,58 @@
                     @if (!empty($item['allow_activity_entries']))
                         <section class="mb-5 rounded-xl border border-amber-200 bg-white p-4"
                             data-support-activity-section>
+                            @if (!empty($item['group_activity_entries_by_indicator']))
+                                <div class="mb-4">
+                                    <h5 class="font-semibold text-slate-800">กิจกรรม/โครงการตามตัวชี้วัดย่อย</h5>
+                                    <p class="mt-1 text-xs text-slate-500">หนึ่งโครงการอยู่ได้เพียงข้อย่อยเดียว</p>
+                                </div>
+
+                                <div class="space-y-4">
+                                    @foreach ($item['indicator_items'] ?? [] as $indicatorItem)
+                                        @php
+                                            $groupEntries = collect($item['activity_entries'] ?? [])->filter(
+                                                fn ($entry) => (int) ($entry['support_indicator_item_id'] ?? 0) === (int) $indicatorItem['id']
+                                            );
+                                        @endphp
+                                        <section class="rounded-xl border border-amber-200 bg-amber-50/50 p-4"
+                                            data-support-activity-group="{{ $indicatorItem['id'] }}"
+                                            data-support-indicator-code="{{ $indicatorItem['code'] }}">
+                                            <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+                                                <div class="min-w-0">
+                                                    <h6 class="font-bold text-amber-950">ข้อ {{ $indicatorItem['code'] }}</h6>
+                                                    <div class="support-criteria-rich-text mt-1 text-sm text-slate-700">
+                                                        {!! \App\Support\SafeHtml::richText($indicatorItem['description'] ?? '') !!}
+                                                    </div>
+                                                </div>
+                                                @if ($canEditActivities && $activityEntryRole === 'evaluatee')
+                                                    <button type="button"
+                                                        data-add-support-activity="{{ $item['id'] }}"
+                                                        data-support-indicator-item-id="{{ $indicatorItem['id'] }}"
+                                                        class="shrink-0 rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                                        + เพิ่มโครงการในข้อ {{ $indicatorItem['code'] }}
+                                                    </button>
+                                                @endif
+                                            </div>
+
+                                            <div class="space-y-4" data-support-activity-container>
+                                                @foreach (($item['activity_entries'] ?? []) as $entryIndex => $entry)
+                                                    @continue((int) ($entry['support_indicator_item_id'] ?? 0) !== (int) $indicatorItem['id'])
+                                                    <x-support-activity-entry-editor
+                                                        :item="$item"
+                                                        :entry="$entry"
+                                                        :entry-index="$entryIndex"
+                                                        :can-edit-activities="$canEditActivities"
+                                                        :activity-entry-role="$activityEntryRole" />
+                                                @endforeach
+                                            </div>
+                                            <p class="rounded-lg border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 {{ $groupEntries->isNotEmpty() ? 'hidden' : '' }}"
+                                                data-support-activity-empty>
+                                                ยังไม่มีโครงการในข้อนี้
+                                            </p>
+                                        </section>
+                                    @endforeach
+                                </div>
+                            @else
                             <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
                                 <div>
                                     <h5 class="font-semibold text-slate-800">กิจกรรม/โครงการเพิ่มเติม</h5>
@@ -285,6 +342,7 @@
                                     ยังไม่มีกิจกรรม/โครงการเพิ่มเติม
                                 </p>
                             </div>
+                            @endif
                         </section>
                     @endif
 

@@ -44,6 +44,51 @@ function supportActivityViewItem(): array
     ]);
 }
 
+function supportGroupedActivityViewItem(): array
+{
+    return array_replace(supportActivityViewItem(), [
+        'indicator' => null,
+        'group_activity_entries_by_indicator' => true,
+        'indicator_items' => [
+            [
+                'id' => 11,
+                'sequence' => 1,
+                'code' => '2.1',
+                'description' => '<p><strong>ดำเนินการวิจัย</strong></p>',
+            ],
+            [
+                'id' => 12,
+                'sequence' => 2,
+                'code' => '2.2',
+                'description' => '<p>เผยแพร่งานวิจัย</p>',
+            ],
+        ],
+        'activity_entries' => [
+            [
+                'id' => 41,
+                'sequence' => 1,
+                'support_indicator_item_id' => 11,
+                'content' => '<p>โครงการ A</p>',
+                'histories' => [],
+            ],
+            [
+                'id' => 42,
+                'sequence' => 2,
+                'support_indicator_item_id' => 11,
+                'content' => '<p>โครงการ B</p>',
+                'histories' => [],
+            ],
+            [
+                'id' => 43,
+                'sequence' => 3,
+                'support_indicator_item_id' => 12,
+                'content' => '<p>โครงการ C</p>',
+                'histories' => [],
+            ],
+        ],
+    ]);
+}
+
 test('support criteria component renders one responsive editable form control set', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
@@ -144,6 +189,26 @@ test('evaluatee can add edit and delete optional support activity entries', func
         ->toContain('support_list[7][activity_entries][0][content]')
         ->toContain('data-support-activity-content')
         ->toContain('support-activity-richtext');
+});
+
+test('grouped support projects render and edit under their assigned indicator item', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportGroupedActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    expect($html)
+        ->toContain('data-support-activity-group="11"')
+        ->toContain('data-support-activity-group="12"')
+        ->toContain('+ เพิ่มโครงการในข้อ 2.1')
+        ->toContain('+ เพิ่มโครงการในข้อ 2.2')
+        ->toContain('support_list[7][activity_entries][0][support_indicator_item_id]')
+        ->toContain('value="11"')
+        ->toContain('<strong>ดำเนินการวิจัย</strong>')
+        ->not->toContain('ส่งตรงเวลา');
 });
 
 test('reviewer can edit existing support activities with a reason but cannot add or delete', function () {
