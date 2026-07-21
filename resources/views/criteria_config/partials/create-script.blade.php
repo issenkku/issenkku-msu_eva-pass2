@@ -1345,7 +1345,8 @@
                                     indicator,
                                     target_value: Number(targetValue),
                                     weight: Number(weight),
-                                    require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false
+                                    require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
+                                    allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false
                                 });
                             });
                         if (!valid) return;

@@ -129,6 +129,7 @@ class SupportCriteriaTemplateTest extends TestCase
                 'target_value' => 95.5,
                 'weight' => 60,
                 'require_evidence' => true,
+                'allow_activity_entries' => true,
             ],
             [
                 'sequence' => 2,
@@ -147,6 +148,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'target_value' => 95.5,
             'weight' => 60,
             'require_evidence' => true,
+            'allow_activity_entries' => true,
         ]);
 
         $this->getJson(route('report-structure.show', $versionId))
@@ -154,6 +156,7 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.activity_name', 'พัฒนาระบบบริการ')
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.target_value', 95.5)
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.require_evidence', true)
+            ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.0.allow_activity_entries', true)
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
     }
 
@@ -233,6 +236,7 @@ class SupportCriteriaTemplateTest extends TestCase
                 'target_value' => 99,
                 'weight' => 70,
                 'require_evidence' => true,
+                'allow_activity_entries' => true,
             ],
             [
                 'sequence' => 1,
@@ -256,6 +260,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'sequence' => 2,
             'activity_name' => 'แก้ไขรายการเดิม',
             'require_evidence' => true,
+            'allow_activity_entries' => true,
         ]);
         $this->assertDatabaseHas('support_criterias', [
             'evaluation_list_id' => $evaluationList->id,
@@ -263,6 +268,47 @@ class SupportCriteriaTemplateTest extends TestCase
             'activity_name' => 'เพิ่มรายการใหม่',
         ]);
         $this->assertDatabaseMissing('support_criterias', ['id' => $removed->id]);
+    }
+
+    public function test_admin_can_disable_activity_entries_when_updating_a_support_criterion(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => 'งานที่เปิดให้เพิ่มกิจกรรม',
+            'indicator' => 'ตัวชี้วัด',
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+        ]]))->assertCreated();
+
+        $versionId = $created->json('data.id');
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias',
+        ])->findOrFail($versionId);
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $criterion = $evaluationList->supportCriterias->first();
+        $payload = $this->payload([[
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'activity_name' => $criterion->activity_name,
+            'indicator' => $criterion->indicator,
+            'target_value' => $criterion->target_value,
+            'weight' => $criterion->weight,
+            'allow_activity_entries' => false,
+        ]]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $versionId), $payload)->assertOk();
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $criterion->id,
+            'allow_activity_entries' => false,
+        ]);
     }
 
     public function test_omitting_support_criteria_on_update_removes_existing_template_rows(): void

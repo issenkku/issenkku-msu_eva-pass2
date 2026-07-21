@@ -15,6 +15,7 @@
                 block.querySelector('.support_target_value').value = item.target_value ?? '';
                 block.querySelector('.support_weight').value = item.weight ?? '';
                 block.querySelector('.support_require_evidence').checked = Boolean(item.require_evidence);
+                block.querySelector('.support_allow_activity_entries').checked = Boolean(item.allow_activity_entries);
                 itemsContainer.appendChild(block);
                 initializeSummernote(block);
             });

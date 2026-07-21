@@ -13,6 +13,8 @@ test('create evaluation template exposes support criteria controls after quality
         ->toContain('support_target_value')
         ->toContain('support_weight')
         ->toContain('support_require_evidence')
+        ->toContain('support_allow_activity_entries')
+        ->toContain('อนุญาตให้ผู้ถูกประเมินเพิ่มกิจกรรม/โครงการ')
         ->toContain('คะแนนถ่วงน้ำหนัก = น้ำหนัก × คะแนนที่ผู้ถูกประเมินกรอก ÷ 100');
 
     expect(strpos($html, 'quality_criteria_type'))
@@ -32,7 +34,9 @@ test('create script toggles collects and reorders support criteria', function ()
         ->toContain('support_target_value')
         ->toContain('support_weight')
         ->toContain('support_require_evidence')
-        ->toContain('require_evidence');
+        ->toContain('require_evidence')
+        ->toContain('support_allow_activity_entries')
+        ->toContain('allow_activity_entries');
 });
 
 test('edit template loads toggles and collects support criteria', function () {
@@ -53,9 +57,12 @@ test('edit template loads toggles and collects support criteria', function () {
         ->toContain('populateSupportCriteria');
     expect($supportHandler)
         ->toContain('support_require_evidence')
-        ->toContain('require_evidence');
+        ->toContain('require_evidence')
+        ->toContain('support_allow_activity_entries')
+        ->toContain('allow_activity_entries');
     expect($collect)
         ->toContain('evalData.support_criterias = []')
         ->toContain('support_criteria_id')
-        ->toContain('require_evidence');
+        ->toContain('require_evidence')
+        ->toContain('allow_activity_entries');
 });
