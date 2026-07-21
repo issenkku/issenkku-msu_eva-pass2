@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class SupportActivityEntry extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'report_id',
+        'support_criteria_id',
+        'sequence',
+        'content',
+        'created_by',
+        'updated_by',
+    ];
+
+    public function report(): BelongsTo
+    {
+        return $this->belongsTo(Reports::class, 'report_id');
+    }
+
+    public function supportCriteria(): BelongsTo
+    {
+        return $this->belongsTo(SupportCriteria::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function histories(): HasMany
+    {
+        return $this->hasMany(SupportActivityEntryHistory::class)->latest();
+    }
+}

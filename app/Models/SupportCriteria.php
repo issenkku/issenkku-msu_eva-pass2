@@ -19,12 +19,14 @@ class SupportCriteria extends Model
         'target_value',
         'weight',
         'require_evidence',
+        'allow_activity_entries',
     ];
 
     protected $casts = [
         'target_value' => 'decimal:2',
         'weight' => 'decimal:2',
         'require_evidence' => 'boolean',
+        'allow_activity_entries' => 'boolean',
     ];
 
     public function evaluationList(): BelongsTo
@@ -45,5 +47,10 @@ class SupportCriteria extends Model
     public function evidenceAnswers(): HasMany
     {
         return $this->hasMany(EvidenceAnswer::class);
+    }
+
+    public function activityEntries(): HasMany
+    {
+        return $this->hasMany(SupportActivityEntry::class);
     }
 }

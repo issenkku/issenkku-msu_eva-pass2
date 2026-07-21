@@ -49,6 +49,11 @@ class Reports extends Model
         return $this->hasMany(SupportScore::class, 'report_id');
     }
 
+    public function supportActivityEntries(): HasMany
+    {
+        return $this->hasMany(SupportActivityEntry::class, 'report_id');
+    }
+
     public function evidenceAnswers()
     {
         return $this->hasMany(EvidenceAnswer::class, 'report_id');

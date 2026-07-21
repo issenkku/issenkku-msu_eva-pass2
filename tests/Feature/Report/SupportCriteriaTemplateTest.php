@@ -50,6 +50,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'target_value',
             'weight',
             'require_evidence',
+            'allow_activity_entries',
             'created_at',
             'updated_at',
         ]));
@@ -58,6 +59,27 @@ class SupportCriteriaTemplateTest extends TestCase
     public function test_activity_name_supports_rich_text_storage(): void
     {
         $this->assertSame('text', Schema::getColumnType('support_criterias', 'activity_name'));
+    }
+
+    public function test_support_criteria_disables_activity_entries_by_default(): void
+    {
+        $version = CriteriaVersion::factory()->create();
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => 'งานตามหน้าที่',
+            'indicator' => 'ส่งงานตรงเวลา',
+            'target_value' => 100,
+            'weight' => 20,
+        ]);
+
+        $this->assertFalse($criterion->fresh()->allow_activity_entries);
     }
 
     public function test_evaluation_list_owns_ordered_support_criteria_and_cascades_deletes(): void
