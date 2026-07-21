@@ -612,6 +612,102 @@ class EvaluateeTest extends TestCase
         $this->assertSame('Pending', $report->fresh()->status);
     }
 
+    public function test_evaluatee_can_save_and_submit_projects_grouped_by_indicator_item(): void
+    {
+        $this->supportCriterion->update([
+            'indicator' => null,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $first = $this->supportCriterion->indicatorItems()->create([
+            'sequence' => 1, 'code' => '2.1', 'description' => '<p>วิจัย</p>',
+        ]);
+        $second = $this->supportCriterion->indicatorItems()->create([
+            'sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่</p>',
+        ]);
+        $this->supportCriterion->indicatorItems()->create([
+            'sequence' => 3, 'code' => '2.3', 'description' => '<p>กลุ่มว่าง</p>',
+        ]);
+        $report = $this->createReportWithStatus('Assigned');
+        $draftPayload = $this->supportPayload('Draft', 100, [
+            ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ A</p>'],
+            ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ B</p>'],
+            ['support_indicator_item_id' => $second->id, 'content' => '<p>โครงการ C</p>'],
+        ]);
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $draftPayload)
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
+
+        $savedEntries = SupportActivityEntry::query()
+            ->where('report_id', $report->id)
+            ->orderBy('sequence')
+            ->get();
+        $submitPayload = $this->supportPayload('Pending', 100, $savedEntries
+            ->map(fn (SupportActivityEntry $entry) => [
+                'id' => $entry->id,
+                'support_indicator_item_id' => $entry->support_indicator_item_id,
+                'content' => $entry->content,
+            ])->all());
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $submitPayload)
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(
+            [$first->id, $first->id, $second->id],
+            SupportActivityEntry::query()
+                ->where('report_id', $report->id)
+                ->orderBy('sequence')
+                ->pluck('support_indicator_item_id')
+                ->all()
+        );
+        $this->assertSame('Pending', $report->fresh()->status);
+    }
+
+    public function test_grouped_project_rejects_missing_or_foreign_indicator_assignment(): void
+    {
+        $this->supportCriterion->update([
+            'indicator' => null,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $this->supportCriterion->indicatorItems()->create([
+            'sequence' => 1, 'code' => '2.1', 'description' => '<p>วิจัย</p>',
+        ]);
+        $otherCriterion = SupportCriteria::create([
+            'evaluation_list_id' => $this->supportCriterion->evaluation_list_id,
+            'sequence' => 2,
+            'activity_name' => '<p>เกณฑ์อื่น</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 10,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $foreign = $otherCriterion->indicatorItems()->create([
+            'sequence' => 1, 'code' => '9.1', 'description' => '<p>ต่างเกณฑ์</p>',
+        ]);
+        $report = $this->createReportWithStatus('Assigned');
+
+        foreach ([null, $foreign->id] as $indicatorItemId) {
+            $payload = $this->supportPayload('Draft', 100, [[
+                'support_indicator_item_id' => $indicatorItemId,
+                'content' => '<p>โครงการ</p>',
+            ]]);
+
+            $this->actingAs($this->evaluatee, 'web')
+                ->postJson(route('evaluation_score.store', ['id' => $report->id]), $payload)
+                ->assertUnprocessable()
+                ->assertJsonValidationErrors(
+                    "support_list.{$this->supportCriterion->id}.activity_entries.0.support_indicator_item_id"
+                );
+        }
+
+        $this->assertDatabaseMissing('support_activity_entries', ['report_id' => $report->id]);
+        $this->assertSame('Assigned', $report->fresh()->status);
+    }
+
     public function test_invalid_support_activity_rolls_back_the_evaluatee_submission(): void
     {
         $report = $this->createReportWithStatus('Assigned');

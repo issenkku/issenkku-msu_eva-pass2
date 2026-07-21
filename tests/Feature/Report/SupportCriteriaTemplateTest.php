@@ -5,6 +5,8 @@ namespace Tests\Feature\Report;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\Reports;
+use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
 use App\Models\User;
 use Database\Factories\DepartmentFactory;
@@ -387,6 +389,88 @@ class SupportCriteriaTemplateTest extends TestCase
         $this->assertDatabaseHas('support_criterias', [
             'id' => $criterion->id,
             'allow_activity_entries' => false,
+        ]);
+    }
+
+    public function test_admin_cannot_remove_or_disable_grouped_indicator_items_with_projects(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [
+                ['sequence' => 1, 'code' => '2.1', 'description' => '<p>ดำเนินการวิจัย</p>'],
+                ['sequence' => 2, 'code' => '2.2', 'description' => '<p>เผยแพร่งานวิจัย</p>'],
+            ],
+        ]]))->assertCreated();
+
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias.indicatorItems',
+        ])->findOrFail($created->json('data.id'));
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $criterion = $evaluationList->supportCriterias->first();
+        $first = $criterion->indicatorItems->first();
+        $second = $criterion->indicatorItems->last();
+        $report = Reports::factory()->create([
+            'report_data_id' => $version->reportDatas->first()->id,
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'support_indicator_item_id' => $first->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการที่อ้างข้อ 2.1</p>',
+        ]);
+
+        $payload = $this->payload([[
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'activity_name' => $criterion->activity_name,
+            'indicator' => null,
+            'target_value' => $criterion->target_value,
+            'weight' => $criterion->weight,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [[
+                'support_indicator_item_id' => $second->id,
+                'sequence' => 1,
+                'code' => $second->code,
+                'description' => $second->description,
+            ]],
+        ]]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertUnprocessable();
+
+        $disablePayload = $payload;
+        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0][
+            'group_activity_entries_by_indicator'
+        ] = false;
+        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0]['indicator'] =
+            '<p>เกณฑ์เดิม</p>';
+        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0]['indicator_items'] = [];
+
+        $this->putJson(route('report-structure.update', $version->id), $disablePayload)
+            ->assertUnprocessable();
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $criterion->id,
+            'group_activity_entries_by_indicator' => true,
+        ]);
+        $this->assertDatabaseHas('support_indicator_items', ['id' => $first->id]);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'support_indicator_item_id' => $first->id,
         ]);
     }
 

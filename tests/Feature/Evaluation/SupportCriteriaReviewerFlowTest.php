@@ -118,11 +118,21 @@ test('each reviewer role must explain a changed support activity and keeps its r
     string $actorProperty,
     string $commentField
 ) {
+    $this->criterion->update([
+        'indicator' => null,
+        'group_activity_entries_by_indicator' => true,
+    ]);
+    $indicatorItem = $this->criterion->indicatorItems()->create([
+        'sequence' => 1,
+        'code' => '2.1',
+        'description' => '<p>ดำเนินการวิจัย</p>',
+    ]);
     $report = createSupportReviewerReport($this, $initialStatus);
     $actor = $this->{$actorProperty};
     $entry = SupportActivityEntry::create([
         'report_id' => $report->id,
         'support_criteria_id' => $this->criterion->id,
+        'support_indicator_item_id' => $indicatorItem->id,
         'sequence' => 1,
         'content' => '<p>ข้อความเดิม</p>',
         'created_by' => $this->evaluatee->id,
@@ -132,6 +142,7 @@ test('each reviewer role must explain a changed support activity and keeps its r
     $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 80, null, $comment);
     $payload['support_list'][$this->criterion->id]['activity_entries'] = [[
         'id' => $entry->id,
+        'support_indicator_item_id' => $indicatorItem->id,
         'content' => '<p>ข้อความที่ผู้ประเมินแก้ไข</p>',
         'modification_reason' => null,
     ]];
@@ -163,6 +174,65 @@ test('each reviewer role must explain a changed support activity and keeps its r
         'modified_by_role' => $role,
     ]);
     $this->assertSame($comment, $report->fresh()->{$commentField});
+})->with('support reviewer roles');
+
+test('each reviewer role cannot move a grouped project to another indicator item', function (
+    string $role,
+    string $initialStatus,
+    string $draftStatus,
+    string $routeName,
+    string $actorProperty,
+    string $commentField
+) {
+    $this->criterion->update([
+        'indicator' => null,
+        'group_activity_entries_by_indicator' => true,
+    ]);
+    $first = $this->criterion->indicatorItems()->create([
+        'sequence' => 1, 'code' => '2.1', 'description' => '<p>หนึ่ง</p>',
+    ]);
+    $second = $this->criterion->indicatorItems()->create([
+        'sequence' => 2, 'code' => '2.2', 'description' => '<p>สอง</p>',
+    ]);
+    $report = createSupportReviewerReport($this, $initialStatus);
+    $entry = SupportActivityEntry::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $this->criterion->id,
+        'support_indicator_item_id' => $first->id,
+        'sequence' => 1,
+        'content' => '<p>โครงการเดิม</p>',
+        'created_by' => $this->evaluatee->id,
+        'updated_by' => $this->evaluatee->id,
+    ]);
+    $payload = supportReviewerPayload(
+        $this->criterion->id,
+        $draftStatus,
+        80,
+        null,
+        'ความคิดเห็นที่ต้อง rollback'
+    );
+    $payload['support_list'][$this->criterion->id]['activity_entries'] = [[
+        'id' => $entry->id,
+        'support_indicator_item_id' => $second->id,
+        'content' => '<p>โครงการเดิม</p>',
+    ]];
+
+    $this->actingAs($this->{$actorProperty}, 'web')
+        ->from('/review-support')
+        ->post(route($routeName, ['id' => $report->id]), $payload)
+        ->assertRedirect('/review-support')
+        ->assertSessionHasErrors([
+            "support_list.{$this->criterion->id}.activity_entries.0.support_indicator_item_id",
+        ]);
+
+    $this->assertDatabaseHas('support_activity_entries', [
+        'id' => $entry->id,
+        'support_indicator_item_id' => $first->id,
+        'content' => '<p>โครงการเดิม</p>',
+    ]);
+    $this->assertDatabaseCount('support_activity_entry_histories', 0);
+    $this->assertSame($initialStatus, $report->fresh()->status);
+    $this->assertNull($report->fresh()->{$commentField});
 })->with('support reviewer roles');
 
 test('saving an unchanged support score does not create history', function () {
