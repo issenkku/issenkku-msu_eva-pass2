@@ -14,6 +14,7 @@ class SupportActivityEntry extends Model
     protected $fillable = [
         'report_id',
         'support_criteria_id',
+        'support_indicator_item_id',
         'sequence',
         'content',
         'created_by',
@@ -28,6 +29,11 @@ class SupportActivityEntry extends Model
     public function supportCriteria(): BelongsTo
     {
         return $this->belongsTo(SupportCriteria::class);
+    }
+
+    public function indicatorItem(): BelongsTo
+    {
+        return $this->belongsTo(SupportIndicatorItem::class, 'support_indicator_item_id');
     }
 
     public function creator(): BelongsTo

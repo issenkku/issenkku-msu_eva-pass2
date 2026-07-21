@@ -20,6 +20,7 @@ class SupportCriteria extends Model
         'weight',
         'require_evidence',
         'allow_activity_entries',
+        'group_activity_entries_by_indicator',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class SupportCriteria extends Model
         'weight' => 'decimal:2',
         'require_evidence' => 'boolean',
         'allow_activity_entries' => 'boolean',
+        'group_activity_entries_by_indicator' => 'boolean',
     ];
 
     public function evaluationList(): BelongsTo
@@ -52,5 +54,10 @@ class SupportCriteria extends Model
     public function activityEntries(): HasMany
     {
         return $this->hasMany(SupportActivityEntry::class);
+    }
+
+    public function indicatorItems(): HasMany
+    {
+        return $this->hasMany(SupportIndicatorItem::class)->orderBy('sequence');
     }
 }

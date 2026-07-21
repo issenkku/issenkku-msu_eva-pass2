@@ -11,6 +11,7 @@ use App\Models\Reports;
 use App\Models\SupportActivityEntry;
 use App\Models\SupportActivityEntryHistory;
 use App\Models\SupportCriteria;
+use App\Models\SupportIndicatorItem;
 use App\Models\SupportScore;
 use App\Models\SupportScoreHistory;
 use App\Models\User;
@@ -85,6 +86,39 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertInstanceOf(SupportScore::class, (new Reports)->supportScores()->getModel());
         $this->assertInstanceOf(SupportActivityEntry::class, (new Reports)->supportActivityEntries()->getModel());
         $this->assertInstanceOf(SupportActivityEntryHistory::class, (new SupportActivityEntry)->histories()->getModel());
+    }
+
+    public function test_support_indicator_items_schema_and_relations_exist(): void
+    {
+        $this->assertTrue(Schema::hasColumn(
+            'support_criterias',
+            'group_activity_entries_by_indicator'
+        ));
+        $this->assertTrue(Schema::hasTable('support_indicator_items'));
+        $this->assertTrue(Schema::hasColumns('support_indicator_items', [
+            'id',
+            'support_criteria_id',
+            'sequence',
+            'code',
+            'description',
+        ]));
+        $this->assertTrue(Schema::hasColumn(
+            'support_activity_entries',
+            'support_indicator_item_id'
+        ));
+
+        $indicatorColumn = collect(Schema::getColumns('support_criterias'))
+            ->firstWhere('name', 'indicator');
+
+        $this->assertTrue((bool) $indicatorColumn['nullable']);
+        $this->assertInstanceOf(
+            SupportIndicatorItem::class,
+            (new SupportCriteria)->indicatorItems()->getModel()
+        );
+        $this->assertInstanceOf(
+            SupportIndicatorItem::class,
+            (new SupportActivityEntry)->indicatorItem()->getModel()
+        );
     }
 
     public function test_support_activity_entries_and_histories_cascade_with_their_report(): void
