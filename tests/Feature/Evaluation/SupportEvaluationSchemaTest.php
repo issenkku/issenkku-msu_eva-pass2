@@ -4,8 +4,8 @@ namespace Tests\Feature\Evaluation;
 
 use App\Models\Category;
 use App\Models\CriteriaVersion;
-use App\Models\EvidenceAnswer;
 use App\Models\EvaluationList;
+use App\Models\EvidenceAnswer;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\SupportActivityEntry;
@@ -42,6 +42,29 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('support_scores'));
         $this->assertTrue(Schema::hasTable('support_score_histories'));
         $this->assertTrue(Schema::hasColumn('reports', 'support_score_total'));
+    }
+
+    public function test_support_activity_migration_uses_mysql_safe_foreign_key_names(): void
+    {
+        $migration = file_get_contents(database_path(
+            'migrations/2026_07_21_000001_create_support_activity_entries.php'
+        ));
+
+        $this->assertStringContainsString("'support_activity_history_entry_fk'", $migration);
+        $this->assertLessThanOrEqual(64, strlen('support_activity_history_entry_fk'));
+    }
+
+    public function test_support_activity_migration_can_resume_after_a_partial_application(): void
+    {
+        $migration = require database_path(
+            'migrations/2026_07_21_000001_create_support_activity_entries.php'
+        );
+
+        $migration->up();
+
+        $this->assertTrue(Schema::hasColumn('support_criterias', 'allow_activity_entries'));
+        $this->assertTrue(Schema::hasTable('support_activity_entries'));
+        $this->assertTrue(Schema::hasTable('support_activity_entry_histories'));
     }
 
     public function test_support_evaluation_schema_and_relations_exist(): void
