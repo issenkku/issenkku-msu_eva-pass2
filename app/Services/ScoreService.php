@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\ReportScoreSummary;
 use Illuminate\Support\Facades\DB;
 
 class ScoreService
@@ -39,8 +40,13 @@ class ScoreService
 
             $quantityScore = (float) ($quantityScores[$reportId] ?? 0);
             $qualityScore = (float) ($qualityScores[$reportId] ?? 0);
+            $scores = ReportScoreSummary::fromTotals(
+                $quantityScore,
+                $qualityScore,
+                (float) ($report->support_score_total ?? 0),
+            );
 
-            $totalScore += ($quantityScore + $qualityScore);
+            $totalScore += $scores['total'];
             $reportCount++;
         }
 
@@ -79,7 +85,11 @@ class ScoreService
 
             $quantityScore = (float) ($quantityScores[$reportId] ?? 0);
             $qualityScore = (float) ($qualityScores[$reportId] ?? 0);
-            $totalScore = $quantityScore + $qualityScore;
+            $totalScore = ReportScoreSummary::fromTotals(
+                $quantityScore,
+                $qualityScore,
+                (float) ($report->support_score_total ?? 0),
+            )['total'];
 
             if ($totalScore > $highestScore) {
                 $highestScore = $totalScore;

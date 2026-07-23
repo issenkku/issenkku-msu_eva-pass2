@@ -402,3 +402,19 @@ test('highest score calculation uses bulk scores for completed reports only', fu
     expect($highestScore)->toBe(22.0)
         ->and($queryCount)->toBeLessThanOrEqual(4);
 });
+
+test('dashboard aggregate scores include capped support totals', function () {
+    $reportWithOverCapSupport = Reports::factory()->create([
+        'status' => 'Completed',
+        'support_score_total' => 112.5,
+    ]);
+    $reportWithSupport = Reports::factory()->create([
+        'status' => 'Completed',
+        'support_score_total' => 4.3,
+    ]);
+
+    $reports = [$reportWithOverCapSupport, $reportWithSupport];
+
+    expect(ScoreService::calculateAverageScore($reports))->toBe(52.15)
+        ->and(ScoreService::calculateHighestScore($reports))->toBe(100.0);
+});
