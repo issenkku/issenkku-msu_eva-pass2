@@ -9,9 +9,16 @@ class EvaluationScoreSummary
         $totalQuantityScore = 0.0;
         $totalQualityScore = 0.0;
         $totalSupportScore = 0.0;
+        $hasQuantity = false;
+        $hasQuality = false;
+        $hasSupport = false;
 
         foreach ($categoryItems as $category) {
             foreach ($category['evaluation_lists'] ?? [] as $evaluationList) {
+                $hasQuantity = $hasQuantity || ! empty($evaluationList['quantity_items']);
+                $hasQuality = $hasQuality || ! empty($evaluationList['quality_items']);
+                $hasSupport = $hasSupport || ! empty($evaluationList['support_items']);
+
                 foreach ($evaluationList['quantity_items'] ?? [] as $mainCriteria) {
                     foreach ($mainCriteria['sub_criterias'] ?? [] as $subCriteria) {
                         $totalQuantityScore += (float) ($subCriteria['score_d'] ?? 0);
@@ -68,6 +75,9 @@ class EvaluationScoreSummary
             'quality' => $totalQualityScore,
             'support' => $cappedSupportScore,
             'total' => $totalQuantityScore + $totalQualityScore + $cappedSupportScore,
+            'has_quantity' => $hasQuantity,
+            'has_quality' => $hasQuality,
+            'has_support' => $hasSupport,
         ];
     }
 }

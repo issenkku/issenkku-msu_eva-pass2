@@ -34,6 +34,29 @@ test('evaluation summary caps only the support component at one hundred', functi
         ->and($summary['total'])->toBe(100.0);
 });
 
+test('evaluation summary exposes criterion presence independently from zero scores', function () {
+    $summary = EvaluationScoreSummary::fromCategoryItems([[
+        'evaluation_lists' => [[
+            'quantity_items' => [[
+                'sub_criterias' => [['score_d' => 0]],
+            ]],
+            'quality_items' => [],
+            'support_items' => [[
+                'weighted_score' => null,
+            ]],
+            'sum_score' => 0,
+        ]],
+    ]]);
+
+    expect($summary)
+        ->toHaveKeys(['has_quantity', 'has_quality', 'has_support'])
+        ->and($summary['has_quantity'])->toBeTrue()
+        ->and($summary['has_quality'])->toBeFalse()
+        ->and($summary['has_support'])->toBeTrue()
+        ->and($summary['quantity'])->toBe(0.0)
+        ->and($summary['support'])->toBe(0.0);
+});
+
 test('bulk quality score calculation matches single report calculation', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
