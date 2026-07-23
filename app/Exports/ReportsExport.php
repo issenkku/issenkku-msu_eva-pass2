@@ -2,8 +2,9 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
 use App\Services\ScoreService;
+use App\Support\ReportScoreSummary;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -27,21 +28,27 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
 
     public function collection()
     {
-        return $this->query->get()->map(function ($assignment, $index) {
+        $assignments = $this->query
+            ->with([
+                'assignmentData.evaluatorUser',
+                'evaluateeUser.department',
+                'evaluateeUser.position',
+                'report',
+            ])
+            ->get();
+        $reportIds = $assignments->pluck('report_id')->filter()->unique()->values();
+        $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds($reportIds);
+        $qualityScores = ScoreService::calculateQualityScoresRawByReportIds($reportIds);
+
+        return $assignments->map(function ($assignment, $index) use ($quantityScores, $qualityScores) {
             $report = $assignment->report;
 
-            // 1️⃣ Evaluator names
-            $evaluators = $assignment->getEvaluatorUsers();
-            $evaluatorNames = $evaluators->pluck('name')->implode(', ');
-
-            // 2️⃣ Quantity score
-            $quantityScore = $report?->quantityScores?->sum('score_D') ?? 0;
-
-            // 3️⃣ Quality score (raw sum with caps)
-            $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
-
-            // 4️⃣ Total score
-            $totalScore = $quantityScore + $qualityScore;
+            $evaluatorNames = $assignment->assignmentData?->evaluatorUser?->name ?? '';
+            $scores = ReportScoreSummary::fromTotals(
+                (float) ($quantityScores[$report?->id] ?? 0),
+                (float) ($qualityScores[$report?->id] ?? 0),
+                (float) ($report?->support_score_total ?? 0),
+            );
 
             $start = optional($assignment->assignmentData)->start_time;
             $end = optional($assignment->assignmentData)->end_time;
@@ -70,10 +77,15 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
                 $assignment->evaluateeUser?->department?->department_name,
                 $assignment->evaluateeUser?->personnel_type,
                 $assignment->evaluateeUser?->position?->name,
-                $totalScore,
-                $quantityScore,
-                $qualityScore,
+                $scores['total'],
+                $scores['quantity'],
+                $scores['quality'],
+                $scores['support_raw'],
+                $scores['support_achievement'],
                 $report?->comment,
+                $report?->evaluator_comment,
+                $report?->director_comment,
+                $report?->manager_comment,
                 $evaluatorNames,
                 $report?->created_at,
                 $report?->updated_at,
@@ -93,7 +105,12 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             'คะแนนรวม',
             'คะแนนด้านปริมาณ',
             'คะแนนด้านคุณภาพ',
+            'ผลรวมคะแนนถ่วงน้ำหนักสายสนับสนุน',
+            'คะแนนผลสัมฤทธิ์ของงาน',
             'ข้อเสนอแนะ',
+            'ความเห็นผู้ประเมิน',
+            'ความเห็นกรรมการ',
+            'ความเห็นผู้บริหาร',
             'ชื่อผู้ประเมิน',
             'สร้างเมื่อ',
             'แก้ไขเมื่อ',
@@ -127,9 +144,14 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             'H' => 16,
             'I' => 16,
             'J' => 30,
-            'K' => 25,
-            'L' => 20,
-            'M' => 20,
+            'K' => 20,
+            'L' => 30,
+            'M' => 30,
+            'N' => 30,
+            'O' => 30,
+            'P' => 25,
+            'Q' => 20,
+            'R' => 20,
         ];
     }
 
@@ -139,11 +161,10 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Apply font to A1:M100 range
-                $sheet->getStyle('A1:M100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                // Apply font to A1:R100 range
+                $sheet->getStyle('A1:R100')->getFont()->setName('TH Sarabun New')->setSize(14);
             },
         ];
     }
 }
-
 
