@@ -18,6 +18,7 @@ test('score summary shows only categories that have criteria', function () {
     expect($html)
         ->not->toContain('id="quantity-summary"')
         ->not->toContain('id="quality-summary"')
+        ->toContain('data-testid="support-score-pair"')
         ->toContain('id="support-summary"')
         ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก')
         ->toContain('id="support-achievement-summary"')

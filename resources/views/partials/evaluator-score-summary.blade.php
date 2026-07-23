@@ -21,12 +21,12 @@
             </div>
         @endif
         @if ($scoreSummary['has_support'] ?? false)
-            <div class="flex items-center justify-between">
-                <span class="text-base">ผลรวมคะแนนถ่วงน้ำหนัก</span>
-                <span id="support-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['support'] ?? 0, 2) }}</span>
-            </div>
-            <div class="rounded-xl border border-blue-200 bg-white p-4 shadow-inner">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div data-testid="support-score-pair" class="overflow-hidden rounded-xl border border-blue-200 bg-white shadow-inner">
+                <div class="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <span class="text-base font-semibold text-blue-800">ผลรวมคะแนนถ่วงน้ำหนัก</span>
+                    <span id="support-summary" class="text-xl font-bold text-blue-900">{{ number_format($scoreSummary['support'] ?? 0, 2) }}</span>
+                </div>
+                <div class="flex flex-col gap-2 border-t border-blue-100 bg-blue-50/40 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="text-base font-semibold text-blue-800">คะแนนผลสัมฤทธิ์ของงาน</div>
                         <div class="text-sm text-blue-600">ผลรวมคะแนนถ่วงน้ำหนัก ÷ จำนวนระดับค่าเป้าหมาย: {{ $scoreSummary['support_target_level_count'] }}</div>
