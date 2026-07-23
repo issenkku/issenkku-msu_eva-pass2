@@ -68,15 +68,15 @@ class EvaluationScoreSummary
             $totalQualityScore = $maxQualityScore;
         }
 
-        $cappedSupportScore = min($totalSupportScore, 100.0);
+        $scores = ReportScoreSummary::fromTotals(
+            $totalQuantityScore,
+            $totalQualityScore,
+            $totalSupportScore,
+        );
 
         return [
-            'quantity' => $totalQuantityScore,
-            'quality' => $totalQualityScore,
-            'support' => $cappedSupportScore,
-            'support_achievement' => SupportAchievementScore::calculate($cappedSupportScore),
+            ...$scores,
             'support_target_level_count' => SupportAchievementScore::TARGET_LEVEL_COUNT,
-            'total' => $totalQuantityScore + $totalQualityScore + $cappedSupportScore,
             'has_quantity' => $hasQuantity,
             'has_quality' => $hasQuality,
             'has_support' => $hasSupport,

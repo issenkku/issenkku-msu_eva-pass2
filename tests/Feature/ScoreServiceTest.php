@@ -30,7 +30,9 @@ test('evaluation summary caps only the support component at one hundred', functi
         ]],
     ]]);
 
-    expect($summary['support'])->toBe(100.0)
+    expect($summary['support_raw'])->toBe(112.5)
+        ->and($summary['support'])->toBe(100.0)
+        ->and($summary['support_achievement'])->toBe(22.5)
         ->and($summary['total'])->toBe(100.0);
 });
 
