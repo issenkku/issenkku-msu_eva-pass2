@@ -17,16 +17,18 @@
 
         <div class="mb-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-left sm:mb-4 sm:px-4 sm:py-4">
             @php
+                $hasSupportScore = $scoreSummary['has_support'] ?? false;
                 $visibleScoreCardCount = 1
                     + (int) ($scoreSummary['has_quantity'] ?? false)
                     + (int) ($scoreSummary['has_quality'] ?? false)
-                    + (int) ($scoreSummary['has_support'] ?? false);
+                    + (2 * (int) $hasSupportScore);
 
                 $scoreCardGridClass = match ($visibleScoreCardCount) {
                     1 => 'sm:grid-cols-1',
                     2 => 'sm:grid-cols-2',
                     3 => 'sm:grid-cols-3',
-                    default => 'sm:grid-cols-4',
+                    4 => 'sm:grid-cols-4',
+                    default => 'sm:grid-cols-2 lg:grid-cols-5',
                 };
             @endphp
             <div class="mb-3 grid grid-cols-1 gap-2 sm:gap-3 {{ $scoreCardGridClass }}">
@@ -42,10 +44,15 @@
                         <div id="modal-quality-summary" class="mt-1 text-lg font-bold text-purple-900 sm:text-xl">0.00</div>
                     </div>
                 @endif
-                @if ($scoreSummary['has_support'] ?? false)
+                @if ($hasSupportScore)
                     <div class="rounded-lg border border-amber-100 bg-white p-3">
                         <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
                         <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
+                    </div>
+                    <div class="rounded-lg border border-amber-100 bg-amber-50/50 p-3">
+                        <div class="text-sm text-gray-500">คะแนนผลสัมฤทธิ์ของงาน</div>
+                        <div class="mt-1 text-xs text-amber-700">ผลรวมคะแนนถ่วงน้ำหนัก ÷ จำนวนระดับค่าเป้าหมาย: 5</div>
+                        <div id="modal-support-achievement-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
                     </div>
                 @endif
                 <div class="rounded-lg border border-emerald-100 bg-white p-3">

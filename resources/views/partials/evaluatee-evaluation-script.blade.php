@@ -128,14 +128,17 @@
         function updateSubmissionSummary() {
             const quantitySummary = parseFloat(document.getElementById('quantity-summary')?.textContent || '0') || 0;
             const qualitySummary = parseFloat(document.getElementById('quality-summary')?.textContent || '0') || 0;
+            const supportAchievementSummary = parseFloat(document.getElementById('support-achievement-summary')?.textContent || '0') || 0;
             const totalSummary = parseFloat(document.getElementById('total-summary')?.textContent || '0') || 0;
 
             const modalQuantity = document.getElementById('modal-quantity-summary');
             const modalQuality = document.getElementById('modal-quality-summary');
+            const modalSupportAchievement = document.getElementById('modal-support-achievement-summary');
             const modalTotal = document.getElementById('modal-total-summary');
 
             if (modalQuantity) modalQuantity.textContent = quantitySummary.toFixed(2);
             if (modalQuality) modalQuality.textContent = qualitySummary.toFixed(2);
+            if (modalSupportAchievement) modalSupportAchievement.textContent = supportAchievementSummary.toFixed(2);
             if (modalTotal) modalTotal.textContent = totalSummary.toFixed(2);
 
             document.querySelectorAll('[data-summary-quantity-row]').forEach(row => {
