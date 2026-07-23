@@ -4,7 +4,7 @@
         @include('user.management.partials.index-table-head')
         <tbody>
             @forelse ($users as $index => $user)
-                <x-user-table :index="$index + 1" :employee="[
+                <x-user-table :index="$users->firstItem() + $index" :employee="[
                     'id' => $user['id'],
                     'prefix' => $user['prefix'],
                     'name' => $user['name'],

@@ -1,6 +1,18 @@
 <?php
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\ViewErrorBag;
+
+function userManagementTestPaginator(array $users): LengthAwarePaginator
+{
+    return new LengthAwarePaginator(
+        collect($users),
+        count($users),
+        10,
+        1,
+        ['path' => '/users'],
+    );
+}
 
 test('user management modal renders data-hook based shell controls', function () {
     $html = view('user.management.user-form-modal', [
@@ -47,7 +59,7 @@ test('user table actions render data-hook based triggers', function () {
 
 test('user management table renders users without job level id', function () {
     $html = view('user.management.partials.index-table', [
-        'users' => collect([
+        'users' => userManagementTestPaginator([
             [
                 'id' => 12,
                 'prefix' => 'Dr.',
@@ -75,7 +87,7 @@ test('user management table renders users without job level id', function () {
 
 test('user management table renders bulk delete selection hooks', function () {
     $html = view('user.management.partials.index-table', [
-        'users' => collect([
+        'users' => userManagementTestPaginator([
             [
                 'id' => 12,
                 'prefix' => 'Dr.',
