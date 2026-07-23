@@ -38,8 +38,15 @@ class DashboardController extends Controller
     public function index(Request $request, AdminDashboardQuery $dashboardQuery)
     {
         $viewData = $dashboardQuery->handle($request)->toViewData();
+        $fragment = $request->header('X-Dashboard-Fragment');
 
-        if ($request->header('X-Dashboard-Fragment') === 'evaluation-list') {
+        if ($fragment === 'dashboard-results') {
+            return response()
+                ->view('dashboard.partials.index-results', $viewData)
+                ->header('X-Dashboard-Fragment', 'dashboard-results');
+        }
+
+        if ($fragment === 'evaluation-list') {
             return response()
                 ->view('dashboard.partials.index-evaluation-list', $viewData)
                 ->header('X-Dashboard-Fragment', 'evaluation-list');

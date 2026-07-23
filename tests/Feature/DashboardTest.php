@@ -128,6 +128,33 @@ test('dashboard can return only the evaluation list fragment', function () {
         ->assertDontSee('<html', false);
 });
 
+test('dashboard can return all filter dependent results as a fragment', function () {
+    [$admin] = createDashboardScenario(['Assigned', 'Draft']);
+
+    $response = $this->actingAs($admin)
+        ->withHeader('X-Dashboard-Fragment', 'dashboard-results')
+        ->get('/dashboard');
+
+    $response->assertOk()
+        ->assertHeader('X-Dashboard-Fragment', 'dashboard-results')
+        ->assertSee('data-dashboard-results', false)
+        ->assertSee('id="overallCompletionChart"', false)
+        ->assertSee('id="evaluation-list"', false)
+        ->assertDontSee('id="filterForm"', false)
+        ->assertDontSee('<html', false);
+});
+
+test('dashboard full page includes one replaceable results region', function () {
+    [$admin] = createDashboardScenario(['Assigned']);
+
+    $response = $this->actingAs($admin)->get('/dashboard');
+
+    $response->assertOk()
+        ->assertSee('data-dashboard-results', false)
+        ->assertSee('data-overview-chart-config', false)
+        ->assertSee('data-dashboard-results-error', false);
+});
+
 test('dashboard filtered pagination preserves status and search parameters', function () {
     [$admin] = createDashboardScenario(array_fill(0, 12, 'Draft'));
 
