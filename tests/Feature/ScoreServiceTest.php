@@ -57,6 +57,21 @@ test('evaluation summary exposes criterion presence independently from zero scor
         ->and($summary['support'])->toBe(0.0);
 });
 
+test('evaluation summary derives support achievement without changing the overall total', function () {
+    $summary = EvaluationScoreSummary::fromCategoryItems([[
+        'evaluation_lists' => [[
+            'quantity_items' => [],
+            'quality_items' => [],
+            'support_items' => [['weighted_score' => 4.30]],
+        ]],
+    ]]);
+
+    expect($summary['support'])->toBe(4.3)
+        ->and($summary['support_achievement'])->toBe(0.86)
+        ->and($summary['support_target_level_count'])->toBe(5)
+        ->and($summary['total'])->toBe(4.3);
+});
+
 test('bulk quality score calculation matches single report calculation', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([

@@ -5,11 +5,13 @@ test('score summary shows only categories that have criteria', function () {
         'scoreSummary' => [
             'quantity' => 0.0,
             'quality' => 0.0,
-            'support' => 1.0,
-            'total' => 1.0,
+            'support' => 4.3,
+            'total' => 4.3,
             'has_quantity' => false,
             'has_quality' => false,
             'has_support' => true,
+            'support_achievement' => 0.86,
+            'support_target_level_count' => 5,
         ],
     ])->render();
 
@@ -17,7 +19,11 @@ test('score summary shows only categories that have criteria', function () {
         ->not->toContain('id="quantity-summary"')
         ->not->toContain('id="quality-summary"')
         ->toContain('id="support-summary"')
-        ->toContain('>1.00</span>')
+        ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก')
+        ->toContain('id="support-achievement-summary"')
+        ->toContain('data-support-target-level-count="5"')
+        ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก ÷ 5')
+        ->toContain('>4.30</span>')
         ->toContain('id="total-summary"');
 });
 
@@ -39,6 +45,7 @@ test('score summary keeps a zero score visible when its category has criteria', 
         ->toContain('>0.00</span>')
         ->not->toContain('id="quality-summary"')
         ->not->toContain('id="support-summary"')
+        ->not->toContain('id="support-achievement-summary"')
         ->toContain('id="total-summary"');
 });
 
