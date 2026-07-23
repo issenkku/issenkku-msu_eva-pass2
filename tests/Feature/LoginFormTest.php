@@ -15,7 +15,7 @@ test('login form renders a data-hook based password toggle', function () {
 
     expect($html)
         ->toContain('method="POST"')
-        ->toContain('action="' . route('login') . '"')
+        ->toContain('action="'.route('login').'"')
         ->toContain('data-password-toggle')
         ->toContain('aria-pressed="false"')
         ->not->toContain('onclick="togglePassword()"');
