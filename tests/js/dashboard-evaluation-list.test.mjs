@@ -19,7 +19,9 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
     const fetchUrls = [];
     const pushedUrls = [];
     let currentList;
+    let currentResults;
     let replacements = 0;
+    let resultReplacements = 0;
 
     const addListener = (store, type, listener, options = {}) => {
         const listeners = store.get(type) ?? [];
@@ -61,6 +63,19 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
 
     currentList = createList();
 
+    const createResults = () => ({
+        setAttribute() {},
+        querySelector() {
+            return null;
+        },
+        replaceWith(nextResults) {
+            currentResults = nextResults;
+            resultReplacements += 1;
+        },
+    });
+
+    currentResults = createResults();
+
     const heading = {
         focus() {
             sandbox.window.scrollY = 0;
@@ -74,6 +89,9 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
             ['year', '2026'],
             ['page', page],
         ],
+        matches(selector) {
+            return selector === '[data-auto-search-form]';
+        },
         querySelector(selector) {
             return selector === '[data-auto-search-input]' ? input : null;
         },
@@ -103,7 +121,7 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
         return {
             target: {
                 closest(selector) {
-                    if (target === form && selector === '[data-evaluation-list] [data-auto-search-form]') {
+                    if (target === form && selector === '[data-evaluation-list] form') {
                         return form;
                     }
                     if (target === clearButton) {
@@ -135,7 +153,13 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
             addListener(documentListeners, type, listener, options);
         },
         querySelector(selector) {
-            return selector === '[data-evaluation-list]' ? currentList : null;
+            if (selector === '[data-evaluation-list]') {
+                return currentList;
+            }
+            if (selector === '[data-dashboard-results]') {
+                return currentResults;
+            }
+            return null;
         },
         querySelectorAll() {
             return [];
@@ -149,7 +173,13 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
                     this.value = value;
                 },
                 querySelector(selector) {
-                    return selector === '[data-evaluation-list]' ? createList() : null;
+                    if (selector === '[data-evaluation-list]' && this.value.includes('data-evaluation-list')) {
+                        return createList();
+                    }
+                    if (selector === '[data-dashboard-results]' && this.value.includes('data-dashboard-results')) {
+                        return createResults();
+                    }
+                    return null;
                 },
             };
         },
@@ -184,17 +214,20 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
         URLSearchParams,
         console,
         document,
-        fetch: async (url) => {
+        fetch: async (url, options = {}) => {
             fetchUrls.push(String(url));
+            const fragment = options.headers?.['X-Dashboard-Fragment'] ?? 'evaluation-list';
             return {
                 ok: true,
                 headers: {
                     get(name) {
-                        return name === 'X-Dashboard-Fragment' ? 'evaluation-list' : null;
+                        return name === 'X-Dashboard-Fragment' ? fragment : null;
                     },
                 },
                 async text() {
-                    return '<section data-evaluation-list></section>';
+                    return fragment === 'dashboard-results'
+                        ? '<div data-dashboard-results></div>'
+                        : '<section data-evaluation-list></section>';
                 },
             };
         },
@@ -216,6 +249,9 @@ function createHarness({ search, page = '3', scrollY = 480 }) {
         form,
         get replacements() {
             return replacements;
+        },
+        get resultReplacements() {
+            return resultReplacements;
         },
         pushedUrls,
         window,
@@ -259,12 +295,13 @@ test('clear removes search and page without document navigation or scrolling', a
     assert.equal(harness.pushedUrls[0], harness.fetchUrls[0]);
 });
 
-test('Back and Forward restore the fragment without adding history', async () => {
+test('Back and Forward restore all dashboard results without adding history', async () => {
     const harness = createHarness({ search: 'Alice', page: '1' });
 
     await harness.dispatchWindow('popstate', {});
 
-    assert.equal(harness.replacements, 1);
+    assert.equal(harness.replacements, 0);
+    assert.equal(harness.resultReplacements, 1);
     assert.equal(harness.fetchUrls[0], harness.window.location.href);
     assert.deepEqual(harness.pushedUrls, []);
 });
