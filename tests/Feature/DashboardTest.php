@@ -95,6 +95,7 @@ test('dashboard table rows expose searchable report metadata and filter hooks', 
         ->assertSee("window.addEventListener('popstate'", false)
         ->assertDontSee('row.style.display', false)
         ->assertDontSee('clearStatusQuery', false)
+        ->assertSee('ค้นหารายการทั้งหมด: ชื่อ, ชื่องาน, ผู้ประเมิน...', false)
         ->assertSee('Annual Performance Plan', false);
 });
 
