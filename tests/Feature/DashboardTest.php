@@ -155,6 +155,22 @@ test('dashboard full page includes one replaceable results region', function () 
         ->assertSee('data-dashboard-results-error', false);
 });
 
+test('dashboard filter renders primary action before reset and stable state hooks', function () {
+    [$admin] = createDashboardScenario(['Assigned']);
+
+    $html = $this->actingAs($admin)->get('/dashboard')->getContent();
+
+    expect($html)
+        ->toContain('data-dashboard-filter-submit')
+        ->toContain('data-reset-filters')
+        ->toContain('data-dashboard-filter-summary')
+        ->toContain('data-dashboard-filter-badge')
+        ->toContain('data-dashboard-filter-indicator');
+
+    expect(strpos($html, 'data-dashboard-filter-submit'))
+        ->toBeLessThan(strpos($html, 'data-reset-filters'));
+});
+
 test('dashboard filtered pagination preserves status and search parameters', function () {
     [$admin] = createDashboardScenario(array_fill(0, 12, 'Draft'));
 

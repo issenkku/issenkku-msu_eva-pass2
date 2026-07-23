@@ -6,10 +6,10 @@
     </div>
 
     <div class="mb-6">
-        @if ($hasDashboardFilters)
-            <span class="ml-4 inline-flex rounded border bg-gray-100 px-2 py-1 text-sm text-black">
-                มีการกรองข้อมูล
-            </span>
-        @endif
+        <span
+            data-dashboard-filter-indicator
+            class="{{ $hasDashboardFilters ? 'inline-flex' : 'hidden' }} ml-4 rounded border bg-gray-100 px-2 py-1 text-sm text-black">
+            มีการกรองข้อมูล
+        </span>
     </div>
 </div>
