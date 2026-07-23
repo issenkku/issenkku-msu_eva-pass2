@@ -23,7 +23,7 @@ test('user management modal renders data-hook based shell controls', function ()
             (object) ['name' => 'admin'],
             (object) ['name' => 'user'],
         ]),
-        'errors' => new ViewErrorBag(),
+        'errors' => new ViewErrorBag,
     ])->render();
 
     expect($html)
@@ -119,7 +119,7 @@ test('user management bulk delete modal renders form hooks', function () {
 
     expect($html)
         ->toContain('id="bulkDeleteUsersModal"')
-        ->toContain('action="' . route('users.bulk-destroy') . '"')
+        ->toContain('action="'.route('users.bulk-destroy').'"')
         ->toContain('data-user-bulk-delete-form')
         ->toContain('data-user-bulk-delete-selected-count')
         ->toContain('data-user-bulk-delete-selected-inputs');
