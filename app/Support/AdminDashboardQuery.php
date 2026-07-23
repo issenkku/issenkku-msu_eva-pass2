@@ -31,6 +31,13 @@ class AdminDashboardQuery
 
         $allReportsData = $this->evaluationService->getAllReportsWithAssignments();
         $evaluations = $this->evaluationService->mapAssignments($allReportsData);
+        $availableYears = $evaluations
+            ->pluck('assignmentData.start_time')
+            ->filter()
+            ->map(fn ($date) => Carbon::parse($date)->year)
+            ->unique()
+            ->sortDesc()
+            ->values();
         $evaluations = $this->evaluationService->filterEvaluations($evaluations, $filters);
         $evaluations = $this->evaluationService->sortEvaluations($evaluations);
 
@@ -157,7 +164,7 @@ class AdminDashboardQuery
             'positions' => $positions,
             'reports' => $reportsWithScores,
             'evaluationPeriod' => $this->getEvaluationPeriod($startDate, $endDate),
-            'years' => $evaluations->pluck('assignmentData.start_time')->map(fn ($d) => Carbon::parse($d)->year)->unique()->sortDesc(),
+            'years' => $availableYears,
         ]);
     }
 

@@ -17,6 +17,7 @@ function createDashboardAssignments(
     int $count,
     string $status,
     string $titlePrefix = 'Plan',
+    ?string $startTime = null,
 ): void {
     foreach (range(1, $count) as $index) {
         $evaluatee = User::factory()->create();
@@ -27,7 +28,9 @@ function createDashboardAssignments(
             'report_data_id' => $reportData->id,
             'status' => $status,
         ]);
-        $assignmentData = AssignmentData::factory()->create();
+        $assignmentData = AssignmentData::factory()->create(
+            $startTime ? ['start_time' => $startTime] : []
+        );
 
         Assignments::factory()->create([
             'assignment_data_id' => $assignmentData->id,
@@ -171,4 +174,16 @@ test('admin dashboard falls back to all for an unknown status', function () {
 
     expect($data['activeStatus'])->toBe('all')
         ->and($data['evaluations']->total())->toBe(2);
+});
+
+test('admin dashboard keeps every available year after selecting one year', function () {
+    createDashboardAssignments(1, 'Assigned', 'Previous year', '2026-01-01');
+    createDashboardAssignments(1, 'Assigned', 'Next year', '2027-01-01');
+
+    $data = app(AdminDashboardQuery::class)
+        ->handle(Request::create('/dashboard', 'GET', ['year' => 2026]))
+        ->toViewData();
+
+    expect($data['evaluations']->total())->toBe(1)
+        ->and($data['years']->values()->all())->toBe([2027, 2026]);
 });
