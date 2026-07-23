@@ -143,4 +143,9 @@ class AdminDashboardStatusSummary
             ) === $group)
             ->count();
     }
+
+    private function notStartedStatuses(): array
+    {
+        return ['Assigned', 'Manager_assign'];
+    }
 }

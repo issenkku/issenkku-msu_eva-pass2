@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\Assignments;
+use App\Models\AssignmentData;
+use App\Models\ReportData;
+use App\Models\Reports;
+use App\Models\User;
 use App\Support\AdminDashboardQuery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -7,6 +12,30 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+function createDashboardAssignments(
+    int $count,
+    string $status,
+    string $titlePrefix = 'Plan',
+): void {
+    foreach (range(1, $count) as $index) {
+        $evaluatee = User::factory()->create();
+        $reportData = ReportData::factory()->create([
+            'report_title' => "{$titlePrefix} {$index}",
+        ]);
+        $report = Reports::factory()->create([
+            'report_data_id' => $reportData->id,
+            'status' => $status,
+        ]);
+        $assignmentData = AssignmentData::factory()->create();
+
+        Assignments::factory()->create([
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]);
+    }
+}
 
 test('admin dashboard query returns the existing dashboard view data contract', function () {
     $query = app(AdminDashboardQuery::class);
@@ -111,4 +140,35 @@ test('admin dashboard query stays within the empty dashboard query budget', func
     }
 
     expect($queryCount)->toBeLessThanOrEqual(8);
+});
+
+test('admin dashboard applies status before pagination', function () {
+    createDashboardAssignments(11, 'Assigned');
+    createDashboardAssignments(2, 'Draft');
+
+    $data = app(AdminDashboardQuery::class)
+        ->handle(Request::create('/dashboard', 'GET', [
+            'status' => 'เริ่มกรอกข้อมูล',
+            'page' => 1,
+        ]))
+        ->toViewData();
+
+    expect($data['statusCounts']['ทั้งหมด'])->toBe(13)
+        ->and($data['statusCounts']['มอบหมาย'])->toBe(11)
+        ->and($data['statusCounts']['เริ่มกรอกข้อมูล'])->toBe(2)
+        ->and($data['activeStatus'])->toBe('เริ่มกรอกข้อมูล')
+        ->and($data['evaluations']->total())->toBe(2)
+        ->and($data['evaluations'])->toHaveCount(2)
+        ->and($data['evaluations']->lastPage())->toBe(1);
+});
+
+test('admin dashboard falls back to all for an unknown status', function () {
+    createDashboardAssignments(2, 'Assigned');
+
+    $data = app(AdminDashboardQuery::class)
+        ->handle(Request::create('/dashboard', 'GET', ['status' => 'invalid']))
+        ->toViewData();
+
+    expect($data['activeStatus'])->toBe('all')
+        ->and($data['evaluations']->total())->toBe(2);
 });

@@ -34,7 +34,9 @@ class AdminDashboardQuery
         $evaluations = $this->evaluationService->filterEvaluations($evaluations, $filters);
         $evaluations = $this->evaluationService->sortEvaluations($evaluations);
 
+        $activeStatus = $this->statusSummary->normalizeGroup($request->input('status'));
         $statusCounts = $this->statusSummary->statusCounts($evaluations);
+        $listEvaluations = $this->statusSummary->filterByGroup($evaluations, $activeStatus);
 
         $totalEvaluations = $evaluations->count();
         $notStartedCount = $this->statusSummary->notStartedStatusesCount($evaluations);
@@ -113,11 +115,11 @@ class AdminDashboardQuery
             ->take(5)
             ->values();
 
-        $page = $request->input('page', 1);
+        $page = max((int) $request->input('page', 1), 1);
         $perPage = 10;
         $paginatedEvaluations = new LengthAwarePaginator(
-            $evaluations->forPage($page, $perPage),
-            $evaluations->count(),
+            $listEvaluations->forPage($page, $perPage)->values(),
+            $listEvaluations->count(),
             $perPage,
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
@@ -126,6 +128,7 @@ class AdminDashboardQuery
         return new AdminDashboardData([
             'averageScore' => $averageScore,
             'statusCounts' => $statusCounts,
+            'activeStatus' => $activeStatus,
             'evaluations' => $paginatedEvaluations,
             'scatterData' => $scatterData,
             'chartData' => $chartData,
