@@ -5,6 +5,9 @@ namespace App\Exports;
 use Carbon\Carbon;
 use App\Models\QualityScore;
 use App\Services\ScoreService;
+use App\Support\ReportScoreSummary;
+use App\Support\SafeHtml;
+use App\Support\SupportCriteriaReadModel;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -30,10 +33,12 @@ class SingleReportExport implements WithMultipleSheets
 
     public function sheets(): array
     {
-        $sheets = [];
+        $hasSupport = collect($this->categoryItems)
+            ->flatMap(fn ($category) => $category['evaluation_lists'] ?? [])
+            ->contains(fn ($list) => ! empty($list['support_items']));
 
         // First sheet - Summary
-        $sheets[] = new SummarySheet($this->assignment);
+        $sheets = [new SummarySheet($this->assignment, $hasSupport)];
 
         // Category sheets
         foreach ($this->categoryItems as $category) {
@@ -54,6 +59,7 @@ class SingleReportExport implements WithMultipleSheets
         $qualityScores = QualityScore::where('report_id', $report->id)
             ->get()
             ->keyBy('quality_sub_criteria_id');
+        $supportItemsByList = app(SupportCriteriaReadModel::class)->forReport($report);
 
         $categories = $report->reportData->criteriaVersion->categories()
             ->with(['evaluationLists' => function ($query) {
@@ -85,6 +91,7 @@ class SingleReportExport implements WithMultipleSheets
                     'sequence' => $list->sequence,
                     'quantity_items' => [],
                     'quality_items' => [],
+                    'support_items' => $supportItemsByList[$list->id] ?? [],
                 ];
 
                 // Process quantity items
@@ -167,9 +174,12 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
 {
     protected $assignment;
 
-    public function __construct($assignment)
+    protected bool $hasSupport;
+
+    public function __construct($assignment, bool $hasSupport = false)
     {
         $this->assignment = $assignment;
+        $this->hasSupport = $hasSupport;
     }
 
     public function title(): string
@@ -181,11 +191,13 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
     {
         $report = $this->assignment->report;
 
-        // Calculate scores (same as your original logic)
         $quantityScore = $report?->quantityScores?->sum('score_D') ?? 0;
-
         $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
-        $totalScore = $quantityScore + $qualityScore;
+        $scores = ReportScoreSummary::fromTotals(
+            (float) $quantityScore,
+            (float) $qualityScore,
+            (float) ($report?->support_score_total ?? 0),
+        );
 
         // Format dates
         $start = optional($this->assignment->assignmentData)->start_time;
@@ -209,16 +221,28 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
         $evaluators = $this->assignment->getEvaluatorUsers();
         $evaluatorNames = $evaluators->pluck('name')->implode(', ');
 
-        return [
+        $rows = [
             ['รอบประเมิน', $evaluationRound],
             ['ชื่อ-สกุล', $this->assignment->evaluateeUser?->name],
             ['แผนก', $this->assignment->evaluateeUser?->department?->department_name],
             ['กลุ่มงาน', $this->assignment->evaluateeUser?->personnel_type],
             ['ตำแหน่ง', $this->assignment->evaluateeUser?->position?->name],
-            ['คะแนนรวม', $totalScore],
-            ['คะแนนด้านปริมาณ', $quantityScore],
-            ['คะแนนด้านคุณภาพ', $qualityScore],
+            ['คะแนนรวม', $scores['total']],
+            ['คะแนนด้านปริมาณ', $scores['quantity']],
+            ['คะแนนด้านคุณภาพ', $scores['quality']],
+        ];
+
+        if ($this->hasSupport) {
+            $rows[] = ['ผลรวมคะแนนถ่วงน้ำหนักสายสนับสนุน', $scores['support_raw']];
+            $rows[] = ['คะแนนผลสัมฤทธิ์ของงาน', $scores['support_achievement']];
+        }
+
+        return [
+            ...$rows,
             ['ข้อเสนอแนะ', $report?->comment],
+            ['ความเห็นผู้ประเมิน', $report?->evaluator_comment],
+            ['ความเห็นกรรมการ', $report?->director_comment],
+            ['ความเห็นผู้บริหาร', $report?->manager_comment],
             ['ชื่อผู้ประเมิน', $evaluatorNames],
             ['ตำแหน่งผู้ประเมิน', $this->assignment->assignmentData?->evaluatorPosition?->name ?? '-'],
         ];
@@ -226,7 +250,7 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:A11')->applyFromArray([
+        $sheet->getStyle('A:A')->applyFromArray([
             'font' => ['bold' => true],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
@@ -234,7 +258,7 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
             ],
         ]);
 
-        $sheet->getStyle('B1:B11')->applyFromArray([
+        $sheet->getStyle('B:B')->applyFromArray([
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT],
         ]);
 
@@ -307,6 +331,9 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 $qualityListScore = $listMax;
             }
             $totalListScore += $qualityListScore;
+            $supportListScore = collect($evaluationList['support_items'] ?? [])
+                ->sum(fn ($item) => (float) ($item['weighted_score'] ?? 0));
+            $totalListScore += $supportListScore;
 
             $data[] = ['หัวข้อ: '.$evaluationList['name'], $totalListScore];
 
@@ -336,6 +363,29 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 }
                 $data[] = [$qualityMain['name'], $mainScore];
                 $mainCounter++;
+            }
+
+            foreach ($evaluationList['support_items'] ?? [] as $supportItem) {
+                $data[] = [
+                    'สายสนับสนุน: '.SafeHtml::plainText($supportItem['activity_name'] ?? ''),
+                    (float) ($supportItem['weighted_score'] ?? 0),
+                ];
+                $data[] = ['  ตัวชี้วัด', SafeHtml::plainText($supportItem['indicator'] ?? '')];
+                $data[] = ['  ค่าเป้าหมาย', (float) ($supportItem['target_value'] ?? 0)];
+                $data[] = ['  น้ำหนัก', (float) ($supportItem['weight'] ?? 0)];
+                $data[] = ['  คะแนนที่ทำได้', (float) ($supportItem['achieved_score'] ?? 0)];
+                $data[] = ['  คะแนนถ่วงน้ำหนัก', (float) ($supportItem['weighted_score'] ?? 0)];
+
+                foreach ($supportItem['activity_entries'] ?? [] as $activityEntry) {
+                    $data[] = [
+                        '  กิจกรรม/โครงการเพิ่มเติม',
+                        SafeHtml::plainText($activityEntry['content'] ?? ''),
+                    ];
+                }
+
+                foreach ($supportItem['evidence_links'] ?? [] as $evidenceLink) {
+                    $data[] = ['  หลักฐาน', $evidenceLink];
+                }
             }
 
             $data[]=[' ', ' '];
