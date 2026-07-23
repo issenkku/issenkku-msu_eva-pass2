@@ -16,12 +16,7 @@
         const reviewerModal = document.getElementById('reviewerModal');
         const reviewerModalBody = document.getElementById('reviewerModalBody');
         const closeReviewerModal = document.getElementById('closeReviewerModal');
-        const reviewerButtons = Array.from(document.querySelectorAll('[data-reviewer-modal-button]'));
-        const statusFilterButtons = Array.from(document.querySelectorAll('.dashboard-status-filter'));
-        const tableRows = Array.from(document.querySelectorAll('[data-dashboard-row]'));
-        const searchInput = document.getElementById('searchInput');
-        const emptyState = document.getElementById('empty-state');
-        let activeStatusFilter = 'all';
+        let evaluationListRequest = null;
 
         if (toggle && panel && chevron) {
             toggle.addEventListener('click', function () {
@@ -45,45 +40,6 @@
                 resetFilters();
             });
         }
-
-        const clearStatusQuery = () => {
-            const url = new URL(window.location.href);
-            if (url.searchParams.has('status')) {
-                url.searchParams.delete('status');
-                window.history.replaceState({}, '', url);
-            }
-        };
-
-        const setActiveStatusButton = (status) => {
-            statusFilterButtons.forEach((button) => {
-                const isActive = button.dataset.statusFilter === status;
-                button.classList.toggle('ring-2', isActive);
-                button.classList.toggle('ring-offset-2', isActive);
-                button.classList.toggle('ring-blue-300', isActive);
-                button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-            });
-        };
-
-        const applyDashboardFilters = () => {
-            const searchTerm = (searchInput?.value || '').trim().toLowerCase();
-            let hasMatch = false;
-
-            tableRows.forEach((row) => {
-                const statusMatches = activeStatusFilter === 'all' || row.dataset.statusGroup === activeStatusFilter;
-                const searchText = (row.dataset.searchText || '').toLowerCase();
-                const searchMatches = !searchTerm || searchText.includes(searchTerm);
-                const matches = statusMatches && searchMatches;
-
-                row.style.display = matches ? '' : 'none';
-                if (matches) {
-                    hasMatch = true;
-                }
-            });
-
-            if (emptyState) {
-                emptyState.style.display = hasMatch ? 'none' : 'block';
-            }
-        };
 
         const closeReviewerDialog = () => {
             if (!reviewerModal) {
@@ -112,15 +68,17 @@
             reviewerModal.classList.remove('hidden');
         };
 
-        reviewerButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                try {
-                    const reviewers = JSON.parse(button.dataset.reviewers || '[]');
-                    openReviewerDialog(reviewers);
-                } catch (error) {
-                    console.error('Failed to parse reviewer list', error);
-                }
-            });
+        document.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-reviewer-modal-button]');
+            if (!button) {
+                return;
+            }
+
+            try {
+                openReviewerDialog(JSON.parse(button.dataset.reviewers || '[]'));
+            } catch (error) {
+                console.error('Failed to parse reviewer list', error);
+            }
         });
 
         closeReviewerModal?.addEventListener('click', closeReviewerDialog);
@@ -134,6 +92,100 @@
             if (event.key === 'Escape') {
                 closeReviewerDialog();
             }
+        });
+
+        const setEvaluationListBusy = (list, busy) => {
+            list.setAttribute('aria-busy', busy ? 'true' : 'false');
+            list.querySelectorAll('button, input, select').forEach((control) => {
+                control.disabled = busy;
+            });
+            list.querySelectorAll('a').forEach((link) => {
+                link.classList.toggle('pointer-events-none', busy);
+                link.setAttribute('aria-disabled', busy ? 'true' : 'false');
+            });
+            list.querySelector('[data-evaluation-loading]')?.classList.toggle('hidden', !busy);
+        };
+
+        const loadEvaluationList = async (url, { push = true, focus = null } = {}) => {
+            const currentList = document.querySelector('[data-evaluation-list]');
+            if (!currentList) {
+                return;
+            }
+
+            evaluationListRequest?.abort();
+            evaluationListRequest = new AbortController();
+            setEvaluationListBusy(currentList, true);
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        Accept: 'text/html',
+                        'X-Dashboard-Fragment': 'evaluation-list',
+                    },
+                    signal: evaluationListRequest.signal,
+                });
+
+                if (!response.ok || response.headers.get('X-Dashboard-Fragment') !== 'evaluation-list') {
+                    throw new Error(`Unexpected dashboard response: ${response.status}`);
+                }
+
+                const container = document.createElement('div');
+                container.innerHTML = await response.text();
+                const nextList = container.querySelector('[data-evaluation-list]');
+                if (!nextList) {
+                    throw new Error('Evaluation list fragment is missing');
+                }
+
+                currentList.replaceWith(nextList);
+                if (push) {
+                    window.history.pushState({}, '', url);
+                }
+
+                if (focus === 'heading') {
+                    document.getElementById('evaluation-list-heading')?.focus();
+                } else if (focus) {
+                    document.querySelector(`[data-status-filter="${CSS.escape(focus)}"]`)?.focus();
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+
+                setEvaluationListBusy(currentList, false);
+                currentList.querySelector('[data-evaluation-request-error]')?.classList.remove('hidden');
+            }
+        };
+
+        document.addEventListener('click', (event) => {
+            const statusLink = event.target.closest('[data-status-filter]');
+            const paginationLink = event.target.closest('[data-evaluation-pagination] a');
+            const link = statusLink || paginationLink;
+            if (!link || event.defaultPrevented || event.button !== 0
+                || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+                return;
+            }
+
+            event.preventDefault();
+            loadEvaluationList(link.href, {
+                focus: statusLink ? statusLink.dataset.statusFilter : 'heading',
+            });
+        });
+
+        document.addEventListener('submit', (event) => {
+            const form = event.target.closest('[data-evaluation-list] [data-auto-search-form]');
+            if (!form) {
+                return;
+            }
+
+            event.preventDefault();
+            const url = new URL(form.action, window.location.href);
+            url.search = new URLSearchParams(new FormData(form)).toString();
+            url.searchParams.delete('page');
+            loadEvaluationList(url.toString(), { focus: 'heading' });
+        });
+
+        window.addEventListener('popstate', () => {
+            loadEvaluationList(window.location.href, { push: false, focus: 'heading' });
         });
 
         const overviewChart = @json($overviewChart);
@@ -225,26 +277,6 @@
             });
         }
 
-        statusFilterButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                applyStatusFilter(button.dataset.statusFilter || 'all');
-            });
-        });
-
-        if (searchInput) {
-            searchInput.addEventListener('input', function () {
-                applyDashboardFilters();
-            });
-        }
-
-        const applyStatusFilter = (status) => {
-            clearStatusQuery();
-            activeStatusFilter = status || 'all';
-            setActiveStatusButton(activeStatusFilter);
-            applyDashboardFilters();
-        };
-
-        applyStatusFilter(activeStatusFilter);
         resetOverviewCenter();
     });
 

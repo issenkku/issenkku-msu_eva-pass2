@@ -1,13 +1,14 @@
 <?php
 
-use App\Models\Assignments;
 use App\Models\AssignmentData;
+use App\Models\Assignments;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
-uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 function createDashboardScenario(array $statuses, string $titlePrefix = 'Plan'): array
 {
@@ -88,6 +89,12 @@ test('dashboard table rows expose searchable report metadata and filter hooks', 
         ->assertSee('aria-controls="year-filter-badge-panel"', false)
         ->assertSee('data-search-text=', false)
         ->assertSee('aria-pressed="true"', false)
+        ->assertSee('data-evaluation-list', false)
+        ->assertSee('X-Dashboard-Fragment', false)
+        ->assertSee('window.history.pushState', false)
+        ->assertSee("window.addEventListener('popstate'", false)
+        ->assertDontSee('row.style.display', false)
+        ->assertDontSee('clearStatusQuery', false)
         ->assertSee('Annual Performance Plan', false);
 });
 

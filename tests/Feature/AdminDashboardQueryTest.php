@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Assignments;
 use App\Models\AssignmentData;
+use App\Models\Assignments;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\User;
