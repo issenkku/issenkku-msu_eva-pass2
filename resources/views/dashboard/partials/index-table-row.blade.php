@@ -1,4 +1,5 @@
 {{-- แถวข้อมูลของตารางผลการประเมินรายบุคคล --}}
+@inject('dashboardStatusSummary', 'App\Support\AdminDashboardStatusSummary')
 @php
     $evaluateeName = $evaluation->evaluateeName ?? '-';
     $evaluatorName = $evaluation->evaluatorName ?? '-';
@@ -26,19 +27,19 @@
         'Completed' => 'ประเมินเสร็จสิ้น',
     ];
     $prettyStatus = $statusMapping[$status] ?? $status;
-    $progressPercentPerRow = $progressMap[$status] ?? 0;
-    $statusGroupMapping = [
-        'Assigned' => 'มอบหมาย',
-        'Draft' => 'เริ่มกรอกข้อมูล',
-        'Pending' => 'กำลังดำเนินการ',
-        'Evaluator_draft' => 'กำลังดำเนินการ',
-        'Director_assigned' => 'กำลังดำเนินการ',
-        'Director_draft' => 'กำลังดำเนินการ',
-        'Manager_assign' => 'กำลังดำเนินการ',
-        'Manager_draft' => 'กำลังดำเนินการ',
-        'Completed' => 'ประเมินเสร็จสิ้น',
+    $progressMap = [
+        'Assigned' => 0,
+        'Manager_assign' => 0,
+        'Draft' => 25,
+        'Pending' => 50,
+        'Evaluator_draft' => 50,
+        'Director_assigned' => 75,
+        'Manager_draft' => 75,
+        'Director_draft' => 90,
+        'Completed' => 100,
     ];
-    $statusGroup = $statusGroupMapping[$status] ?? $prettyStatus;
+    $progressPercentPerRow = $progressMap[$status] ?? 0;
+    $statusGroup = $dashboardStatusSummary->groupForStatus($status);
 
     $statusClass = match ($status) {
         'Completed' => 'bg-green-100 text-green-800',
@@ -50,7 +51,7 @@
 
 <tr data-dashboard-row data-status-group="{{ $statusGroup }}" data-search-text="{{ $searchText }}" class="text-gray-900 transition-colors duration-150 hover:bg-gray-50">
     <td class="whitespace-nowrap px-6 py-4 text-center">
-        {{ $loop->iteration }}
+        {{ $rowNumber }}
     </td>
     <td class="whitespace-nowrap px-6 py-4">
         <div class="flex items-center">

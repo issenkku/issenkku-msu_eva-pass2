@@ -19,20 +19,26 @@
         @foreach ($statusCounts as $status => $count)
             @php
                 $isShowAll = $status === $firstStatus;
-                $isActive = $isShowAll;
+                $filterValue = $isShowAll ? 'all' : $status;
+                $query = request()->except('page', 'status');
+                if (! $isShowAll) {
+                    $query['status'] = $status;
+                }
+                $href = request()->url().($query ? '?'.http_build_query($query) : '');
+                $isActive = $activeStatus === $filterValue;
                 $style = $statusStyles[$status] ?? 'bg-gray-100 text-gray-800 hover:bg-gray-200';
                 $activeClass = $isActive ? 'ring-2 ring-offset-2 ring-blue-300' : '';
                 $ariaLabel = ($isShowAll ? 'แสดงทั้งหมด' : 'กรองสถานะ ' . $status) . ' จำนวน ' . $count . ' รายการ';
             @endphp
 
-            <button
-                type="button"
-                data-status-filter="{{ $isShowAll ? 'all' : $status }}"
+            <a
+                href="{{ $href }}"
+                data-status-filter="{{ $filterValue }}"
                 aria-pressed="{{ $isActive ? 'true' : 'false' }}"
                 aria-label="{{ $ariaLabel }}"
                 class="dashboard-status-filter inline-block rounded-full px-3 py-1 text-sm font-medium transition {{ $style }} {{ $activeClass }}">
                 {{ $status }} ({{ $count }})
-            </button>
+            </a>
         @endforeach
     </div>
 </div>

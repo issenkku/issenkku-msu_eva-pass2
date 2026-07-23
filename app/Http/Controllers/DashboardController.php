@@ -37,7 +37,15 @@ class DashboardController extends Controller
 
     public function index(Request $request, AdminDashboardQuery $dashboardQuery)
     {
-        return view('dashboard.index', $dashboardQuery->handle($request)->toViewData());
+        $viewData = $dashboardQuery->handle($request)->toViewData();
+
+        if ($request->header('X-Dashboard-Fragment') === 'evaluation-list') {
+            return response()
+                ->view('dashboard.partials.index-evaluation-list', $viewData)
+                ->header('X-Dashboard-Fragment', 'evaluation-list');
+        }
+
+        return view('dashboard.index', $viewData);
     }
 
     public function admin(Request $request, $id)

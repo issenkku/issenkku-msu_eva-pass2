@@ -9,6 +9,33 @@ use Spatie\Permission\Models\Role;
 
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
+function createDashboardScenario(array $statuses, string $titlePrefix = 'Plan'): array
+{
+    $role = Role::firstOrCreate(['name' => 'admin']);
+    $admin = User::factory()->create();
+    $admin->assignRole($role);
+    $assignments = collect();
+
+    foreach ($statuses as $index => $status) {
+        $evaluatee = User::factory()->create();
+        $reportData = ReportData::factory()->create([
+            'report_title' => "{$titlePrefix} ".($index + 1),
+        ]);
+        $report = Reports::factory()->create([
+            'report_data_id' => $reportData->id,
+            'status' => $status,
+        ]);
+        $assignmentData = AssignmentData::factory()->create();
+        $assignments->push(Assignments::factory()->create([
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]));
+    }
+
+    return [$admin, $assignments];
+}
+
 test('guests are redirected to the login page', function () {
     $response = $this->get('/dashboard');
     $response->assertRedirect('/login');
@@ -62,4 +89,41 @@ test('dashboard table rows expose searchable report metadata and filter hooks', 
         ->assertSee('data-search-text=', false)
         ->assertSee('aria-pressed="true"', false)
         ->assertSee('Annual Performance Plan', false);
+});
+
+test('dashboard status links preserve filters and select the server filtered list', function () {
+    [$admin] = createDashboardScenario(['Assigned', 'Draft']);
+
+    $response = $this->actingAs($admin)->get('/dashboard?year=2026&status='.urlencode('เริ่มกรอกข้อมูล'));
+
+    $response->assertOk()
+        ->assertSee('data-evaluation-list', false)
+        ->assertSee('data-status-filter="เริ่มกรอกข้อมูล"', false)
+        ->assertSee('aria-pressed="true"', false)
+        ->assertSee('status='.urlencode('มอบหมาย'), false);
+});
+
+test('dashboard can return only the evaluation list fragment', function () {
+    [$admin] = createDashboardScenario(['Assigned', 'Draft']);
+
+    $response = $this->actingAs($admin)
+        ->withHeader('X-Dashboard-Fragment', 'evaluation-list')
+        ->get('/dashboard?status='.urlencode('เริ่มกรอกข้อมูล'));
+
+    $response->assertOk()
+        ->assertHeader('X-Dashboard-Fragment', 'evaluation-list')
+        ->assertSee('id="evaluation-list"', false)
+        ->assertDontSee('<html', false);
+});
+
+test('dashboard filtered pagination preserves status and search parameters', function () {
+    [$admin] = createDashboardScenario(array_fill(0, 12, 'Draft'));
+
+    $response = $this->actingAs($admin)->get('/dashboard?status='
+        .urlencode('เริ่มกรอกข้อมูล').'&search=Plan');
+
+    $response->assertOk()
+        ->assertSee('status='.urlencode('เริ่มกรอกข้อมูล'), false)
+        ->assertSee('search=Plan', false)
+        ->assertSee('page=2', false);
 });

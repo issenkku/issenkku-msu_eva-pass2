@@ -1,6 +1,11 @@
 {{-- ส่วนหัวของตารางผลการประเมินรายบุคคล --}}
 <div class="evaluation-list-header px-6 pt-4">
-    <h3 class="mb-2 text-lg font-semibold text-gray-900 sm:mb-0">ผลการประเมินรายบุคคล</h3>
+    <h3
+        id="evaluation-list-heading"
+        tabindex="-1"
+        class="mb-2 text-lg font-semibold text-gray-900 focus:outline-none sm:mb-0">
+        ผลการประเมินรายบุคคล
+    </h3>
     <div class="evaluation-list-toolbar flex flex-col border-b pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="evaluation-toolbar-search flex flex-col gap-3 sm:flex-row">
             <div class="relative">

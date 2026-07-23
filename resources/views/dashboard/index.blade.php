@@ -3,27 +3,6 @@
     @include('dashboard.partials.index-styles')
 
     @php
-        use Carbon\Carbon;
-
-        // เรียงรายการประเมินจากใหม่ไปเก่าเพื่อให้ติดตามงานล่าสุดได้ง่าย
-        $sortedEvaluations = $evaluations->sortByDesc(function ($evaluatorAssignment) {
-            $endTime = optional($evaluatorAssignment->assignmentData)->end_time;
-            if ($endTime) {
-                return Carbon::parse($endTime)->timestamp;
-            }
-
-            $startTime = optional($evaluatorAssignment->assignmentData)->start_time;
-            if ($startTime) {
-                return Carbon::parse($startTime)->timestamp;
-            }
-
-            return optional($evaluatorAssignment->report)->updated_at
-                ? Carbon::parse($evaluatorAssignment->report->updated_at)->timestamp
-                : (optional($evaluatorAssignment)->created_at
-                    ? Carbon::parse($evaluatorAssignment->created_at)->timestamp
-                    : 0);
-        })->values();
-
         $progressMap = [
             'Assigned' => 0,
             'Manager_assign' => 0,
@@ -138,31 +117,7 @@
             </div>
 
             {{-- ตารางผลการประเมินรายบุคคล --}}
-            <div id="evaluation-list" class="bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn" style="animation-delay: 0.6s;">
-                @include('dashboard.partials.index-list-header')
-
-                @include('dashboard.partials.index-status-filters')
-
-                <div class="overflow-x-auto">
-                    {{-- ตารางข้อมูล --}}
-                    <table id="userParticipant" class="min-w-full divide-y divide-gray-200">
-                        @include('dashboard.partials.index-table-head')
-                        <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                            @forelse($sortedEvaluations as $evaluation)
-                                @include('dashboard.partials.index-table-row', ['evaluation' => $evaluation, 'progressMap' => $progressMap])
-                            @empty
-                                @include('dashboard.partials.index-table-empty-row')
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                @include('dashboard.partials.index-loading-state')
-
-                @include('dashboard.partials.index-empty-state')
-
-                @include('dashboard.partials.index-pagination')
-            </div>
+            @include('dashboard.partials.index-evaluation-list')
         </div>
     </div>
 
