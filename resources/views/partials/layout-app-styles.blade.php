@@ -228,6 +228,53 @@
         color: var(--navbar-text-strong);
     }
 
+    .app-nav-link {
+        position: relative;
+        border-radius: 0.5rem;
+        transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .app-nav-link.is-active {
+        background: rgba(139, 92, 246, 0.18);
+        color: #c4b5fd !important;
+        box-shadow: inset 0 -3px 0 #8b5cf6;
+    }
+
+    .app-nav-link.is-active:hover {
+        background: rgba(139, 92, 246, 0.26);
+        color: #ddd6fe !important;
+    }
+
+    .app-nav-link.is-active i {
+        color: #c4b5fd;
+    }
+
+    .app-nav-link:focus-visible {
+        outline: 2px solid #c4b5fd;
+        outline-offset: 2px;
+    }
+
+    .app-dropdown-item.is-active {
+        background: #f3e8ff;
+        color: #6d28d9;
+        font-weight: 600;
+        box-shadow: inset 4px 0 0 #8b5cf6;
+    }
+
+    .app-dropdown-item.is-active:hover {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .app-dropdown-item.is-active i {
+        color: #8b5cf6;
+    }
+
+    .app-dropdown-item:focus-visible {
+        outline: 2px solid #8b5cf6;
+        outline-offset: -2px;
+    }
+
     .navbar-toggler-icon-custom {
         width: 20px;
         height: 20px;
@@ -486,6 +533,44 @@
     .mobile-dropdown-item:hover {
         background: #f8f9fa;
         color: #495057;
+    }
+
+    .mobile-nav-item.is-active,
+    .mobile-dropdown-toggle.is-active,
+    .mobile-dropdown-item.is-active {
+        background: #f3e8ff;
+        color: #6d28d9;
+        border-left: 4px solid #8b5cf6;
+        font-weight: 600;
+    }
+
+    .mobile-nav-item.is-active:hover,
+    .mobile-dropdown-toggle.is-active:hover,
+    .mobile-dropdown-item.is-active:hover {
+        background: #ede9fe;
+        color: #5b21b6;
+    }
+
+    .mobile-nav-item.is-active i,
+    .mobile-dropdown-toggle.is-active i {
+        color: #8b5cf6;
+    }
+
+    .mobile-nav-item:focus-visible,
+    .mobile-dropdown-toggle:focus-visible,
+    .mobile-dropdown-item:focus-visible {
+        outline: 2px solid #8b5cf6;
+        outline-offset: -2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .app-nav-link,
+        .mobile-nav-item,
+        .mobile-dropdown-toggle,
+        .mobile-dropdown-content,
+        .mobile-dropdown-item {
+            transition: none;
+        }
     }
 
     .mobile-user-section {

@@ -429,7 +429,7 @@
                     data-mobile-nav-key="profile"
                     @class(['mobile-nav-item', 'is-active' => $isProfileActive])
                     @if($isProfileActive) aria-current="page" @endif
-                    style="padding: 10px 0; border: none;">
+                    style="padding: 10px 0;">
                     <i class="fas fa-user-edit" style="width: 20px; margin-right: 10px;"></i>
                     ตั้งค่าโปรไฟล์
                 </a>

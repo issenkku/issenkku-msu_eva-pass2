@@ -161,3 +161,32 @@ test('desktop navigation dropdown trigger ids are unique', function () {
         ->and(array_unique($matches[1]))->toHaveCount(3)
         ->and($layout)->not->toContain('id="settingDropdown"');
 });
+
+test('navigation active states use the approved accessible visual tokens', function () {
+    $styles = file_get_contents(
+        resource_path('views/partials/layout-app-styles.blade.php')
+    );
+
+    expect($styles)
+        ->toContain('.app-nav-link.is-active')
+        ->toContain('rgba(139, 92, 246, 0.18)')
+        ->toContain('inset 0 -3px 0 #8b5cf6')
+        ->toContain('#c4b5fd')
+        ->toContain('.app-dropdown-item.is-active')
+        ->toContain('.mobile-nav-item.is-active')
+        ->toContain('.mobile-dropdown-toggle.is-active')
+        ->toContain('.mobile-dropdown-item.is-active')
+        ->toContain('border-left: 4px solid #8b5cf6')
+        ->toContain('#f3e8ff')
+        ->toContain('#6d28d9')
+        ->toContain(':focus-visible')
+        ->toContain('@media (prefers-reduced-motion: reduce)');
+});
+
+test('mobile profile link does not suppress the active edge marker', function () {
+    $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+    $profileStart = strpos($layout, 'data-mobile-nav-key="profile"');
+    $profileMarkup = substr($layout, $profileStart, 500);
+
+    expect($profileMarkup)->not->toContain('border: none');
+});
