@@ -30,3 +30,41 @@ it('updates support summary values without changing the existing total summary',
         ->toContain('supportTotal')
         ->toContain('modal-total-summary');
 });
+
+it('shows only score categories that have criteria in the confirmation modal', function () {
+    $html = view('partials.evaluatee-confirmation-modal', [
+        'categoryItems' => [],
+        'scoreSummary' => [
+            'has_quantity' => false,
+            'has_quality' => false,
+            'has_support' => true,
+        ],
+    ])->render();
+
+    expect($html)
+        ->not->toContain('id="modal-quantity-summary"')
+        ->not->toContain('id="modal-quality-summary"')
+        ->toContain('id="modal-support-summary"')
+        ->toContain('id="modal-total-summary"')
+        ->toContain('sm:grid-cols-2');
+});
+
+it('keeps a zero score card visible when its category has criteria', function () {
+    $html = view('partials.evaluatee-confirmation-modal', [
+        'categoryItems' => [],
+        'scoreSummary' => [
+            'quantity' => 0.0,
+            'has_quantity' => true,
+            'has_quality' => false,
+            'has_support' => false,
+        ],
+    ])->render();
+
+    expect($html)
+        ->toContain('id="modal-quantity-summary"')
+        ->toMatch('/id="modal-quantity-summary"[^>]*>0\.00<\/div>/')
+        ->not->toContain('id="modal-quality-summary"')
+        ->not->toContain('id="modal-support-summary"')
+        ->toContain('id="modal-total-summary"')
+        ->toContain('sm:grid-cols-2');
+});

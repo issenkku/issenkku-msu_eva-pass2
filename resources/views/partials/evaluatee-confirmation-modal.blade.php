@@ -16,24 +16,42 @@
         </div>
 
         <div class="mb-3 min-h-0 flex-1 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-left sm:mb-4 sm:px-4 sm:py-4">
-            <div class="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-4 sm:gap-3">
-                <div class="rounded-lg border border-blue-100 bg-white p-3">
-                    <div class="text-sm text-gray-500">คะแนนด้านปริมาณ</div>
-                    <div id="modal-quantity-summary" class="mt-1 text-lg font-bold text-blue-900 sm:text-xl">0.00</div>
-                </div>
-                <div class="rounded-lg border border-purple-100 bg-white p-3">
-                    <div class="text-sm text-gray-500">คะแนนด้านคุณภาพ</div>
-                    <div id="modal-quality-summary" class="mt-1 text-lg font-bold text-purple-900 sm:text-xl">0.00</div>
-                </div>
-                   <div class="rounded-lg border border-amber-100 bg-white p-3">
-                    <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
-                    <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
-                </div>
+            @php
+                $visibleScoreCardCount = 1
+                    + (int) ($scoreSummary['has_quantity'] ?? false)
+                    + (int) ($scoreSummary['has_quality'] ?? false)
+                    + (int) ($scoreSummary['has_support'] ?? false);
+
+                $scoreCardGridClass = match ($visibleScoreCardCount) {
+                    1 => 'sm:grid-cols-1',
+                    2 => 'sm:grid-cols-2',
+                    3 => 'sm:grid-cols-3',
+                    default => 'sm:grid-cols-4',
+                };
+            @endphp
+            <div class="mb-3 grid grid-cols-1 gap-2 sm:gap-3 {{ $scoreCardGridClass }}">
+                @if ($scoreSummary['has_quantity'] ?? false)
+                    <div class="rounded-lg border border-blue-100 bg-white p-3">
+                        <div class="text-sm text-gray-500">คะแนนด้านปริมาณ</div>
+                        <div id="modal-quantity-summary" class="mt-1 text-lg font-bold text-blue-900 sm:text-xl">0.00</div>
+                    </div>
+                @endif
+                @if ($scoreSummary['has_quality'] ?? false)
+                    <div class="rounded-lg border border-purple-100 bg-white p-3">
+                        <div class="text-sm text-gray-500">คะแนนด้านคุณภาพ</div>
+                        <div id="modal-quality-summary" class="mt-1 text-lg font-bold text-purple-900 sm:text-xl">0.00</div>
+                    </div>
+                @endif
+                @if ($scoreSummary['has_support'] ?? false)
+                    <div class="rounded-lg border border-amber-100 bg-white p-3">
+                        <div class="text-sm text-gray-500">คะแนนสายสนับสนุน</div>
+                        <div id="modal-support-summary" class="mt-1 text-lg font-bold text-amber-900 sm:text-xl">0.00</div>
+                    </div>
+                @endif
                 <div class="rounded-lg border border-emerald-100 bg-white p-3">
                     <div class="text-sm text-gray-500">คะแนนรวม</div>
                     <div id="modal-total-summary" class="mt-1 text-lg font-bold text-emerald-700 sm:text-xl">0.00</div>
                 </div>
-             
             </div>
 
             <div class="space-y-4">
