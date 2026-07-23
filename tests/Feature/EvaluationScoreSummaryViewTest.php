@@ -41,3 +41,13 @@ test('score summary keeps a zero score visible when its category has criteria', 
         ->not->toContain('id="support-summary"')
         ->toContain('id="total-summary"');
 });
+
+test('director component delegates score summary rendering to the shared read model and partial', function () {
+    $source = file_get_contents(resource_path('views/components/unified-director.blade.php'));
+
+    expect($source)
+        ->toContain('EvaluationScoreSummary::fromCategoryItems($categoryItems)')
+        ->toContain("@include('partials.evaluator-score-summary', ['scoreSummary' => \$scoreSummary])")
+        ->not->toContain('$totalQuantityScore = 0')
+        ->not->toContain('<span id="quantity-summary"');
+});

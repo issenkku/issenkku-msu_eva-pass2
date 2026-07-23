@@ -595,84 +595,11 @@
         </div>
     @endif
 
-    <!-- summary score -->
     @php
-        $totalQuantityScore = 0;
-        $totalQualityScore = 0;
-        $totalSupportScore = 0;
-
-        foreach($categoryItems as $category) {
-            foreach($category['evaluation_lists'] as $evalList) {
-                // Quantity
-                foreach($evalList['quantity_items'] as $mainCriteria) {
-                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                        $totalQuantityScore += floatval($subCriteria['score_d'] ?? 0);
-                    }
-                }
-
-                // Quality: sum selected sub-criteria per list, then cap by list max
-                $evaluationListQualityTotal = 0;
-                foreach($evalList['quality_items'] as $mainCriteria) {
-                    foreach($mainCriteria['sub_criterias'] as $subCriteria) {
-                        $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
-                        $isSelected = $hasScore || ($subCriteria['user_selected'] ?? false);
-                        if ($isSelected) {
-                            $evaluationListQualityTotal += $hasScore
-                                ? floatval($subCriteria['score'])
-                                : floatval($subCriteria['num_score'] ?? 0);
-                        }
-                    }
-                }
-                $listMaxScore = floatval($evalList['sum_score'] ?? 0);
-                if ($listMaxScore > 0 && $evaluationListQualityTotal > $listMaxScore) {
-                    $evaluationListQualityTotal = $listMaxScore;
-                }
-                $totalQualityScore += $evaluationListQualityTotal;
-
-                foreach(($evalList['support_items'] ?? []) as $supportItem) {
-                    if (($supportItem['weighted_score'] ?? null) !== null && ($supportItem['weighted_score'] ?? '') !== '') {
-                        $totalSupportScore += floatval($supportItem['weighted_score']);
-                    }
-                }
-            }
-        }
-        if ($qualityMaxScore > 0 && $totalQualityScore > $qualityMaxScore) {
-            $totalQualityScore = $qualityMaxScore;
-        }
-        $totalSupportScore = min($totalSupportScore, 100);
-        $totalScore = $totalQuantityScore + $totalQualityScore + $totalSupportScore;
+        $scoreSummary = \App\Support\EvaluationScoreSummary::fromCategoryItems($categoryItems);
     @endphp
-    {{-- ส่วนสรุปคะแนนรวม --}}
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mt-6">
-        <h3 class="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
-            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2h6v2m-7 4h8a2 2 0 002-2v-5a2 2 0 00-2-2h-1V7a4 4 0 10-8 0v5H9a2 2 0 00-2 2v5a2 2 0 002 2z"/>
-            </svg>
-            สรุปคะแนนรวม
-        </h3>
 
-        {{-- รายละเอียดคะแนนแต่ละด้าน --}}
-        <div class="space-y-3 text-blue-800">
-            <div class="flex justify-between items-center">
-                <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
-                <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($totalQuantityScore, 2) }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($totalQualityScore, 2) }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-base">คะแนนสายสนับสนุน</span>
-                <span id="support-summary" class="font-semibold text-blue-900">{{ number_format($totalSupportScore, 2) }}</span>
-            </div>
-        </div>
-
-        {{-- คะแนนรวมทั้งหมด --}}
-        <div class="mt-5 p-4 bg-white rounded-xl shadow-inner flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <span class="text-lg font-semibold text-blue-700">คะแนนรวมทั้งหมด</span>
-            <span id="total-summary" class="text-2xl font-bold text-blue-900">{{ number_format($totalScore, 2) }}</span>
-        </div>
-    </div>
+    @include('partials.evaluator-score-summary', ['scoreSummary' => $scoreSummary])
 </div>
 
 @include('components.unified-director-styles')
