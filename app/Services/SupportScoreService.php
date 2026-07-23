@@ -8,6 +8,7 @@ use App\Models\SupportCriteria;
 use App\Models\SupportScore;
 use App\Models\SupportScoreHistory;
 use App\Models\User;
+use App\Support\SupportAchievementScore;
 use App\Support\SupportScoreRules;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +23,7 @@ class SupportScoreService
 
     /**
      * @param  array<int, array<string, mixed>>  $items
-     * @return array{old_scores: Collection, new_scores: Collection, support_score_total: float}
+     * @return array{old_scores: Collection, new_scores: Collection, support_score_total: float, support_achievement_score: float}
      */
     public function persist(
         Reports $report,
@@ -152,7 +153,11 @@ class SupportScoreService
             $supportScoreTotal = round((float) SupportScore::query()
                 ->where('report_id', $report->id)
                 ->sum('weighted_score'), 2);
-            $report->update(['support_score_total' => $supportScoreTotal]);
+            $supportAchievementScore = SupportAchievementScore::calculate($supportScoreTotal);
+            $report->update([
+                'support_score_total' => $supportScoreTotal,
+                'support_achievement_score' => $supportAchievementScore,
+            ]);
 
             return [
                 'old_scores' => $oldScores,
@@ -161,6 +166,7 @@ class SupportScoreService
                     ->get()
                     ->keyBy('support_criteria_id'),
                 'support_score_total' => $supportScoreTotal,
+                'support_achievement_score' => $supportAchievementScore,
             ];
         });
     }

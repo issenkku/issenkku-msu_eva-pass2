@@ -102,6 +102,26 @@ class SupportScoreServiceTest extends TestCase
         $this->assertSame('25.10', $this->report->fresh()->support_score_total);
     }
 
+    public function test_it_persists_the_support_achievement_score_using_five_target_levels(): void
+    {
+        $this->criterion->update(['weight' => 100]);
+
+        $result = app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => 4.30,
+            'evidence_links' => ['https://example.com/evidence'],
+            'support_achievement_score' => 99,
+        ]], $this->evaluatee, null, false);
+
+        $this->assertSame(4.30, $result['support_score_total']);
+        $this->assertSame(0.86, $result['support_achievement_score']);
+        $this->assertDatabaseHas('reports', [
+            'id' => $this->report->id,
+            'support_score_total' => '4.30',
+            'support_achievement_score' => '0.86',
+        ]);
+    }
+
     public function test_required_evidence_is_required_even_when_score_is_blank(): void
     {
         try {

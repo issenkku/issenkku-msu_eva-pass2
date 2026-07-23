@@ -21,12 +21,14 @@ class Reports extends Model
         'director_comment',
         'manager_comment',
         'support_score_total',
+        'support_achievement_score',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'support_score_total' => 'decimal:2',
+        'support_achievement_score' => 'decimal:2',
     ];
 
     public function reportData(): BelongsTo
