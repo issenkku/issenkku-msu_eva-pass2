@@ -63,6 +63,17 @@
             const supportSummary = document.getElementById('support-summary');
             if (supportSummary) supportSummary.textContent = cappedSupport.toFixed(2);
 
+            const supportAchievementSummary = document.getElementById('support-achievement-summary');
+            if (supportAchievementSummary) {
+                const supportTargetLevelCount = Number(supportAchievementSummary.dataset.supportTargetLevelCount);
+                const calculateSupportAchievement = window.SupportScoreCalculator?.calculateSupportAchievement
+                    || ((total, levels) => Math.round((total / levels + Number.EPSILON) * 100) / 100);
+                supportAchievementSummary.textContent = calculateSupportAchievement(
+                    cappedSupport,
+                    supportTargetLevelCount,
+                ).toFixed(2);
+            }
+
             const quantity = parseDisplayedNumber(document.getElementById('quantity-summary')?.textContent);
             const quality = parseDisplayedNumber(document.getElementById('quality-summary')?.textContent);
             const totalSummary = document.getElementById('total-summary');
