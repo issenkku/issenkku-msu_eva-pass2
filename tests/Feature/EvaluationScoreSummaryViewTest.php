@@ -22,7 +22,7 @@ test('score summary shows only categories that have criteria', function () {
         ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก')
         ->toContain('id="support-achievement-summary"')
         ->toContain('data-support-target-level-count="5"')
-        ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก ÷ 5')
+        ->toContain('ผลรวมคะแนนถ่วงน้ำหนัก ÷ จำนวนระดับค่าเป้าหมาย: 5')
         ->toContain('>4.30</span>')
         ->toContain('id="total-summary"');
 });

@@ -29,7 +29,7 @@
                 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <div class="text-base font-semibold text-blue-800">คะแนนผลสัมฤทธิ์ของงาน</div>
-                        <div class="text-sm text-blue-600">ผลรวมคะแนนถ่วงน้ำหนัก ÷ {{ $scoreSummary['support_target_level_count'] }}</div>
+                        <div class="text-sm text-blue-600">ผลรวมคะแนนถ่วงน้ำหนัก ÷ จำนวนระดับค่าเป้าหมาย: {{ $scoreSummary['support_target_level_count'] }}</div>
                     </div>
                     <span
                         id="support-achievement-summary"
