@@ -8,18 +8,24 @@
     </h3>
 
     <div class="space-y-3 text-blue-800">
-        <div class="flex items-center justify-between">
-            <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
-            <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['quantity'] ?? 0, 2) }}</span>
-        </div>
-        <div class="flex items-center justify-between">
-            <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
-            <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['quality'] ?? 0, 2) }}</span>
-        </div>
-        <div class="flex items-center justify-between">
-            <span class="text-base">คะแนนสายสนับสนุน</span>
-            <span id="support-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['support'] ?? 0, 2) }}</span>
-        </div>
+        @if ($scoreSummary['has_quantity'] ?? false)
+            <div class="flex items-center justify-between">
+                <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
+                <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['quantity'] ?? 0, 2) }}</span>
+            </div>
+        @endif
+        @if ($scoreSummary['has_quality'] ?? false)
+            <div class="flex items-center justify-between">
+                <span class="text-base">คะแนนด้านคุณภาพ (Quality)</span>
+                <span id="quality-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['quality'] ?? 0, 2) }}</span>
+            </div>
+        @endif
+        @if ($scoreSummary['has_support'] ?? false)
+            <div class="flex items-center justify-between">
+                <span class="text-base">คะแนนสายสนับสนุน</span>
+                <span id="support-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['support'] ?? 0, 2) }}</span>
+            </div>
+        @endif
     </div>
 
     <div class="mt-5 flex flex-col gap-3 rounded-xl bg-white p-4 shadow-inner sm:flex-row sm:items-center sm:justify-between">
