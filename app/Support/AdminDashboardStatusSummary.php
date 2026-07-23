@@ -4,15 +4,72 @@ namespace App\Support;
 
 class AdminDashboardStatusSummary
 {
+    public const ALL = 'all';
+
+    public const ASSIGNED = 'มอบหมาย';
+
+    public const STARTED = 'เริ่มกรอกข้อมูล';
+
+    public const IN_PROGRESS = 'กำลังดำเนินการ';
+
+    public const COMPLETED = 'ประเมินเสร็จสิ้น';
+
+    private const STATUS_GROUPS = [
+        'Assigned' => self::ASSIGNED,
+        'Draft' => self::STARTED,
+        'Pending' => self::IN_PROGRESS,
+        'Evaluator_draft' => self::IN_PROGRESS,
+        'Director_assigned' => self::IN_PROGRESS,
+        'Director_draft' => self::IN_PROGRESS,
+        'Manager_assign' => self::IN_PROGRESS,
+        'Manager_draft' => self::IN_PROGRESS,
+        'Completed' => self::COMPLETED,
+    ];
+
     public function statusCounts($evaluations): array
     {
+        $groupedCounts = $evaluations
+            ->countBy(fn ($assignment) => $this->groupForStatus(
+                optional($assignment->report)->status
+            ));
+
         return [
             'ทั้งหมด' => $evaluations->count(),
-            'มอบหมาย' => $this->notStartedStatusesCount($evaluations),
-            'เริ่มกรอกข้อมูล' => $this->draftStatusesCount($evaluations),
-            'กำลังดำเนินการ' => $this->inReviewStatusesCount($evaluations),
-            'ประเมินเสร็จสิ้น' => $this->completedStatusesCount($evaluations),
+            self::ASSIGNED => $groupedCounts->get(self::ASSIGNED, 0),
+            self::STARTED => $groupedCounts->get(self::STARTED, 0),
+            self::IN_PROGRESS => $groupedCounts->get(self::IN_PROGRESS, 0),
+            self::COMPLETED => $groupedCounts->get(self::COMPLETED, 0),
         ];
+    }
+
+    public function groupForStatus(?string $status): string
+    {
+        return self::STATUS_GROUPS[$status ?? 'Assigned'] ?? self::ASSIGNED;
+    }
+
+    public function normalizeGroup(?string $group): string
+    {
+        return in_array($group, [
+            self::ASSIGNED,
+            self::STARTED,
+            self::IN_PROGRESS,
+            self::COMPLETED,
+        ], true) ? $group : self::ALL;
+    }
+
+    public function filterByGroup($evaluations, ?string $group)
+    {
+        $normalizedGroup = $this->normalizeGroup($group);
+
+        if ($normalizedGroup === self::ALL) {
+            return $evaluations->values();
+        }
+
+        return $evaluations
+            ->filter(fn ($assignment) => $this->groupForStatus(
+                optional($assignment->report)->status
+            ) === $normalizedGroup)
+            ->values();
     }
 
     public function overviewStatusCounts($evaluations): array
@@ -60,50 +117,30 @@ class AdminDashboardStatusSummary
 
     public function notStartedStatusesCount($evaluations): int
     {
-        return $this->countByStatus($evaluations, $this->notStartedStatuses());
+        return $this->countByGroup($evaluations, self::ASSIGNED);
     }
 
     public function draftStatusesCount($evaluations): int
     {
-        return $this->countByStatus($evaluations, $this->draftStatuses());
+        return $this->countByGroup($evaluations, self::STARTED);
     }
 
     public function inReviewStatusesCount($evaluations): int
     {
-        return $this->countByStatus($evaluations, $this->inReviewStatuses());
+        return $this->countByGroup($evaluations, self::IN_PROGRESS);
     }
 
     public function completedStatusesCount($evaluations): int
     {
-        return $this->countByStatus($evaluations, $this->completedStatuses());
+        return $this->countByGroup($evaluations, self::COMPLETED);
     }
 
-    private function countByStatus($evaluations, array $statuses): int
+    private function countByGroup($evaluations, string $group): int
     {
-        return $evaluations->filter(function ($assignment) use ($statuses) {
-            $reportStatus = optional($assignment->report)->status ?? 'Assigned';
-
-            return in_array($reportStatus, $statuses, true);
-        })->count();
-    }
-
-    private function notStartedStatuses(): array
-    {
-        return ['Assigned', 'Manager_assign'];
-    }
-
-    private function draftStatuses(): array
-    {
-        return ['Draft'];
-    }
-
-    private function inReviewStatuses(): array
-    {
-        return ['Pending', 'Evaluator_draft', 'Director_assigned', 'Director_draft', 'Manager_draft', 'Manager_assign'];
-    }
-
-    private function completedStatuses(): array
-    {
-        return ['Completed'];
+        return $evaluations
+            ->filter(fn ($assignment) => $this->groupForStatus(
+                optional($assignment->report)->status
+            ) === $group)
+            ->count();
     }
 }
