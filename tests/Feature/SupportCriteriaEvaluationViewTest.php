@@ -109,15 +109,18 @@ test('support criteria component renders one responsive editable form control se
         ->toContain('support_list[7][achieved_score]')
         ->toContain('support_list[7][evidence_links][]')
         ->toContain('บังคับแนบหลักฐาน')
-        ->toContain('data-support-evidence-count="7"')
-        ->toContain('data-support-evidence-open="7"')
+        ->toContain('data-support-evidence-list="7"')
+        ->toContain('href="https://example.com/evidence"')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"')
+        ->not->toContain('data-support-evidence-open')
+        ->not->toContain('1 ลิงก์')
         ->toContain('data-support-manage-open="7"')
         ->toContain('data-support-editor-store')
         ->toContain('data-support-modal')
         ->toContain('data-support-modal-body')
         ->toContain('data-support-modal-save')
         ->toContain('aria-label="แก้ไขข้อมูลสำหรับ จัดทำรายงาน"')
-        ->toContain('aria-label="ดูหลักฐานของ จัดทำรายงาน 1 ลิงก์"')
         ->toContain('aria-label="ลิงก์หลักฐานสำหรับ จัดทำรายงาน"')
         ->toContain('id="support-modal-errors"')
         ->toContain('aria-live="assertive"')
@@ -125,6 +128,8 @@ test('support criteria component renders one responsive editable form control se
 
     expect(substr_count($html, 'data-support-modal role="dialog"'))->toBe(1);
     expect(substr_count($html, 'name="support_list[7][achieved_score]"'))->toBe(1);
+    expect(substr_count($html, 'data-support-evidence-list="7"'))->toBe(2);
+    expect(substr_count($html, 'href="https://example.com/evidence"'))->toBe(2);
 });
 
 test('support criteria activity and indicator render as sanitized rich text', function () {
@@ -162,7 +167,8 @@ test('reviewer can edit score with a reason while evidence is preserved read onl
         ->toContain('type="hidden"')
         ->toContain('https://example.com/evidence')
         ->toContain('data-support-manage-open="7"')
-        ->toContain('data-support-evidence-open="7"')
+        ->not->toContain('data-support-evidence-open="7"')
+        ->toContain('href="https://example.com/evidence"')
         ->toContain('target="_blank"')
         ->toContain('rel="noopener noreferrer"');
 });
@@ -263,11 +269,13 @@ test('read only support criteria has no editable score or preservation fields', 
         ->not->toContain('name="support_list[7][achieved_score]"')
         ->not->toContain('name="support_list[7][evidence_links][]"')
         ->not->toContain('data-support-modal-save')
-        ->toContain('data-support-evidence-open="7"')
-        ->toContain('https://example.com/evidence');
+        ->not->toContain('data-support-evidence-open="7"')
+        ->toContain('href="https://example.com/evidence"')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"');
 });
 
-test('read only support table shows evidence count without management controls', function () {
+test('read only support table shows evidence links without management controls', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
         'readonly' => true,
@@ -276,8 +284,9 @@ test('read only support table shows evidence count without management controls',
     ])->render();
 
     expect($html)
-        ->toContain('data-support-evidence-count="7"')
-        ->toContain('data-support-evidence-open="7"')
+        ->toContain('data-support-evidence-list="7"')
+        ->not->toContain('data-support-evidence-open="7"')
+        ->toContain('href="https://example.com/evidence"')
         ->not->toContain('data-support-manage-open="7"')
         ->not->toContain('>จัดการ<')
         ->not->toContain('data-support-modal-save');
@@ -300,7 +309,12 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain('const restoreSupportItem =')
         ->toContain('const updateSupportRow =')
         ->toContain("'[data-support-manage-open]'")
-        ->toContain("'[data-support-evidence-open]'")
+        ->toContain("document.createElement('a')")
+        ->toContain("anchor.target = '_blank'")
+        ->toContain("anchor.rel = 'noopener noreferrer'")
+        ->toContain('anchor.textContent = evidenceUrl')
+        ->toContain('data-support-evidence-list')
+        ->not->toContain("'[data-support-evidence-open]'")
         ->toContain("'[data-support-modal-save]'")
         ->toContain("event.key === 'Escape'")
         ->toContain("document.body.style.overflow = 'hidden'")

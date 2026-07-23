@@ -462,7 +462,7 @@
                     .map((link) => link.getAttribute('href'))
                     .filter(Boolean);
 
-            document.querySelectorAll(`[data-support-evidence-count="${id}"]`).forEach((container) => {
+            document.querySelectorAll(`[data-support-evidence-list="${id}"]`).forEach((container) => {
                 container.replaceChildren();
                 if (evidenceLinks.length === 0) {
                     const empty = document.createElement('span');
@@ -472,13 +472,15 @@
                     return;
                 }
 
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.dataset.supportEvidenceOpen = id;
-                button.setAttribute('aria-label', `ดูหลักฐานของ ${item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน'} ${evidenceLinks.length} ลิงก์`);
-                button.className = 'font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400';
-                button.textContent = `${evidenceLinks.length} ลิงก์`;
-                container.appendChild(button);
+                evidenceLinks.forEach((evidenceUrl) => {
+                    const anchor = document.createElement('a');
+                    anchor.href = evidenceUrl;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.className = 'block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400';
+                    anchor.textContent = evidenceUrl;
+                    container.appendChild(anchor);
+                });
             });
 
             document.querySelectorAll(`[data-support-manage-open="${id}"]`).forEach((button) => {
@@ -574,12 +576,6 @@
             const manageButton = event.target.closest('[data-support-manage-open]');
             if (manageButton) {
                 openSupportModal(manageButton.dataset.supportManageOpen, 'score');
-                return;
-            }
-
-            const evidenceButton = event.target.closest('[data-support-evidence-open]');
-            if (evidenceButton) {
-                openSupportModal(evidenceButton.dataset.supportEvidenceOpen, 'evidence');
                 return;
             }
 

@@ -38,7 +38,8 @@
                 <tbody class="divide-y divide-amber-100 bg-white text-slate-700">
                     @foreach ($items as $item)
                         @php
-                            $evidenceCount = count(array_filter($item['evidence_links'] ?? []));
+                            $evidenceLinks = array_values(array_filter($item['evidence_links'] ?? []));
+                            $evidenceCount = count($evidenceLinks);
                             $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
                         @endphp
                         <tr>
@@ -62,17 +63,16 @@
                                 </span>
                             </td>
                             <td class="px-2 py-4 text-center">
-                                <span data-support-evidence-count="{{ $item['id'] }}">
-                                    @if ($evidenceCount > 0)
-                                        <button type="button" data-support-evidence-open="{{ $item['id'] }}"
-                                            aria-label="ดูหลักฐานของ {{ $activityNameText }} {{ $evidenceCount }} ลิงก์"
-                                            class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                            {{ $evidenceCount }} ลิงก์
-                                        </button>
-                                    @else
+                                <div class="space-y-1 text-left" data-support-evidence-list="{{ $item['id'] }}">
+                                    @forelse ($evidenceLinks as $link)
+                                        <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                            class="block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                            {{ $link }}
+                                        </a>
+                                    @empty
                                         <span class="text-slate-400">ไม่มีหลักฐาน</span>
-                                    @endif
-                                </span>
+                                    @endforelse
+                                </div>
                             </td>
                             @if (!$readonly)
                                 <td class="px-2 py-4 text-center">
@@ -91,7 +91,8 @@
         <div class="space-y-3 p-4 lg:hidden">
                     @foreach ($items as $item)
                 @php
-                    $evidenceCount = count(array_filter($item['evidence_links'] ?? []));
+                    $evidenceLinks = array_values(array_filter($item['evidence_links'] ?? []));
+                    $evidenceCount = count($evidenceLinks);
                     $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
                 @endphp
                 <article class="rounded-xl border border-amber-200 bg-white p-4 shadow-sm">
@@ -141,17 +142,16 @@
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-amber-100 pt-4">
                         <div>
                             <span class="block text-xs font-medium text-slate-500">หลักฐาน</span>
-                            <span class="mt-1 block" data-support-evidence-count="{{ $item['id'] }}">
-                                @if ($evidenceCount > 0)
-                                    <button type="button" data-support-evidence-open="{{ $item['id'] }}"
-                                        aria-label="ดูหลักฐานของ {{ $activityNameText }} {{ $evidenceCount }} ลิงก์"
-                                        class="font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                        {{ $evidenceCount }} ลิงก์
-                                    </button>
-                                @else
+                            <div class="mt-1 space-y-1" data-support-evidence-list="{{ $item['id'] }}">
+                                @forelse ($evidenceLinks as $link)
+                                    <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                                        class="block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        {{ $link }}
+                                    </a>
+                                @empty
                                     <span class="text-sm text-slate-400">ไม่มีหลักฐาน</span>
-                                @endif
-                            </span>
+                                @endforelse
+                            </div>
                         </div>
                         @if (!$readonly)
                             <button type="button" data-support-manage-open="{{ $item['id'] }}"
