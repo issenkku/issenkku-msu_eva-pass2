@@ -5,6 +5,7 @@ namespace App\Exports;
 use App\Services\ScoreService;
 use App\Support\ReportScoreSummary;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -17,7 +18,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, WithHeadings, WithStyles
 {
     /**
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     protected $query;
 
@@ -167,4 +168,3 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
         ];
     }
 }
-

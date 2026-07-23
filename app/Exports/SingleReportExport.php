@@ -2,12 +2,13 @@
 
 namespace App\Exports;
 
-use Carbon\Carbon;
 use App\Models\QualityScore;
+use App\Models\QuantityScore;
 use App\Services\ScoreService;
 use App\Support\ReportScoreSummary;
 use App\Support\SafeHtml;
 use App\Support\SupportCriteriaReadModel;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -109,7 +110,7 @@ class SingleReportExport implements WithMultipleSheets
                             ];
 
                             foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
-                                $quantityScore = \App\Models\QuantityScore::where('report_id', $report->id)
+                                $quantityScore = QuantityScore::where('report_id', $report->id)
                                     ->where('quantity_sub_criteria_id', $subCriteria->id)
                                     ->first();
 
@@ -388,7 +389,7 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 }
             }
 
-            $data[]=[' ', ' '];
+            $data[] = [' ', ' '];
         }
 
         return $data;
