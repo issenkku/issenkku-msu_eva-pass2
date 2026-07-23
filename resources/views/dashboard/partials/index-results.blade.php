@@ -99,13 +99,19 @@
         data-dashboard-results-error
         role="alert"
         class="mb-4 hidden rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-        โหลดข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง
+        <span>โหลดข้อมูลไม่สำเร็จ กรุณาลองอีกครั้ง</span>
+        <button
+            type="button"
+            data-dashboard-results-retry
+            class="ml-2 font-semibold underline underline-offset-2 hover:text-red-900">
+            ลองอีกครั้ง
+        </button>
     </div>
 
     <div
         data-dashboard-results-loading
         aria-hidden="true"
-        class="pointer-events-none absolute inset-0 z-20 hidden items-start justify-center rounded-xl bg-white/70 pt-12 backdrop-blur-[1px]">
+        class="absolute inset-0 z-20 hidden items-start justify-center rounded-xl bg-white/70 pt-12 backdrop-blur-[1px]">
         <span class="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700">
             กำลังโหลดข้อมูล...
         </span>

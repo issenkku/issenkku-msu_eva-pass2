@@ -99,6 +99,14 @@ test('dashboard table rows expose searchable report metadata and filter hooks', 
         ->assertDontSee("loadEvaluationList(url.toString(), { focus: 'heading' });", false)
         ->assertDontSee('row.style.display', false)
         ->assertDontSee('clearStatusQuery', false)
+        ->assertSee("'X-Dashboard-Fragment': 'dashboard-results'", false)
+        ->assertSee('const loadDashboardResults = async', false)
+        ->assertSee('const initializeOverviewChart =', false)
+        ->assertSee('overviewChartInstance?.destroy()', false)
+        ->assertSee("event.target.closest('#filterForm')", false)
+        ->assertSee("loadDashboardResults(window.location.href, { push: false", false)
+        ->assertSee("form.querySelector('[data-auto-submit-select]')", false)
+        ->assertDontSee("document.getElementById('filterForm').submit()", false)
         ->assertSee('ค้นหารายการทั้งหมด: ชื่อ, ชื่องาน, ผู้ประเมิน...', false)
         ->assertSee('Annual Performance Plan', false);
 });
@@ -169,6 +177,23 @@ test('dashboard filter renders primary action before reset and stable state hook
 
     expect(strpos($html, 'data-dashboard-filter-submit'))
         ->toBeLessThan(strpos($html, 'data-reset-filters'));
+});
+
+test('dashboard asynchronous filter controller clears page and synchronizes history', function () {
+    [$admin] = createDashboardScenario(['Assigned']);
+
+    $response = $this->actingAs($admin)->get('/dashboard');
+
+    $response->assertOk()
+        ->assertSee("url.searchParams.delete('page')", false)
+        ->assertSee("window.history.pushState({ dashboardFragment: 'dashboard-results' }, '', nextUrl)", false)
+        ->assertSee('syncDashboardFilterState(nextUrl)', false)
+        ->assertSee('syncDashboardFilterForm(nextUrl)', false)
+        ->assertSee("field.value = ''", false)
+        ->assertSee('data-dashboard-results-error', false)
+        ->assertSee('data-dashboard-results-retry', false)
+        ->assertSee("loading?.setAttribute('aria-hidden'", false)
+        ->assertSee('lastDashboardResultsRequest', false);
 });
 
 test('dashboard filtered pagination preserves status and search parameters', function () {
