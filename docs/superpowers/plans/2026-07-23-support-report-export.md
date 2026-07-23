@@ -427,7 +427,7 @@ git commit -m "feat: export support report details"
 **Interfaces:**
 - Consumes: `User::assignmentsForDashboard()` for evaluator-scoped report access.
 - Produces: HTTP `403` for unauthorized exports, `404` for missing report/assignment, and `409` for a non-Completed single report.
-- Produces: audit description `ส่งออกรายงานรายบุคคล` with `export_type`, `report_id`, and `assignment_id`.
+- Produces: audit description `ส่งออกรายงานรายบุคคล` with `export_type`, `report_id`, `assignment_data_id`, and `evaluatee_id`.
 
 - [ ] **Step 1: Write failing route and authorization tests**
 
@@ -471,7 +471,8 @@ $activity = latestAudit('ส่งออกรายงานรายบุค�
 expect($activity)->not->toBeNull()
     ->and($activity->properties->get('export_type'))->toBe('single_report')
     ->and($activity->properties->get('report_id'))->toBe($report->id)
-    ->and($activity->properties->get('assignment_id'))->toBe($assignment->id);
+    ->and($activity->properties->get('assignment_data_id'))->toBe($assignment->assignment_data_id)
+    ->and($activity->properties->get('evaluatee_id'))->toBe($assignment->evaluatee_id);
 ```
 
 - [ ] **Step 3: Run authorization/audit tests and verify RED**
@@ -532,7 +533,8 @@ Immediately before returning the download:
 AuditLog::record('ส่งออกข้อมูล', 'ส่งออกรายงานรายบุคคล', [
     'export_type' => 'single_report',
     'report_id' => $report->id,
-    'assignment_id' => $assignment->id,
+    'assignment_data_id' => $assignment->assignment_data_id,
+    'evaluatee_id' => $assignment->evaluatee_id,
 ], $report, $user);
 ```
 

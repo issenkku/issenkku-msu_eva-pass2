@@ -144,11 +144,11 @@ Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร'])->g
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/{id}', [DashboardController::class, 'show'])->name('dashboard.show');
     Route::get('/dashboard-data/{id}', [DashboardController::class, 'admin'])->name('admin.show');
+    Route::get('/admin/export/reports', [FileExportController::class, 'adminExportDashboard'])->name('admin.export.reports');
 });
 
 Route::middleware(['auth:sanctum', 'role:admin|ผู้บริหาร|กรรมการ|ผู้ประเมิน'])->group(function () {
     Route::get('/export/reports', [FileExportController::class, 'exportDashboard'])->name('export.reports');
-    Route::get('/admin/export/reports', [FileExportController::class, 'adminExportDashboard'])->name('admin.export.reports');
     Route::get('/reports/{id}/export', [FileExportController::class, 'exportSingleReport'])
         ->name('single.reports.export');
 });

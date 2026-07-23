@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\Reports;
 use App\Models\Setting\Settings;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -187,4 +190,27 @@ test('report exports are written to the activity audit log', function () {
         ->and($activity->properties->get('export_type'))->toBe('dashboard')
         ->and(data_get($activity->properties->toArray(), 'filters.year'))->toBe('2026')
         ->and(data_get($activity->properties->toArray(), 'filters.search'))->toBe('demo');
+});
+
+test('single report exports are written to the activity audit log', function () {
+    Excel::fake();
+    $admin = auditAdmin();
+    $report = Reports::factory()->create(['status' => 'Completed']);
+    $assignmentData = AssignmentData::factory()->create();
+    $assignment = Assignments::factory()->create([
+        'assignment_data_id' => $assignmentData->id,
+        'report_id' => $report->id,
+    ]);
+
+    $this->actingAs($admin, 'web')
+        ->get(route('single.reports.export', $report->id))
+        ->assertOk();
+
+    $activity = latestAudit('ส่งออกรายงานรายบุคคล');
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties->get('export_type'))->toBe('single_report')
+        ->and($activity->properties->get('report_id'))->toBe($report->id)
+        ->and($activity->properties->get('assignment_data_id'))->toBe($assignment->assignment_data_id)
+        ->and($activity->properties->get('evaluatee_id'))->toBe($assignment->evaluatee_id);
 });

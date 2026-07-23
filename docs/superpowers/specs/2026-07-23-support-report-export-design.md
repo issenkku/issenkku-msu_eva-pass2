@@ -126,7 +126,8 @@ Export ต้องคงคอลัมน์ความเห็นเดิ�
 
 - `export_type: single_report`
 - `report_id`
-- `assignment_id`
+- `assignment_data_id`
+- `evaluatee_id`
 - ผู้ใช้งานที่ดำเนินการ
 
 การ Export ที่ถูกปฏิเสธด้วย 403, 404 หรือ 409 ต้องไม่สร้าง success audit log

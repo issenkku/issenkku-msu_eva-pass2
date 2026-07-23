@@ -44,7 +44,7 @@ class FileExportController extends Controller
         return Excel::download(new ReportsExport($query), 'รายงานการประเมินผล.xlsx');
     }
 
-    public function exportSingleReport($id)
+    public function exportSingleReport(Request $request, $id)
     {
         // Find the report first
         $report = Reports::with(
@@ -62,6 +62,21 @@ class FileExportController extends Controller
             abort(404, 'Assignment not found for this report.');
         }
 
+        $user = $request->user();
+        $canExportAll = $user->hasAnyRole(['admin', 'ผู้บริหาร', 'กรรมการ']);
+
+        if (! $canExportAll) {
+            $isAssignedEvaluator = $user->assignmentsForDashboard()
+                ->where('assignments.assignment_data_id', $assignment->assignment_data_id)
+                ->where('assignments.report_id', $assignment->report_id)
+                ->where('assignments.evaluatee_id', $assignment->evaluatee_id)
+                ->exists();
+
+            abort_unless($isAssignedEvaluator, 403);
+        }
+
+        abort_unless($report->status === 'Completed', 409, 'Report is not completed.');
+
         $assignment->loadMissing([
             'report.quantityScores',
             'report.qualityScores',
@@ -74,6 +89,13 @@ class FileExportController extends Controller
         $username = $assignment->evaluateeUser?->name ?? 'ไม่ทราบชื่อ';
 
         $fileName = 'รายงานผลการประเมินรายบุคคล-'.str_replace(' ', '_', $username).'.xlsx';
+
+        AuditLog::record('ส่งออกข้อมูล', 'ส่งออกรายงานรายบุคคล', [
+            'export_type' => 'single_report',
+            'report_id' => $report->id,
+            'assignment_data_id' => $assignment->assignment_data_id,
+            'evaluatee_id' => $assignment->evaluatee_id,
+        ], $report, $user);
 
         return Excel::download(new SingleReportExport($assignment), $fileName);
     }
