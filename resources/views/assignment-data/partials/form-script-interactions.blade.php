@@ -70,9 +70,16 @@
         });
 
         $(document).on('change', '.evaluatee-checkbox', function() {
-            const selectedValues = $('.evaluatee-checkbox:checked').map(function() {
+            const currentSelected = ($('#evaluatees').val() || []).map(String);
+            const visibleValues = filteredEvaluateeOptions.map(option => String($(option).val()));
+            const checkedVisibleValues = $('.evaluatee-checkbox:checked').map(function() {
                 return String($(this).val());
             }).get();
+            const selectedValues = window.AssignmentParticipantSelection.mergeVisibleSelections(
+                currentSelected,
+                visibleValues,
+                checkedVisibleValues
+            );
 
             $('#evaluatees').val(selectedValues);
             updateDisplayAndCounts();

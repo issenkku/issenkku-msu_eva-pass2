@@ -1,7 +1,8 @@
 import '../css/app.css';
-import './workload-formula-preview';
+import './assignment-participant-selection';
 import './support-activity-entries';
 import './support-score-calculator';
+import './workload-formula-preview';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
