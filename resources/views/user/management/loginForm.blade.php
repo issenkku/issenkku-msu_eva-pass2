@@ -37,12 +37,26 @@
             --muted: #71717a;
             --border: #e4e4f0;
             --white: #ffffff;
+            --login-page-padding-y: clamp(0.75rem, 3.5vh, 3rem);
+            --login-page-padding-x: clamp(1.25rem, 3vw, 3.5rem);
+            --login-section-gap: clamp(0.65rem, 2vh, 2rem);
+            --login-logo-size: clamp(56px, 8.5vh, 82px);
+            --login-logo-image-size: clamp(38px, 5.6vh, 54px);
+            --login-card-padding: clamp(1rem, 2.8vh, 2rem);
+            --login-field-gap: clamp(0.65rem, 1.6vh, 1.1rem);
+            --login-control-height: clamp(42px, 5.6vh, 46px);
+            --login-button-height: clamp(44px, 6vh, 50px);
+            --login-feature-height: clamp(82px, 12vh, 120px);
+            --login-feature-padding: clamp(0.65rem, 1.8vh, 1rem);
         }
 
         body {
-            min-height: 100vh;
+            min-height: 0;
+            height: 100vh;
+            height: 100dvh;
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
+            grid-template-rows: minmax(0, 1fr);
             overflow: hidden;
             background-image:
                 linear-gradient(180deg, #ffffff 0%, #ffffff 42%, rgba(255, 255, 255, 0.78) 55%, rgba(255, 255, 255, 0.08) 70%, rgba(255, 255, 255, 0) 100%),
@@ -59,12 +73,18 @@
             background: #ffffff;
         }
 
+        .left,
+        .right {
+            min-height: 0;
+            height: 100%;
+        }
+
         .left {
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 3rem 3.5rem;
+            padding: var(--login-page-padding-y) var(--login-page-padding-x);
             overflow: hidden;
             border-right: 1px solid #e9d5ff;
             background:
@@ -131,7 +151,7 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 2rem;
+            margin-bottom: var(--login-section-gap);
             padding: 6px 14px 6px 8px;
             border: 1px solid #d8b4fe;
             border-radius: 999px;
@@ -167,7 +187,7 @@
         }
 
         .left-subtitle {
-            margin-bottom: 2rem;
+            margin-bottom: var(--login-section-gap);
             color: #6b7280;
             font-size: 0.82rem;
             font-weight: 400;
@@ -188,13 +208,13 @@
         .feature-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 2rem;
+            gap: clamp(0.5rem, 1.4vh, 0.75rem);
+            margin-bottom: var(--login-section-gap);
         }
 
         .feature-card {
-            min-height: 120px;
-            padding: 1rem 1.1rem;
+            min-height: var(--login-feature-height);
+            padding: var(--login-feature-padding) clamp(0.75rem, 1.4vw, 1.1rem);
             border: 1px solid #e9d5ff;
             border-radius: 12px;
             background: rgba(255, 255, 255, 0.78);
@@ -251,7 +271,7 @@
 
         .stat-item {
             flex: 1;
-            padding: 1rem;
+            padding: clamp(0.55rem, 1.5vh, 1rem);
             border-right: 1px solid #e9d5ff;
             text-align: center;
         }
@@ -316,7 +336,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem;
+            padding: var(--login-page-padding-y) clamp(1.25rem, 3vw, 3rem);
+            overflow: hidden;
             background: rgba(248, 250, 252, 0.72);
             backdrop-filter: blur(10px);
         }
@@ -338,7 +359,7 @@
         }
 
         .logo-area {
-            margin-bottom: 2rem;
+            margin-bottom: var(--login-section-gap);
             text-align: center;
             animation: fadeUp 0.6s 0.1s ease both;
         }
@@ -348,9 +369,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 82px;
-            height: 82px;
-            margin-bottom: 1rem;
+            width: var(--login-logo-size);
+            height: var(--login-logo-size);
+            margin-bottom: clamp(0.45rem, 1.4vh, 1rem);
             border: 2px solid var(--purple);
             border-radius: 999px;
             background: var(--white);
@@ -367,8 +388,8 @@
         }
 
         .logo-ring img {
-            width: 54px;
-            height: 54px;
+            width: var(--login-logo-image-size);
+            height: var(--login-logo-image-size);
             object-fit: contain;
         }
 
@@ -388,7 +409,7 @@
         }
 
         .form-card {
-            padding: 2rem;
+            padding: var(--login-card-padding);
             border: 1px solid var(--border);
             border-radius: 20px;
             background: var(--white);
@@ -406,7 +427,7 @@
         }
 
         .form-eyebrow {
-            margin-bottom: 1.75rem;
+            margin-bottom: clamp(0.75rem, 2vh, 1.75rem);
             color: var(--muted);
             font-size: 0.78rem;
             letter-spacing: 0.02em;
@@ -415,13 +436,13 @@
 
         .divider-line {
             height: 1px;
-            margin-bottom: 1.75rem;
+            margin-bottom: clamp(0.75rem, 2vh, 1.75rem);
             opacity: 0.5;
             background: linear-gradient(90deg, transparent, var(--purple), var(--blue), transparent);
         }
 
         .field {
-            margin-bottom: 1.1rem;
+            margin-bottom: var(--login-field-gap);
         }
 
         .field label {
@@ -458,7 +479,7 @@
 
         .input-box input {
             width: 100%;
-            height: 46px;
+            height: var(--login-control-height);
             padding: 0 2.75rem 0 2.55rem;
             border: 1.5px solid var(--border);
             border-radius: 10px;
@@ -511,7 +532,7 @@
             display: flex;
             justify-content: flex-end;
             margin-top: -4px;
-            margin-bottom: 1.5rem;
+            margin-bottom: clamp(0.75rem, 1.8vh, 1.5rem);
         }
 
         .forgot {
@@ -550,7 +571,7 @@
             justify-content: center;
             gap: 8px;
             width: 100%;
-            height: 50px;
+            height: var(--login-button-height);
             overflow: hidden;
             border: 0;
             border-radius: 10px;
@@ -611,7 +632,7 @@
         }
 
         .form-footer-note {
-            margin-top: 1.5rem;
+            margin-top: clamp(0.6rem, 1.8vh, 1.5rem);
             color: #9ca3af;
             font-size: 0.7rem;
             line-height: 1.6;
@@ -640,10 +661,47 @@
             }
         }
 
+        @media (max-height: 760px) and (min-width: 881px) {
+            :root {
+                --login-page-padding-y: clamp(0.5rem, 1.8vh, 0.9rem);
+                --login-section-gap: clamp(0.45rem, 1.2vh, 0.75rem);
+                --login-card-padding: clamp(0.85rem, 2vh, 1.25rem);
+                --login-feature-height: clamp(72px, 10.5vh, 88px);
+                --login-feature-padding: clamp(0.45rem, 1.1vh, 0.7rem);
+            }
+
+            .left-desc {
+                line-height: 1.55;
+            }
+
+            .feature-icon {
+                width: 30px;
+                height: 30px;
+                margin-bottom: 0.3rem;
+            }
+
+            .feature-desc,
+            .footer-text,
+            .form-footer-note {
+                line-height: 1.4;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
         @media (max-width: 880px) {
             body {
                 grid-template-columns: 1fr;
-                overflow: auto;
+                overflow: hidden;
             }
 
             .left {
@@ -651,8 +709,9 @@
             }
 
             .right {
-                min-height: 100vh;
-                padding: 2rem 1.25rem;
+                min-height: 0;
+                height: 100%;
+                padding: var(--login-page-padding-y) 1.25rem;
             }
         }
     </style>
