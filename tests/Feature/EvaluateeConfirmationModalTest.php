@@ -34,6 +34,9 @@ it('updates support summary values without changing the existing total summary',
         ->toContain('summary-support-status-')
         ->toContain('summary-support-score-')
         ->toContain('supportTotal')
+        ->toContain('row.dataset.supportWeightedScore = weighted.toString()')
+        ->toContain('supportListTotal')
+        ->toContain('quantityTotal + qualityTotal + supportListTotal')
         ->toContain('modal-total-summary');
 });
 

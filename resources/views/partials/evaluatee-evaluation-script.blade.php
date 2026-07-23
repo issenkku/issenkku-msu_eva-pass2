@@ -213,6 +213,7 @@
                 const scoreEl = document.getElementById(`summary-support-score-${supportId}`);
 
                 row.dataset.supportHasData = achieved === null ? '0' : '1';
+                row.dataset.supportWeightedScore = weighted.toString();
 
                 if (statusEl) {
                     statusEl.textContent = achieved === null ? 'ยังไม่มีข้อมูล' : 'มีข้อมูลแล้ว';
@@ -270,7 +271,9 @@
                     hasAnyData = true;
                 }
 
-                const total = quantityTotal + qualityTotal;
+                const supportListTotal = Array.from(listEl.querySelectorAll('[data-summary-support-main]'))
+                    .reduce((total, row) => total + (Number(row.dataset.supportWeightedScore || 0) || 0), 0);
+                const total = quantityTotal + qualityTotal + supportListTotal;
                 const statusEl = document.getElementById(`summary-list-status-${listId}`);
                 const scoreEl = document.getElementById(`summary-list-score-${listId}`);
 
