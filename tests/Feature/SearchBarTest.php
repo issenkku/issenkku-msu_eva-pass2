@@ -47,3 +47,22 @@ test('shared search bar hides the clear action when search is empty', function (
     $this->assertStringNotContainsString('search-bar-clear', $html);
     $this->assertStringNotContainsString('ล้างคำค้นหา', $html);
 });
+
+test('shared search bar accepts an optional input class', function () {
+    $html = view('components.search-bar', [
+        'placeholder' => 'ค้นหา',
+        'inputClass' => 'bg-white',
+    ])->render();
+
+    expect($html)
+        ->toContain('search-bar-input')
+        ->toContain('bg-white');
+});
+
+test('user management search opts into a white input background', function () {
+    $source = file_get_contents(
+        resource_path('views/user/management/partials/index-search-section.blade.php')
+    );
+
+    expect($source)->toContain('input-class="bg-white"');
+});

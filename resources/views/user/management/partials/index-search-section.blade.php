@@ -1,2 +1,5 @@
 {{-- ช่องค้นหาผู้ใช้งานแบบอิสระ --}}
-<x-search-bar placeholder="ค้นหาชื่อ, รหัสพนักงาน..." />
+<x-search-bar
+    placeholder="ค้นหาชื่อ, รหัสพนักงาน..."
+    input-class="bg-white"
+/>
