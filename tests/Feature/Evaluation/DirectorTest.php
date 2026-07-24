@@ -242,6 +242,7 @@ class DirectorTest extends TestCase
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 4,
+                    'modification_reason' => 'ปรับตามผลการตรวจ',
                 ]
             ],
             'status' => 'Director_draft',
@@ -334,6 +335,7 @@ class DirectorTest extends TestCase
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 5,
+                    'modification_reason' => 'ปรับตามผลการตรวจ',
                 ]
             ],
             'status' => 'Manager_assign', // Submit to manager

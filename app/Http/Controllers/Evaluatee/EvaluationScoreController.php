@@ -14,6 +14,7 @@ use App\Models\Reports;
 use App\Models\User;
 use App\Services\SupportScoreService;
 use App\Support\AssignmentFlow;
+use App\Support\QualityScoreHistoryRecorder;
 use App\Support\QuantityScoreHistoryRecorder;
 use App\Support\SupportScoreRules;
 use Exception;
@@ -94,6 +95,7 @@ class EvaluationScoreController extends Controller
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric|min:0',
+                'quality_list.*.modification_reason' => 'nullable|string|max:2000',
 
                 'evidence_list_flat' => 'nullable|array',
                 'evidence_list_flat.*.evaluation_list_id' => 'required|integer|exists:evaluation_lists,id',
@@ -304,6 +306,32 @@ class EvaluationScoreController extends Controller
                     ];
                 }
             }
+
+            $persistedQualityScores = collect($newQualityScores)->keyBy('subCriteriaId');
+            $newQualityScoreSnapshots = collect($validated['quality_list'] ?? [])
+                ->map(function ($item, $inputKey) use ($persistedQualityScores) {
+                    $subCriteriaId = is_array($item['quality_sub_criteria_id'])
+                        ? (int) $item['quality_sub_criteria_id'][0]
+                        : (int) $item['quality_sub_criteria_id'];
+
+                    return [
+                        'subCriteriaId' => $subCriteriaId,
+                        'score' => $persistedQualityScores->get($subCriteriaId)['score'] ?? null,
+                        'modificationReason' => $item['modification_reason'] ?? null,
+                        'inputKey' => $inputKey,
+                    ];
+                })
+                ->values()
+                ->all();
+
+            QualityScoreHistoryRecorder::record(
+                $reportId,
+                $oldQualityScores,
+                $newQualityScoreSnapshots,
+                $request->user()?->id,
+                null,
+                false
+            );
 
             // Save all evidence links
             $newEvidences = [];

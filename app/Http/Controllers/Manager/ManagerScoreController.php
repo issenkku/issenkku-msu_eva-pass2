@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ReportDataService;
 use App\Services\SupportScoreService;
 use App\Support\AssignmentFlow;
+use App\Support\QualityScoreHistoryRecorder;
 use App\Support\QuantityScoreHistoryRecorder;
 use App\Support\SupportScoreRules;
 use Exception;
@@ -103,6 +104,7 @@ class ManagerScoreController extends Controller
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
                 'quality_list.*.score' => 'nullable|numeric',
+                'quality_list.*.modification_reason' => 'nullable|string|max:2000',
 
                 'status' => 'required|string|in:Completed,Manager_assign,Manager_draft,Submitted',
                 'comment' => 'nullable|string',
@@ -193,6 +195,32 @@ class ManagerScoreController extends Controller
                     $newQualityScores[] = compact('subCriteriaId', 'score');
                 }
             }
+
+            $persistedQualityScores = collect($newQualityScores)->keyBy('subCriteriaId');
+            $newQualityScoreSnapshots = collect($validated['quality_list'] ?? [])
+                ->map(function ($item, $inputKey) use ($persistedQualityScores) {
+                    $subCriteriaId = is_array($item['quality_sub_criteria_id'])
+                        ? (int) $item['quality_sub_criteria_id'][0]
+                        : (int) $item['quality_sub_criteria_id'];
+
+                    return [
+                        'subCriteriaId' => $subCriteriaId,
+                        'score' => $persistedQualityScores->get($subCriteriaId)['score'] ?? null,
+                        'modificationReason' => $item['modification_reason'] ?? null,
+                        'inputKey' => $inputKey,
+                    ];
+                })
+                ->values()
+                ->all();
+
+            QualityScoreHistoryRecorder::record(
+                $reportId,
+                $oldQualityScores,
+                $newQualityScoreSnapshots,
+                $request->user()?->id,
+                $modifierRole,
+                true
+            );
 
             $supportResult = $this->supportScoreService->persist(
                 $report,

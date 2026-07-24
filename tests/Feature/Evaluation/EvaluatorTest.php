@@ -158,6 +158,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 5,
+                    'modification_reason' => 'ปรับตามผลการตรวจ',
                 ]
             ],
             'status' => 'Pending',
@@ -194,6 +195,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 4,
+                    'modification_reason' => 'ปรับตามผลการตรวจ',
                 ]
             ],
             'status' => 'Evaluator_draft',
