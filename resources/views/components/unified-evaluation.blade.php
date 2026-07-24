@@ -242,38 +242,7 @@
                                                             </div>
                                                         @endunless
 
-                                                        @if (!empty($subCriteria['score_histories']))
-                                                            <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-                                                                @if (false && !empty($subCriteria['score_description']))
-                                                                    <div class="font-medium">หมายเหตุการแก้ไขค่า C</div>
-                                                                    <div class="mt-1 whitespace-pre-line">{{ $subCriteria['score_description'] }}</div>
-                                                                @endif
-                                                                @if (false && (!empty($subCriteria['score_modified_by_name']) || !empty($subCriteria['score_modified_by_role'])))
-                                                                    <div class="mt-2 text-xs text-amber-800">
-                                                                        ล่าสุดแก้ไขโดย {{ $subCriteria['score_modified_by_name'] ?: '-' }}
-                                                                        @if (!empty($subCriteria['score_modified_by_role']))
-                                                                            ({{ $subCriteria['score_modified_by_role'] }})
-                                                                        @endif
-                                                                    </div>
-                                                                @endif
-                                                                @if(!empty($subCriteria['score_histories']))
-                                                                    <div class="font-medium">ประวัติการแก้ไขค่า C</div>
-                                                                    <div class="mt-2 space-y-2">
-                                                                        <div class="text-xs font-semibold text-amber-900">ประวัติการแก้ไข</div>
-                                                                        @foreach($subCriteria['score_histories'] as $history)
-                                                                            <div class="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
-                                                                                <div>ค่าเดิม: {{ $history['previous_score_c'] ?? '-' }} | ค่าใหม่: {{ $history['new_score_c'] ?? '-' }}</div>
-                                                                                <div>ผู้แก้ไข: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
-                                                                                <div>หมายเหตุ: {{ $history['new_description'] ?? '-' }}</div>
-                                                                                @if(!empty($history['created_at']))
-                                                                                    <div class="text-slate-500">เมื่อ {{ $history['created_at'] }}</div>
-                                                                                @endif
-                                                                            </div>
-                                                                        @endforeach
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        @endif
+                                                        <x-score-change-history-list :histories="$subCriteria['score_histories'] ?? []" />
                                                         @if (!empty($subCriteria['require_evidence']))
                                                             <div class="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                                                                 เกณฑ์นี้กำหนดให้แนบหลักฐานก่อนบันทึกภาระงาน
@@ -426,6 +395,7 @@
                                                                             data-evaluation-list-id="{{ $evaluationList['id'] }}"
                                                                             data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}">
                                                                     @endif
+                                                                    <x-score-change-history-list :histories="$subCriteria['score_histories'] ?? []" />
                                                                 </div>
                                                             </div>
                                                         @endforeach

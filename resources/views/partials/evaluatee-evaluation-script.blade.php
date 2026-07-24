@@ -80,7 +80,10 @@
                 });
             }
 
-            errors.push(...(window.validateSupportCriteria?.() ?? []));
+            errors.push(
+                ...(window.validateScoreChangeReasons?.() ?? []),
+                ...(window.validateSupportCriteria?.() ?? [])
+            );
 
             return errors;
         }

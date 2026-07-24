@@ -393,3 +393,34 @@ test('support criteria uses a fixed desktop table and cards without horizontal s
         ->not->toContain('md:table')
         ->not->toContain('md:hidden');
 });
+
+test('reviewer score components expose per item reasons and shared histories', function () {
+    foreach (['unified-evaluator', 'unified-director'] as $component) {
+        $source = file_get_contents(resource_path("views/components/{$component}.blade.php"));
+
+        expect($source)
+            ->toContain('quantity_list[')
+            ->toContain('quality_list[')
+            ->toContain('[modification_reason]')
+            ->toContain('data-score-change-reason')
+            ->toContain('score-change-history-list');
+    }
+});
+
+test('evaluatee score component shows shared histories without reviewer reason fields', function () {
+    $source = file_get_contents(resource_path('views/components/unified-evaluation.blade.php'));
+
+    expect($source)
+        ->toContain('score-change-history-list')
+        ->not->toContain('data-score-change-reason');
+});
+
+test('evaluation form scripts validate changed score reasons', function () {
+    foreach ([
+        'partials/evaluatee-evaluation-script.blade.php',
+        'partials/evaluation-form-script.blade.php',
+    ] as $viewPath) {
+        expect(file_get_contents(resource_path("views/{$viewPath}")))
+            ->toContain('window.validateScoreChangeReasons');
+    }
+});

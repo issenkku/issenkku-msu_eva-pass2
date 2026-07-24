@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Assignments;
 use App\Models\EvidenceAnswer;
 use App\Models\QualityScore;
+use App\Models\QualityScoreHistory;
 use App\Models\QuantityScore;
 use App\Models\QuantityScoreHistory;
 use App\Models\QuantitySubCriteria;
@@ -104,6 +105,12 @@ class ReportDataService
             ->get()
             ->keyBy('quality_sub_criteria_id');
 
+        $qualityScoreHistories = QualityScoreHistory::with('modifierUser:id,name,prefix')
+            ->where('report_id', $id)
+            ->latest()
+            ->get()
+            ->groupBy('quality_sub_criteria_id');
+
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
             ->whereNull('support_criteria_id')
             ->get()
@@ -127,6 +134,7 @@ class ReportDataService
             $quantityScores,
             $quantityScoreHistories,
             $qualityScores,
+            $qualityScoreHistories,
             $evidenceMap,
             $supportItemsByList
         );
@@ -227,6 +235,7 @@ class ReportDataService
         $quantityScores,
         $quantityScoreHistories,
         $qualityScores,
+        $qualityScoreHistories,
         $evidenceMap,
         $supportItemsByList
     ) {
@@ -268,7 +277,7 @@ class ReportDataService
                     $evaluationListData['quantity_items'] = $this->processQuantityItems($list, $quantityScores, $quantityScoreHistories, $evidenceMap);
 
                     // Process quality items
-                    $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $evidenceMap);
+                    $evaluationListData['quality_items'] = $this->processQualityItems($list, $qualityScores, $qualityScoreHistories, $evidenceMap);
 
                     $categoryData['evaluation_lists'][] = $evaluationListData;
                 }
@@ -308,10 +317,9 @@ class ReportDataService
                         $quantityScore = $quantityScores[$subCriteria->id] ?? null;
                         $scoreHistories = ($quantityScoreHistories[$subCriteria->id] ?? collect())->map(function ($history) {
                             return [
-                                'previous_score_c' => $history->previous_score_c,
-                                'new_score_c' => $history->new_score_c,
-                                'previous_description' => $history->previous_description,
-                                'new_description' => $history->new_description,
+                                'previous_value' => $history->previous_score_c,
+                                'new_value' => $history->new_score_c,
+                                'reason' => $history->reason,
                                 'modified_by_name' => $history->modifierUser?->display_name ?? $history->modifierUser?->name ?? '',
                                 'modified_by_role' => $history->modifier_role ?? '',
                                 'created_at' => optional($history->created_at)->format('d/m/Y H:i'),
@@ -345,7 +353,7 @@ class ReportDataService
         return $quantityItems;
     }
 
-    private function processQualityItems($list, $qualityScores, $evidenceMap)
+    private function processQualityItems($list, $qualityScores, $qualityScoreHistories, $evidenceMap)
     {
         $qualityItems = [];
 
@@ -374,6 +382,16 @@ class ReportDataService
 
                     foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
                         $qualityScore = $qualityScores[$subCriteria->id] ?? null;
+                        $scoreHistories = ($qualityScoreHistories[$subCriteria->id] ?? collect())->map(function ($history) {
+                            return [
+                                'previous_value' => $history->previous_score,
+                                'new_value' => $history->new_score,
+                                'reason' => $history->reason,
+                                'modified_by_name' => $history->modifierUser?->display_name ?? $history->modifierUser?->name ?? '',
+                                'modified_by_role' => $history->modifier_role ?? '',
+                                'created_at' => optional($history->created_at)->format('d/m/Y H:i'),
+                            ];
+                        })->values()->all();
                         $evidenceLinks = $evidenceMap[$list->id] ?? [];
 
                         $hasScore = $qualityScore && $qualityScore->score !== null && $qualityScore->score !== '';
@@ -394,6 +412,7 @@ class ReportDataService
                             'user_selected' => $userSelected,
                             'score' => $qualityScore?->score ?? '',
                             'calculated_score' => $calculatedScore,
+                            'score_histories' => $scoreHistories,
                             'evidence' => $evidenceLinks,
                         ];
                     }

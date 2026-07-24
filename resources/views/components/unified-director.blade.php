@@ -280,6 +280,21 @@
                                                                             rows="3"
                                                                             class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-amber-400 focus:ring-amber-300"
                                                                             placeholder="ระบุหมายเหตุการแก้ไข">{{ $subCriteria['score_description'] ?? '' }}</textarea>
+                                                                        <div class="mt-3 hidden" data-score-change-reason-container>
+                                                                            <label for="director-quantity-reason-{{ $subCriteria['id'] }}" class="mb-2 block text-sm font-semibold text-slate-700">
+                                                                                เหตุผลที่แก้ไขคะแนน
+                                                                            </label>
+                                                                            <textarea
+                                                                                id="director-quantity-reason-{{ $subCriteria['id'] }}"
+                                                                                name="quantity_list[{{ $subCriteria['id'] }}][modification_reason]"
+                                                                                rows="2"
+                                                                                maxlength="2000"
+                                                                                data-score-change-reason
+                                                                                data-score-change-type="quantity"
+                                                                                data-score-input-name="quantity_list[{{ $subCriteria['id'] }}][score_C]"
+                                                                                data-original-value="{{ $subCriteria['tor_compliant'] ?? '' }}"
+                                                                                class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm"></textarea>
+                                                                        </div>
                                                                     @else
                                                                         <textarea
                                                                             id="director-score-description-readonly-{{ $subCriteria['id'] }}"
@@ -295,21 +310,7 @@
                                                                             @endif
                                                                         </div>
                                                                     @endif
-                                                                    @if(!empty($subCriteria['score_histories']))
-                                                                        <div class="@if(!$readonly) mt-3 border-t border-amber-200 pt-3 @endif space-y-2">
-                                                                            <div class="text-xs font-semibold text-slate-700">ประวัติการแก้ไข</div>
-                                                                            @foreach($subCriteria['score_histories'] as $history)
-                                                                                <div class="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
-                                                                                    <div>ค่าเดิม: {{ $history['previous_score_c'] ?? '-' }} | ค่าใหม่: {{ $history['new_score_c'] ?? '-' }}</div>
-                                                                                    <div>ผู้แก้ไข: {{ $history['modified_by_name'] ?: '-' }}@if(!empty($history['modified_by_role'])) ({{ $history['modified_by_role'] }})@endif</div>
-                                                                                    <div>หมายเหตุ: {{ $history['new_description'] ?? '-' }}</div>
-                                                                                    @if(!empty($history['created_at']))
-                                                                                        <div class="text-slate-500">เมื่อ {{ $history['created_at'] }}</div>
-                                                                                    @endif
-                                                                                </div>
-                                                                            @endforeach
-                                                                        </div>
-                                                                    @endif
+                                                                    <x-score-change-history-list :histories="$subCriteria['score_histories'] ?? []" />
                                                                 </div>
                                                             @endif
                                                         </div>
@@ -458,7 +459,21 @@
                                                 value="{{ $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '') }}"
                                                 data-evaluation-list-id="{{ $evaluationList['id'] }}"
                                                 data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}">
+                                            <div class="mt-3 hidden" data-score-change-reason-container>
+                                                <label for="director-quality-reason-{{ $subCriteria['id'] }}" class="mb-2 block text-sm font-semibold text-slate-700">เหตุผลที่แก้ไขคะแนน</label>
+                                                <textarea
+                                                    id="director-quality-reason-{{ $subCriteria['id'] }}"
+                                                    name="quality_list[{{ $subCriteria['id'] }}][modification_reason]"
+                                                    rows="2"
+                                                    maxlength="2000"
+                                                    data-score-change-reason
+                                                    data-score-change-type="quality"
+                                                    data-score-input-name="quality_list[{{ $subCriteria['id'] }}][score]"
+                                                    data-original-value="{{ $subCriteria['score'] ?? '' }}"
+                                                    class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-sm"></textarea>
+                                            </div>
                                         @endif
+                                        <x-score-change-history-list :histories="$subCriteria['score_histories'] ?? []" />
                                     </div>
                                 </div>
                             @endforeach
@@ -604,4 +619,5 @@
 
 @include('components.unified-director-styles')
 @include('components.unified-director-script')
+@include('components.score-change-reason-script')
 @include('components.support-criteria-table-script')

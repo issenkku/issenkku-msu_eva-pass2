@@ -59,7 +59,10 @@
         }
 
         evaluationForm.addEventListener('submit', (event) => {
-            const errors = window.validateSupportCriteria?.() ?? [];
+            const errors = [
+                ...(window.validateScoreChangeReasons?.() ?? []),
+                ...(window.validateSupportCriteria?.() ?? []),
+            ];
             if (errors.length === 0) return;
 
             event.preventDefault();
@@ -68,7 +71,10 @@
 
         openModalBtn.addEventListener('click', (event) => {
             event.preventDefault();
-            const errors = window.validateSupportCriteria?.() ?? [];
+            const errors = [
+                ...(window.validateScoreChangeReasons?.() ?? []),
+                ...(window.validateSupportCriteria?.() ?? []),
+            ];
             if (errors.length > 0) {
                 showSupportValidationErrors(errors);
                 return;
