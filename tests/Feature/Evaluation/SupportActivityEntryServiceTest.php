@@ -353,6 +353,17 @@ class SupportActivityEntryServiceTest extends TestCase
     /** @param array<int, array<string, mixed>> $activityEntries */
     private function persistAsReviewer(array $activityEntries): void
     {
+        SupportScore::firstOrCreate(
+            [
+                'report_id' => $this->report->id,
+                'support_criteria_id' => $this->criterion->id,
+            ],
+            [
+                'achieved_score' => 50,
+                'weighted_score' => 10,
+            ]
+        );
+
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
             'achieved_score' => 50,
