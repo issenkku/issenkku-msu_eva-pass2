@@ -28,12 +28,23 @@ test('user management modal renders data-hook based shell controls', function ()
 
     expect($html)
         ->toContain('id="userModal"')
+        ->toContain('role="dialog"')
+        ->toContain('aria-modal="true"')
+        ->toContain('aria-labelledby="userModalTitle"')
+        ->toContain('data-user-modal-panel')
+        ->toContain('min-w-0 max-w-full')
+        ->toContain('max-h-[calc(100dvh-2rem)]')
+        ->toContain('data-user-modal-header')
+        ->toContain('data-user-modal-scroll')
+        ->toContain('min-h-0 flex-1 overflow-y-auto overscroll-contain')
+        ->toContain('data-user-modal-actions')
+        ->toContain('aria-label="ปิดหน้าต่าง"')
+        ->toContain('shrink-0')
         ->toContain('data-user-modal-close')
         ->toContain('data-user-education-add')
         ->toContain('data-user-education-remove')
         ->not->toContain('onclick="closeModal()"')
-        ->not->toContain('onclick="addEducationHistoryRow()"')
-        ->not->toContain('onclick="closeModal()"');
+        ->not->toContain('onclick="addEducationHistoryRow()"');
 });
 
 test('user table actions render data-hook based triggers', function () {
