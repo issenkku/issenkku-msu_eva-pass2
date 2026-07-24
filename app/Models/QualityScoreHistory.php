@@ -6,25 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class QuantityScoreHistory extends Model
+class QualityScoreHistory extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'report_id',
-        'quantity_sub_criteria_id',
-        'previous_score_c',
-        'new_score_c',
-        'previous_description',
-        'new_description',
+        'quality_sub_criteria_id',
+        'previous_score',
+        'new_score',
         'reason',
         'modifier_user_id',
         'modifier_role',
     ];
 
     protected $casts = [
-        'previous_score_c' => 'decimal:2',
-        'new_score_c' => 'decimal:2',
+        'previous_score' => 'decimal:2',
+        'new_score' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -34,9 +32,9 @@ class QuantityScoreHistory extends Model
         return $this->belongsTo(Reports::class, 'report_id');
     }
 
-    public function quantitySubCriteria(): BelongsTo
+    public function subCriteria(): BelongsTo
     {
-        return $this->belongsTo(QuantitySubCriteria::class);
+        return $this->belongsTo(QualitySubCriteria::class, 'quality_sub_criteria_id');
     }
 
     public function modifierUser(): BelongsTo
