@@ -173,6 +173,61 @@ test('reviewer can edit score with a reason while evidence is preserved read onl
         ->toContain('rel="noopener noreferrer"');
 });
 
+test('support score history is available from its own desktop and mobile column in every mode', function () {
+    $history = [
+        'previous_achieved_score' => '80.00',
+        'new_achieved_score' => '90.00',
+        'previous_weighted_score' => '16.00',
+        'new_weighted_score' => '18.00',
+        'reason' => 'ปรับตามหลักฐาน',
+        'modified_by_name' => 'ผู้ประเมิน',
+        'modified_by_role' => 'Evaluator',
+        'created_at' => '24/07/2026 10:00',
+    ];
+    $item = array_replace(supportViewItem(), ['histories' => [$history, $history, $history]]);
+
+    foreach ([false, true] as $readonly) {
+        $html = view('components.support-criteria-table', [
+            'items' => [$item],
+            'readonly' => $readonly,
+            'evidenceEditable' => ! $readonly,
+            'requireReason' => ! $readonly,
+        ])->render();
+
+        expect($html)
+            ->toContain('ประวัติการแก้ไข')
+            ->toContain('data-support-history-open="7"')
+            ->toContain('3 ครั้ง')
+            ->toContain('id="support-history-modal"')
+            ->toContain('data-support-history-payload="7"');
+
+        expect(substr_count($html, 'data-support-history-open="7"'))->toBe(2);
+
+        if ($readonly) {
+            expect($html)->not->toContain('data-support-manage-open="7"');
+        }
+    }
+
+    $emptyHtml = view('components.support-criteria-table', [
+        'items' => [supportViewItem()],
+        'readonly' => true,
+        'evidenceEditable' => false,
+        'requireReason' => false,
+    ])->render();
+
+    expect($emptyHtml)
+        ->toContain('aria-label="ไม่มีประวัติการแก้ไข"')
+        ->not->toContain('data-support-history-open="7"');
+
+    $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
+    expect($script)
+        ->toContain('openSupportHistoryModal')
+        ->toContain('closeSupportHistoryModal')
+        ->toContain('trapSupportHistoryModalFocus')
+        ->toContain('line.textContent = value')
+        ->toContain("event.key === 'Escape'");
+});
+
 test('evaluatee can add edit and delete optional support activity entries', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportActivityViewItem()],
@@ -383,8 +438,9 @@ test('support criteria uses a fixed desktop table and cards without horizontal s
         ->toContain('hidden w-full table-fixed')
         ->toContain('lg:table')
         ->toContain('lg:hidden')
-        ->toContain('w-[19%]')
-        ->toContain('w-[28%]')
+        ->toContain('w-[17%]')
+        ->toContain('w-[25%]')
+        ->toContain('w-[6%]')
         ->toContain('break-words')
         ->not->toContain('overflow-x-auto')
         ->not->toContain('min-w-[1180px]')

@@ -23,13 +23,14 @@
                 <thead class="bg-amber-50 text-xs font-semibold uppercase tracking-wide text-amber-950">
                     <tr>
                         <th scope="col" class="w-[5%] break-words px-2 py-3 text-center">ลำดับ</th>
-                        <th scope="col" class="w-[19%] break-words px-2 py-3">กิจกรรม/โครงการ/งาน</th>
-                        <th scope="col" class="w-[28%] break-words px-2 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
-                        <th scope="col" class="w-[9%] break-words px-2 py-3 text-right">ระดับค่าเป้าหมาย</th>
+                        <th scope="col" class="w-[17%] break-words px-2 py-3">กิจกรรม/โครงการ/งาน</th>
+                        <th scope="col" class="w-[25%] break-words px-2 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
+                        <th scope="col" class="w-[8%] break-words px-2 py-3 text-right">ระดับค่าเป้าหมาย</th>
                         <th scope="col" class="w-[7%] break-words px-2 py-3 text-right">น้ำหนัก</th>
                         <th scope="col" class="w-[8%] break-words px-2 py-3 text-right">ค่าคะแนนที่ได้</th>
                         <th scope="col" class="w-[9%] break-words px-2 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
-                        <th scope="col" class="w-[7%] break-words px-2 py-3 text-center">หลักฐาน</th>
+                        <th scope="col" class="w-[7%] break-words px-2 py-3 text-center">ประวัติการแก้ไข</th>
+                        <th scope="col" class="w-[6%] break-words px-2 py-3 text-center">หลักฐาน</th>
                         @if (!$readonly)
                             <th scope="col" class="w-[8%] break-words px-2 py-3 text-center">จัดการ</th>
                         @endif
@@ -61,6 +62,16 @@
                                     data-support-weighted-display="{{ $item['id'] }}">
                                     {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
                                 </span>
+                            </td>
+                            <td class="px-2 py-4 text-center">
+                                @if (count($item['histories'] ?? []) > 0)
+                                    <button type="button" data-support-history-open="{{ $item['id'] }}"
+                                        class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                        {{ count($item['histories']) }} ครั้ง
+                                    </button>
+                                @else
+                                    <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
+                                @endif
                             </td>
                             <td class="px-2 py-4 text-center">
                                 <div class="space-y-1 text-left" data-support-evidence-list="{{ $item['id'] }}">
@@ -138,6 +149,19 @@
                                 {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
                             </dd>
                         </div>
+                        <div class="col-span-2">
+                            <dt class="text-xs font-medium text-slate-500">ประวัติการแก้ไข</dt>
+                            <dd class="mt-1">
+                                @if (count($item['histories'] ?? []) > 0)
+                                    <button type="button" data-support-history-open="{{ $item['id'] }}"
+                                        class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                        {{ count($item['histories']) }} ครั้ง
+                                    </button>
+                                @else
+                                    <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
+                                @endif
+                            </dd>
+                        </div>
                     </dl>
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-amber-100 pt-4">
                         <div>
@@ -164,6 +188,10 @@
                 </article>
             @endforeach
         </div>
+
+        @foreach ($items as $item)
+            <script type="application/json" data-support-history-payload="{{ $item['id'] }}">@json($item['histories'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)</script>
+        @endforeach
 
         <div class="hidden" data-support-editor-store aria-hidden="true">
             @foreach ($items as $item)
@@ -447,31 +475,6 @@
                         </label>
                     @endif
 
-                    @if (!empty($item['histories']))
-                        <details class="mt-4 rounded-lg border border-slate-200 bg-white p-3">
-                            <summary class="cursor-pointer text-sm font-semibold text-slate-700">ประวัติการแก้ไขคะแนน ({{ count($item['histories']) }})</summary>
-                            <div class="mt-3 space-y-3">
-                                @foreach ($item['histories'] as $history)
-                                    <div class="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                                        <div class="grid gap-2 sm:grid-cols-2">
-                                            <p>ค่าคะแนนเดิม: <strong>{{ $history['previous_achieved_score'] ?? '-' }}</strong></p>
-                                            <p>ค่าคะแนนใหม่: <strong>{{ $history['new_achieved_score'] ?? '-' }}</strong></p>
-                                            <p>คะแนนถ่วงน้ำหนักเดิม: <strong>{{ $history['previous_weighted_score'] ?? '-' }}</strong></p>
-                                            <p>คะแนนถ่วงน้ำหนักใหม่: <strong>{{ $history['new_weighted_score'] ?? '-' }}</strong></p>
-                                        </div>
-                                        <p class="mt-2">เหตุผล: {{ $history['reason'] ?? '-' }}</p>
-                                        <p class="mt-2 text-xs text-slate-500">
-                                            แก้ไขโดย {{ $history['modified_by_name'] ?: '-' }}
-                                            @if (!empty($history['modified_by_role']))
-                                                ({{ $history['modified_by_role'] }})
-                                            @endif
-                                            · {{ $history['created_at'] ?? '-' }}
-                                        </p>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </details>
-                    @endif
                 </article>
             @endforeach
         </div>
@@ -503,6 +506,25 @@
                         บันทึก
                     </button>
                 @endif
+            </footer>
+        </div>
+    </div>
+
+    <div id="support-history-modal"
+        class="fixed inset-0 z-[1200] hidden items-center justify-center bg-slate-950/60 p-4"
+        role="dialog" aria-modal="true" aria-labelledby="support-history-modal-title">
+        <div class="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                <h4 id="support-history-modal-title" class="text-lg font-bold text-slate-950">ประวัติการแก้ไขคะแนน</h4>
+                <button type="button" data-support-history-close aria-label="ปิดประวัติการแก้ไข"
+                    class="rounded-lg p-2 text-xl leading-none text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">×</button>
+            </header>
+            <div class="space-y-3 overflow-y-auto p-5" data-support-history-list></div>
+            <footer class="flex justify-end border-t border-slate-200 px-5 py-4">
+                <button type="button" data-support-history-close
+                    class="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                    ปิด
+                </button>
             </footer>
         </div>
     </div>

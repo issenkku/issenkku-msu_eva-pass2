@@ -420,10 +420,83 @@
         const modal = document.querySelector('[data-support-modal]');
         const modalBody = modal?.querySelector('[data-support-modal-body]');
         const editorStore = document.querySelector('[data-support-editor-store]');
+        const supportHistoryModal = document.getElementById('support-history-modal');
+        const supportHistoryList = supportHistoryModal?.querySelector('[data-support-history-list]');
         let activeItem = null;
         let activeSnapshot = null;
         let previouslyFocusedElement = null;
         let previousBodyOverflow = '';
+        let supportHistoryTrigger = null;
+        let supportHistoryPreviousOverflow = '';
+
+        const scoreHistoryValue = (value) => value === null || value === undefined || value === ''
+            ? 'ไม่มีคะแนน'
+            : value;
+
+        const openSupportHistoryModal = (criterionId, trigger) => {
+            const payloadNode = Array.from(document.querySelectorAll('[data-support-history-payload]'))
+                .find((node) => node.dataset.supportHistoryPayload === String(criterionId));
+            if (!supportHistoryModal || !supportHistoryList || !payloadNode) return;
+
+            let histories = [];
+            try {
+                histories = JSON.parse(payloadNode.textContent || '[]');
+            } catch {
+                return;
+            }
+
+            supportHistoryList.replaceChildren();
+            histories.forEach((history) => {
+                const article = document.createElement('article');
+                article.className = 'rounded-lg bg-slate-50 p-3 text-sm text-slate-700';
+
+                [
+                    `ค่าคะแนน: ${scoreHistoryValue(history.previous_achieved_score)} → ${scoreHistoryValue(history.new_achieved_score)}`,
+                    `คะแนนถ่วงน้ำหนัก: ${scoreHistoryValue(history.previous_weighted_score)} → ${scoreHistoryValue(history.new_weighted_score)}`,
+                    `เหตุผล: ${history.reason || '-'}`,
+                    `แก้ไขโดย ${history.modified_by_name || '-'}${history.modified_by_role ? ` (${history.modified_by_role})` : ''} · ${history.created_at || '-'}`,
+                ].forEach((value) => {
+                    const line = document.createElement('p');
+                    line.textContent = value;
+                    article.appendChild(line);
+                });
+                supportHistoryList.appendChild(article);
+            });
+
+            supportHistoryTrigger = trigger;
+            supportHistoryPreviousOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            supportHistoryModal.classList.remove('hidden');
+            supportHistoryModal.classList.add('flex');
+            supportHistoryModal.querySelector('[data-support-history-close]')?.focus();
+        };
+
+        const closeSupportHistoryModal = () => {
+            if (!supportHistoryModal) return;
+            supportHistoryModal.classList.add('hidden');
+            supportHistoryModal.classList.remove('flex');
+            document.body.style.overflow = supportHistoryPreviousOverflow;
+            supportHistoryTrigger?.focus();
+            supportHistoryTrigger = null;
+        };
+
+        const trapSupportHistoryModalFocus = (event) => {
+            if (!supportHistoryModal || event.key !== 'Tab') return;
+            const focusable = Array.from(supportHistoryModal.querySelectorAll(
+                'button:not([disabled]), [href], input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            )).filter((element) => element.offsetParent !== null);
+            if (focusable.length === 0) return;
+
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
+            }
+        };
 
         const snapshotSupportItem = (item) => ({
             score: item.querySelector('[data-support-score]')?.value ?? '',
@@ -573,6 +646,17 @@
         });
 
         document.addEventListener('click', (event) => {
+            const historyButton = event.target.closest('[data-support-history-open]');
+            if (historyButton) {
+                openSupportHistoryModal(historyButton.dataset.supportHistoryOpen, historyButton);
+                return;
+            }
+
+            if (event.target.closest('[data-support-history-close]')) {
+                closeSupportHistoryModal();
+                return;
+            }
+
             const manageButton = event.target.closest('[data-support-manage-open]');
             if (manageButton) {
                 openSupportModal(manageButton.dataset.supportManageOpen, 'score');
@@ -656,6 +740,10 @@
             if (event.target === modal) closeSupportModal({ restore: true });
         });
 
+        supportHistoryModal?.addEventListener('click', (event) => {
+            if (event.target === supportHistoryModal) closeSupportHistoryModal();
+        });
+
         const trapSupportModalFocus = (event) => {
             if (!modal) return;
             const focusable = Array.from(modal.querySelectorAll(
@@ -675,6 +763,11 @@
         };
 
         document.addEventListener('keydown', (event) => {
+            if (!supportHistoryModal?.classList.contains('hidden')) {
+                if (event.key === 'Escape') closeSupportHistoryModal();
+                if (event.key === 'Tab') trapSupportHistoryModalFocus(event);
+                return;
+            }
             if (event.key === 'Escape' && activeItem) closeSupportModal({ restore: true });
             if (event.key === 'Tab' && activeItem) trapSupportModalFocus(event);
         });
