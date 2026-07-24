@@ -95,6 +95,7 @@ class DirectorScoreController extends Controller
                 'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
                 'quantity_list.*.score_C' => 'nullable|numeric|min:0',
                 'quantity_list.*.description' => 'nullable|string',
+                'quantity_list.*.modification_reason' => 'nullable|string|max:2000',
 
                 'quality_list' => 'nullable|array',
                 'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
@@ -119,7 +120,7 @@ class DirectorScoreController extends Controller
 
             $newQuantityScores = [];
             if (isset($validated['quantity_list'])) {
-                foreach ($validated['quantity_list'] as $item) {
+                foreach ($validated['quantity_list'] as $inputKey => $item) {
                     $subCriteriaId = is_array($item['quantity_sub_criteria_id'])
                         ? $item['quantity_sub_criteria_id'][0]
                         : (int) $item['quantity_sub_criteria_id'];
@@ -127,6 +128,15 @@ class DirectorScoreController extends Controller
                     $subCriteria = QuantitySubCriteria::find($subCriteriaId);
                     $scoreC = $item['score_C'] ?? null;
                     $description = isset($item['description']) ? trim((string) $item['description']) : null;
+                    $modificationReason = $item['modification_reason'] ?? null;
+
+                    $newQuantityScores[] = compact(
+                        'subCriteriaId',
+                        'scoreC',
+                        'description',
+                        'modificationReason',
+                        'inputKey'
+                    );
 
                     if ($scoreC === null) {
                         continue;
@@ -146,7 +156,7 @@ class DirectorScoreController extends Controller
                         'modifier_user_id' => $request->user()?->id,
                         'modifier_role' => $modifierRole,
                     ]);
-                    $newQuantityScores[] = compact('subCriteriaId', 'scoreC', 'scoreD', 'description');
+                    $newQuantityScores[array_key_last($newQuantityScores)]['scoreD'] = $scoreD;
                 }
             }
 
@@ -155,7 +165,8 @@ class DirectorScoreController extends Controller
                 $oldQuantityScores,
                 $newQuantityScores,
                 $request->user()?->id,
-                $modifierRole
+                $modifierRole,
+                true
             );
 
             // ✅ Quality loop with check

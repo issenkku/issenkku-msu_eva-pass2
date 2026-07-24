@@ -143,6 +143,7 @@ class ManagerTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 9,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -178,6 +179,7 @@ class ManagerTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -236,6 +238,7 @@ class ManagerTest extends TestCase
                 'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                 'score_C' => 9,
                 'description' => 'ผู้บริหารปรับคะแนน',
+                'modification_reason' => 'ปรับตามหลักฐาน',
             ]],
             'status' => 'Manager_draft',
             'comment' => 'updated',
@@ -252,6 +255,7 @@ class ManagerTest extends TestCase
             'new_score_c' => '9.00',
             'previous_description' => 'ก่อนผู้บริหารแก้',
             'new_description' => 'ผู้บริหารปรับคะแนน',
+            'reason' => 'ปรับตามหลักฐาน',
             'modifier_user_id' => $this->manager->id,
             'modifier_role' => 'ผู้บริหาร',
         ]);
@@ -362,6 +366,7 @@ class ManagerTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Manager_draft',
@@ -391,6 +396,7 @@ class ManagerTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Manager_draft',
@@ -415,6 +421,7 @@ class ManagerTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Manager_draft',

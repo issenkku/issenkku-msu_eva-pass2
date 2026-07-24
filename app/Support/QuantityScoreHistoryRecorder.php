@@ -12,56 +12,53 @@ class QuantityScoreHistoryRecorder
         Collection $oldScores,
         array $newQuantityScores,
         ?int $modifierUserId,
-        ?string $modifierRole
+        ?string $modifierRole,
+        bool $requireReason
     ): void {
         $oldBySubCriteria = $oldScores->keyBy('quantity_sub_criteria_id');
+        $newBySubCriteria = collect($newQuantityScores)
+            ->filter(fn (array $item) => (int) ($item['subCriteriaId'] ?? 0) > 0)
+            ->keyBy(fn (array $item) => (int) $item['subCriteriaId']);
 
-        foreach ($newQuantityScores as $item) {
-            $subCriteriaId = (int) ($item['subCriteriaId'] ?? 0);
-            if ($subCriteriaId <= 0) {
-                continue;
-            }
+        $subCriteriaIds = $oldBySubCriteria->keys()
+            ->merge($newBySubCriteria->keys())
+            ->unique();
 
+        foreach ($subCriteriaIds as $subCriteriaId) {
             $oldScore = $oldBySubCriteria->get($subCriteriaId);
-            if (! $oldScore) {
-                continue;
-            }
+            $newScore = $newBySubCriteria->get($subCriteriaId);
+            $scoreChanged = ScoreChangePolicy::numbersDiffer(
+                $oldScore?->score_C,
+                $newScore['scoreC'] ?? null
+            );
+            $descriptionChanged = ScoreChangePolicy::textsDiffer(
+                $oldScore?->description,
+                $newScore['description'] ?? null
+            );
+            $changed = $scoreChanged || $descriptionChanged;
+            $inputKey = $newScore['inputKey'] ?? $subCriteriaId;
+            $reason = ScoreChangePolicy::validatedReason(
+                $changed,
+                $newScore['modificationReason'] ?? null,
+                $requireReason,
+                "quantity_list.{$inputKey}.modification_reason"
+            );
 
-            $oldScoreC = self::normalizeNumber($oldScore->score_C);
-            $newScoreC = self::normalizeNumber($item['scoreC'] ?? null);
-            $oldDescription = self::normalizeText($oldScore->description);
-            $newDescription = self::normalizeText($item['description'] ?? null);
-
-            if ($oldScoreC === $newScoreC && $oldDescription === $newDescription) {
+            if (! $changed) {
                 continue;
             }
 
             QuantityScoreHistory::create([
                 'report_id' => $reportId,
                 'quantity_sub_criteria_id' => $subCriteriaId,
-                'previous_score_c' => $oldScoreC,
-                'new_score_c' => $newScoreC,
-                'previous_description' => $oldDescription,
-                'new_description' => $newDescription,
+                'previous_score_c' => $oldScore?->score_C,
+                'new_score_c' => $newScore['scoreC'] ?? null,
+                'previous_description' => $oldScore?->description,
+                'new_description' => $newScore['description'] ?? null,
+                'reason' => $reason,
                 'modifier_user_id' => $modifierUserId,
                 'modifier_role' => $modifierRole,
             ]);
         }
-    }
-
-    private static function normalizeNumber($value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return number_format((float) $value, 2, '.', '');
-    }
-
-    private static function normalizeText($value): ?string
-    {
-        $value = trim((string) ($value ?? ''));
-
-        return $value === '' ? null : $value;
     }
 }

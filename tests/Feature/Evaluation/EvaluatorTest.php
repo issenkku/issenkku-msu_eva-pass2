@@ -151,6 +151,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 9,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -186,6 +187,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -244,6 +246,7 @@ class EvaluatorTest extends TestCase
                 'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                 'score_C' => 7,
                 'description' => 'ผู้ประเมินปรับคะแนน',
+                'modification_reason' => 'ปรับตามหลักฐาน',
             ]],
             'status' => 'Evaluator_draft',
             'comment' => 'updated',
@@ -260,6 +263,7 @@ class EvaluatorTest extends TestCase
             'new_score_c' => '7.00',
             'previous_description' => 'ก่อนตรวจ',
             'new_description' => 'ผู้ประเมินปรับคะแนน',
+            'reason' => 'ปรับตามหลักฐาน',
             'modifier_user_id' => $this->evaluator->id,
             'modifier_role' => 'ผู้ประเมิน',
         ]);
@@ -344,6 +348,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Evaluator_draft',
@@ -368,6 +373,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Evaluator_draft',
@@ -389,6 +395,7 @@ class EvaluatorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Evaluator_draft',

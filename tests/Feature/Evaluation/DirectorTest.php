@@ -235,6 +235,7 @@ class DirectorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -293,6 +294,7 @@ class DirectorTest extends TestCase
                 'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                 'score_C' => 8,
                 'description' => 'กรรมการปรับคะแนน',
+                'modification_reason' => 'ปรับตามหลักฐาน',
             ]],
             'status' => 'Director_draft',
             'comment' => 'updated',
@@ -309,6 +311,7 @@ class DirectorTest extends TestCase
             'new_score_c' => '8.00',
             'previous_description' => 'ก่อนกรรมการแก้',
             'new_description' => 'กรรมการปรับคะแนน',
+            'reason' => 'ปรับตามหลักฐาน',
             'modifier_user_id' => $this->director->id,
             'modifier_role' => 'กรรมการ',
         ]);
@@ -324,6 +327,7 @@ class DirectorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 9,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'quality_list' => [
@@ -359,6 +363,7 @@ class DirectorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Director_draft',
@@ -388,6 +393,7 @@ class DirectorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Director_draft',
@@ -412,6 +418,7 @@ class DirectorTest extends TestCase
                 [
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
+                    'modification_reason' => 'ปรับตามหลักฐาน',
                 ]
             ],
             'status' => 'Director_draft',
