@@ -8,6 +8,7 @@ use App\Models\SupportCriteria;
 use App\Models\SupportScore;
 use App\Models\SupportScoreHistory;
 use App\Models\User;
+use App\Support\ScoreChangePolicy;
 use App\Support\SupportAchievementScore;
 use App\Support\SupportScoreRules;
 use Illuminate\Support\Collection;
@@ -86,25 +87,24 @@ class SupportScoreService
                 $weightedScore = $achievedScore === null
                     ? null
                     : round(((float) $criterion->weight * $achievedScore) / 100, 2);
-                $scoreChanged = $existingScore !== null
-                    && ! $this->scoresAreEqual($existingScore->achieved_score, $achievedScore);
-                $reason = filled($item['modification_reason'])
-                    ? trim((string) $item['modification_reason'])
-                    : null;
-
-                if ($scoreChanged && $requireReasonForChanges && $reason === null) {
-                    throw ValidationException::withMessages([
-                        "support_list.{$index}.modification_reason" => ['กรุณาระบุเหตุผลที่แก้ไขค่าคะแนน'],
-                    ]);
-                }
+                $scoreChanged = ScoreChangePolicy::numbersDiffer(
+                    $existingScore?->achieved_score,
+                    $achievedScore
+                );
+                $reason = ScoreChangePolicy::validatedReason(
+                    $scoreChanged,
+                    $item['modification_reason'] ?? null,
+                    $requireReasonForChanges,
+                    "support_list.{$index}.modification_reason"
+                );
 
                 if ($scoreChanged) {
                     SupportScoreHistory::create([
                         'report_id' => $report->id,
                         'support_criteria_id' => $criterion->id,
-                        'previous_achieved_score' => $existingScore->achieved_score,
+                        'previous_achieved_score' => $existingScore?->achieved_score,
                         'new_achieved_score' => $achievedScore,
-                        'previous_weighted_score' => $existingScore->weighted_score,
+                        'previous_weighted_score' => $existingScore?->weighted_score,
                         'new_weighted_score' => $weightedScore,
                         'reason' => $reason,
                         'modifier_user_id' => $actor?->id,
@@ -226,36 +226,6 @@ class SupportScoreService
             }
         }
 
-        if ($requireReasonForChanges) {
-            $existingScores = SupportScore::query()
-                ->where('report_id', $report->id)
-                ->get()
-                ->keyBy('support_criteria_id');
-
-            foreach ($normalizedItems as $index => $item) {
-                $existingScore = $existingScores->get($item['support_criteria_id']);
-                if ($existingScore === null
-                    || $this->scoresAreEqual($existingScore->achieved_score, $item['achieved_score'])) {
-                    continue;
-                }
-
-                if (! filled($item['modification_reason'])) {
-                    throw ValidationException::withMessages([
-                        "support_list.{$index}.modification_reason" => ['กรุณาระบุเหตุผลที่แก้ไขค่าคะแนน'],
-                    ]);
-                }
-            }
-        }
-
         return $normalizedItems;
-    }
-
-    private function scoresAreEqual(mixed $first, mixed $second): bool
-    {
-        if ($first === null || $second === null) {
-            return $first === null && $second === null;
-        }
-
-        return round((float) $first, 2) === round((float) $second, 2);
     }
 }

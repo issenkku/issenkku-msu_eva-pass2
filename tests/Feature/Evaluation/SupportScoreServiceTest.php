@@ -202,6 +202,35 @@ class SupportScoreServiceTest extends TestCase
         ]);
     }
 
+    public function test_reviewer_add_from_blank_requires_reason_and_records_history(): void
+    {
+        try {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => 40,
+                'evidence_links' => ['https://example.com/evidence'],
+            ]], $this->evaluator, 'ผู้ประเมิน', true);
+            $this->fail('Expected validation failure');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('support_list.0.modification_reason', $exception->errors());
+        }
+
+        app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => 40,
+            'modification_reason' => 'เพิ่มคะแนนหลังตรวจหลักฐาน',
+            'evidence_links' => ['https://example.com/evidence'],
+        ]], $this->evaluator, 'ผู้ประเมิน', true);
+
+        $this->assertDatabaseHas('support_score_histories', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'previous_achieved_score' => null,
+            'new_achieved_score' => '40.00',
+            'reason' => 'เพิ่มคะแนนหลังตรวจหลักฐาน',
+        ]);
+    }
+
     public function test_it_rejects_a_criterion_from_another_version(): void
     {
         $otherVersion = CriteriaVersion::factory()->create();
