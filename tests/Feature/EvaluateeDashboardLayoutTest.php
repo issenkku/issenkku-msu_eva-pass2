@@ -1,10 +1,11 @@
 <?php
 
-it('constrains the evaluatee dashboard to a centered standard width', function () {
+it('constrains the evaluatee dashboard to a centered 1440 pixel width', function () {
     $dashboard = file_get_contents(resource_path('views/evaluatee/dashboard.blade.php'));
 
     expect($dashboard)
-        ->toContain('class="max-w-7xl mx-auto space-y-6"')
+        ->toContain('class="max-w-[1440px] mx-auto space-y-6"')
+        ->not->toContain('max-w-7xl')
         ->not->toContain('max-w-8xl');
 });
 

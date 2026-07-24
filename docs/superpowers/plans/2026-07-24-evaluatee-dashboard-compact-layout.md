@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Constrain the evaluatee dashboard to a centered 1280-pixel content width and remove forced vertical stretching from its status cards.
+**Goal:** Constrain the evaluatee dashboard to a centered 1440-pixel content width and remove forced vertical stretching from its status cards.
 
 **Architecture:** Keep the existing Blade partial structure and data flow unchanged. Express the layout correction entirely through standard Tailwind utility classes, protected by a focused source-contract regression test.
 
@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Apply the change only to `/evaluatee-dashboard`.
-- Use Tailwind's standard `max-w-7xl` width and retain `mx-auto`.
+- Use `max-w-[1440px]` and retain `mx-auto`.
 - Preserve the three-column desktop overview and its `2xl` breakpoint, using 300-pixel deadline columns so the status overview cannot overlap them.
 - Preserve dashboard data, counts, filters, charts, actions, colors, typography, copy, animation, and components.
 - Do not change manager, director, or evaluator dashboards.
@@ -22,7 +22,7 @@
 ## File Structure
 
 - Create `tests/Feature/EvaluateeDashboardLayoutTest.php`: source-contract regression coverage for the evaluatee dashboard's width, card alignment, and content-driven heights.
-- Modify `resources/views/evaluatee/dashboard.blade.php`: set the supported 1280-pixel wrapper width.
+- Modify `resources/views/evaluatee/dashboard.blade.php`: set the 1440-pixel wrapper width.
 - Modify `resources/views/evaluatee/partials/unfinished-assignments.blade.php`: align the panel edges with the other top-level cards.
 - Modify `resources/views/evaluatee/partials/overview-panel.blade.php`: top-align the overview columns and remove forced full-height sizing.
 
@@ -38,7 +38,7 @@
 **Interfaces:**
 
 - Consumes: Existing Blade view composition and standard Tailwind utilities.
-- Produces: A centered `max-w-7xl mx-auto` evaluatee dashboard whose top-level panels share edges and whose overview columns use content-driven height.
+- Produces: A centered `max-w-[1440px] mx-auto` evaluatee dashboard whose top-level panels share edges and whose overview columns use content-driven height.
 
 - [ ] **Step 1: Write the failing layout regression tests**
 
@@ -47,11 +47,12 @@ Create `tests/Feature/EvaluateeDashboardLayoutTest.php`:
 ```php
 <?php
 
-it('constrains the evaluatee dashboard to a centered standard width', function () {
+it('constrains the evaluatee dashboard to a centered 1440 pixel width', function () {
     $dashboard = file_get_contents(resource_path('views/evaluatee/dashboard.blade.php'));
 
     expect($dashboard)
-        ->toContain('class="max-w-7xl mx-auto space-y-6"')
+        ->toContain('class="max-w-[1440px] mx-auto space-y-6"')
+        ->not->toContain('max-w-7xl')
         ->not->toContain('max-w-8xl');
 });
 
@@ -81,14 +82,14 @@ Run:
 php artisan test tests/Feature/EvaluateeDashboardLayoutTest.php
 ```
 
-Expected: two failing tests. The first reports that `max-w-7xl` is missing; the second reports that `mx-5`, `items-stretch`, or `h-full` is still present.
+Expected: two failing tests. The first reports that `max-w-[1440px]` is missing; the second reports that `mx-5`, `items-stretch`, or `h-full` is still present.
 
 - [ ] **Step 3: Implement the minimal Blade utility changes**
 
 In `resources/views/evaluatee/dashboard.blade.php`, change the wrapper to:
 
 ```blade
-<div class="max-w-7xl mx-auto space-y-6">
+<div class="max-w-[1440px] mx-auto space-y-6">
 ```
 
 In `resources/views/evaluatee/partials/unfinished-assignments.blade.php`, change the outer panel to:

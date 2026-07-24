@@ -2,7 +2,7 @@
 
 ## Goal
 
-Make the evaluatee dashboard easier to scan on wide screens by limiting the content width to approximately 1280 pixels and removing unnecessary vertical stretching, while preserving the existing information, visual styling, and responsive behavior.
+Make the evaluatee dashboard easier to scan on wide screens by limiting the content width to 1440 pixels and removing unnecessary vertical stretching, while preserving the existing information, visual styling, and responsive behavior.
 
 ## Scope
 
@@ -10,7 +10,7 @@ The change applies only to the evaluatee dashboard at `/evaluatee-dashboard`.
 
 Included:
 
-- Limit the dashboard content wrapper to Tailwind's standard `max-w-7xl` width.
+- Limit the dashboard content wrapper to `max-w-[1440px]`.
 - Keep the wrapper centered within the page.
 - Align the unfinished-assignment panel with the other top-level dashboard cards.
 - Let empty due-soon and overdue cards size naturally instead of stretching to match the overview chart.
@@ -25,13 +25,13 @@ Excluded:
 
 ## Layout
 
-On desktop, all top-level evaluatee dashboard sections share a centered 1280-pixel maximum width. The overview uses one flexible status column followed by two 300-pixel deadline columns at the existing `2xl` breakpoint. This leaves enough room for the 260-pixel chart and the status-card column without overlap.
+On desktop, all top-level evaluatee dashboard sections share a centered 1440-pixel maximum width. The overview uses one flexible status column followed by two 300-pixel deadline columns at the existing `2xl` breakpoint. This leaves enough room for the 260-pixel chart and the status-card column without overlap.
 
 The due-soon and overdue cards align at the top and use content-driven height. When either list is empty, its card no longer contains a large unused vertical area. On smaller screens, the existing single-column stacking remains unchanged.
 
 ## Implementation Direction
 
-- Replace the unsupported `max-w-8xl` wrapper utility with the standard `max-w-7xl`.
+- Replace the unsupported `max-w-8xl` wrapper utility with `max-w-[1440px]`.
 - Remove the extra horizontal margin from the unfinished-assignment panel so all top-level cards share the same edges.
 - Replace grid stretching with start alignment in the overview section.
 - Remove full-height utilities from the three overview columns where they force equal heights.
@@ -40,7 +40,7 @@ The due-soon and overdue cards align at the top and use content-driven height. W
 
 Add a focused view-structure regression test that checks:
 
-- The evaluatee dashboard uses `max-w-7xl` and no longer uses `max-w-8xl`.
+- The evaluatee dashboard uses `max-w-[1440px]` and no longer uses `max-w-7xl` or `max-w-8xl`.
 - The unfinished-assignment panel has no independent `mx-5` offset.
 - The overview grid aligns items at the start.
 - The due-soon and overdue cards do not use `h-full`.
