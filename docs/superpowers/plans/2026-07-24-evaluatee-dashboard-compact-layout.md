@@ -12,7 +12,7 @@
 
 - Apply the change only to `/evaluatee-dashboard`.
 - Use Tailwind's standard `max-w-7xl` width and retain `mx-auto`.
-- Preserve the existing three-column desktop overview and its `2xl` breakpoint.
+- Preserve the three-column desktop overview and its `2xl` breakpoint, using 300-pixel deadline columns so the status overview cannot overlap them.
 - Preserve dashboard data, counts, filters, charts, actions, colors, typography, copy, animation, and components.
 - Do not change manager, director, or evaluator dashboards.
 - Do not refactor the global Tailwind, Bootstrap, or CDN setup.
@@ -66,7 +66,8 @@ it('aligns evaluatee dashboard cards without forced stretching', function () {
     expect($unfinishedAssignments)->not->toContain('mx-5');
 
     expect($overview)
-        ->toContain('grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]')
+        ->toContain('grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),300px,300px]')
+        ->not->toContain('2xl:grid-cols-[minmax(0,1fr),340px,340px]')
         ->not->toContain('items-stretch')
         ->not->toContain('h-full');
 });
@@ -99,7 +100,7 @@ In `resources/views/evaluatee/partials/unfinished-assignments.blade.php`, change
 In `resources/views/evaluatee/partials/overview-panel.blade.php`, change the overview section and its three direct cards to:
 
 ```blade
-<section class="mt-5 grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]">
+<section class="mt-5 grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),300px,300px]">
     <div class="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
 ```
 

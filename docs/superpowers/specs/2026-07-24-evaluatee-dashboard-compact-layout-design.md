@@ -25,7 +25,7 @@ Excluded:
 
 ## Layout
 
-On desktop, all top-level evaluatee dashboard sections share a centered 1280-pixel maximum width. The overview continues to use one flexible status column followed by two 340-pixel deadline columns at the existing `2xl` breakpoint.
+On desktop, all top-level evaluatee dashboard sections share a centered 1280-pixel maximum width. The overview uses one flexible status column followed by two 300-pixel deadline columns at the existing `2xl` breakpoint. This leaves enough room for the 260-pixel chart and the status-card column without overlap.
 
 The due-soon and overdue cards align at the top and use content-driven height. When either list is empty, its card no longer contains a large unused vertical area. On smaller screens, the existing single-column stacking remains unchanged.
 

@@ -19,7 +19,8 @@ it('aligns evaluatee dashboard cards without forced stretching', function () {
     expect($unfinishedAssignments)->not->toContain('mx-5');
 
     expect($overview)
-        ->toContain('grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]')
+        ->toContain('grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),300px,300px]')
+        ->not->toContain('2xl:grid-cols-[minmax(0,1fr),340px,340px]')
         ->not->toContain('items-stretch')
         ->not->toContain('h-full');
 });

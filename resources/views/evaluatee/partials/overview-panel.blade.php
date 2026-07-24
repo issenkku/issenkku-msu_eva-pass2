@@ -10,7 +10,7 @@
         ];
     @endphp
 
-    <section class="mt-5 grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]">
+    <section class="mt-5 grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),300px,300px]">
         <div class="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
