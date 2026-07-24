@@ -19,6 +19,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ManagerScoreController extends Controller
@@ -94,15 +95,26 @@ class ManagerScoreController extends Controller
                 return $statusCheck;
             }
 
+            $criteriaVersionId = $report->reportData?->criteria_version_id;
             $validated = $request->validate([
                 'quantity_list' => 'nullable|array',
-                'quantity_list.*.quantity_sub_criteria_id' => 'nullable|integer|exists:quantity_sub_criterias,id',
+                'quantity_list.*.quantity_sub_criteria_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('quantity_sub_criterias', 'id')
+                        ->where(fn ($query) => $query->where('criteria_version_id', $criteriaVersionId)),
+                ],
                 'quantity_list.*.score_C' => 'nullable|numeric|min:0',
                 'quantity_list.*.description' => 'nullable|string',
                 'quantity_list.*.modification_reason' => 'nullable|string|max:2000',
 
                 'quality_list' => 'nullable|array',
-                'quality_list.*.quality_sub_criteria_id' => 'nullable|integer|exists:quality_sub_criterias,id',
+                'quality_list.*.quality_sub_criteria_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('quality_sub_criterias', 'id')
+                        ->where(fn ($query) => $query->where('criteria_version_id', $criteriaVersionId)),
+                ],
                 'quality_list.*.score' => 'nullable|numeric',
                 'quality_list.*.modification_reason' => 'nullable|string|max:2000',
 

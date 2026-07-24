@@ -137,6 +137,7 @@ class EvaluateeTest extends TestCase
 
         // Create sub-criteria for testing
         $this->quantitySubCriteria = QuantitySubCriteria::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
             'score_a' => 10,
             'score_b' => 5,
         ]);
