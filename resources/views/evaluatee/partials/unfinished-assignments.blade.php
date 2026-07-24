@@ -1,4 +1,4 @@
-<div class="mx-5 rounded-2xl border px-10 pb-6 pt-6 shadow-md" style="background: linear-gradient(135deg, #f5f3ff 0%, #fff 50%, #fdf2f8 100%); border-color: #ede9fe;">
+<div class="rounded-2xl border px-10 pb-6 pt-6 shadow-md" style="background: linear-gradient(135deg, #f5f3ff 0%, #fff 50%, #fdf2f8 100%); border-color: #ede9fe;">
     <div class="mb-6 flex items-center justify-between">
         <h3 class="flex items-center gap-2 text-2xl font-extrabold tracking-wide text-purple-700">
             <i class="fas fa-bell text-fuchsia-500"></i>

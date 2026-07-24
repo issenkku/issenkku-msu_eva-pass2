@@ -5,7 +5,7 @@
 @section('content')
     @include('evaluatee.partials.overview-styles')
 
-    <div class="max-w-8xl mx-auto space-y-6">
+    <div class="max-w-7xl mx-auto space-y-6">
         <x-profile-card :user="$user" title="ข้อมูลผู้รับการประเมิน" />
 
         @include('evaluatee.partials.unfinished-assignments', ['unfinishedAssignments' => $unfinishedAssignments])

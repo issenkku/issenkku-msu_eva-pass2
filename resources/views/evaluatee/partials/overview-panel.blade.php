@@ -10,8 +10,8 @@
         ];
     @endphp
 
-    <section class="mt-5 grid grid-cols-1 items-stretch gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]">
-        <div class="min-w-0 h-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+    <section class="mt-5 grid grid-cols-1 items-start gap-6 2xl:grid-cols-[minmax(0,1fr),340px,340px]">
+        <div class="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
             <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
                     <h4 class="text-base font-bold text-slate-800">ภาพรวมสถานะงาน</h4>
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <div class="min-w-0 flex h-full flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-sm">
+        <div class="min-w-0 flex flex-col rounded-2xl border border-amber-200 bg-amber-50/70 p-6 shadow-sm">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h4 class="text-base font-bold text-amber-900">ใกล้ครบกำหนด</h4>
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <div class="min-w-0 flex h-full flex-col rounded-2xl border border-rose-200 bg-rose-50/70 p-6 shadow-sm">
+        <div class="min-w-0 flex flex-col rounded-2xl border border-rose-200 bg-rose-50/70 p-6 shadow-sm">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h4 class="text-base font-bold text-rose-900">เลยกำหนดการส่ง</h4>
