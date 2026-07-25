@@ -188,8 +188,11 @@ test('single report category exports support details activities evidence and lis
                 'weight' => '20.00',
                 'achieved_score' => '5.00',
                 'weighted_score' => '1.00',
-                'activity_entries' => [['content' => '<p>โครงการเพิ่มเติม</p>']],
-                'evidence_links' => ['https://example.com/evidence'],
+                'activity_entries' => [[
+                    'content' => '<p>โครงการเพิ่มเติม</p>',
+                    'evidence_links' => ['https://example.com/activity-evidence'],
+                ]],
+                'evidence_links' => [],
             ]],
         ]],
     ]];
@@ -207,7 +210,20 @@ test('single report category exports support details activities evidence and lis
         ->toContain(['  คะแนนที่ทำได้', 5.0])
         ->toContain(['  คะแนนถ่วงน้ำหนัก', 1.0])
         ->toContain(['  กิจกรรม/โครงการเพิ่มเติม', 'โครงการเพิ่มเติม'])
-        ->toContain(['  หลักฐาน', 'https://example.com/evidence']);
+        ->toContain(['    หลักฐาน', 'https://example.com/activity-evidence']);
+
+    $activityRow = array_search(
+        ['  กิจกรรม/โครงการเพิ่มเติม', 'โครงการเพิ่มเติม'],
+        $rows,
+        true
+    );
+    $evidenceRow = array_search(
+        ['    หลักฐาน', 'https://example.com/activity-evidence'],
+        $rows,
+        true
+    );
+
+    expect($evidenceRow)->toBe($activityRow + 1);
 });
 
 test('single report export loads support criteria through the support read model', function () {

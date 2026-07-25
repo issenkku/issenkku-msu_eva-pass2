@@ -382,6 +382,10 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                         '  กิจกรรม/โครงการเพิ่มเติม',
                         SafeHtml::plainText($activityEntry['content'] ?? ''),
                     ];
+
+                    foreach ($activityEntry['evidence_links'] ?? [] as $evidenceLink) {
+                        $data[] = ['    หลักฐาน', $evidenceLink];
+                    }
                 }
 
                 foreach ($supportItem['evidence_links'] ?? [] as $evidenceLink) {

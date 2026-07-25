@@ -48,13 +48,6 @@ class SupportCriteriaReadModelTest extends TestCase
             'achieved_score' => 125.5,
             'weighted_score' => 25.1,
         ]);
-        EvidenceAnswer::create([
-            'evaluation_list_id' => $evaluationList->id,
-            'support_criteria_id' => $criterion->id,
-            'report_id' => $report->id,
-            'link' => 'https://example.com/evidence',
-        ]);
-
         $modifier = User::factory()->create([
             'prefix' => 'นาย',
             'name' => 'ผู้ตรวจสอบ',
@@ -66,6 +59,13 @@ class SupportCriteriaReadModelTest extends TestCase
             'content' => '<p>จัดทำรายงานประจำเดือน</p>',
             'created_by' => $modifier->id,
             'updated_by' => $modifier->id,
+        ]);
+        EvidenceAnswer::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'support_criteria_id' => $criterion->id,
+            'support_activity_entry_id' => $activityEntry->id,
+            'report_id' => $report->id,
+            'link' => 'https://example.com/evidence',
         ]);
         $activityHistory = SupportActivityEntryHistory::create([
             'support_activity_entry_id' => $activityEntry->id,
@@ -106,6 +106,7 @@ class SupportCriteriaReadModelTest extends TestCase
                 'sequence' => 1,
                 'support_indicator_item_id' => null,
                 'content' => '<p>จัดทำรายงานประจำเดือน</p>',
+                'evidence_links' => ['https://example.com/evidence'],
                 'histories' => [[
                     'previous_content' => '<p>ข้อความเดิม</p>',
                     'new_content' => '<p>จัดทำรายงานประจำเดือน</p>',
@@ -118,7 +119,7 @@ class SupportCriteriaReadModelTest extends TestCase
             'achieved_score' => '125.50',
             'weighted_score' => '25.10',
             'modification_reason' => null,
-            'evidence_links' => ['https://example.com/evidence'],
+            'evidence_links' => [],
             'histories' => [[
                 'previous_achieved_score' => '100.00',
                 'new_achieved_score' => '125.50',
@@ -157,11 +158,21 @@ class SupportCriteriaReadModelTest extends TestCase
             'sequence' => 1,
             'content' => '<p>ข้อมูลที่ยังเก็บไว้</p>',
         ]);
+        EvidenceAnswer::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'support_criteria_id' => $criterion->id,
+            'report_id' => $report->id,
+            'link' => 'https://example.com/static-evidence',
+        ]);
 
         $itemsByList = app(SupportCriteriaReadModel::class)->forReport($report);
 
         $this->assertFalse($itemsByList[$evaluationList->id][0]['allow_activity_entries']);
         $this->assertSame([], $itemsByList[$evaluationList->id][0]['activity_entries']);
+        $this->assertSame(
+            ['https://example.com/static-evidence'],
+            $itemsByList[$evaluationList->id][0]['evidence_links']
+        );
         $this->assertDatabaseHas('support_activity_entries', [
             'report_id' => $report->id,
             'support_criteria_id' => $criterion->id,

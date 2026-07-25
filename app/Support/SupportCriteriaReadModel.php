@@ -53,10 +53,14 @@ class SupportCriteriaReadModel
             ->where('report_id', $report->id)
             ->whereIn('support_criteria_id', $criterionIds)
             ->whereNotNull('support_criteria_id')
+            ->whereNull('support_activity_entry_id')
             ->get()
             ->groupBy('support_criteria_id');
         $activityEntries = SupportActivityEntry::query()
-            ->with('histories.modifierUser:id,prefix,name')
+            ->with([
+                'histories.modifierUser:id,prefix,name',
+                'evidenceAnswers:id,evaluation_list_id,report_id,support_criteria_id,support_activity_entry_id,link',
+            ])
             ->where('report_id', $report->id)
             ->whereIn('support_criteria_id', $criterionIds)
             ->orderBy('support_criteria_id')
@@ -95,6 +99,12 @@ class SupportCriteriaReadModel
                                         'sequence' => $entry->sequence,
                                         'support_indicator_item_id' => $entry->support_indicator_item_id,
                                         'content' => $entry->content,
+                                        'evidence_links' => $entry->evidenceAnswers
+                                            ->pluck('link')
+                                            ->filter()
+                                            ->unique()
+                                            ->values()
+                                            ->all(),
                                         'histories' => $entry->histories
                                             ->map(function (SupportActivityEntryHistory $history) {
                                                 return [
