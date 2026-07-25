@@ -4,10 +4,15 @@
     'entryIndex',
     'canEditActivities' => false,
     'activityEntryRole' => 'readonly',
+    'evidenceEditable' => false,
 ])
 
 @php
     $safeActivityContent = (string) \App\Support\SafeHtml::richText($entry['content'] ?? '');
+    $canEditEvidence = $canEditActivities
+        && $evidenceEditable
+        && $activityEntryRole === 'evaluatee';
+    $evidenceLinks = array_values(array_filter($entry['evidence_links'] ?? []));
 @endphp
 
 <article class="rounded-lg border border-slate-200 bg-slate-50 p-3"
@@ -81,4 +86,50 @@
             </div>
         </details>
     @endif
+
+    <section class="mt-4 border-t border-slate-200 pt-4" data-support-evidence-section>
+        <div class="flex items-center justify-between gap-3">
+            <h6 class="text-sm font-semibold text-slate-700">หลักฐาน</h6>
+            @if ($canEditEvidence)
+                <button type="button" data-add-support-evidence
+                    class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    + เพิ่มลิงก์หลักฐาน
+                </button>
+            @endif
+        </div>
+
+        <div class="mt-2 space-y-2" data-support-evidence-container>
+            @if ($canEditEvidence)
+                @foreach ($evidenceLinks ?: [''] as $link)
+                    <div class="support-evidence-row flex items-center gap-2">
+                        <input type="url" data-support-evidence-input
+                            name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][evidence_links][]"
+                            value="{{ $link }}"
+                            aria-label="ลิงก์หลักฐานสำหรับรายการ {{ $entryIndex + 1 }}"
+                            class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                            placeholder="https://example.com/evidence">
+                        <button type="button" data-remove-support-evidence
+                            class="rounded-lg bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100"
+                            aria-label="ลบลิงก์หลักฐาน">ลบ</button>
+                    </div>
+                @endforeach
+            @else
+                @forelse ($evidenceLinks as $link)
+                    <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
+                        class="block break-all rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-700 hover:underline">
+                        {{ $link }}
+                    </a>
+                    @if ($canEditActivities)
+                        <input type="hidden" data-support-evidence-input
+                            name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][evidence_links][]"
+                            value="{{ $link }}">
+                    @endif
+                @empty
+                    <p class="rounded-lg border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500">
+                        ไม่มีหลักฐานแนบ
+                    </p>
+                @endforelse
+            @endif
+        </div>
+    </section>
 </article>

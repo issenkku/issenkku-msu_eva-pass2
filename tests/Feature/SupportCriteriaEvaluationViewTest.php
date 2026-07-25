@@ -28,10 +28,12 @@ function supportActivityViewItem(): array
 {
     return array_replace(supportViewItem(), [
         'allow_activity_entries' => true,
+        'evidence_links' => [],
         'activity_entries' => [[
             'id' => 41,
             'sequence' => 1,
             'content' => '<p><strong>โครงการประจำเดือน</strong></p><script>alert(1)</script>',
+            'evidence_links' => ['https://example.com/activity-proof'],
             'histories' => [[
                 'previous_content' => '<p>ข้อความเดิม</p><script>alert(2)</script>',
                 'new_content' => '<p>โครงการประจำเดือน</p>',
@@ -67,6 +69,7 @@ function supportGroupedActivityViewItem(): array
                 'sequence' => 1,
                 'support_indicator_item_id' => 11,
                 'content' => '<p>โครงการ A</p>',
+                'evidence_links' => ['https://example.com/project-a'],
                 'histories' => [],
             ],
             [
@@ -74,6 +77,7 @@ function supportGroupedActivityViewItem(): array
                 'sequence' => 2,
                 'support_indicator_item_id' => 11,
                 'content' => '<p>โครงการ B</p>',
+                'evidence_links' => [],
                 'histories' => [],
             ],
             [
@@ -81,6 +85,7 @@ function supportGroupedActivityViewItem(): array
                 'sequence' => 3,
                 'support_indicator_item_id' => 12,
                 'content' => '<p>โครงการ C</p>',
+                'evidence_links' => [],
                 'histories' => [],
             ],
         ],
@@ -246,6 +251,9 @@ test('evaluatee can add edit and delete optional support activity entries', func
         ->toContain('data-remove-support-activity')
         ->toContain('support_list[7][activity_entries][0][id]')
         ->toContain('support_list[7][activity_entries][0][content]')
+        ->toContain('support_list[7][activity_entries][0][evidence_links][]')
+        ->toContain('value="https://example.com/activity-proof"')
+        ->not->toContain('name="support_list[7][evidence_links][]"')
         ->toContain('data-support-activity-content')
         ->toContain('support-activity-richtext');
 });
@@ -269,6 +277,9 @@ test('grouped support projects render and edit under their assigned indicator it
         ->not->toContain('ข้อ 2.1 ดำเนินการวิจัยเพื่อพัฒนางาน')
         ->not->toContain('ข้อ 2.2 การเผยแพร่งานวิจัย')
         ->toContain('support_list[7][activity_entries][0][support_indicator_item_id]')
+        ->toContain('support_list[7][activity_entries][0][evidence_links][]')
+        ->toContain('value="https://example.com/project-a"')
+        ->not->toContain('name="support_list[7][evidence_links][]"')
         ->toContain('value="11"')
         ->not->toContain('ส่งตรงเวลา');
 });
@@ -285,6 +296,10 @@ test('reviewer can edit existing support activities with a reason but cannot add
     expect($html)
         ->toContain('support_list[7][activity_entries][0][content]')
         ->toContain('support_list[7][activity_entries][0][modification_reason]')
+        ->toContain('support_list[7][activity_entries][0][evidence_links][]')
+        ->toContain('href="https://example.com/activity-proof"')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"')
         ->toContain('เหตุผลที่แก้ไขกิจกรรม/โครงการ')
         ->toContain('ประวัติการแก้ไขกิจกรรม/โครงการ')
         ->toContain('<p>ข้อความเดิม</p>')
@@ -304,6 +319,9 @@ test('read only support activities show sanitized content without preservation f
 
     expect($html)
         ->toContain('<strong>โครงการประจำเดือน</strong>')
+        ->toContain('href="https://example.com/activity-proof"')
+        ->toContain('target="_blank"')
+        ->toContain('rel="noopener noreferrer"')
         ->not->toContain('alert(1)')
         ->not->toContain('support_list[7][activity_entries]')
         ->not->toContain('data-support-activity-content')
