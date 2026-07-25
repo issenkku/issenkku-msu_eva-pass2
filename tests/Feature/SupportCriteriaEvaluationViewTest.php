@@ -319,6 +319,8 @@ test('read only support activities show sanitized content without preservation f
 
     expect($html)
         ->toContain('<strong>โครงการประจำเดือน</strong>')
+        ->toContain('data-support-activity-evidence-list="41"')
+        ->toContain('รายการ 1')
         ->toContain('href="https://example.com/activity-proof"')
         ->toContain('target="_blank"')
         ->toContain('rel="noopener noreferrer"')
@@ -327,6 +329,8 @@ test('read only support activities show sanitized content without preservation f
         ->not->toContain('data-support-activity-content')
         ->not->toContain('data-add-support-activity')
         ->not->toContain('data-remove-support-activity');
+
+    expect(substr_count($html, 'data-support-activity-evidence-list="41"'))->toBe(2);
 });
 
 test('read only support criteria has no editable score or preservation fields', function () {

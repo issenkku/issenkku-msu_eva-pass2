@@ -536,6 +536,7 @@
             score: item.querySelector('[data-support-score]')?.value ?? '',
             reason: item.querySelector('[data-support-reason]')?.value ?? '',
             evidenceLinks: Array.from(item.querySelectorAll('[data-support-evidence-input]'))
+                .filter((input) => !input.closest('[data-support-activity-entry]'))
                 .map((input) => input.value),
             activityEntries: snapshotActivityEntries(item),
         });
@@ -546,7 +547,8 @@
             if (score) score.value = snapshot.score;
             if (reason) reason.value = snapshot.reason;
 
-            const container = item.querySelector('[data-support-evidence-container]');
+            const container = Array.from(item.querySelectorAll('[data-support-evidence-container]'))
+                .find((candidate) => !candidate.closest('[data-support-activity-entry]'));
             if (container) {
                 const evidenceLinks = snapshot.evidenceLinks.length > 0 ? snapshot.evidenceLinks : [''];
                 container.replaceChildren(...evidenceLinks.map((link) => {
@@ -562,12 +564,32 @@
         const updateSupportRow = (item) => {
             const id = item.dataset.supportId;
             const score = item.querySelector('[data-support-score]')?.value.trim() || '';
-            const evidenceInputs = Array.from(item.querySelectorAll('[data-support-evidence-input]'));
-            const evidenceLinks = evidenceInputs.length > 0
-                ? evidenceInputs.map((input) => input.value.trim()).filter(Boolean)
+            const activityEntries = Array.from(item.querySelectorAll('[data-support-activity-entry]'))
+                .map((entry) => {
+                    const inputs = Array.from(entry.querySelectorAll('[data-support-evidence-input]'));
+                    const links = inputs.length > 0
+                        ? inputs.map((input) => input.value.trim()).filter(Boolean)
+                        : Array.from(entry.querySelectorAll('[data-support-evidence-section] a[href]'))
+                            .map((link) => link.getAttribute('href'))
+                            .filter(Boolean);
+
+                    return {
+                        id: entry.dataset.supportActivityEntryId || null,
+                        evidence_links: links,
+                    };
+                });
+            const activityEvidenceGroups = activityTools().activityEvidenceGroups(activityEntries);
+            const criterionEvidenceInputs = Array.from(item.querySelectorAll('[data-support-evidence-input]'))
+                .filter((input) => !input.closest('[data-support-activity-entry]'));
+            const criterionEvidenceLinks = criterionEvidenceInputs.length > 0
+                ? criterionEvidenceInputs.map((input) => input.value.trim()).filter(Boolean)
                 : Array.from(item.querySelectorAll('[data-support-evidence-section] a[href]'))
+                    .filter((link) => !link.closest('[data-support-activity-entry]'))
                     .map((link) => link.getAttribute('href'))
                     .filter(Boolean);
+            const evidenceLinks = activityEntries.length > 0
+                ? activityEvidenceGroups.flatMap((group) => group.links)
+                : criterionEvidenceLinks;
 
             document.querySelectorAll(`[data-support-evidence-list="${id}"]`).forEach((container) => {
                 container.replaceChildren();
@@ -579,15 +601,33 @@
                     return;
                 }
 
-                evidenceLinks.forEach((evidenceUrl) => {
+                const appendAnchor = (target, evidenceUrl) => {
                     const anchor = document.createElement('a');
                     anchor.href = evidenceUrl;
                     anchor.target = '_blank';
                     anchor.rel = 'noopener noreferrer';
                     anchor.className = 'block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400';
                     anchor.textContent = evidenceUrl;
-                    container.appendChild(anchor);
-                });
+                    target.appendChild(anchor);
+                };
+
+                if (activityEntries.length > 0) {
+                    activityEvidenceGroups.forEach((group) => {
+                        const groupContainer = document.createElement('div');
+                        groupContainer.className = 'space-y-1';
+                        groupContainer.dataset.supportActivityEvidenceList = group.id;
+
+                        const label = document.createElement('span');
+                        label.className = 'block text-xs font-semibold text-slate-500';
+                        label.textContent = group.label;
+                        groupContainer.appendChild(label);
+                        group.links.forEach((evidenceUrl) => appendAnchor(groupContainer, evidenceUrl));
+                        container.appendChild(groupContainer);
+                    });
+                    return;
+                }
+
+                criterionEvidenceLinks.forEach((evidenceUrl) => appendAnchor(container, evidenceUrl));
             });
 
             document.querySelectorAll(`[data-support-manage-open="${id}"]`).forEach((button) => {

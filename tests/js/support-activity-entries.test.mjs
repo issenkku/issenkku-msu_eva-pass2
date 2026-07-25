@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
     activityEvidenceFieldName,
+    activityEvidenceGroups,
     activityEntryFieldName,
     activityEntryIdsKeepOriginalOrder,
     activityHtmlHasVisibleText,
@@ -39,6 +40,28 @@ test('groups projects under each ordered indicator item without duplication', ()
         [43],
         [],
     ]);
+});
+
+test('keeps evidence grouped by its owning activity entry', () => {
+    assert.deepEqual(
+        activityEvidenceGroups([
+            { id: 41, evidence_links: ['https://example.com/one'] },
+            { id: 42, evidence_links: [] },
+            { id: null, evidence_links: ['https://example.com/new'] },
+        ]),
+        [
+            {
+                id: 41,
+                label: 'รายการ 1',
+                links: ['https://example.com/one'],
+            },
+            {
+                id: 'new-2',
+                label: 'รายการ 3',
+                links: ['https://example.com/new'],
+            },
+        ],
+    );
 });
 
 test('rejects visually empty rich text while accepting visible content', () => {
