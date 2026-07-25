@@ -17,8 +17,18 @@ class SupportActivityEntry extends Model
         'support_indicator_item_id',
         'sequence',
         'content',
+        'indicator',
+        'weight',
+        'achieved_score',
+        'weighted_score',
         'created_by',
         'updated_by',
+    ];
+
+    protected $casts = [
+        'weight' => 'decimal:2',
+        'achieved_score' => 'decimal:2',
+        'weighted_score' => 'decimal:2',
     ];
 
     public function report(): BelongsTo

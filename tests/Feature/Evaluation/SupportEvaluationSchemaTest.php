@@ -91,6 +91,46 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertInstanceOf(SupportActivityEntry::class, (new EvidenceAnswer)->supportActivityEntry()->getModel());
     }
 
+    public function test_evaluatee_defined_support_fields_have_schema_and_model_casts(): void
+    {
+        $this->assertTrue(Schema::hasColumns('support_criterias', [
+            'allow_evaluatee_indicator',
+            'allow_evaluatee_weight',
+        ]));
+        $this->assertTrue(Schema::hasColumns('support_activity_entries', [
+            'indicator',
+            'weight',
+            'achieved_score',
+            'weighted_score',
+        ]));
+        $this->assertTrue(Schema::hasColumns('support_activity_entry_histories', [
+            'previous_indicator',
+            'new_indicator',
+            'previous_weight',
+            'new_weight',
+            'previous_achieved_score',
+            'new_achieved_score',
+            'previous_weighted_score',
+            'new_weighted_score',
+        ]));
+
+        $criterion = new SupportCriteria([
+            'allow_evaluatee_indicator' => 1,
+            'allow_evaluatee_weight' => 1,
+        ]);
+        $entry = new SupportActivityEntry([
+            'weight' => 40,
+            'achieved_score' => 80,
+            'weighted_score' => 32,
+        ]);
+
+        $this->assertTrue($criterion->allow_evaluatee_indicator);
+        $this->assertTrue($criterion->allow_evaluatee_weight);
+        $this->assertSame('40.00', $entry->weight);
+        $this->assertSame('80.00', $entry->achieved_score);
+        $this->assertSame('32.00', $entry->weighted_score);
+    }
+
     public function test_support_indicator_items_schema_and_relations_exist(): void
     {
         $this->assertTrue(Schema::hasColumn(

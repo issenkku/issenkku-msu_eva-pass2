@@ -14,9 +14,26 @@ class SupportActivityEntryHistory extends Model
         'support_activity_entry_id',
         'previous_content',
         'new_content',
+        'previous_indicator',
+        'new_indicator',
+        'previous_weight',
+        'new_weight',
+        'previous_achieved_score',
+        'new_achieved_score',
+        'previous_weighted_score',
+        'new_weighted_score',
         'reason',
         'modified_by',
         'modified_by_role',
+    ];
+
+    protected $casts = [
+        'previous_weight' => 'decimal:2',
+        'new_weight' => 'decimal:2',
+        'previous_achieved_score' => 'decimal:2',
+        'new_achieved_score' => 'decimal:2',
+        'previous_weighted_score' => 'decimal:2',
+        'new_weighted_score' => 'decimal:2',
     ];
 
     public function entry(): BelongsTo

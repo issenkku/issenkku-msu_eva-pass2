@@ -20,6 +20,8 @@ class SupportCriteria extends Model
         'weight',
         'require_evidence',
         'allow_activity_entries',
+        'allow_evaluatee_indicator',
+        'allow_evaluatee_weight',
         'group_activity_entries_by_indicator',
     ];
 
@@ -28,6 +30,8 @@ class SupportCriteria extends Model
         'weight' => 'decimal:2',
         'require_evidence' => 'boolean',
         'allow_activity_entries' => 'boolean',
+        'allow_evaluatee_indicator' => 'boolean',
+        'allow_evaluatee_weight' => 'boolean',
         'group_activity_entries_by_indicator' => 'boolean',
     ];
 
