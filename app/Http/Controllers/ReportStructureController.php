@@ -126,60 +126,6 @@ class ReportStructureController extends Controller
         }
     }
 
-    private function validateSupportEvaluateeModeChanges(
-        array $categories,
-        int $criteriaVersionId
-    ): void {
-        $errors = [];
-
-        foreach ($categories as $categoryIndex => $category) {
-            foreach ($category['evaluation_lists'] ?? [] as $listIndex => $evaluationList) {
-                foreach ($evaluationList['support_criterias'] ?? [] as $criteriaIndex => $supportData) {
-                    $criterionId = $supportData['support_criteria_id'] ?? null;
-                    if (! $criterionId) {
-                        continue;
-                    }
-
-                    $criterion = SupportCriteria::query()
-                        ->whereKey($criterionId)
-                        ->whereHas('evaluationList', fn ($query) => $query
-                            ->where('criteria_version_id', $criteriaVersionId))
-                        ->first();
-                    if (! $criterion) {
-                        continue;
-                    }
-
-                    $nextIndicator = (bool) ($supportData['allow_evaluatee_indicator'] ?? false);
-                    $nextWeight = (bool) ($supportData['allow_evaluatee_weight'] ?? false);
-                    $indicatorChanged = $criterion->allow_evaluatee_indicator !== $nextIndicator;
-                    $weightChanged = $criterion->allow_evaluatee_weight !== $nextWeight;
-
-                    if (! $indicatorChanged && ! $weightChanged) {
-                        continue;
-                    }
-
-                    if (! $criterion->scores()->exists() && ! $criterion->activityEntries()->exists()) {
-                        continue;
-                    }
-
-                    $base = "categories.{$categoryIndex}.evaluation_lists.{$listIndex}.support_criterias.{$criteriaIndex}";
-                    $message = 'ไม่สามารถเปลี่ยนรูปแบบช่องที่ผู้ถูกประเมินกรอก หลังเริ่มมีข้อมูลรายงานแล้ว';
-
-                    if ($indicatorChanged) {
-                        $errors["{$base}.allow_evaluatee_indicator"][] = $message;
-                    }
-                    if ($weightChanged) {
-                        $errors["{$base}.allow_evaluatee_weight"][] = $message;
-                    }
-                }
-            }
-        }
-
-        if ($errors !== []) {
-            throw ValidationException::withMessages($errors);
-        }
-    }
-
     private function jsonNoStore(array $payload, int $status = 200)
     {
         return response()->json($payload, $status, [
@@ -835,8 +781,6 @@ class ReportStructureController extends Controller
         }
 
         $this->validateSupportIndicatorConfiguration($validated['categories']);
-        $this->validateSupportEvaluateeModeChanges($validated['categories'], (int) $version->id);
-
         try {
             DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence, $hasQualityAllowMultiple) {
                 // 1. Update Criteria Version

@@ -486,7 +486,7 @@ class SupportCriteriaTemplateTest extends TestCase
         ]);
     }
 
-    public function test_admin_cannot_change_evaluatee_owned_field_mode_after_report_data_exists(): void
+    public function test_admin_can_change_evaluatee_owned_field_mode_after_report_data_exists(): void
     {
         $created = $this->postJson(route('report-structure.store'), $this->payload([[
             'sequence' => 1,
@@ -509,7 +509,7 @@ class SupportCriteriaTemplateTest extends TestCase
         $report = Reports::factory()->create([
             'report_data_id' => $version->reportDatas->first()->id,
         ]);
-        SupportActivityEntry::create([
+        $entry = SupportActivityEntry::create([
             'report_id' => $report->id,
             'support_criteria_id' => $criterion->id,
             'sequence' => 1,
@@ -533,16 +533,18 @@ class SupportCriteriaTemplateTest extends TestCase
         $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
 
         $this->putJson(route('report-structure.update', $version->id), $payload)
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_indicator',
-                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_weight',
-            ]);
+            ->assertOk();
 
         $this->assertDatabaseHas('support_criterias', [
             'id' => $criterion->id,
-            'allow_evaluatee_indicator' => false,
-            'allow_evaluatee_weight' => false,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'content' => $entry->content,
         ]);
     }
 
