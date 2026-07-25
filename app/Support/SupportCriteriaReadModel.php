@@ -59,7 +59,7 @@ class SupportCriteriaReadModel
         $activityEntries = SupportActivityEntry::query()
             ->with([
                 'histories.modifierUser:id,prefix,name',
-                'evidenceAnswers:id,evaluation_list_id,report_id,support_criteria_id,support_activity_entry_id,link',
+                'evidenceAnswers:evaluation_list_id,report_id,support_criteria_id,support_activity_entry_id,link,created_at',
             ])
             ->where('report_id', $report->id)
             ->whereIn('support_criteria_id', $criterionIds)
@@ -74,6 +74,8 @@ class SupportCriteriaReadModel
             ->map(function ($listCriteria) use ($scores, $histories, $evidence, $activityEntries) {
                 return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence, $activityEntries) {
                     $score = $scores->get($criterion->id);
+                    $criterionEntries = $activityEntries->get($criterion->id) ?? collect();
+                    $entryWeightedTotal = round((float) $criterionEntries->sum('weighted_score'), 2);
 
                     return [
                         'id' => $criterion->id,
@@ -84,6 +86,8 @@ class SupportCriteriaReadModel
                         'weight' => $criterion->weight,
                         'require_evidence' => (bool) $criterion->require_evidence,
                         'allow_activity_entries' => (bool) $criterion->allow_activity_entries,
+                        'allow_evaluatee_indicator' => (bool) $criterion->allow_evaluatee_indicator,
+                        'allow_evaluatee_weight' => (bool) $criterion->allow_evaluatee_weight,
                         'group_activity_entries_by_indicator' => (bool) $criterion->group_activity_entries_by_indicator,
                         'indicator_items' => $criterion->indicatorItems->map(fn ($item) => [
                             'id' => $item->id,
@@ -92,13 +96,17 @@ class SupportCriteriaReadModel
                         ])->values()->all(),
                         'activity_entries' => ! $criterion->allow_activity_entries
                             ? []
-                            : ($activityEntries->get($criterion->id) ?? collect())
+                            : $criterionEntries
                                 ->map(function (SupportActivityEntry $entry) {
                                     return [
                                         'id' => $entry->id,
                                         'sequence' => $entry->sequence,
                                         'support_indicator_item_id' => $entry->support_indicator_item_id,
                                         'content' => $entry->content,
+                                        'indicator' => $entry->indicator,
+                                        'weight' => $entry->weight,
+                                        'achieved_score' => $entry->achieved_score,
+                                        'weighted_score' => $entry->weighted_score,
                                         'evidence_links' => $entry->evidenceAnswers
                                             ->pluck('link')
                                             ->filter()
@@ -110,6 +118,14 @@ class SupportCriteriaReadModel
                                                 return [
                                                     'previous_content' => $history->previous_content,
                                                     'new_content' => $history->new_content,
+                                                    'previous_indicator' => $history->previous_indicator,
+                                                    'new_indicator' => $history->new_indicator,
+                                                    'previous_weight' => $history->previous_weight,
+                                                    'new_weight' => $history->new_weight,
+                                                    'previous_achieved_score' => $history->previous_achieved_score,
+                                                    'new_achieved_score' => $history->new_achieved_score,
+                                                    'previous_weighted_score' => $history->previous_weighted_score,
+                                                    'new_weighted_score' => $history->new_weighted_score,
                                                     'reason' => $history->reason,
                                                     'modified_by_name' => $history->modifierUser?->display_name
                                                         ?? $history->modifierUser?->name
@@ -124,9 +140,15 @@ class SupportCriteriaReadModel
                                 })
                                 ->values()
                                 ->all(),
-                        'achieved_score' => $score?->achieved_score,
-                        'weighted_score' => $score?->weighted_score,
-                        'modification_reason' => $score?->modification_reason,
+                        'achieved_score' => $criterion->allow_evaluatee_weight
+                            ? null
+                            : $score?->achieved_score,
+                        'weighted_score' => $criterion->allow_evaluatee_weight
+                            ? number_format($entryWeightedTotal, 2, '.', '')
+                            : $score?->weighted_score,
+                        'modification_reason' => $criterion->allow_evaluatee_weight
+                            ? null
+                            : $score?->modification_reason,
                         'evidence_links' => ($evidence->get($criterion->id) ?? collect())
                             ->pluck('link')
                             ->filter()

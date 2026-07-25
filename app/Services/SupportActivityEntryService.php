@@ -230,7 +230,21 @@ class SupportActivityEntryService
             }
 
             $content = (string) $entryData['content'];
-            if ($content === $entry->content) {
+            $previous = [
+                'content' => $entry->content,
+                'indicator' => $entry->indicator,
+                'weight' => filled($entry->weight) ? (float) $entry->weight : null,
+                'achieved_score' => filled($entry->achieved_score) ? (float) $entry->achieved_score : null,
+                'weighted_score' => filled($entry->weighted_score) ? (float) $entry->weighted_score : null,
+            ];
+            $next = [
+                'content' => $content,
+                'indicator' => $entryData['indicator'],
+                'weight' => $entryData['weight'],
+                'achieved_score' => $entryData['achieved_score'],
+                'weighted_score' => $entryData['weighted_score'],
+            ];
+            if ($previous === $next) {
                 continue;
             }
 
@@ -247,12 +261,24 @@ class SupportActivityEntryService
                 'support_activity_entry_id' => $entry->id,
                 'previous_content' => $entry->content,
                 'new_content' => $content,
+                'previous_indicator' => $entry->indicator,
+                'new_indicator' => $entryData['indicator'],
+                'previous_weight' => $entry->weight,
+                'new_weight' => $entryData['weight'],
+                'previous_achieved_score' => $entry->achieved_score,
+                'new_achieved_score' => $entryData['achieved_score'],
+                'previous_weighted_score' => $entry->weighted_score,
+                'new_weighted_score' => $entryData['weighted_score'],
                 'reason' => $reason,
                 'modified_by' => $actor?->id,
                 'modified_by_role' => $modifierRole,
             ]);
             $entry->update([
                 'content' => $content,
+                'indicator' => $entryData['indicator'],
+                'weight' => $entryData['weight'],
+                'achieved_score' => $entryData['achieved_score'],
+                'weighted_score' => $entryData['weighted_score'],
                 'updated_by' => $actor?->id,
             ]);
         }

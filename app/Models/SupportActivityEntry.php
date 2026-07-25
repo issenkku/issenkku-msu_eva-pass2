@@ -64,6 +64,6 @@ class SupportActivityEntry extends Model
     public function evidenceAnswers(): HasMany
     {
         return $this->hasMany(EvidenceAnswer::class, 'support_activity_entry_id')
-            ->orderBy('id');
+            ->orderBy('created_at');
     }
 }

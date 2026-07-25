@@ -16,6 +16,7 @@ use App\Models\SupportScoreHistory;
 use App\Models\User;
 use App\Support\SupportCriteriaReadModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SupportCriteriaReadModelTest extends TestCase
@@ -99,6 +100,8 @@ class SupportCriteriaReadModelTest extends TestCase
             'weight' => '20.00',
             'require_evidence' => true,
             'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => false,
+            'allow_evaluatee_weight' => false,
             'group_activity_entries_by_indicator' => false,
             'indicator_items' => [],
             'activity_entries' => [[
@@ -106,10 +109,22 @@ class SupportCriteriaReadModelTest extends TestCase
                 'sequence' => 1,
                 'support_indicator_item_id' => null,
                 'content' => '<p>จัดทำรายงานประจำเดือน</p>',
+                'indicator' => null,
+                'weight' => null,
+                'achieved_score' => null,
+                'weighted_score' => null,
                 'evidence_links' => ['https://example.com/evidence'],
                 'histories' => [[
                     'previous_content' => '<p>ข้อความเดิม</p>',
                     'new_content' => '<p>จัดทำรายงานประจำเดือน</p>',
+                    'previous_indicator' => null,
+                    'new_indicator' => null,
+                    'previous_weight' => null,
+                    'new_weight' => null,
+                    'previous_achieved_score' => null,
+                    'new_achieved_score' => null,
+                    'previous_weighted_score' => null,
+                    'new_weighted_score' => null,
                     'reason' => 'ปรับให้ตรงผลงานจริง',
                     'modified_by_name' => $modifier->display_name,
                     'modified_by_role' => 'ผู้ประเมิน',
@@ -227,5 +242,100 @@ class SupportCriteriaReadModelTest extends TestCase
             [$firstIndicator->id, $firstIndicator->id, $secondIndicator->id],
             array_column($item['activity_entries'], 'support_indicator_item_id')
         );
+    }
+
+    public function test_it_exposes_evaluatee_owned_entry_fields_and_criterion_aggregate(): void
+    {
+        $version = CriteriaVersion::factory()->create();
+        $reportData = ReportData::factory()->create(['criteria_version_id' => $version->id]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => '<p>งานตามหน้าที่</p>',
+            'indicator' => '<p>ตัวชี้วัดจาก Admin</p>',
+            'target_value' => 100,
+            'weight' => null,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+        foreach ([
+            ['indicator' => '<p>ตัวชี้วัดหนึ่ง</p>', 'weight' => 40, 'achieved_score' => 80, 'weighted_score' => 32],
+            ['indicator' => '<p>ตัวชี้วัดสอง</p>', 'weight' => 60, 'achieved_score' => 90, 'weighted_score' => 54],
+        ] as $index => $values) {
+            SupportActivityEntry::create([
+                'report_id' => $report->id,
+                'support_criteria_id' => $criterion->id,
+                'sequence' => $index + 1,
+                'content' => '<p>โครงการ '.($index + 1).'</p>',
+                ...$values,
+            ]);
+        }
+
+        $item = app(SupportCriteriaReadModel::class)->forReport($report)[$evaluationList->id][0];
+
+        $this->assertTrue($item['allow_evaluatee_indicator']);
+        $this->assertTrue($item['allow_evaluatee_weight']);
+        $this->assertNull($item['achieved_score']);
+        $this->assertSame('86.00', $item['weighted_score']);
+        $this->assertSame('<p>ตัวชี้วัดหนึ่ง</p>', $item['activity_entries'][0]['indicator']);
+        $this->assertSame('40.00', $item['activity_entries'][0]['weight']);
+        $this->assertSame('80.00', $item['activity_entries'][0]['achieved_score']);
+        $this->assertSame('32.00', $item['activity_entries'][0]['weighted_score']);
+    }
+
+    public function test_activity_evidence_query_does_not_reference_a_nonexistent_id_column(): void
+    {
+        $version = CriteriaVersion::factory()->create();
+        $reportData = ReportData::factory()->create(['criteria_version_id' => $version->id]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => '<p>กิจกรรม</p>',
+            'target_value' => 100,
+            'weight' => 20,
+            'allow_activity_entries' => true,
+        ]);
+        $activityEntry = SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการ</p>',
+        ]);
+        EvidenceAnswer::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'support_criteria_id' => $criterion->id,
+            'support_activity_entry_id' => $activityEntry->id,
+            'report_id' => $report->id,
+            'link' => 'https://example.com/evidence',
+        ]);
+
+        $queries = [];
+        DB::listen(function ($query) use (&$queries): void {
+            $queries[] = $query->sql;
+        });
+
+        app(SupportCriteriaReadModel::class)->forReport($report);
+
+        $evidenceQuery = collect($queries)->first(
+            fn (string $sql): bool => str_contains($sql, 'from "evidence_answers"')
+                && str_contains($sql, '"support_activity_entry_id" in')
+        );
+
+        $this->assertNotNull($evidenceQuery);
+        $this->assertDoesNotMatchRegularExpression('/select\s+"id",/i', $evidenceQuery);
+        $this->assertDoesNotMatchRegularExpression('/order by\s+"id"/i', $evidenceQuery);
     }
 }

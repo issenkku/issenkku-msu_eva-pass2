@@ -517,6 +517,73 @@ class SupportActivityEntryServiceTest extends TestCase
         ]);
     }
 
+    public function test_reviewer_changes_to_evaluatee_owned_fields_require_reason_and_record_full_history(): void
+    {
+        $this->criterion->update([
+            'weight' => null,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+            'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+            'weight' => 40,
+            'achieved_score' => 80,
+            'weighted_score' => 32,
+            'created_by' => $this->evaluatee->id,
+            'updated_by' => $this->evaluatee->id,
+        ]);
+
+        foreach ([
+            ['indicator' => '<p>ตัวชี้วัดใหม่</p>', 'weight' => 40, 'achieved_score' => 80],
+            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 50, 'achieved_score' => 80],
+            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 40, 'achieved_score' => 90],
+        ] as $next) {
+            SupportActivityEntry::query()->whereKey($entry->id)->update([
+                'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+                'weight' => 40,
+                'achieved_score' => 80,
+                'weighted_score' => 32,
+            ]);
+            $entry->histories()->delete();
+
+            $payload = [
+                'id' => $entry->id,
+                'content' => '<p>โครงการเดิม</p>',
+                ...$next,
+            ];
+            try {
+                $this->persistAsReviewer([$payload]);
+                $this->fail('Expected modification reason validation failure');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    'support_list.0.activity_entries.0.modification_reason',
+                    $exception->errors()
+                );
+            }
+
+            $payload['modification_reason'] = 'ปรับตามหลักฐาน';
+            $this->persistAsReviewer([$payload]);
+
+            $this->assertDatabaseCount('support_activity_entry_histories', 1);
+            $this->assertDatabaseHas('support_activity_entry_histories', [
+                'support_activity_entry_id' => $entry->id,
+                'previous_content' => '<p>โครงการเดิม</p>',
+                'new_content' => '<p>โครงการเดิม</p>',
+                'previous_indicator' => '<p>ตัวชี้วัดเดิม</p>',
+                'new_indicator' => $next['indicator'],
+                'previous_weight' => '40.00',
+                'new_weight' => number_format($next['weight'], 2, '.', ''),
+                'previous_achieved_score' => '80.00',
+                'new_achieved_score' => number_format($next['achieved_score'], 2, '.', ''),
+                'reason' => 'ปรับตามหลักฐาน',
+            ]);
+        }
+    }
+
     /** @param array<int, array<string, mixed>> $activityEntries */
     private function persist(array $activityEntries): void
     {
@@ -544,7 +611,7 @@ class SupportActivityEntryServiceTest extends TestCase
 
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 50,
+            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 50,
             'evidence_links' => [],
             'activity_entries' => $activityEntries,
         ]], $this->reviewer, 'ผู้ประเมิน', true);
