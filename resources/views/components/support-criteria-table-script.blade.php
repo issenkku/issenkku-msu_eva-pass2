@@ -25,6 +25,23 @@
                 .trim(),
         };
 
+        const calculateEntryWeightedScore = (weight, achievedScore) => {
+            const calculator = window.SupportScoreCalculator?.calculateEntryWeightedScore;
+            if (calculator) return calculator(weight, achievedScore);
+            if (weight === '' || achievedScore === '') return null;
+            const result = (Number(weight) * Number(achievedScore)) / 100;
+            return Number.isFinite(result) ? Math.round(result * 100) / 100 : null;
+        };
+
+        const updateEntryWeightedScore = (entry) => {
+            const weight = entry.querySelector('[data-support-entry-weight]')?.value.trim() ?? '';
+            const achievedScore = entry.querySelector('[data-support-entry-score]')?.value.trim() ?? '';
+            const weighted = calculateEntryWeightedScore(weight, achievedScore);
+            const display = entry.querySelector('[data-support-entry-weighted]');
+            if (display) display.textContent = weighted === null ? '-' : weighted.toFixed(2);
+            return weighted;
+        };
+
         window.recalculateSupportScores = function recalculateSupportScores() {
             let rawTotal = 0;
 
@@ -40,6 +57,12 @@
                         achieved = Number(rawValue);
                         weighted = (Number(input.dataset.supportWeight || 0) * achieved) / 100;
                     }
+                } else if (item.dataset.supportAllowEntryWeight === '1') {
+                    weighted = Array.from(item.querySelectorAll('[data-support-activity-entry]'))
+                        .map(updateEntryWeightedScore)
+                        .filter((value) => value !== null)
+                        .reduce((total, value) => total + value, 0);
+                    weighted = Math.round(weighted * 100) / 100;
                 } else {
                     const existingWeighted = item.dataset.supportExistingWeighted;
                     if (existingWeighted !== '' && Number.isFinite(Number(existingWeighted))) {
@@ -104,11 +127,10 @@
                 element.setAttribute('aria-describedby', [...describedBy].join(' '));
             };
             const input = item.querySelector('[data-support-score]');
-            if (!input) return { errors, firstInvalid };
 
             const activity = item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน';
-            const value = input.value.trim();
-            if (value !== '' && (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) < 0)) {
+            const value = input?.value.trim() ?? '';
+            if (input && value !== '' && (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) < 0)) {
                 errors.push(`ค่าคะแนนที่ได้ของ "${activity}" ต้องเป็นเลขตั้งแต่ 0 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
                 rememberInvalid(input);
             }
@@ -135,7 +157,8 @@
             }
 
             const reason = item.querySelector('[data-support-reason]');
-            const scoreChanged = normalizeScore(value) !== normalizeScore(input.dataset.supportOriginalScore);
+            const scoreChanged = input
+                && normalizeScore(value) !== normalizeScore(input.dataset.supportOriginalScore);
             if (item.dataset.supportRequireReason === '1' && scoreChanged && !reason?.value.trim()) {
                 errors.push(`กรุณาระบุเหตุผลการแก้คะแนนของ "${activity}"`);
                 rememberInvalid(reason || input);
@@ -152,10 +175,35 @@
                     rememberInvalid(content);
                 }
 
+                const indicator = entry.querySelector('[data-support-entry-indicator]');
+                if (indicator && !activityTools().activityHtmlHasVisibleText(indicator.value)) {
+                    errors.push(`กรุณากรอกตัวชี้วัด/เกณฑ์การประเมินรายการที่ ${entryIndex + 1} ของ "${activity}"`);
+                    rememberInvalid(indicator);
+                }
+
+                const weight = entry.querySelector('[data-support-entry-weight]');
+                const achievedScore = entry.querySelector('[data-support-entry-score]');
+                const decimalPattern = /^\d+(\.\d{1,2})?$/;
+                if (weight && (!decimalPattern.test(weight.value.trim())
+                    || Number(weight.value) <= 0 || Number(weight.value) > 100)) {
+                    errors.push(`น้ำหนักรายการที่ ${entryIndex + 1} ของ "${activity}" ต้องมากกว่า 0 ไม่เกิน 100 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
+                    rememberInvalid(weight);
+                }
+                if (achievedScore && (!decimalPattern.test(achievedScore.value.trim())
+                    || Number(achievedScore.value) < 0 || Number(achievedScore.value) > 100)) {
+                    errors.push(`ค่าคะแนนที่ได้รายการที่ ${entryIndex + 1} ของ "${activity}" ต้องอยู่ระหว่าง 0–100 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
+                    rememberInvalid(achievedScore);
+                }
+
                 const originalContent = content.dataset.originalContent ?? '';
                 const activityReason = entry.querySelector('[data-support-activity-reason]');
+                const activityChanged = content.value !== originalContent
+                    || (indicator && indicator.value !== (indicator.dataset.originalIndicator ?? ''))
+                    || (weight && normalizeScore(weight.value) !== normalizeScore(weight.dataset.originalWeight))
+                    || (achievedScore
+                        && normalizeScore(achievedScore.value) !== normalizeScore(achievedScore.dataset.originalScore));
                 if (item.dataset.supportActivityRole === 'reviewer'
-                    && content.value !== originalContent
+                    && activityChanged
                     && !activityReason?.value.trim()) {
                     errors.push(`กรุณาระบุเหตุผลที่แก้ไขกิจกรรม/โครงการรายการที่ ${entryIndex + 1} ของ "${activity}"`);
                     rememberInvalid(activityReason || content);
@@ -263,7 +311,7 @@
         };
 
         const syncActivityEditorValues = (item) => {
-            item?.querySelectorAll('[data-support-activity-content]').forEach((textarea) => {
+            item?.querySelectorAll('.support-activity-richtext').forEach((textarea) => {
                 if (!window.jQuery || typeof window.jQuery.fn?.summernote !== 'function') return;
                 const $editor = window.jQuery(textarea);
                 if ($editor.next('.note-editor').length > 0) {
@@ -303,7 +351,7 @@
             });
         };
 
-        const createActivityEntryRow = (indicatorItemId = '') => {
+        const createActivityEntryRow = (item, indicatorItemId = '') => {
             const row = document.createElement('article');
             row.className = 'rounded-lg border border-slate-200 bg-slate-50 p-3';
             row.dataset.supportActivityEntry = '';
@@ -325,13 +373,63 @@
             textarea.dataset.originalContent = '';
             label.append(labelText, textarea);
 
+            if (item.dataset.supportAllowEntryIndicator === '1') {
+                const indicatorLabel = document.createElement('label');
+                indicatorLabel.className = 'mt-4 block text-sm font-semibold text-slate-700';
+                indicatorLabel.append('ตัวชี้วัด/เกณฑ์การประเมิน');
+                const indicator = document.createElement('textarea');
+                indicator.rows = 6;
+                indicator.className = 'support-activity-richtext mt-2 block w-full rounded-lg border border-slate-300 p-2.5';
+                indicator.dataset.supportEntryIndicator = '';
+                indicator.dataset.originalIndicator = '';
+                indicatorLabel.appendChild(indicator);
+                row.append(indicatorLabel);
+            }
+
+            if (item.dataset.supportAllowEntryWeight === '1') {
+                const scoreGrid = document.createElement('div');
+                scoreGrid.className = 'mt-4 grid gap-4 sm:grid-cols-3';
+                [
+                    ['น้ำหนัก', 'supportEntryWeight', '0.01', '0.01'],
+                    ['ค่าคะแนนที่ได้', 'supportEntryScore', '0', '0.01'],
+                ].forEach(([text, datasetKey, min, step]) => {
+                    const scoreLabel = document.createElement('label');
+                    scoreLabel.className = 'block text-sm font-semibold text-slate-700';
+                    scoreLabel.append(text);
+                    const scoreInput = document.createElement('input');
+                    scoreInput.type = 'number';
+                    scoreInput.min = min;
+                    scoreInput.max = '100';
+                    scoreInput.step = step;
+                    scoreInput.dataset[datasetKey] = '';
+                    scoreInput.className = 'mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900';
+                    if (datasetKey === 'supportEntryWeight') scoreInput.dataset.originalWeight = '';
+                    if (datasetKey === 'supportEntryScore') scoreInput.dataset.originalScore = '';
+                    scoreLabel.appendChild(scoreInput);
+                    scoreGrid.appendChild(scoreLabel);
+                });
+                const weightedCard = document.createElement('div');
+                weightedCard.className = 'rounded-lg border border-amber-200 bg-amber-50 px-4 py-3';
+                const weightedLabel = document.createElement('span');
+                weightedLabel.className = 'text-xs font-semibold text-amber-700';
+                weightedLabel.textContent = 'คะแนนถ่วงน้ำหนัก';
+                const weightedDisplay = document.createElement('div');
+                weightedDisplay.className = 'mt-2 text-xl font-bold tabular-nums text-amber-950';
+                weightedDisplay.dataset.supportEntryWeighted = '';
+                weightedDisplay.textContent = '-';
+                weightedCard.append(weightedLabel, weightedDisplay);
+                scoreGrid.appendChild(weightedCard);
+                row.append(scoreGrid);
+            }
+
             const removeButton = document.createElement('button');
             removeButton.type = 'button';
             removeButton.dataset.removeSupportActivity = '';
             removeButton.className = 'mt-2 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-100';
             removeButton.textContent = 'ลบรายการ';
 
-            row.append(indicatorId, label, removeButton, createActivityEvidenceSection());
+            row.prepend(indicatorId, label);
+            row.append(removeButton, createActivityEvidenceSection());
             return row;
         };
 
@@ -345,6 +443,9 @@
                 const id = row.querySelector('[data-support-activity-id]');
                 const indicatorId = row.querySelector('[data-support-activity-indicator-id]');
                 const content = row.querySelector('[data-support-activity-content]');
+                const indicator = row.querySelector('[data-support-entry-indicator]');
+                const weight = row.querySelector('[data-support-entry-weight]');
+                const achievedScore = row.querySelector('[data-support-entry-score]');
                 const reason = row.querySelector('[data-support-activity-reason]');
                 const evidenceInputs = row.querySelectorAll('[data-support-evidence-input]');
                 if (id) id.name = activityTools().activityEntryFieldName(criterionId, index, 'id');
@@ -356,6 +457,15 @@
                     );
                 }
                 if (content) content.name = activityTools().activityEntryFieldName(criterionId, index, 'content');
+                if (indicator) indicator.name = activityTools().activityEntryFieldName(criterionId, index, 'indicator');
+                if (weight) weight.name = activityTools().activityEntryFieldName(criterionId, index, 'weight');
+                if (achievedScore) {
+                    achievedScore.name = activityTools().activityEntryFieldName(
+                        criterionId,
+                        index,
+                        'achieved_score',
+                    );
+                }
                 if (reason) reason.name = activityTools().activityEntryFieldName(criterionId, index, 'modification_reason');
                 evidenceInputs.forEach((evidenceInput) => {
                     evidenceInput.name = activityTools().activityEvidenceFieldName(criterionId, index);
@@ -709,12 +819,12 @@
 
             const target = section === 'evidence'
                 ? item.querySelector('[data-support-evidence-input], [data-support-evidence-section] a, [data-add-support-evidence]')
-                : item.querySelector('[data-support-score], [data-support-evidence-section] a');
+                : item.querySelector('[data-support-score], [data-support-activity-content], [data-support-evidence-section] a');
             window.requestAnimationFrame(() => target?.focus());
         };
 
         document.addEventListener('input', (event) => {
-            if (event.target.closest('[data-support-score]')) {
+            if (event.target.closest('[data-support-score], [data-support-entry-weight], [data-support-entry-score]')) {
                 window.recalculateSupportScores();
             }
         });
@@ -722,11 +832,13 @@
         document.addEventListener('click', (event) => {
             const historyButton = event.target.closest('[data-support-history-open]');
             if (historyButton) {
+                event.preventDefault();
                 openSupportHistoryModal(historyButton.dataset.supportHistoryOpen, historyButton);
                 return;
             }
 
             if (event.target.closest('[data-support-history-close]')) {
+                event.preventDefault();
                 closeSupportHistoryModal();
                 return;
             }
@@ -750,6 +862,7 @@
                     || item?.querySelector('[data-support-activity-container]');
                 if (!item || !container || item.dataset.supportActivityRole !== 'evaluatee') return;
                 const row = createActivityEntryRow(
+                    item,
                     addActivityButton.dataset.supportIndicatorItemId || '',
                 );
                 container.appendChild(row);
@@ -767,6 +880,7 @@
                 destroyActivityEditors(row);
                 row.remove();
                 reindexActivityEntries(item);
+                window.recalculateSupportScores();
                 return;
             }
 

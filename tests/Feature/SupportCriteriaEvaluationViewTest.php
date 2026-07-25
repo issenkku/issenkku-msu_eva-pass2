@@ -92,6 +92,29 @@ function supportGroupedActivityViewItem(): array
     ]);
 }
 
+function supportEvaluateeWeightedViewItem(): array
+{
+    return array_replace(supportActivityViewItem(), [
+        'weight' => null,
+        'allow_evaluatee_indicator' => true,
+        'allow_evaluatee_weight' => true,
+        'achieved_score' => null,
+        'weighted_score' => '32.00',
+        'activity_entries' => [[
+            'id' => 41,
+            'sequence' => 1,
+            'support_indicator_item_id' => null,
+            'content' => '<p>โครงการประจำเดือน</p>',
+            'indicator' => '<p>ผ่านความเห็นชอบ</p>',
+            'weight' => '40.00',
+            'achieved_score' => '80.00',
+            'weighted_score' => '32.00',
+            'evidence_links' => [],
+            'histories' => [],
+        ]],
+    ]);
+}
+
 test('support criteria component renders one responsive editable form control set', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
@@ -210,6 +233,19 @@ test('support score history is available from its own desktop and mobile column 
 
         if ($readonly) {
             expect($html)->not->toContain('data-support-manage-open="7"');
+
+            $document = new DOMDocument;
+            @$document->loadHTML("<fieldset disabled>{$html}</fieldset>");
+            $xpath = new DOMXPath($document);
+
+            expect($xpath->query('//fieldset[@disabled]//button[@data-support-history-open]')->length)
+                ->toBe(0);
+            expect($xpath->query('//fieldset[@disabled]//*[@data-support-history-open and @href]')->length)
+                ->toBe(2);
+            expect($xpath->query('//fieldset[@disabled]//button[@data-support-history-close]')->length)
+                ->toBe(0);
+            expect($xpath->query('//fieldset[@disabled]//*[@data-support-history-close and @href]')->length)
+                ->toBe(2);
         }
     }
 
@@ -258,6 +294,24 @@ test('evaluatee can add edit and delete optional support activity entries', func
         ->toContain('support-activity-richtext');
 });
 
+test('evaluatee owned support fields render per project without criterion score input', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeWeightedViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    expect($html)
+        ->toContain('support_list[7][activity_entries][0][indicator]')
+        ->toContain('support_list[7][activity_entries][0][weight]')
+        ->toContain('support_list[7][activity_entries][0][achieved_score]')
+        ->toContain('data-support-entry-weighted')
+        ->toContain('32.00')
+        ->not->toContain('name="support_list[7][achieved_score]"');
+});
+
 test('grouped support projects render and edit under their assigned indicator item', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportGroupedActivityViewItem()],
@@ -300,7 +354,7 @@ test('reviewer can edit existing support activities with a reason but cannot add
         ->toContain('href="https://example.com/activity-proof"')
         ->toContain('target="_blank"')
         ->toContain('rel="noopener noreferrer"')
-        ->toContain('เหตุผลที่แก้ไขกิจกรรม/โครงการ')
+        ->toContain('เหตุผลที่แก้ไขข้อมูลกิจกรรม/โครงการ')
         ->toContain('ประวัติการแก้ไขกิจกรรม/โครงการ')
         ->toContain('<p>ข้อความเดิม</p>')
         ->not->toContain('alert(2)')

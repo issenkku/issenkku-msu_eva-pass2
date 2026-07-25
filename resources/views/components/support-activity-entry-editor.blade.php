@@ -12,6 +12,8 @@
     $canEditEvidence = $canEditActivities
         && $evidenceEditable
         && $activityEntryRole === 'evaluatee';
+    $allowEvaluateeIndicator = !empty($item['allow_evaluatee_indicator']);
+    $allowEvaluateeWeight = !empty($item['allow_evaluatee_weight']);
     $evidenceLinks = array_values(array_filter($entry['evidence_links'] ?? []));
 @endphp
 
@@ -36,6 +38,46 @@
                 data-original-content="{{ $safeActivityContent }}">{{ $safeActivityContent }}</textarea>
         </label>
 
+        @if ($allowEvaluateeIndicator)
+            <label class="mt-4 block text-sm font-semibold text-slate-700">
+                ตัวชี้วัด/เกณฑ์การประเมิน
+                <textarea rows="6"
+                    name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][indicator]"
+                    class="support-activity-richtext mt-2 block w-full rounded-lg border border-slate-300 p-2.5"
+                    data-support-entry-indicator
+                    data-original-indicator="{{ (string) \App\Support\SafeHtml::richText($entry['indicator'] ?? '') }}">{{ (string) \App\Support\SafeHtml::richText($entry['indicator'] ?? '') }}</textarea>
+            </label>
+        @endif
+
+        @if ($allowEvaluateeWeight)
+            <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                <label class="block text-sm font-semibold text-slate-700">
+                    น้ำหนัก
+                    <input type="number" min="0.01" max="100" step="0.01"
+                        name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][weight]"
+                        value="{{ $entry['weight'] ?? '' }}"
+                        data-support-entry-weight
+                        data-original-weight="{{ $entry['weight'] ?? '' }}"
+                        class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900">
+                </label>
+                <label class="block text-sm font-semibold text-slate-700">
+                    ค่าคะแนนที่ได้
+                    <input type="number" min="0" max="100" step="0.01"
+                        name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][achieved_score]"
+                        value="{{ $entry['achieved_score'] ?? '' }}"
+                        data-support-entry-score
+                        data-original-score="{{ $entry['achieved_score'] ?? '' }}"
+                        class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900">
+                </label>
+                <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                    <span class="text-xs font-semibold text-amber-700">คะแนนถ่วงน้ำหนัก</span>
+                    <div class="mt-2 text-xl font-bold tabular-nums text-amber-950" data-support-entry-weighted>
+                        {{ filled($entry['weighted_score'] ?? null) ? $entry['weighted_score'] : '-' }}
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @if ($activityEntryRole === 'evaluatee')
             <button type="button" data-remove-support-activity
                 class="mt-2 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-100">
@@ -43,7 +85,7 @@
             </button>
         @elseif ($activityEntryRole === 'reviewer')
             <label class="mt-3 block text-sm font-semibold text-slate-700">
-                เหตุผลที่แก้ไขกิจกรรม/โครงการ
+                เหตุผลที่แก้ไขข้อมูลกิจกรรม/โครงการ
                 <textarea rows="2" maxlength="2000"
                     name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][modification_reason]"
                     data-support-activity-reason
@@ -55,6 +97,21 @@
         <div class="support-criteria-rich-text text-sm text-slate-800">
             {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
         </div>
+        @if ($allowEvaluateeIndicator)
+            <div class="mt-3">
+                <p class="text-xs font-semibold text-slate-500">ตัวชี้วัด/เกณฑ์การประเมิน</p>
+                <div class="support-criteria-rich-text mt-1 text-sm text-slate-800">
+                    {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                </div>
+            </div>
+        @endif
+        @if ($allowEvaluateeWeight)
+            <dl class="mt-3 grid grid-cols-3 gap-3 text-sm">
+                <div><dt class="text-xs text-slate-500">น้ำหนัก</dt><dd>{{ $entry['weight'] ?? '-' }}</dd></div>
+                <div><dt class="text-xs text-slate-500">ค่าคะแนนที่ได้</dt><dd>{{ $entry['achieved_score'] ?? '-' }}</dd></div>
+                <div><dt class="text-xs text-slate-500">คะแนนถ่วงน้ำหนัก</dt><dd>{{ $entry['weighted_score'] ?? '-' }}</dd></div>
+            </dl>
+        @endif
     @endif
 
     @if (!empty($entry['histories']))

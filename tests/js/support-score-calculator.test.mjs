@@ -1,9 +1,16 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
+import test from 'node:test';
 
-import { calculateSupportAchievement } from '../../resources/js/support-score-calculator.js';
+import { calculateEntryWeightedScore, calculateSupportAchievement } from '../../resources/js/support-score-calculator.js';
 
 test('calculates support achievement from the weighted total and fixed level count', () => {
     assert.equal(calculateSupportAchievement(4.3, 5), 0.86);
     assert.equal(calculateSupportAchievement(0, 5), 0);
+});
+
+test('calculates and rounds weighted scores for one support project', () => {
+    assert.equal(calculateEntryWeightedScore(40, 80), 32);
+    assert.equal(calculateEntryWeightedScore(33.33, 66.67), 22.22);
+    assert.equal(calculateEntryWeightedScore('', 80), null);
+    assert.equal(calculateEntryWeightedScore(40, ''), null);
 });

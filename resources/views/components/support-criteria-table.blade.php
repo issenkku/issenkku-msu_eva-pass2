@@ -70,10 +70,11 @@
                             </td>
                             <td class="px-2 py-4 text-center">
                                 @if (count($item['histories'] ?? []) > 0)
-                                    <button type="button" data-support-history-open="{{ $item['id'] }}"
+                                    <a href="#support-history-modal" role="button" aria-haspopup="dialog"
+                                        data-support-history-open="{{ $item['id'] }}"
                                         class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
                                         {{ count($item['histories']) }} ครั้ง
-                                    </button>
+                                    </a>
                                 @else
                                     <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
                                 @endif
@@ -154,10 +155,11 @@
                             <dt class="text-xs font-medium text-slate-500">ประวัติการแก้ไข</dt>
                             <dd class="mt-1">
                                 @if (count($item['histories'] ?? []) > 0)
-                                    <button type="button" data-support-history-open="{{ $item['id'] }}"
+                                    <a href="#support-history-modal" role="button" aria-haspopup="dialog"
+                                        data-support-history-open="{{ $item['id'] }}"
                                         class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
                                         {{ count($item['histories']) }} ครั้ง
-                                    </button>
+                                    </a>
                                 @else
                                     <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
                                 @endif
@@ -204,6 +206,8 @@
                     data-support-require-reason="{{ $requireReason ? '1' : '0' }}"
                     data-support-activity-role="{{ $readonly ? 'readonly' : $activityEntryRole }}"
                     data-support-grouped="{{ !empty($item['group_activity_entries_by_indicator']) ? '1' : '0' }}"
+                    data-support-allow-entry-indicator="{{ !empty($item['allow_evaluatee_indicator']) ? '1' : '0' }}"
+                    data-support-allow-entry-weight="{{ !empty($item['allow_evaluatee_weight']) ? '1' : '0' }}"
                     data-support-existing-weighted="{{ $item['weighted_score'] ?? '' }}">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>
@@ -313,6 +317,7 @@
                             name="support_list[{{ $item['id'] }}][support_criteria_id]"
                             value="{{ $item['id'] }}">
 
+                        @if (empty($item['allow_evaluatee_weight']))
                         <div class="grid gap-4 lg:grid-cols-2">
                             <label for="support-score-{{ $item['id'] }}" class="block text-sm font-semibold text-slate-700">
                                 ค่าคะแนนที่ได้
@@ -337,6 +342,7 @@
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endif
 
                     @if (empty($item['allow_activity_entries']))
@@ -450,15 +456,16 @@
         <div class="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
             <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                 <h4 id="support-history-modal-title" class="text-lg font-bold text-slate-950">ประวัติการแก้ไขคะแนน</h4>
-                <button type="button" data-support-history-close aria-label="ปิดประวัติการแก้ไข"
-                    class="rounded-lg p-2 text-xl leading-none text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">×</button>
+                <a href="#" role="button" data-support-history-close aria-label="ปิดประวัติการแก้ไข"
+                    class="rounded-lg p-2 text-xl leading-none text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">×
+                </a>
             </header>
             <div class="space-y-3 overflow-y-auto p-5" data-support-history-list></div>
             <footer class="flex justify-end border-t border-slate-200 px-5 py-4">
-                <button type="button" data-support-history-close
+                <a href="#" role="button" data-support-history-close
                     class="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400">
                     ปิด
-                </button>
+                </a>
             </footer>
         </div>
     </div>
