@@ -201,11 +201,12 @@
                                         const targetValue = supportBlock.querySelector('.support_target_value').value;
                                         const weight = supportBlock.querySelector('.support_weight').value;
                                         const grouped = supportBlock.querySelector('.support_group_by_indicator')?.checked || false;
+                                        const evaluateeOwnsWeight = supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false;
                                         const indicatorItems = grouped ? collectSupportIndicatorItems(supportBlock) : [];
 
                                         if (!hasVisibleRichText(activityName)
                                             || (!grouped && !hasVisibleRichText(indicator))
-                                            || targetValue === '' || weight === '') {
+                                            || targetValue === '' || (!evaluateeOwnsWeight && weight === '')) {
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
                                         }
                                         const indicatorCodes = indicatorItems.map((item) => item.code);
@@ -217,7 +218,7 @@
                                         if (Number(targetValue) < 0) {
                                             throw new Error(`ระดับค่าเป้าหมายของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องไม่ติดลบ`);
                                         }
-                                        if (Number(weight) <= 0 || Number(weight) > 100) {
+                                        if (!evaluateeOwnsWeight && (Number(weight) <= 0 || Number(weight) > 100)) {
                                             throw new Error(`น้ำหนักของเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ต้องมากกว่า 0 และไม่เกิน 100`);
                                         }
 
@@ -226,11 +227,11 @@
                                             activity_name: activityName,
                                             indicator: grouped ? null : indicator,
                                             target_value: Number(targetValue),
-                                            weight: Number(weight),
+                                            weight: evaluateeOwnsWeight ? null : Number(weight),
                                             require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
                                             allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false,
                                             allow_evaluatee_indicator: supportBlock.querySelector('.support_allow_evaluatee_indicator')?.checked || false,
-                                            allow_evaluatee_weight: supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false,
+                                            allow_evaluatee_weight: evaluateeOwnsWeight,
                                             group_activity_entries_by_indicator: grouped,
                                             indicator_items: indicatorItems,
                                         };

@@ -13,6 +13,14 @@
             grouped.disabled = !allow.checked;
             if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
             if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
+            const weightInput = block.querySelector('.support_weight');
+            const evaluateeOwnsWeight = Boolean(allowEvaluateeWeight?.checked);
+            if (weightInput) {
+                if (evaluateeOwnsWeight) weightInput.value = '';
+                weightInput.disabled = evaluateeOwnsWeight;
+            }
+            block.querySelector('[data-support-weight-required]')
+                ?.classList.toggle('hidden', evaluateeOwnsWeight);
             block.querySelector('[data-support-legacy-indicator]')
                 ?.classList.toggle('hidden', grouped.checked);
             block.querySelector('.support_indicator_items')

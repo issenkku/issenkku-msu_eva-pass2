@@ -46,7 +46,7 @@
                         placeholder="ระดับค่าเป้าหมาย">
                 </label>
                 <label class="text-sm font-medium text-gray-700">
-                    น้ำหนัก <span class="text-red-500">*</span>
+                    น้ำหนัก <span class="text-red-500" data-support-weight-required>*</span>
                     <input type="number" min="0.01" max="100" step="0.01"
                         class="support_weight mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
                         placeholder="น้ำหนัก">

@@ -50,17 +50,29 @@ test('support template exposes and serializes evaluatee owned field controls', f
 
     expect($html)
         ->toContain('support_allow_evaluatee_indicator')
-        ->toContain('support_allow_evaluatee_weight');
+        ->toContain('support_allow_evaluatee_weight')
+        ->toContain('data-support-weight-required');
     expect($createScript)
         ->toContain('allow_evaluatee_indicator')
         ->toContain('allow_evaluatee_weight')
         ->toContain('allowEvaluateeIndicator.disabled = !allow.checked')
-        ->toContain('allowEvaluateeWeight.disabled = !allow.checked');
+        ->toContain('allowEvaluateeWeight.disabled = !allow.checked')
+        ->toContain("const weightInput = block.querySelector('.support_weight')")
+        ->toContain('weightInput.disabled = evaluateeOwnsWeight')
+        ->toContain("if (evaluateeOwnsWeight) weightInput.value = ''")
+        ->toContain("|| (!evaluateeOwnsWeight && weight === '')")
+        ->toContain('if (!evaluateeOwnsWeight && (Number(weight) <= 0 || Number(weight) > 100))')
+        ->toContain('weight: evaluateeOwnsWeight ? null : Number(weight)');
     expect($editSupportHandler.$editCollector)
         ->toContain('allow_evaluatee_indicator')
         ->toContain('allow_evaluatee_weight')
         ->toContain('allowEvaluateeIndicator.checked = false')
-        ->toContain('allowEvaluateeWeight.checked = false');
+        ->toContain('allowEvaluateeWeight.checked = false')
+        ->toContain("const weightInput = block.querySelector('.support_weight')")
+        ->toContain('weightInput.disabled = evaluateeOwnsWeight')
+        ->toContain("|| (!evaluateeOwnsWeight && weight === '')")
+        ->toContain('if (!evaluateeOwnsWeight && (Number(weight) <= 0 || Number(weight) > 100))')
+        ->toContain('weight: evaluateeOwnsWeight ? null : Number(weight)');
 });
 
 test('grouped support mode marks only the legacy indicator field for hiding', function (string $view) {
