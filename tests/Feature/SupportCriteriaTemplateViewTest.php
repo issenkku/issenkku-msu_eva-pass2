@@ -36,6 +36,44 @@ test('support indicator code input does not impose a character limit', function 
         ->not->toContain('type="text" maxlength="50"');
 });
 
+test('grouped support mode marks only the legacy indicator field for hiding', function (string $view) {
+    $html = view($view)->render();
+    $document = new DOMDocument;
+    $previous = libxml_use_internal_errors(true);
+
+    $document->loadHTML(
+        '<!doctype html><html><body>'.$html.'</body></html>',
+        LIBXML_NOERROR | LIBXML_NOWARNING
+    );
+
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+
+    $xpath = new DOMXPath($document);
+    $markedLabels = $xpath->query('//label[@data-support-legacy-indicator]');
+
+    expect($markedLabels)->not->toBeFalse()
+        ->and($markedLabels->length)->toBe(1);
+
+    $markedLabel = $markedLabels->item(0);
+    $indicatorFields = $xpath->query(
+        './/textarea[contains(concat(" ", normalize-space(@class), " "), " support_indicator ")]',
+        $markedLabel
+    );
+    $activityFields = $xpath->query(
+        './/textarea[contains(concat(" ", normalize-space(@class), " "), " support_activity_name ")]',
+        $markedLabel
+    );
+
+    expect($indicatorFields)->not->toBeFalse()
+        ->and($indicatorFields->length)->toBe(1)
+        ->and($activityFields)->not->toBeFalse()
+        ->and($activityFields->length)->toBe(0);
+})->with([
+    'create editor' => 'criteria_config.partials.create-evaluation-template',
+    'edit editor' => 'criteria_config.partials.edit-evaluation-template',
+]);
+
 test('create script toggles collects and reorders support criteria', function () {
     $script = file_get_contents(resource_path('views/criteria_config/partials/create-script.blade.php'));
 

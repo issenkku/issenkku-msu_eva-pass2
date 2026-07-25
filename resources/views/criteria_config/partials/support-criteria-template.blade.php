@@ -27,13 +27,13 @@
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <label class="text-sm font-medium text-gray-700" data-support-legacy-indicator>
+                <label class="text-sm font-medium text-gray-700">
                     กิจกรรม/โครงการ/งาน <span class="text-red-500">*</span>
                     <textarea rows="8"
                         class="support_activity_name richtext-editor mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
                         placeholder="กิจกรรม/โครงการ/งาน"></textarea>
                 </label>
-                <label class="text-sm font-medium text-gray-700">
+                <label class="text-sm font-medium text-gray-700" data-support-legacy-indicator>
                     ตัวชี้วัด/เกณฑ์การประเมิน <span class="text-red-500">*</span>
                     <textarea rows="8"
                         class="support_indicator richtext-editor mt-2 block w-full rounded-lg border border-gray-300 p-2.5"
