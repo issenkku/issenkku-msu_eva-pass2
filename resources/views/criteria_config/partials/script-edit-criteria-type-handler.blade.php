@@ -10,4 +10,5 @@
             quantityContainer.classList.toggle('hidden', !quantityCheckbox.checked);
             qualityContainer.classList.toggle('hidden', !qualityCheckbox.checked);
             supportContainer.classList.toggle('hidden', !supportCheckbox.checked);
+            updatePermanentQuantityDeleteButton(evaluationBlock);
         }

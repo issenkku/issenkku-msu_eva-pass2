@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Rules\HasRichText;
+use App\Exceptions\QuantityCriteriaInUse;
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
@@ -19,6 +20,7 @@ use App\Models\SupportCriteria;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use App\Models\WorkloadFormItem;
+use App\Services\QuantityCriteriaDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -1262,6 +1264,38 @@ class ReportStructureController extends Controller
         });
 
         return response()->json(null, 204);
+    }
+
+    public function destroyQuantityCriteria(
+        CriteriaVersion $criteriaVersion,
+        EvaluationList $evaluationList,
+        Request $request,
+        QuantityCriteriaDeletionService $deletionService,
+    ) {
+        abort_unless(
+            $evaluationList->criteria_version_id === $criteriaVersion->id,
+            404,
+        );
+
+        if ($evaluationList->quantity_enabled) {
+            return response()->json([
+                'message' => 'กรุณาปิดเกณฑ์ด้านปริมาณก่อนลบถาวร',
+            ], 422);
+        }
+
+        try {
+            $deleted = $deletionService->delete($evaluationList, $request->user());
+        } catch (QuantityCriteriaInUse $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+                'dependencies' => $exception->dependencies(),
+            ], 409);
+        }
+
+        return response()->json([
+            'message' => 'ลบข้อมูลเกณฑ์ปริมาณทั้งหมดเรียบร้อยแล้ว',
+            'deleted' => $deleted,
+        ]);
     }
 
     private function copyWorkloadFromSource(int $sourceVersionId, int $newVersionId): void

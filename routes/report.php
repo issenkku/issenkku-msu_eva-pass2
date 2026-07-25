@@ -17,6 +17,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
         Route::post('/', [ReportStructureController::class, 'store'])->name('store');
         Route::put('/{id}', [ReportStructureController::class, 'update'])->name('update');
         Route::delete('/{id}', [ReportStructureController::class, 'destroy'])->name('destroy');
+        Route::delete(
+            '/{criteriaVersion}/evaluation-lists/{evaluationList}/quantity-criteria',
+            [ReportStructureController::class, 'destroyQuantityCriteria']
+        )->name('quantity-criteria.destroy');
     });
     Route::get('/criteria-config', function () {
         return view('criteria_config.index');

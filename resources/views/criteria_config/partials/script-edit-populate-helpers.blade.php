@@ -140,6 +140,7 @@
             if (hasSavedQuantity) {
                 populateQuantityCriteria(quantityContainer, evalData.quantity_main_criterias);
             }
+            updatePermanentQuantityDeleteButton(newBlock);
 
             if (hasQuality) {
                 populateQualityCriteria(qualityContainer, evalData.quality_main_criterias);

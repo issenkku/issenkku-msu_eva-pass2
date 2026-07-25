@@ -66,6 +66,15 @@
                                     </div>
                                 </div>
 
+                                <div class="mb-4">
+                                    <button
+                                        type="button"
+                                        class="delete_all_quantity_criteria_btn hidden text-sm font-semibold text-red-700 hover:text-red-900 transition"
+                                    >
+                                        ลบข้อมูลเกณฑ์ปริมาณทั้งหมด
+                                    </button>
+                                </div>
+
                                 <!-- Quantity Criteria Section -->
                                 <div class="quantity_main_criterias_container space-y-4 pl-6 border-l-4 border-green-400 hidden">
                                     <h6 class="font-bold text-gray-900 mb-3 flex items-center">

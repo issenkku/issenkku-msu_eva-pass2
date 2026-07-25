@@ -46,6 +46,9 @@
                     handleAddQuantitySubCriteria(e.target.closest('.quant_criteria_block'));
                     markDirty();
                 }
+                if (e.target.closest('.delete_all_quantity_criteria_btn')) {
+                    handleDeleteAllQuantityCriteria(e.target.closest('.evaluation_list_block'));
+                }
 
                 // Quality Criteria buttons
                 if (e.target.closest('.delete_qual_btn')) {
