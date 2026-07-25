@@ -40,6 +40,7 @@ beforeEach(function () {
     $this->evaluationList = EvaluationList::factory()->create([
         'criteria_version_id' => $this->criteriaVersion->id,
         'sum_score' => 10,
+        'quantity_enabled' => true,
     ]);
     $this->quantity = QuantitySubCriteria::factory()->create([
         'criteria_version_id' => $this->criteriaVersion->id,

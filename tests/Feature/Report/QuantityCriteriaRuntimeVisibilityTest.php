@@ -8,8 +8,10 @@ use App\Models\EvaluationList;
 use App\Models\QuantityMainCriteria;
 use App\Models\QuantitySubCriteria;
 use App\Models\User;
+use App\Rules\ActiveQuantitySubCriteria;
 use App\Support\EvaluationScoreSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 class QuantityCriteriaRuntimeVisibilityTest extends TestCase
@@ -71,5 +73,43 @@ class QuantityCriteriaRuntimeVisibilityTest extends TestCase
         $this->assertFalse($summary['has_quantity']);
         $this->assertSame(0.0, $summary['quantity']);
         $this->assertSame(0.0, $summary['total']);
+    }
+
+    public function test_active_quantity_rule_rejects_disabled_criteria(): void
+    {
+        $owner = User::factory()->create();
+        $version = CriteriaVersion::factory()->create([
+            'created_by' => $owner->id,
+        ]);
+        $category = Category::factory()->create([
+            'criteria_version_id' => $version->id,
+        ]);
+        $disabledList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+            'quantity_enabled' => false,
+        ]);
+        $main = QuantityMainCriteria::factory()->create([
+            'criteria_version_id' => $version->id,
+        ]);
+        $disabledSub = QuantitySubCriteria::factory()->create([
+            'criteria_version_id' => $version->id,
+            'evaluation_list_id' => $disabledList->id,
+            'quantity_main_criteria_id' => $main->id,
+        ]);
+
+        $validator = Validator::make(
+            ['quantity_sub_criteria_id' => $disabledSub->id],
+            ['quantity_sub_criteria_id' => [
+                'required',
+                new ActiveQuantitySubCriteria($version->id),
+            ]],
+        );
+
+        $this->assertTrue($validator->fails());
+        $this->assertSame(
+            'เกณฑ์ด้านปริมาณนี้ไม่ได้เปิดใช้งาน',
+            $validator->errors()->first('quantity_sub_criteria_id'),
+        );
     }
 }

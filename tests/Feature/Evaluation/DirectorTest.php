@@ -2,41 +2,54 @@
 
 namespace Tests\Feature\Evaluation;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use App\Models\User;
+use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\CriteriaVersion;
+use App\Models\QualitySubCriteria;
+use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
+use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
-use App\Models\ReportData;
-use App\Models\CriteriaVersion;
-use App\Models\QuantityScore;
-use App\Models\QualityScore;
-use App\Models\QuantitySubCriteria;
-use App\Models\QualitySubCriteria;
-use App\Models\AssignmentData;
-use App\Models\Assignments;
+use App\Models\User;
+use Database\Factories\DepartmentFactory;
+use Database\Factories\PositionFactory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class DirectorTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $director;
+
     protected User $manager;
+
     protected User $evaluator;
+
     protected User $evaluatee;
+
     protected Departments $department;
+
     protected Positions $directorPosition;
+
     protected Positions $managerPosition;
+
     protected Positions $evaluatorPosition;
+
     protected Positions $evaluateePosition;
+
     protected ReportData $reportData;
+
     protected CriteriaVersion $criteriaVersion;
+
     protected AssignmentData $assignmentData;
+
     protected QuantitySubCriteria $quantitySubCriteria;
+
     protected QualitySubCriteria $qualitySubCriteria;
 
     protected function setUp(): void
@@ -52,11 +65,11 @@ class DirectorTest extends TestCase
         Role::create(['name' => 'ผู้รับการประเมิน']); // Evaluatee role
 
         // Create department and positions
-        $this->department = \Database\Factories\DepartmentFactory::new()->create();
-        $this->directorPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Director']);
-        $this->managerPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Manager']);
-        $this->evaluatorPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Evaluator']);
-        $this->evaluateePosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Staff']);
+        $this->department = DepartmentFactory::new()->create();
+        $this->directorPosition = PositionFactory::new()->create(['name' => 'Director']);
+        $this->managerPosition = PositionFactory::new()->create(['name' => 'Manager']);
+        $this->evaluatorPosition = PositionFactory::new()->create(['name' => 'Evaluator']);
+        $this->evaluateePosition = PositionFactory::new()->create(['name' => 'Staff']);
 
         // Create users for the assessment flow: evaluatee -> evaluator -> director -> manager
         $this->evaluatee = User::factory()->create([
@@ -114,6 +127,9 @@ class DirectorTest extends TestCase
             'criteria_version_id' => $this->criteriaVersion->id,
             'score_a' => 10,
             'score_b' => 5,
+        ]);
+        $this->quantitySubCriteria->evaluationList()->update([
+            'quantity_enabled' => true,
         ]);
         $this->qualitySubCriteria = QualitySubCriteria::factory()->create([
             'criteria_version_id' => $this->criteriaVersion->id,
@@ -239,14 +255,14 @@ class DirectorTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'quality_list' => [
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 4,
                     'modification_reason' => 'ปรับตามผลการตรวจ',
-                ]
+                ],
             ],
             'status' => 'Director_draft',
             'comment' => 'Director reviewing - work in progress',
@@ -332,14 +348,14 @@ class DirectorTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 9,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'quality_list' => [
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 5,
                     'modification_reason' => 'ปรับตามผลการตรวจ',
-                ]
+                ],
             ],
             'status' => 'Manager_assign', // Submit to manager
             'comment' => 'Director evaluation completed, forwarding to manager',
@@ -369,7 +385,7 @@ class DirectorTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Director_draft',
             'comment' => 'Should not work - wrong phase',
@@ -399,7 +415,7 @@ class DirectorTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Director_draft',
             'comment' => 'Should not work - already submitted to manager',
@@ -424,7 +440,7 @@ class DirectorTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Director_draft',
             'comment' => 'Should not work - evaluation completed',

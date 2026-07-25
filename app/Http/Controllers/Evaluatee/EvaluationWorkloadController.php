@@ -11,6 +11,7 @@ use App\Models\Reports;
 use App\Models\Subject;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
+use App\Rules\ActiveQuantitySubCriteria;
 use App\Services\PreviousWorkloadImportService;
 use App\Support\EvaluateeWorkloadModalData;
 use App\Support\EvaluateeWorkloadViewData;
@@ -146,18 +147,21 @@ class EvaluationWorkloadController extends Controller
 
     public function storeWorkloadScore(Request $request)
     {
-        $validated = $request->validate([
+        $reportInput = $request->validate([
             'report_id' => 'required|integer|exists:reports,id',
-            'quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
         ]);
 
-        $reportId = (int) $validated['report_id'];
+        $reportId = (int) $reportInput['report_id'];
+        $report = Reports::findOrFail($reportId);
+        $criteriaVersionId = (int) $report->reportData?->criteria_version_id;
+        $validated = $request->validate([
+            'quantity_sub_criteria_id' => [
+                'required',
+                'integer',
+                new ActiveQuantitySubCriteria($criteriaVersionId),
+            ],
+        ]);
         $quantitySubCriteriaId = (int) $validated['quantity_sub_criteria_id'];
-
-        $report = Reports::find($reportId);
-        if (! $report) {
-            return redirect()->back()->with('error', 'ไม่พบรายงานที่ต้องการบันทึก');
-        }
 
         if (! $this->canEditReport($report)) {
             return redirect()->back()->with('error', 'รายงานนี้อยู่ในโหมดอ่านอย่างเดียว ไม่สามารถบันทึกด้านปริมาณได้');

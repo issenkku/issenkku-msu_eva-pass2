@@ -12,6 +12,7 @@ use App\Models\QualityScore;
 use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
+use App\Rules\ActiveQuantitySubCriteria;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,7 @@ class ReportController extends Controller
     {
         try {
             $report = Reports::findOrFail($reportId);
+            $criteriaVersionId = (int) $report->reportData?->criteria_version_id;
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'add Quantity score');
@@ -127,7 +129,11 @@ class ReportController extends Controller
 
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
-                'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
+                'quantity_list.*.quantity_sub_criteria_id' => [
+                    'required',
+                    'integer',
+                    new ActiveQuantitySubCriteria($criteriaVersionId),
+                ],
                 'quantity_list.*.score_C' => 'nullable|numeric|min:0',
             ]);
 
@@ -163,6 +169,7 @@ class ReportController extends Controller
     {
         try {
             $report = Reports::findOrFail($reportId);
+            $criteriaVersionId = (int) $report->reportData?->criteria_version_id;
 
             // ตรวจสอบสถานะ report
             $statusCheck = $this->checkReportEditableStatus($report, 'update quantity scores');
@@ -172,7 +179,11 @@ class ReportController extends Controller
 
             $validated = $request->validate([
                 'quantity_list' => 'required|array',
-                'quantity_list.*.quantity_sub_criteria_id' => 'required|integer|exists:quantity_sub_criterias,id',
+                'quantity_list.*.quantity_sub_criteria_id' => [
+                    'required',
+                    'integer',
+                    new ActiveQuantitySubCriteria($criteriaVersionId),
+                ],
                 'quantity_list.*.score_C' => 'nullable|numeric|min:0',
                 'quantity_list.*.score_D' => 'nullable|numeric|min:0',
             ]);

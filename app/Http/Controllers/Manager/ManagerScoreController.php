@@ -9,6 +9,7 @@ use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\User;
+use App\Rules\ActiveQuantitySubCriteria;
 use App\Services\ReportDataService;
 use App\Services\SupportScoreService;
 use App\Support\AssignmentFlow;
@@ -101,8 +102,7 @@ class ManagerScoreController extends Controller
                 'quantity_list.*.quantity_sub_criteria_id' => [
                     'nullable',
                     'integer',
-                    Rule::exists('quantity_sub_criterias', 'id')
-                        ->where(fn ($query) => $query->where('criteria_version_id', $criteriaVersionId)),
+                    new ActiveQuantitySubCriteria((int) $criteriaVersionId),
                 ],
                 'quantity_list.*.score_C' => 'nullable|numeric|min:0',
                 'quantity_list.*.description' => 'nullable|string',
@@ -128,11 +128,19 @@ class ManagerScoreController extends Controller
             $transactionStarted = true;
             $modifierRole = $request->user()?->getRoleNames()->first() ?: 'ผู้บริหาร';
 
-            $oldQuantityScores = QuantityScore::where('report_id', $reportId)->get();
+            $activeQuantitySubCriteriaIds = QuantitySubCriteria::query()
+                ->active()
+                ->where('criteria_version_id', $criteriaVersionId)
+                ->pluck('id');
+            $oldQuantityScores = QuantityScore::where('report_id', $reportId)
+                ->whereIn('quantity_sub_criteria_id', $activeQuantitySubCriteriaIds)
+                ->get();
             $oldQualityScores = QualityScore::where('report_id', $reportId)->get();
 
             // Delete existing records for this report
-            QuantityScore::where('report_id', $reportId)->delete();
+            QuantityScore::where('report_id', $reportId)
+                ->whereIn('quantity_sub_criteria_id', $activeQuantitySubCriteriaIds)
+                ->delete();
             QualityScore::where('report_id', $reportId)->delete();
 
             $newQuantityScores = [];

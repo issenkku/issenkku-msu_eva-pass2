@@ -141,6 +141,9 @@ class EvaluateeTest extends TestCase
             'score_a' => 10,
             'score_b' => 5,
         ]);
+        $this->quantitySubCriteria->evaluationList()->update([
+            'quantity_enabled' => true,
+        ]);
         $qualityEvaluationList = EvaluationList::factory()->create([
             'criteria_version_id' => $this->criteriaVersion->id,
             'sum_score' => 10,

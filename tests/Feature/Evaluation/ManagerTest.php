@@ -2,41 +2,54 @@
 
 namespace Tests\Feature\Evaluation;
 
-use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use App\Models\User;
+use App\Models\AssignmentData;
+use App\Models\Assignments;
+use App\Models\CriteriaVersion;
+use App\Models\QualitySubCriteria;
+use App\Models\QuantityScore;
+use App\Models\QuantitySubCriteria;
+use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
-use App\Models\ReportData;
-use App\Models\CriteriaVersion;
-use App\Models\QuantityScore;
-use App\Models\QualityScore;
-use App\Models\QuantitySubCriteria;
-use App\Models\QualitySubCriteria;
-use App\Models\AssignmentData;
-use App\Models\Assignments;
+use App\Models\User;
+use Database\Factories\DepartmentFactory;
+use Database\Factories\PositionFactory;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class ManagerTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $manager;
+
     protected User $director;
+
     protected User $evaluator;
+
     protected User $evaluatee;
+
     protected Departments $department;
+
     protected Positions $managerPosition;
+
     protected Positions $directorPosition;
+
     protected Positions $evaluatorPosition;
+
     protected Positions $evaluateePosition;
+
     protected ReportData $reportData;
+
     protected CriteriaVersion $criteriaVersion;
+
     protected AssignmentData $assignmentData;
+
     protected QuantitySubCriteria $quantitySubCriteria;
+
     protected QualitySubCriteria $qualitySubCriteria;
 
     protected function setUp(): void
@@ -52,11 +65,11 @@ class ManagerTest extends TestCase
         Role::create(['name' => 'ผู้รับการประเมิน']); // Evaluatee role
 
         // Create department and positions
-        $this->department = \Database\Factories\DepartmentFactory::new()->create();
-        $this->managerPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'manager']);
-        $this->managerPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Manager']);
-        $this->evaluatorPosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Evaluator']);
-        $this->evaluateePosition = \Database\Factories\PositionFactory::new()->create(['name' => 'Staff']);
+        $this->department = DepartmentFactory::new()->create();
+        $this->managerPosition = PositionFactory::new()->create(['name' => 'manager']);
+        $this->managerPosition = PositionFactory::new()->create(['name' => 'Manager']);
+        $this->evaluatorPosition = PositionFactory::new()->create(['name' => 'Evaluator']);
+        $this->evaluateePosition = PositionFactory::new()->create(['name' => 'Staff']);
 
         // Create users for the assessment flow: evaluatee -> evaluator -> manager -> manager
         $this->evaluatee = User::factory()->create([
@@ -115,6 +128,9 @@ class ManagerTest extends TestCase
             'score_a' => 10,
             'score_b' => 5,
         ]);
+        $this->quantitySubCriteria->evaluationList()->update([
+            'quantity_enabled' => true,
+        ]);
         $this->qualitySubCriteria = QualitySubCriteria::factory()->create([
             'criteria_version_id' => $this->criteriaVersion->id,
         ]);
@@ -147,14 +163,14 @@ class ManagerTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 9,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'quality_list' => [
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 5,
                     'modification_reason' => 'ปรับตามผลการตรวจ',
-                ]
+                ],
             ],
             'status' => 'Completed', // Submit to manager
             'comment' => 'Manager evaluation completed',
@@ -184,14 +200,14 @@ class ManagerTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'quality_list' => [
                 [
                     'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
                     'score' => 4,
                     'modification_reason' => 'ปรับตามผลการตรวจ',
-                ]
+                ],
             ],
             'status' => 'Manager_draft',
             'comment' => 'Manager reviewing - work in progress',
@@ -372,7 +388,7 @@ class ManagerTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Manager_draft',
             'comment' => 'Should not work - wrong phase',
@@ -402,7 +418,7 @@ class ManagerTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Manager_draft',
             'comment' => 'Should not work - already submitted to manager',
@@ -427,7 +443,7 @@ class ManagerTest extends TestCase
                     'quantity_sub_criteria_id' => $this->quantitySubCriteria->id,
                     'score_C' => 8,
                     'modification_reason' => 'ปรับตามหลักฐาน',
-                ]
+                ],
             ],
             'status' => 'Manager_draft',
             'comment' => 'Should not work - evaluation completed',
