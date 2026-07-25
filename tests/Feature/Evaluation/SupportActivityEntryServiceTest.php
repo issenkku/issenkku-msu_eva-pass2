@@ -5,6 +5,7 @@ namespace Tests\Feature\Evaluation;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\EvidenceAnswer;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\SupportActivityEntry;
@@ -79,6 +80,107 @@ class SupportActivityEntryServiceTest extends TestCase
 
         $this->persist([]);
         $this->assertDatabaseCount('support_activity_entries', 0);
+    }
+
+    public function test_each_activity_entry_keeps_its_own_normalized_evidence_links(): void
+    {
+        $this->persist([
+            [
+                'content' => '<p>โครงการหนึ่ง</p>',
+                'evidence_links' => [
+                    ' https://example.com/one ',
+                    'https://example.com/one',
+                ],
+            ],
+            [
+                'content' => '<p>โครงการสอง</p>',
+                'evidence_links' => ['https://example.com/two'],
+            ],
+        ]);
+
+        $entries = SupportActivityEntry::with('evidenceAnswers')
+            ->orderBy('sequence')
+            ->get();
+
+        $this->assertSame(
+            ['https://example.com/one'],
+            $entries[0]->evidenceAnswers->pluck('link')->all()
+        );
+        $this->assertSame(
+            ['https://example.com/two'],
+            $entries[1]->evidenceAnswers->pluck('link')->all()
+        );
+    }
+
+    public function test_updating_one_activity_evidence_does_not_replace_another_activity_evidence(): void
+    {
+        $this->persist([
+            [
+                'content' => '<p>โครงการหนึ่ง</p>',
+                'evidence_links' => ['https://example.com/one'],
+            ],
+            [
+                'content' => '<p>โครงการสอง</p>',
+                'evidence_links' => ['https://example.com/two'],
+            ],
+        ]);
+        [$first, $second] = SupportActivityEntry::query()->orderBy('sequence')->get();
+
+        $this->persist([
+            [
+                'id' => $first->id,
+                'content' => $first->content,
+                'evidence_links' => ['https://example.com/updated'],
+            ],
+            [
+                'id' => $second->id,
+                'content' => $second->content,
+                'evidence_links' => ['https://example.com/two'],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('evidence_answers', [
+            'support_activity_entry_id' => $first->id,
+            'link' => 'https://example.com/updated',
+        ]);
+        $this->assertDatabaseHas('evidence_answers', [
+            'support_activity_entry_id' => $second->id,
+            'link' => 'https://example.com/two',
+        ]);
+        $this->assertDatabaseMissing('evidence_answers', [
+            'support_activity_entry_id' => $first->id,
+            'link' => 'https://example.com/one',
+        ]);
+    }
+
+    public function test_deleting_an_activity_removes_only_that_activity_evidence(): void
+    {
+        $this->persist([
+            [
+                'content' => '<p>โครงการหนึ่ง</p>',
+                'evidence_links' => ['https://example.com/one'],
+            ],
+            [
+                'content' => '<p>โครงการสอง</p>',
+                'evidence_links' => ['https://example.com/two'],
+            ],
+        ]);
+        [$first, $second] = SupportActivityEntry::query()->orderBy('sequence')->get();
+
+        $this->persist([[
+            'id' => $second->id,
+            'content' => $second->content,
+            'evidence_links' => ['https://example.com/two'],
+        ]]);
+
+        $this->assertDatabaseMissing('evidence_answers', [
+            'support_activity_entry_id' => $first->id,
+        ]);
+        $this->assertDatabaseHas('evidence_answers', [
+            'support_activity_entry_id' => $second->id,
+            'link' => 'https://example.com/two',
+        ]);
+        $this->assertSame(1, EvidenceAnswer::query()->count());
     }
 
     public function test_evaluatee_can_create_many_projects_under_one_indicator_and_another_group(): void

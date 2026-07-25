@@ -136,6 +136,52 @@ class SupportScoreServiceTest extends TestCase
         }
     }
 
+    public function test_activity_criterion_accepts_required_evidence_on_any_activity(): void
+    {
+        $this->criterion->update(['allow_activity_entries' => true]);
+
+        app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => null,
+            'evidence_links' => [],
+            'activity_entries' => [
+                [
+                    'content' => '<p>กิจกรรมไม่มีหลักฐาน</p>',
+                    'evidence_links' => [],
+                ],
+                [
+                    'content' => '<p>กิจกรรมมีหลักฐาน</p>',
+                    'evidence_links' => ['https://example.com/proof'],
+                ],
+            ],
+        ]], $this->evaluatee, null, false);
+
+        $this->assertDatabaseHas('evidence_answers', [
+            'support_criteria_id' => $this->criterion->id,
+            'link' => 'https://example.com/proof',
+        ]);
+    }
+
+    public function test_activity_criterion_rejects_required_evidence_when_every_activity_is_empty(): void
+    {
+        $this->criterion->update(['allow_activity_entries' => true]);
+
+        try {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => null,
+                'evidence_links' => [],
+                'activity_entries' => [[
+                    'content' => '<p>กิจกรรมไม่มีหลักฐาน</p>',
+                    'evidence_links' => [],
+                ]],
+            ]], $this->evaluatee, null, false);
+            $this->fail('Expected validation failure');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('support_list.0.activity_entries', $exception->errors());
+        }
+    }
+
     public function test_the_persisted_total_is_not_capped_at_one_hundred(): void
     {
         $result = app(SupportScoreService::class)->persist($this->report, [[

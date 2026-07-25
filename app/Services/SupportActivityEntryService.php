@@ -129,6 +129,11 @@ class SupportActivityEntryService
                     'content' => $content,
                     'updated_by' => $actor?->id,
                 ]);
+                $this->replaceEvidence(
+                    $entry,
+                    $criterion,
+                    $entryData['evidence_links'] ?? []
+                );
                 $keptIds[] = $entryId;
 
                 continue;
@@ -143,12 +148,35 @@ class SupportActivityEntryService
                 'created_by' => $actor?->id,
                 'updated_by' => $actor?->id,
             ]);
+            $this->replaceEvidence(
+                $created,
+                $criterion,
+                $entryData['evidence_links'] ?? []
+            );
             $keptIds[] = $created->id;
         }
 
         $existingEntries
             ->reject(fn (SupportActivityEntry $entry) => in_array($entry->id, $keptIds, true))
             ->each(fn (SupportActivityEntry $entry) => $entry->delete());
+    }
+
+    /** @param array<int, string> $links */
+    private function replaceEvidence(
+        SupportActivityEntry $entry,
+        SupportCriteria $criterion,
+        array $links
+    ): void {
+        $entry->evidenceAnswers()->delete();
+
+        foreach ($links as $link) {
+            $entry->evidenceAnswers()->create([
+                'evaluation_list_id' => $criterion->evaluation_list_id,
+                'support_criteria_id' => $criterion->id,
+                'report_id' => $entry->report_id,
+                'link' => $link,
+            ]);
+        }
     }
 
     /**

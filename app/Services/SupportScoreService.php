@@ -33,11 +33,21 @@ class SupportScoreService
         ?string $modifierRole,
         bool $requireReasonForChanges
     ): array {
-        $items = collect($items)->map(function (array $item): array {
-            $item['evidence_links'] = collect($item['evidence_links'] ?? [])
-                ->map(fn ($link) => trim((string) $link))
-                ->filter()
-                ->unique()
+        $normalizeLinks = static fn (array $links): array => collect($links)
+            ->map(fn ($link) => trim((string) $link))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $items = collect($items)->map(function (array $item) use ($normalizeLinks): array {
+            $item['evidence_links'] = $normalizeLinks($item['evidence_links'] ?? []);
+            $item['activity_entries'] = collect($item['activity_entries'] ?? [])
+                ->map(function (array $entry) use ($normalizeLinks): array {
+                    $entry['evidence_links'] = $normalizeLinks($entry['evidence_links'] ?? []);
+
+                    return $entry;
+                })
                 ->values()
                 ->all();
 
@@ -126,18 +136,21 @@ class SupportScoreService
                     ]
                 );
 
-                EvidenceAnswer::query()
-                    ->where('report_id', $report->id)
-                    ->where('support_criteria_id', $criterion->id)
-                    ->delete();
+                if (! $criterion->allow_activity_entries) {
+                    EvidenceAnswer::query()
+                        ->where('report_id', $report->id)
+                        ->where('support_criteria_id', $criterion->id)
+                        ->whereNull('support_activity_entry_id')
+                        ->delete();
 
-                foreach ($item['evidence_links'] as $link) {
-                    EvidenceAnswer::create([
-                        'evaluation_list_id' => $criterion->evaluation_list_id,
-                        'support_criteria_id' => $criterion->id,
-                        'report_id' => $report->id,
-                        'link' => $link,
-                    ]);
+                    foreach ($item['evidence_links'] as $link) {
+                        EvidenceAnswer::create([
+                            'evaluation_list_id' => $criterion->evaluation_list_id,
+                            'support_criteria_id' => $criterion->id,
+                            'report_id' => $report->id,
+                            'link' => $link,
+                        ]);
+                    }
                 }
             }
 
@@ -219,9 +232,18 @@ class SupportScoreService
                 ]);
             }
 
-            if ($normalizedItems[$itemIndex]['evidence_links'] === []) {
+            $hasEvidence = $criterion->allow_activity_entries
+                ? collect($normalizedItems[$itemIndex]['activity_entries'] ?? [])
+                    ->contains(fn (array $entry): bool => ($entry['evidence_links'] ?? []) !== [])
+                : $normalizedItems[$itemIndex]['evidence_links'] !== [];
+
+            if (! $hasEvidence) {
                 throw ValidationException::withMessages([
-                    "support_list.{$itemIndex}.evidence_links" => ['กรุณาแนบหลักฐานสำหรับเกณฑ์นี้'],
+                    $criterion->allow_activity_entries
+                        ? "support_list.{$itemIndex}.activity_entries"
+                        : "support_list.{$itemIndex}.evidence_links" => [
+                            'กรุณาแนบหลักฐานสำหรับเกณฑ์นี้',
+                        ],
                 ]);
             }
         }
