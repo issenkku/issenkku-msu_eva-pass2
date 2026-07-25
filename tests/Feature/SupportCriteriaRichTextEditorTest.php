@@ -43,6 +43,23 @@ it('restores list markers inside summernote and rendered rich text', function ()
         ->toContain('.support-criteria-rich-text ol');
 });
 
+it('normalizes rendered support rich text font family and size without flattening emphasis', function () {
+    $styles = file_get_contents(resource_path('views/partials/layout-app-styles.blade.php'));
+
+    preg_match(
+        '/\.support-criteria-rich-text,\s*\.support-criteria-rich-text \*\s*\{(?<rules>[^}]*)\}/',
+        $styles,
+        $matches
+    );
+
+    expect($matches['rules'] ?? null)
+        ->not->toBeNull()
+        ->toContain('font-family: inherit !important;')
+        ->toContain('font-size: inherit !important;')
+        ->not->toContain('font-weight')
+        ->not->toContain('font-style');
+});
+
 it('uses the admin summernote toolbar for evaluatee activity entries', function () {
     $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
 

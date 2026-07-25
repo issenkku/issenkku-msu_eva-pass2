@@ -38,6 +38,12 @@
         display: list-item;
     }
 
+    .support-criteria-rich-text,
+    .support-criteria-rich-text * {
+        font-family: inherit !important;
+        font-size: inherit !important;
+    }
+
     * {
         font-family: 'Kanit', sans-serif;
     }
