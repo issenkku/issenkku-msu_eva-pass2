@@ -11,6 +11,7 @@ use App\Models\ReportData;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -63,45 +64,59 @@ class QuantityCriteriaActivationTest extends TestCase
 
     public function test_migration_enables_only_lists_with_existing_quantity_rows(): void
     {
-        $version = CriteriaVersion::factory()->create([
-            'created_by' => $this->admin->id,
+        $originalConnection = DB::getDefaultConnection();
+        config()->set('database.connections.quantity_migration_test', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
         ]);
-        $category = Category::factory()->create([
-            'criteria_version_id' => $version->id,
-        ]);
-        $withQuantity = EvaluationList::factory()->create([
-            'criteria_version_id' => $version->id,
-            'categorie_id' => $category->id,
-            'quantity_enabled' => false,
-        ]);
-        $withoutQuantity = EvaluationList::factory()->create([
-            'criteria_version_id' => $version->id,
-            'categorie_id' => $category->id,
-            'quantity_enabled' => false,
-        ]);
-        $main = QuantityMainCriteria::factory()->create([
-            'criteria_version_id' => $version->id,
-        ]);
-        QuantitySubCriteria::factory()->create([
-            'criteria_version_id' => $version->id,
-            'evaluation_list_id' => $withQuantity->id,
-            'quantity_main_criteria_id' => $main->id,
-        ]);
+        DB::purge('quantity_migration_test');
+        DB::setDefaultConnection('quantity_migration_test');
 
-        $migration = require database_path(
-            'migrations/2026_07_25_000001_add_quantity_enabled_to_evaluation_lists.php',
-        );
-        $migration->down();
-        $migration->up();
+        try {
+            Schema::create('evaluation_lists', function ($table): void {
+                $table->id();
+                $table->string('name')->nullable();
+            });
+            Schema::create('quantity_sub_criterias', function ($table): void {
+                $table->id();
+                $table->unsignedBigInteger('evaluation_list_id');
+            });
+            DB::table('evaluation_lists')->insert([
+                ['id' => 1, 'name' => 'With quantity'],
+                ['id' => 2, 'name' => 'Without quantity'],
+            ]);
+            DB::table('quantity_sub_criterias')->insert([
+                'id' => 1,
+                'evaluation_list_id' => 1,
+            ]);
 
-        $this->assertDatabaseHas('evaluation_lists', [
-            'id' => $withQuantity->id,
-            'quantity_enabled' => true,
-        ]);
-        $this->assertDatabaseHas('evaluation_lists', [
-            'id' => $withoutQuantity->id,
-            'quantity_enabled' => false,
-        ]);
+            $migration = require database_path(
+                'migrations/2026_07_25_000001_add_quantity_enabled_to_evaluation_lists.php',
+            );
+            $migration->up();
+            DB::table('evaluation_lists')->insert([
+                'id' => 3,
+                'name' => 'New list',
+            ]);
+
+            $this->assertSame(
+                1,
+                (int) DB::table('evaluation_lists')->find(1)->quantity_enabled,
+            );
+            $this->assertSame(
+                0,
+                (int) DB::table('evaluation_lists')->find(2)->quantity_enabled,
+            );
+            $this->assertSame(
+                0,
+                (int) DB::table('evaluation_lists')->find(3)->quantity_enabled,
+            );
+        } finally {
+            DB::setDefaultConnection($originalConnection);
+            DB::purge('quantity_migration_test');
+        }
     }
 
     public function test_store_requires_quantity_enabled_for_each_evaluation_list(): void
