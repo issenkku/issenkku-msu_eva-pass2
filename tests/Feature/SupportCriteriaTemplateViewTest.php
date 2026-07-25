@@ -36,6 +36,33 @@ test('support indicator code input does not impose a character limit', function 
         ->not->toContain('type="text" maxlength="50"');
 });
 
+test('support template exposes and serializes evaluatee owned field controls', function () {
+    $html = view('criteria_config.partials.create-evaluation-template')->render();
+    $createScript = file_get_contents(
+        resource_path('views/criteria_config/partials/create-script.blade.php')
+    );
+    $editSupportHandler = file_get_contents(
+        resource_path('views/criteria_config/partials/script-edit-support-handlers.blade.php')
+    );
+    $editCollector = file_get_contents(
+        resource_path('views/criteria_config/partials/script-edit-collect-form-data.blade.php')
+    );
+
+    expect($html)
+        ->toContain('support_allow_evaluatee_indicator')
+        ->toContain('support_allow_evaluatee_weight');
+    expect($createScript)
+        ->toContain('allow_evaluatee_indicator')
+        ->toContain('allow_evaluatee_weight')
+        ->toContain('allowEvaluateeIndicator.disabled = !allow.checked')
+        ->toContain('allowEvaluateeWeight.disabled = !allow.checked');
+    expect($editSupportHandler.$editCollector)
+        ->toContain('allow_evaluatee_indicator')
+        ->toContain('allow_evaluatee_weight')
+        ->toContain('allowEvaluateeIndicator.checked = false')
+        ->toContain('allowEvaluateeWeight.checked = false');
+});
+
 test('grouped support mode marks only the legacy indicator field for hiding', function (string $view) {
     $html = view($view)->render();
     $document = new DOMDocument;

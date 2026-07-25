@@ -1,10 +1,18 @@
         function toggleSupportIndicatorMode(block) {
             const allow = block.querySelector('.support_allow_activity_entries');
             const grouped = block.querySelector('.support_group_by_indicator');
+            const allowEvaluateeIndicator = block.querySelector('.support_allow_evaluatee_indicator');
+            const allowEvaluateeWeight = block.querySelector('.support_allow_evaluatee_weight');
             if (!allow || !grouped) return;
 
-            if (!allow.checked) grouped.checked = false;
+            if (!allow.checked) {
+                grouped.checked = false;
+                if (allowEvaluateeIndicator) allowEvaluateeIndicator.checked = false;
+                if (allowEvaluateeWeight) allowEvaluateeWeight.checked = false;
+            }
             grouped.disabled = !allow.checked;
+            if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
+            if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
             block.querySelector('[data-support-legacy-indicator]')
                 ?.classList.toggle('hidden', grouped.checked);
             block.querySelector('.support_indicator_items')
@@ -90,6 +98,8 @@
                 block.querySelector('.support_weight').value = item.weight ?? '';
                 block.querySelector('.support_require_evidence').checked = Boolean(item.require_evidence);
                 block.querySelector('.support_allow_activity_entries').checked = Boolean(item.allow_activity_entries);
+                block.querySelector('.support_allow_evaluatee_indicator').checked = Boolean(item.allow_evaluatee_indicator);
+                block.querySelector('.support_allow_evaluatee_weight').checked = Boolean(item.allow_evaluatee_weight);
                 block.querySelector('.support_group_by_indicator').checked = Boolean(item.group_activity_entries_by_indicator);
                 populateSupportIndicatorItems(block, item.indicator_items || []);
                 toggleSupportIndicatorMode(block);

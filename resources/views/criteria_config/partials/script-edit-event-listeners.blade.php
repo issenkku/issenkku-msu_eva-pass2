@@ -86,7 +86,9 @@
             // Criteria type checkboxes
             document.addEventListener('change', function(e) {
                 if (e.target.classList.contains('support_allow_activity_entries')
-                    || e.target.classList.contains('support_group_by_indicator')) {
+                    || e.target.classList.contains('support_group_by_indicator')
+                    || e.target.classList.contains('support_allow_evaluatee_indicator')
+                    || e.target.classList.contains('support_allow_evaluatee_weight')) {
                     toggleSupportIndicatorMode(e.target.closest('.support_criteria_block'));
                     markDirty();
                 }

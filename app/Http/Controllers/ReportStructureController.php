@@ -79,7 +79,19 @@ class ReportStructureController extends Controller
                     $base = "categories.{$categoryIndex}.evaluation_lists.{$listIndex}.support_criterias.{$criteriaIndex}";
                     $grouped = (bool) ($supportData['group_activity_entries_by_indicator'] ?? false);
                     $allowActivities = (bool) ($supportData['allow_activity_entries'] ?? false);
+                    $allowEvaluateeIndicator = (bool) ($supportData['allow_evaluatee_indicator'] ?? false);
+                    $allowEvaluateeWeight = (bool) ($supportData['allow_evaluatee_weight'] ?? false);
                     $items = array_values($supportData['indicator_items'] ?? []);
+
+                    if (! $allowActivities && $allowEvaluateeIndicator) {
+                        $errors["{$base}.allow_evaluatee_indicator"][] =
+                            'ต้องเปิดให้ผู้ถูกประเมินเพิ่มกิจกรรมหรือโครงการก่อน';
+                    }
+
+                    if (! $allowActivities && $allowEvaluateeWeight) {
+                        $errors["{$base}.allow_evaluatee_weight"][] =
+                            'ต้องเปิดให้ผู้ถูกประเมินเพิ่มกิจกรรมหรือโครงการก่อน';
+                    }
 
                     if ($grouped && ! $allowActivities) {
                         $errors["{$base}.group_activity_entries_by_indicator"][] =
@@ -104,6 +116,60 @@ class ReportStructureController extends Controller
                     if (! $grouped
                         && \App\Support\SafeHtml::plainText($supportData['indicator'] ?? null) === '') {
                         $errors["{$base}.indicator"][] = 'กรุณากรอกตัวชี้วัดหรือเกณฑ์การประเมิน';
+                    }
+                }
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    private function validateSupportEvaluateeModeChanges(
+        array $categories,
+        int $criteriaVersionId
+    ): void {
+        $errors = [];
+
+        foreach ($categories as $categoryIndex => $category) {
+            foreach ($category['evaluation_lists'] ?? [] as $listIndex => $evaluationList) {
+                foreach ($evaluationList['support_criterias'] ?? [] as $criteriaIndex => $supportData) {
+                    $criterionId = $supportData['support_criteria_id'] ?? null;
+                    if (! $criterionId) {
+                        continue;
+                    }
+
+                    $criterion = SupportCriteria::query()
+                        ->whereKey($criterionId)
+                        ->whereHas('evaluationList', fn ($query) => $query
+                            ->where('criteria_version_id', $criteriaVersionId))
+                        ->first();
+                    if (! $criterion) {
+                        continue;
+                    }
+
+                    $nextIndicator = (bool) ($supportData['allow_evaluatee_indicator'] ?? false);
+                    $nextWeight = (bool) ($supportData['allow_evaluatee_weight'] ?? false);
+                    $indicatorChanged = $criterion->allow_evaluatee_indicator !== $nextIndicator;
+                    $weightChanged = $criterion->allow_evaluatee_weight !== $nextWeight;
+
+                    if (! $indicatorChanged && ! $weightChanged) {
+                        continue;
+                    }
+
+                    if (! $criterion->scores()->exists() && ! $criterion->activityEntries()->exists()) {
+                        continue;
+                    }
+
+                    $base = "categories.{$categoryIndex}.evaluation_lists.{$listIndex}.support_criterias.{$criteriaIndex}";
+                    $message = 'ไม่สามารถเปลี่ยนรูปแบบช่องที่ผู้ถูกประเมินกรอก หลังเริ่มมีข้อมูลรายงานแล้ว';
+
+                    if ($indicatorChanged) {
+                        $errors["{$base}.allow_evaluatee_indicator"][] = $message;
+                    }
+                    if ($weightChanged) {
+                        $errors["{$base}.allow_evaluatee_weight"][] = $message;
                     }
                 }
             }
@@ -229,6 +295,8 @@ class ReportStructureController extends Controller
                             'weight',
                             'require_evidence',
                             'allow_activity_entries',
+                            'allow_evaluatee_indicator',
+                            'allow_evaluatee_weight',
                             'group_activity_entries_by_indicator'
                         )->orderBy('sequence');
                     },
@@ -363,6 +431,8 @@ class ReportStructureController extends Controller
                                         'weight' => (float) $supportCriteria->weight,
                                         'require_evidence' => (bool) $supportCriteria->require_evidence,
                                         'allow_activity_entries' => (bool) $supportCriteria->allow_activity_entries,
+                                        'allow_evaluatee_indicator' => (bool) $supportCriteria->allow_evaluatee_indicator,
+                                        'allow_evaluatee_weight' => (bool) $supportCriteria->allow_evaluatee_weight,
                                         'group_activity_entries_by_indicator' => (bool) $supportCriteria->group_activity_entries_by_indicator,
                                         'indicator_items' => $supportCriteria->indicatorItems->map(fn ($item) => [
                                             'support_indicator_item_id' => $item->id,
@@ -433,6 +503,8 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_indicator' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_weight' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.group_activity_entries_by_indicator' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
@@ -609,6 +681,8 @@ class ReportStructureController extends Controller
                                     'weight' => $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
+                                    'allow_evaluatee_indicator' => (bool) ($supportData['allow_evaluatee_indicator'] ?? false),
+                                    'allow_evaluatee_weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false),
                                     'group_activity_entries_by_indicator' => $grouped,
                                 ]);
 
@@ -709,6 +783,8 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_indicator' => 'sometimes|boolean',
+            'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_weight' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.group_activity_entries_by_indicator' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items' => 'sometimes|array',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.support_indicator_item_id' => 'sometimes|nullable|integer|exists:support_indicator_items,id',
@@ -759,6 +835,7 @@ class ReportStructureController extends Controller
         }
 
         $this->validateSupportIndicatorConfiguration($validated['categories']);
+        $this->validateSupportEvaluateeModeChanges($validated['categories'], (int) $version->id);
 
         try {
             DB::transaction(function () use ($version, $validated, $hasQuantityRequireEvidence, $hasQuantityRequireSubject, $hasQualityRequireEvidence, $hasQualityAllowMultiple) {
@@ -1067,6 +1144,8 @@ class ReportStructureController extends Controller
                                     'weight' => $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
+                                    'allow_evaluatee_indicator' => (bool) ($supportData['allow_evaluatee_indicator'] ?? false),
+                                    'allow_evaluatee_weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false),
                                     'group_activity_entries_by_indicator' => $grouped,
                                 ];
 

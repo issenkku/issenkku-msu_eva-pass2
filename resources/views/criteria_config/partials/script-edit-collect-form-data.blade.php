@@ -229,6 +229,8 @@
                                             weight: Number(weight),
                                             require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
                                             allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false,
+                                            allow_evaluatee_indicator: supportBlock.querySelector('.support_allow_evaluatee_indicator')?.checked || false,
+                                            allow_evaluatee_weight: supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false,
                                             group_activity_entries_by_indicator: grouped,
                                             indicator_items: indicatorItems,
                                         };

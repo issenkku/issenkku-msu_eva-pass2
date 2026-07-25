@@ -163,6 +163,55 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonPath('data.categories.0.evaluation_lists.0.support_criterias.1.sequence', 2);
     }
 
+    public function test_admin_can_configure_evaluatee_defined_support_fields(): void
+    {
+        $response = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งานที่ผู้ถูกประเมินกำหนดรายละเอียด</p>',
+            'indicator' => '<p>คำแนะนำตัวชี้วัด</p>',
+            'target_value' => 100,
+            'weight' => 75,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]]))->assertCreated();
+
+        $criterion = SupportCriteria::query()->firstOrFail();
+
+        $this->assertTrue($criterion->allow_evaluatee_indicator);
+        $this->assertTrue($criterion->allow_evaluatee_weight);
+
+        $this->getJson(route('report-structure.show', $response->json('data.id')))
+            ->assertOk()
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_indicator',
+                true
+            )
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_weight',
+                true
+            );
+    }
+
+    public function test_evaluatee_defined_support_fields_require_activity_entries(): void
+    {
+        $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งาน</p>',
+            'indicator' => '<p>เกณฑ์</p>',
+            'target_value' => 100,
+            'weight' => 75,
+            'allow_activity_entries' => false,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_indicator',
+                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_weight',
+            ]);
+    }
+
     public function test_admin_can_create_and_show_grouped_support_indicator_items(): void
     {
         $response = $this->postJson(route('report-structure.store'), $this->payload([[
@@ -434,6 +483,66 @@ class SupportCriteriaTemplateTest extends TestCase
         $this->assertDatabaseHas('support_criterias', [
             'id' => $criterion->id,
             'allow_activity_entries' => false,
+        ]);
+    }
+
+    public function test_admin_cannot_change_evaluatee_owned_field_mode_after_report_data_exists(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งาน</p>',
+            'indicator' => '<p>เกณฑ์</p>',
+            'target_value' => 100,
+            'weight' => 75,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => false,
+            'allow_evaluatee_weight' => false,
+        ]]))->assertCreated();
+
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias',
+        ])->findOrFail($created->json('data.id'));
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $criterion = $evaluationList->supportCriterias->first();
+        $report = Reports::factory()->create([
+            'report_data_id' => $version->reportDatas->first()->id,
+        ]);
+        SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+        ]);
+
+        $payload = $this->payload([[
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'activity_name' => $criterion->activity_name,
+            'indicator' => $criterion->indicator,
+            'target_value' => $criterion->target_value,
+            'weight' => $criterion->weight,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_indicator',
+                'categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_weight',
+            ]);
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $criterion->id,
+            'allow_evaluatee_indicator' => false,
+            'allow_evaluatee_weight' => false,
         ]);
     }
 

@@ -278,10 +278,18 @@
         function toggleSupportIndicatorMode(block) {
             const allow = block.querySelector('.support_allow_activity_entries');
             const grouped = block.querySelector('.support_group_by_indicator');
+            const allowEvaluateeIndicator = block.querySelector('.support_allow_evaluatee_indicator');
+            const allowEvaluateeWeight = block.querySelector('.support_allow_evaluatee_weight');
             if (!allow || !grouped) return;
 
-            if (!allow.checked) grouped.checked = false;
+            if (!allow.checked) {
+                grouped.checked = false;
+                if (allowEvaluateeIndicator) allowEvaluateeIndicator.checked = false;
+                if (allowEvaluateeWeight) allowEvaluateeWeight.checked = false;
+            }
             grouped.disabled = !allow.checked;
+            if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
+            if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
             block.querySelector('[data-support-legacy-indicator]')
                 ?.classList.toggle('hidden', grouped.checked);
             block.querySelector('.support_indicator_items')
@@ -1106,7 +1114,9 @@
 
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('support_allow_activity_entries')
-                || e.target.classList.contains('support_group_by_indicator')) {
+                || e.target.classList.contains('support_group_by_indicator')
+                || e.target.classList.contains('support_allow_evaluatee_indicator')
+                || e.target.classList.contains('support_allow_evaluatee_weight')) {
                 toggleSupportIndicatorMode(e.target.closest('.support_criteria_block'));
                 markDirty();
             }
@@ -1429,6 +1439,8 @@
                                     weight: Number(weight),
                                     require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
                                     allow_activity_entries: supportBlock.querySelector('.support_allow_activity_entries')?.checked || false,
+                                    allow_evaluatee_indicator: supportBlock.querySelector('.support_allow_evaluatee_indicator')?.checked || false,
+                                    allow_evaluatee_weight: supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false,
                                     group_activity_entries_by_indicator: grouped,
                                     indicator_items: indicatorItems
                                 });

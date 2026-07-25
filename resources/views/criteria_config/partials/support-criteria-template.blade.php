@@ -64,6 +64,18 @@
             </label>
             <label class="mt-3 flex items-center gap-2 text-sm font-medium text-gray-700">
                 <input type="checkbox"
+                    class="support_allow_evaluatee_indicator h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    disabled>
+                <span>อนุญาตให้ผู้ถูกประเมินกรอกตัวชี้วัด</span>
+            </label>
+            <label class="mt-3 flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input type="checkbox"
+                    class="support_allow_evaluatee_weight h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                    disabled>
+                <span>อนุญาตให้ผู้ถูกประเมินกรอกน้ำหนัก</span>
+            </label>
+            <label class="mt-3 flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input type="checkbox"
                     class="support_group_by_indicator h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                     disabled>
                 <span>แยกโครงการตามตัวชี้วัดย่อย</span>
