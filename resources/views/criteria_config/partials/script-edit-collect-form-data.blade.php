@@ -58,6 +58,7 @@
                                 sum_score: parseFloat(sumScore),
                                 sequence: evalIndex + 1,
                                 annotation: evalBlock.querySelector('.annotation').value.trim() || null,
+                                quantity_enabled: evalBlock.querySelector('.quantity_criteria_type').checked,
                                 quantity_main_criterias: [],
                                 quality_main_criterias: []
                             };

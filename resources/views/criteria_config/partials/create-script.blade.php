@@ -1231,6 +1231,7 @@
                         sum_score: Number(sumScore),
                         sequence: evalI + 1,
                         annotation: evalBlock.querySelector('.annotation').value || null,
+                        quantity_enabled: quantityChecked,
                         quantity_main_criterias: [],
                         quality_main_criterias: []
                     };

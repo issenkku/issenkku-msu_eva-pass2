@@ -117,7 +117,9 @@
             newBlock.querySelector('.sum_score').value = evalData.sum_score || '';
             newBlock.querySelector('.annotation').value = evalData.annotation || '';
 
-            const hasQuantity = evalData.quantity_main_criterias && evalData.quantity_main_criterias.length > 0;
+            const quantityEnabled = Boolean(evalData.quantity_enabled);
+            const hasSavedQuantity = Array.isArray(evalData.quantity_main_criterias)
+                && evalData.quantity_main_criterias.length > 0;
             const hasQuality = evalData.quality_main_criterias && evalData.quality_main_criterias.length > 0;
             const hasSupport = Array.isArray(evalData.support_criterias) && evalData.support_criterias.length > 0;
 
@@ -128,14 +130,14 @@
             const qualityContainer = newBlock.querySelector('.quality_main_criterias_container');
             const supportContainer = newBlock.querySelector('.support_criterias_container');
 
-            quantityCheckbox.checked = hasQuantity;
+            quantityCheckbox.checked = quantityEnabled;
             qualityCheckbox.checked = hasQuality;
             supportCheckbox.checked = hasSupport;
-            quantityContainer.classList.toggle('hidden', !hasQuantity);
+            quantityContainer.classList.toggle('hidden', !quantityEnabled);
             qualityContainer.classList.toggle('hidden', !hasQuality);
             supportContainer.classList.toggle('hidden', !hasSupport);
 
-            if (hasQuantity) {
+            if (hasSavedQuantity) {
                 populateQuantityCriteria(quantityContainer, evalData.quantity_main_criterias);
             }
 

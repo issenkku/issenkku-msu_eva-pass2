@@ -10,6 +10,7 @@ use App\Models\QuantitySubCriteria;
 use App\Models\ReportData;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -133,6 +134,148 @@ class QuantityCriteriaActivationTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(
                 'categories.0.evaluation_lists.0.quantity_enabled',
+            );
+    }
+
+    public function test_disabling_quantity_preserves_saved_configuration(): void
+    {
+        $version = CriteriaVersion::factory()->create([
+            'created_by' => $this->admin->id,
+        ]);
+        $reportData = ReportData::factory()->create([
+            'criteria_version_id' => $version->id,
+        ]);
+        $category = Category::factory()->create([
+            'criteria_version_id' => $version->id,
+            'sequence' => 1,
+        ]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+            'sequence' => 1,
+            'quantity_enabled' => true,
+        ]);
+        $main = QuantityMainCriteria::factory()->create([
+            'criteria_version_id' => $version->id,
+        ]);
+        $sub = QuantitySubCriteria::factory()->create([
+            'criteria_version_id' => $version->id,
+            'evaluation_list_id' => $evaluationList->id,
+            'quantity_main_criteria_id' => $main->id,
+        ]);
+        $formulaId = DB::table('formulas')->insertGetId([
+            'condition' => 'D = A x C / B',
+            'quantity_main_criteria_id' => $main->id,
+        ]);
+
+        $payload = [
+            'version_name' => $version->version_name,
+            'created_by' => $this->admin->id,
+            'report_datas' => [[
+                'report_data_id' => $reportData->id,
+                'report_title' => $reportData->report_title,
+                'report_description' => $reportData->report_description,
+                'assessment_type' => $reportData->assessment_type,
+                'comment' => $reportData->comment,
+            ]],
+            'categories' => [[
+                'categorie_id' => $category->id,
+                'main_categories' => $category->main_categories,
+                'sub_categories' => $category->sub_categories,
+                'sequence' => 1,
+                'evaluation_lists' => [[
+                    'evaluation_id' => $evaluationList->id,
+                    'name' => $evaluationList->name,
+                    'sum_score' => $evaluationList->sum_score,
+                    'sequence' => 1,
+                    'annotation' => $evaluationList->annotation,
+                    'quantity_enabled' => false,
+                    'quality_main_criterias' => [],
+                ]],
+            ]],
+        ];
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertOk();
+
+        $this->assertDatabaseHas('evaluation_lists', [
+            'id' => $evaluationList->id,
+            'quantity_enabled' => false,
+        ]);
+        $this->assertDatabaseHas('quantity_main_criterias', ['id' => $main->id]);
+        $this->assertDatabaseHas('quantity_sub_criterias', ['id' => $sub->id]);
+        $this->assertDatabaseHas('formulas', ['id' => $formulaId]);
+
+        $this->getJson(route('report-structure.show', $version->id))
+            ->assertOk()
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.quantity_enabled',
+                false,
+            )
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.quantity_main_criterias.0.name',
+                $main->name,
+            );
+
+        $payload['categories'][0]['evaluation_lists'][0]['quantity_enabled'] = true;
+        $payload['categories'][0]['evaluation_lists'][0]['quantity_main_criterias'] = [[
+            'quantity_main_criteria_id' => $main->id,
+            'name' => $main->name,
+            'tooltips' => $main->tooltips,
+            'formula' => 'D = A x C / B',
+            'quantity_sub_criterias' => [[
+                'quantity_sub_criteria_id' => $sub->id,
+                'name' => $sub->name,
+                'sequence' => 1,
+                'score_a' => $sub->score_a,
+                'score_b' => $sub->score_b,
+            ]],
+        ]];
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertOk();
+
+        $this->assertDatabaseHas('evaluation_lists', [
+            'id' => $evaluationList->id,
+            'quantity_enabled' => true,
+        ]);
+        $this->assertDatabaseHas('quantity_sub_criterias', [
+            'id' => $sub->id,
+            'name' => $sub->name,
+        ]);
+    }
+
+    public function test_enabled_quantity_requires_at_least_one_main_criterion(): void
+    {
+        $payload = [
+            'version_name' => 'Enabled quantity validation',
+            'created_by' => $this->admin->id,
+            'report_datas' => [[
+                'report_title' => 'Enabled quantity report',
+                'report_description' => null,
+                'assessment_type' => 'quantity',
+                'comment' => null,
+            ]],
+            'categories' => [[
+                'main_categories' => 'Category',
+                'sub_categories' => 'Subcategory',
+                'sequence' => 1,
+                'evaluation_lists' => [[
+                    'name' => 'Evaluation',
+                    'sum_score' => 100,
+                    'sequence' => 1,
+                    'annotation' => null,
+                    'quantity_enabled' => true,
+                    'quantity_main_criterias' => [],
+                    'quality_main_criterias' => [],
+                ]],
+            ]],
+        ];
+
+        $this->postJson(route('report-structure.store'), $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(
+                'categories.0.evaluation_lists.0.quantity_main_criterias',
             );
     }
 }

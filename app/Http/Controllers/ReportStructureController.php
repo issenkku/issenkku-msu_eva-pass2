@@ -437,12 +437,12 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string',
 
-            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'exclude_unless:categories.*.evaluation_lists.*.quantity_enabled,true|required|array|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
-            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'required|array|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.quantity_sub_criteria_id' => 'sometimes|nullable|integer|exists:quantity_sub_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
@@ -713,12 +713,12 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.indicator_items.*.code' => 'required|string',
 
-            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias' => 'exclude_unless:categories.*.evaluation_lists.*.quantity_enabled,true|required|array|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_main_criteria_id' => 'sometimes|nullable|integer|exists:quantity_main_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.tooltips' => 'nullable|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.formula' => 'nullable|string',
-            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'sometimes|array',
+            'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias' => 'required|array|min:1',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.quantity_sub_criteria_id' => 'sometimes|nullable|integer|exists:quantity_sub_criterias,id',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.name' => 'required|string',
             'categories.*.evaluation_lists.*.quantity_main_criterias.*.quantity_sub_criterias.*.sequence' => 'required|integer|min:1',
@@ -774,12 +774,12 @@ class ReportStructureController extends Controller
                 $keptReportDataIds = [];
                 $keptCategoryIds = [];
                 $keptEvaluationIds = [];
-                $keptQuantMainIds = [];
                 $keptQuantSubIds = [];
                 $keptQualMainIds = [];
                 $keptQualSubIds = [];
                 $keptSupportCriteriaIds = [];
                 $processedQualMainIds = [];
+                $quantitySyncEvaluationIds = [];
 
                 // 2. Update/Create Report Datas
                 foreach ($validated['report_datas'] as $reportDatum) {
@@ -870,6 +870,10 @@ class ReportStructureController extends Controller
 
                             $keptEvaluationIds[] = $evaluationList->id;
 
+                            if ((bool) $evalListData['quantity_enabled']) {
+                                $quantitySyncEvaluationIds[] = $evaluationList->id;
+                            }
+
                             if (! empty($evalListData['quantity_main_criterias'])) {
                                 foreach ($evalListData['quantity_main_criterias'] as $qMain) {
                                     $qMainId = $qMain['quantity_main_criteria_id'] ?? null;
@@ -899,8 +903,6 @@ class ReportStructureController extends Controller
                                             'tooltips' => $qMain['tooltips'],
                                         ]);
                                     }
-
-                                    $keptQuantMainIds[] = $quantityMainCriteria->id;
 
                                     if (! empty($qMain['formula'])) {
                                         DB::table('formulas')
@@ -1094,18 +1096,10 @@ class ReportStructureController extends Controller
                     ->values()
                     ->all();
 
-                $protectedQuantMainIds = [];
                 $protectedEvaluationIds = [];
                 $protectedCategoryIds = [];
 
                 if (! empty($protectedQuantSubIds)) {
-                    $protectedQuantMainIds = QuantitySubCriteria::whereIn('id', $protectedQuantSubIds)
-                        ->pluck('quantity_main_criteria_id')
-                        ->filter()
-                        ->unique()
-                        ->values()
-                        ->all();
-
                     $protectedEvaluationIds = QuantitySubCriteria::whereIn('id', $protectedQuantSubIds)
                         ->pluck('evaluation_list_id')
                         ->filter()
@@ -1122,17 +1116,20 @@ class ReportStructureController extends Controller
                 }
 
                 // 5. Delete removed children (never delete protected quantity sub criterias)
-                QuantitySubCriteria::where('criteria_version_id', $version->id)
-                    ->when(! empty($keptQuantSubIds), function ($query) use ($keptQuantSubIds) {
-                        $query->whereNotIn('id', $keptQuantSubIds);
-                    })
-                    ->when(! empty($protectedQuantSubIds), function ($query) use ($protectedQuantSubIds) {
-                        $query->whereNotIn('id', $protectedQuantSubIds);
-                    })
-                    ->when(empty($keptQuantSubIds), function ($query) {
-                        $query->whereNotNull('id');
-                    })
-                    ->delete();
+                if (! empty($quantitySyncEvaluationIds)) {
+                    QuantitySubCriteria::where('criteria_version_id', $version->id)
+                        ->whereIn('evaluation_list_id', $quantitySyncEvaluationIds)
+                        ->when(! empty($keptQuantSubIds), function ($query) use ($keptQuantSubIds) {
+                            $query->whereNotIn('id', $keptQuantSubIds);
+                        })
+                        ->when(! empty($protectedQuantSubIds), function ($query) use ($protectedQuantSubIds) {
+                            $query->whereNotIn('id', $protectedQuantSubIds);
+                        })
+                        ->when(empty($keptQuantSubIds), function ($query) {
+                            $query->whereNotNull('id');
+                        })
+                        ->delete();
+                }
 
                 QualitySubCriteria::where('criteria_version_id', $version->id)
                     ->when(! empty($keptQualSubIds), function ($query) use ($keptQualSubIds) {
@@ -1145,15 +1142,7 @@ class ReportStructureController extends Controller
 
                 // 6. Delete removed main criterias (skip those that have protected subs)
                 $version->quantityMainCriterias()
-                    ->when(! empty($keptQuantMainIds), function ($query) use ($keptQuantMainIds) {
-                        $query->whereNotIn('id', $keptQuantMainIds);
-                    })
-                    ->when(! empty($protectedQuantMainIds), function ($query) use ($protectedQuantMainIds) {
-                        $query->whereNotIn('id', $protectedQuantMainIds);
-                    })
-                    ->when(empty($keptQuantMainIds), function ($query) {
-                        $query->whereNotNull('id');
-                    })
+                    ->whereDoesntHave('quantitySubCriterias')
                     ->delete();
 
                 $version->qualityMainCriterias()
