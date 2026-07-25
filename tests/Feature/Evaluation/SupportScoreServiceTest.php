@@ -182,6 +182,44 @@ class SupportScoreServiceTest extends TestCase
         }
     }
 
+    public function test_evaluatee_weighted_criterion_uses_entry_scores_without_a_parent_score(): void
+    {
+        $this->criterion->update([
+            'weight' => null,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+
+        $result = app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => null,
+            'activity_entries' => [
+                [
+                    'content' => '<p>โครงการหนึ่ง</p>',
+                    'indicator' => '<p>ผ่านความเห็นชอบ</p>',
+                    'weight' => 40,
+                    'achieved_score' => 80,
+                    'evidence_links' => ['https://example.com/project-one'],
+                ],
+                [
+                    'content' => '<p>โครงการสอง</p>',
+                    'indicator' => '<p>เผยแพร่แล้ว</p>',
+                    'weight' => 60,
+                    'achieved_score' => 90,
+                    'evidence_links' => [],
+                ],
+            ],
+        ]], $this->evaluatee, null, false);
+
+        $this->assertDatabaseMissing('support_scores', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+        ]);
+        $this->assertSame(86.0, $result['support_score_total']);
+        $this->assertSame('86.00', $this->report->fresh()->support_score_total);
+    }
+
     public function test_the_persisted_total_is_not_capped_at_one_hundred(): void
     {
         $result = app(SupportScoreService::class)->persist($this->report, [[

@@ -317,6 +317,82 @@ class SupportActivityEntryServiceTest extends TestCase
         }
     }
 
+    public function test_evaluatee_owned_fields_are_validated_calculated_and_persisted(): void
+    {
+        $this->criterion->update([
+            'weight' => null,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+
+        $this->persist([[
+            'content' => '<p>โครงการหนึ่ง</p>',
+            'indicator' => '<p>ผ่านความเห็นชอบ</p>',
+            'weight' => 40,
+            'achieved_score' => 80,
+        ]]);
+
+        $this->assertDatabaseHas('support_activity_entries', [
+            'support_criteria_id' => $this->criterion->id,
+            'indicator' => '<p>ผ่านความเห็นชอบ</p>',
+            'weight' => '40.00',
+            'achieved_score' => '80.00',
+            'weighted_score' => '32.00',
+        ]);
+    }
+
+    public function test_evaluatee_owned_fields_reject_invalid_or_unauthorized_values(): void
+    {
+        $this->criterion->update([
+            'weight' => null,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+
+        foreach ([
+            ['field' => 'indicator', 'entry' => ['indicator' => '<p><br></p>', 'weight' => 40, 'achieved_score' => 80]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 0, 'achieved_score' => 80]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => -1, 'achieved_score' => 80]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 100.01, 'achieved_score' => 80]],
+            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => -0.01]],
+            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => 100.01]],
+        ] as $case) {
+            try {
+                $this->persist([[
+                    'content' => '<p>โครงการ</p>',
+                    ...$case['entry'],
+                ]]);
+                $this->fail("Expected {$case['field']} validation failure");
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    "support_list.0.activity_entries.0.{$case['field']}",
+                    $exception->errors()
+                );
+            }
+        }
+
+        $this->criterion->update([
+            'weight' => 20,
+            'allow_evaluatee_indicator' => false,
+            'allow_evaluatee_weight' => false,
+        ]);
+
+        foreach (['indicator', 'weight', 'achieved_score'] as $field) {
+            try {
+                $this->persist([[
+                    'content' => '<p>โครงการ</p>',
+                    $field => $field === 'indicator' ? '<p>ไม่ได้รับอนุญาต</p>' : 10,
+                ]]);
+                $this->fail("Expected unauthorized {$field} validation failure");
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    "support_list.0.activity_entries.0.{$field}",
+                    $exception->errors()
+                );
+            }
+        }
+    }
+
     public function test_disabled_criterion_rejects_new_entries_without_deleting_hidden_entries(): void
     {
         $entry = SupportActivityEntry::create([
@@ -446,7 +522,7 @@ class SupportActivityEntryServiceTest extends TestCase
     {
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 50,
+            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 50,
             'evidence_links' => [],
             'activity_entries' => $activityEntries,
         ]], $this->evaluatee, null, false);

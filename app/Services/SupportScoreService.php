@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Support\ScoreChangePolicy;
 use App\Support\SupportAchievementScore;
 use App\Support\SupportScoreRules;
+use App\Support\SupportScoreTotal;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -94,6 +95,18 @@ class SupportScoreService
                 /** @var SupportScore|null $existingScore */
                 $existingScore = $oldScores->get($criterion->id);
                 $achievedScore = $item['achieved_score'];
+                if ($criterion->allow_evaluatee_weight) {
+                    if ($achievedScore !== null) {
+                        throw ValidationException::withMessages([
+                            "support_list.{$index}.achieved_score" => [
+                                'เกณฑ์นี้ใช้คะแนนที่ผู้ถูกประเมินกรอกแยกตามโครงการ',
+                            ],
+                        ]);
+                    }
+
+                    continue;
+                }
+
                 $weightedScore = $achievedScore === null
                     ? null
                     : round(((float) $criterion->weight * $achievedScore) / 100, 2);
@@ -163,9 +176,7 @@ class SupportScoreService
                 $requireReasonForChanges
             );
 
-            $supportScoreTotal = round((float) SupportScore::query()
-                ->where('report_id', $report->id)
-                ->sum('weighted_score'), 2);
+            $supportScoreTotal = SupportScoreTotal::forReport($report);
             $supportAchievementScore = SupportAchievementScore::calculate($supportScoreTotal);
             $report->update([
                 'support_score_total' => $supportScoreTotal,

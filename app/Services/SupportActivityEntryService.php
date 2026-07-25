@@ -7,7 +7,10 @@ use App\Models\SupportActivityEntry;
 use App\Models\SupportActivityEntryHistory;
 use App\Models\SupportCriteria;
 use App\Models\User;
+use App\Rules\HasRichText;
+use App\Support\SupportWeightedScore;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class SupportActivityEntryService
@@ -52,6 +55,10 @@ class SupportActivityEntryService
                     $itemIndex,
                     $entryIndex
                 );
+                $entryData = [
+                    ...$entryData,
+                    ...$this->scoreAttributes($criterion, $entryData, $itemIndex, $entryIndex),
+                ];
             }
             unset($entryData);
 
@@ -104,6 +111,12 @@ class SupportActivityEntryService
             $entryId = isset($entryData['id']) ? (int) $entryData['id'] : null;
             $content = (string) $entryData['content'];
             $indicatorItemId = $entryData['support_indicator_item_id'];
+            $scoreAttributes = [
+                'indicator' => $entryData['indicator'],
+                'weight' => $entryData['weight'],
+                'achieved_score' => $entryData['achieved_score'],
+                'weighted_score' => $entryData['weighted_score'],
+            ];
 
             if ($entryId !== null) {
                 /** @var SupportActivityEntry|null $entry */
@@ -127,6 +140,7 @@ class SupportActivityEntryService
                 $entry->update([
                     'sequence' => $entryIndex + 1,
                     'content' => $content,
+                    ...$scoreAttributes,
                     'updated_by' => $actor?->id,
                 ]);
                 $this->replaceEvidence(
@@ -145,6 +159,7 @@ class SupportActivityEntryService
                 'support_indicator_item_id' => $indicatorItemId,
                 'sequence' => $entryIndex + 1,
                 'content' => $content,
+                ...$scoreAttributes,
                 'created_by' => $actor?->id,
                 'updated_by' => $actor?->id,
             ]);
@@ -273,5 +288,58 @@ class SupportActivityEntryService
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $entryData
+     * @return array{indicator:?string,weight:?float,achieved_score:?float,weighted_score:?float}
+     */
+    private function scoreAttributes(
+        SupportCriteria $criterion,
+        array $entryData,
+        int|string $itemIndex,
+        int $entryIndex
+    ): array {
+        $base = "support_list.{$itemIndex}.activity_entries.{$entryIndex}";
+        $payload = [
+            'support_list' => [
+                $itemIndex => [
+                    'activity_entries' => [
+                        $entryIndex => $entryData,
+                    ],
+                ],
+            ],
+        ];
+
+        Validator::make($payload, [
+            "{$base}.indicator" => $criterion->allow_evaluatee_indicator
+                ? ['required', 'string', new HasRichText]
+                : ['prohibited'],
+            "{$base}.weight" => $criterion->allow_evaluatee_weight
+                ? ['required', 'numeric', 'gt:0', 'max:100', 'decimal:0,2']
+                : ['prohibited'],
+            "{$base}.achieved_score" => $criterion->allow_evaluatee_weight
+                ? ['required', 'numeric', 'min:0', 'max:100', 'decimal:0,2']
+                : ['prohibited'],
+        ])->validate();
+
+        $indicator = $criterion->allow_evaluatee_indicator
+            ? (string) $entryData['indicator']
+            : null;
+        $weight = $criterion->allow_evaluatee_weight
+            ? round((float) $entryData['weight'], 2)
+            : null;
+        $achievedScore = $criterion->allow_evaluatee_weight
+            ? round((float) $entryData['achieved_score'], 2)
+            : null;
+
+        return [
+            'indicator' => $indicator,
+            'weight' => $weight,
+            'achieved_score' => $achievedScore,
+            'weighted_score' => $criterion->allow_evaluatee_weight
+                ? SupportWeightedScore::calculate($weight, $achievedScore)
+                : null,
+        ];
     }
 }
