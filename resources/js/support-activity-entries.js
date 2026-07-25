@@ -36,16 +36,13 @@ export function activityHtmlHasVisibleText(html) {
 }
 
 export function activityEntryIdsKeepOriginalOrder(submittedIds, originalIds) {
-    return submittedIds.length === originalIds.length
-        && submittedIds.every((id, index) => id === originalIds[index]);
+    return submittedIds.length === originalIds.length && submittedIds.every((id, index) => id === originalIds[index]);
 }
 
 export function groupActivityEntries(indicatorItems, entries) {
     return indicatorItems.map((item) => ({
         ...item,
-        activity_entries: entries.filter(
-            (entry) => Number(entry.support_indicator_item_id) === Number(item.id),
-        ),
+        activity_entries: entries.filter((entry) => Number(entry.support_indicator_item_id) === Number(item.id)),
     }));
 }
 

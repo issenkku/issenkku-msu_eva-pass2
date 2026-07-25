@@ -272,6 +272,7 @@ function createSupportReviewerReport(object $context, string $status): Reports
         'achieved_score' => 80,
         'weighted_score' => 16,
     ]);
+
     return $report;
 }
 
