@@ -5,7 +5,6 @@ use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
-use App\Models\EvidenceAnswer;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\SupportActivityEntry;
@@ -46,7 +45,7 @@ beforeEach(function () {
         'indicator' => 'ส่งตรงเวลา',
         'target_value' => 100,
         'weight' => 20,
-        'require_evidence' => true,
+        'require_evidence' => false,
         'allow_activity_entries' => true,
     ]);
 
@@ -273,13 +272,6 @@ function createSupportReviewerReport(object $context, string $status): Reports
         'achieved_score' => 80,
         'weighted_score' => 16,
     ]);
-    EvidenceAnswer::create([
-        'evaluation_list_id' => $context->evaluationList->id,
-        'support_criteria_id' => $context->criterion->id,
-        'report_id' => $report->id,
-        'link' => 'https://example.com/support-evidence',
-    ]);
-
     return $report;
 }
 
@@ -296,7 +288,7 @@ function supportReviewerPayload(
                 'support_criteria_id' => $criterionId,
                 'achieved_score' => $score,
                 'modification_reason' => $reason,
-                'evidence_links' => ['https://example.com/support-evidence'],
+                'evidence_links' => [],
             ],
         ],
         'status' => $status,

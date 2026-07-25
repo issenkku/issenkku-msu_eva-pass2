@@ -450,7 +450,9 @@ class EvaluateeTest extends TestCase
 
         $response = $this->actingAs($this->evaluatee, 'web')->post(
             route('evaluation_score.store', ['id' => $report->id]),
-            $this->supportPayload('Draft', '125.50')
+            $this->supportPayload('Draft', '125.50', [
+                ['content' => '<p>โครงการพร้อมหลักฐาน</p>'],
+            ])
         );
 
         $response->assertRedirect('/evaluatee-dashboard');
@@ -478,7 +480,9 @@ class EvaluateeTest extends TestCase
         $report = $this->createReportWithStatus('Draft');
 
         $this->actingAs($this->evaluatee, 'web')
-            ->post(route('evaluation_score.store', ['id' => $report->id]), $this->supportPayload('Pending', null))
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $this->supportPayload('Pending', null, [
+                ['content' => '<p>โครงการพร้อมหลักฐาน</p>'],
+            ]))
             ->assertRedirect('/evaluatee-dashboard');
 
         $this->assertDatabaseHas('support_scores', [
@@ -499,14 +503,15 @@ class EvaluateeTest extends TestCase
 
         foreach ([['Assigned', 'Draft'], ['Draft', 'Pending']] as [$initialStatus, $requestedStatus]) {
             $report = $this->createReportWithStatus($initialStatus);
-            $payload = $this->supportPayload($requestedStatus, null);
-            $payload['support_list'][$this->supportCriterion->id]['evidence_links'] = [];
+            $payload = $this->supportPayload($requestedStatus, null, [
+                ['content' => '<p>โครงการไม่มีหลักฐาน</p>', 'evidence_links' => []],
+            ]);
 
             $this->actingAs($this->evaluatee, 'web')
                 ->postJson(route('evaluation_score.store', ['id' => $report->id]), $payload)
                 ->assertUnprocessable()
                 ->assertJsonValidationErrors([
-                    "support_list.{$this->supportCriterion->id}.evidence_links",
+                    "support_list.{$this->supportCriterion->id}.activity_entries",
                 ]);
         }
     }
@@ -556,7 +561,9 @@ class EvaluateeTest extends TestCase
             'workload_entry_id' => $workloadEntry->id,
             'link' => 'https://example.com/workload-evidence',
         ]);
-        $payload = $this->supportPayload('Draft', 100);
+        $payload = $this->supportPayload('Draft', 100, [
+            ['content' => '<p>โครงการพร้อมหลักฐาน</p>'],
+        ]);
         $payload['evidence_list'] = [
             $qualityMainId => [
                 'evaluation_list_id' => $this->qualitySubCriteria->evaluation_list_id,
@@ -747,13 +754,19 @@ class EvaluateeTest extends TestCase
     /** @param array<int, array<string, mixed>> $activityEntries */
     private function supportPayload(string $status, string|int|null $score, array $activityEntries = []): array
     {
+        $activityEntries = array_values($activityEntries);
+        if ($activityEntries !== []
+            && ! array_key_exists('evidence_links', $activityEntries[0])) {
+            $activityEntries[0]['evidence_links'] = ['https://example.com/support-evidence'];
+        }
+
         return [
             'support_list' => [
                 $this->supportCriterion->id => [
                     'support_criteria_id' => $this->supportCriterion->id,
                     'achieved_score' => $score,
                     'modification_reason' => null,
-                    'evidence_links' => ['https://example.com/support-evidence'],
+                    'evidence_links' => [],
                     'activity_entries' => $activityEntries,
                 ],
             ],
