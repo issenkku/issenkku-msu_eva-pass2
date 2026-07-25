@@ -37,7 +37,8 @@ class EvaluationWorkloadController extends Controller
 
         if ($reportId) {
             $report = Reports::with([
-                'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
+                'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias' => fn ($query) => $query
+                    ->active(),
             ])->find($reportId);
 
             $readonly = ! $this->canEditReport($report);

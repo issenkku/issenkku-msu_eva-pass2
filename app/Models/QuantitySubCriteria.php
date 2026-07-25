@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -31,6 +32,15 @@ class QuantitySubCriteria extends Model
         'require_evidence' => 'boolean',
         'require_subject' => 'boolean',
     ];
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'evaluationList',
+            fn (Builder $evaluationQuery) => $evaluationQuery
+                ->where('quantity_enabled', true),
+        );
+    }
 
     public function groups()
     {

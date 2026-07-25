@@ -39,7 +39,8 @@ class ReportDataService
     public function getReportData($id)
     {
         $report = Reports::with([
-            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias' => fn ($query) => $query
+                ->active(),
             'assignments.assignmentData',
             'assignments.assignmentData.evaluatorUser.position',
             'assignments.assignmentData.directorUser.position',
@@ -245,7 +246,9 @@ class ReportDataService
             $categories = $report->reportData->criteriaVersion->categories()
                 ->with(['evaluationLists' => function ($query) {
                     $query->with([
-                        'quantitySubCriterias.mainCriteria',
+                        'quantitySubCriterias' => fn ($quantityQuery) => $quantityQuery
+                            ->active()
+                            ->with('mainCriteria'),
                         'qualitySubCriterias.mainCriteria',
                     ])->orderBy('sequence');
                 }])
@@ -268,6 +271,7 @@ class ReportDataService
                         'annotation' => $list->annotation,
                         'sum_score' => $list->sum_score,
                         'sequence' => $list->sequence,
+                        'quantity_enabled' => (bool) $list->quantity_enabled,
                         'quantity_items' => [],
                         'quality_items' => [],
                         'support_items' => $supportItemsByList[$list->id] ?? [],

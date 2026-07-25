@@ -148,6 +148,8 @@ class DashboardController extends Controller
         // Quantity Criteria
         $quantityCriteria = DB::table('quantity_main_criterias as qm')
             ->join('quantity_sub_criterias as qs', 'qm.id', '=', 'qs.quantity_main_criteria_id')
+            ->join('evaluation_lists as qel', 'qel.id', '=', 'qs.evaluation_list_id')
+            ->where('qel.quantity_enabled', true)
             ->leftJoin('quantity_scores as qscore', function ($join) use ($report) {
                 $join->on('qs.id', '=', 'qscore.quantity_sub_criteria_id')
                     ->where('qscore.report_id', '=', $report->id);
@@ -221,7 +223,9 @@ class DashboardController extends Controller
         $categories = Category::with([
             'evaluationLists' => function ($query) {
                 $query->orderBy('sequence')->with([
-                    'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                    'quantitySubCriterias' => fn ($quantityQuery) => $quantityQuery
+                        ->active()
+                        ->with('mainCriteria:id,name,tooltips'),
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
                 ]);
             },

@@ -388,7 +388,9 @@ class EvaluatorController extends Controller
         $categories = Category::with([
             'evaluationLists' => function ($query) {
                 $query->orderBy('sequence')->with([
-                    'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                    'quantitySubCriterias' => fn ($quantityQuery) => $quantityQuery
+                        ->active()
+                        ->with('mainCriteria:id,name,tooltips'),
                     'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
                     'qualitySubCriterias:id,name,sequence,num_score,description,quality_main_criteria_id,criteria_version_id,evaluation_list_id',
                 ]);
@@ -452,7 +454,8 @@ class EvaluatorController extends Controller
         $user = $request->user()->load('position', 'department');
 
         $report = Reports::with([
-            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias',
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias' => fn ($query) => $query
+                ->active(),
             'assignments.assignmentData',
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
@@ -509,7 +512,9 @@ class EvaluatorController extends Controller
             $categories = Category::with([
                 'evaluationLists' => function ($query) {
                     $query->orderBy('sequence')->with([
-                        'quantitySubCriterias.mainCriteria:id,name,tooltips',
+                        'quantitySubCriterias' => fn ($quantityQuery) => $quantityQuery
+                            ->active()
+                            ->with('mainCriteria:id,name,tooltips'),
                         'qualitySubCriterias.mainCriteria:id,name,tooltips,ratio,sequence,allow_multiple',
                     ]);
                 },

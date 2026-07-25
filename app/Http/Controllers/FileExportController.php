@@ -47,14 +47,16 @@ class FileExportController extends Controller
     public function exportSingleReport(Request $request, $id)
     {
         // Find the report first
-        $report = Reports::with(
+        $report = Reports::with([
             'assignments.evaluateeUser.department',
             'assignments.evaluateeUser.position',
             'assignments.report.quantityScores',
             'assignments.report.qualityScores',
-            'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
-            'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria'
-        )->findOrFail($id);
+            'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias' => fn ($query) => $query
+                ->active()
+                ->with('mainCriteria'),
+            'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
+        ])->findOrFail($id);
 
         $assignment = $report->assignments;
 

@@ -15,11 +15,15 @@ class EvaluationScoreSummary
 
         foreach ($categoryItems as $category) {
             foreach ($category['evaluation_lists'] ?? [] as $evaluationList) {
-                $hasQuantity = $hasQuantity || ! empty($evaluationList['quantity_items']);
+                $quantityItems = (bool) ($evaluationList['quantity_enabled'] ?? true)
+                    ? ($evaluationList['quantity_items'] ?? [])
+                    : [];
+
+                $hasQuantity = $hasQuantity || ! empty($quantityItems);
                 $hasQuality = $hasQuality || ! empty($evaluationList['quality_items']);
                 $hasSupport = $hasSupport || ! empty($evaluationList['support_items']);
 
-                foreach ($evaluationList['quantity_items'] ?? [] as $mainCriteria) {
+                foreach ($quantityItems as $mainCriteria) {
                     foreach ($mainCriteria['sub_criterias'] ?? [] as $subCriteria) {
                         $totalQuantityScore += (float) ($subCriteria['score_d'] ?? 0);
                     }

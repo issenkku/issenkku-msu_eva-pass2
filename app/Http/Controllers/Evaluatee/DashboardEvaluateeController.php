@@ -204,9 +204,13 @@ class DashboardEvaluateeController extends Controller
         $user = $request->user()->load('position', 'department');
 
         $report = Reports::with([
-            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias.evaluationList',
+            'reportData.criteriaVersion.quantityMainCriterias.quantitySubCriterias' => fn ($query) => $query
+                ->active()
+                ->with('evaluationList'),
             'reportData.criteriaVersion.qualityMainCriterias.qualitySubCriterias.evaluationList',
-            'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias.mainCriteria',
+            'reportData.criteriaVersion.categories.evaluationLists.quantitySubCriterias' => fn ($query) => $query
+                ->active()
+                ->with('mainCriteria'),
             'reportData.criteriaVersion.categories.evaluationLists.qualitySubCriterias.mainCriteria',
             'reportData.criteriaVersion.categories.evaluationLists.supportCriterias',
             'assignments.assignmentData.evaluatorUser',
@@ -333,7 +337,9 @@ class DashboardEvaluateeController extends Controller
             $categories = $report->reportData->criteriaVersion->categories()
                 ->with(['evaluationLists' => function ($query) {
                     $query->with([
-                        'quantitySubCriterias.mainCriteria',
+                        'quantitySubCriterias' => fn ($quantityQuery) => $quantityQuery
+                            ->active()
+                            ->with('mainCriteria'),
                         'qualitySubCriterias.mainCriteria',
                         'supportCriterias',
                     ])->orderBy('sequence');
@@ -357,6 +363,7 @@ class DashboardEvaluateeController extends Controller
                         'annotation' => $list->annotation,
                         'sum_score' => $list->sum_score,
                         'sequence' => $list->sequence,
+                        'quantity_enabled' => (bool) $list->quantity_enabled,
                         'quantity_items' => [],
                         'quality_items' => [],
                         'support_items' => $supportItemsByList[$list->id] ?? [],
