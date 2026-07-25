@@ -194,13 +194,15 @@
         }
         window.__supportCriteriaBound = true;
 
-        const createEvidenceRow = (criterionId) => {
+        const createEvidenceRow = (criterionId, entryIndex = null) => {
             const row = document.createElement('div');
             row.className = 'support-evidence-row flex items-center gap-2';
 
             const input = document.createElement('input');
             input.type = 'url';
-            input.name = `support_list[${criterionId}][evidence_links][]`;
+            input.name = entryIndex === null
+                ? `support_list[${criterionId}][evidence_links][]`
+                : activityTools().activityEvidenceFieldName(criterionId, entryIndex);
             input.dataset.supportEvidenceInput = '';
             input.placeholder = 'https://example.com/evidence';
             input.setAttribute('aria-label', 'ลิงก์หลักฐาน');
@@ -215,6 +217,34 @@
 
             row.append(input, removeButton);
             return row;
+        };
+
+        const createActivityEvidenceSection = () => {
+            const section = document.createElement('section');
+            section.className = 'mt-4 border-t border-slate-200 pt-4';
+            section.dataset.supportEvidenceSection = '';
+
+            const headingRow = document.createElement('div');
+            headingRow.className = 'flex items-center justify-between gap-3';
+
+            const heading = document.createElement('h6');
+            heading.className = 'text-sm font-semibold text-slate-700';
+            heading.textContent = 'หลักฐาน';
+
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.dataset.addSupportEvidence = '';
+            addButton.className = 'rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400';
+            addButton.textContent = '+ เพิ่มลิงก์หลักฐาน';
+
+            const container = document.createElement('div');
+            container.className = 'mt-2 space-y-2';
+            container.dataset.supportEvidenceContainer = '';
+            container.appendChild(createEvidenceRow('', 0));
+
+            headingRow.append(heading, addButton);
+            section.append(headingRow, container);
+            return section;
         };
 
         const activityEditorOptions = {
@@ -301,7 +331,7 @@
             removeButton.className = 'mt-2 rounded-lg bg-red-50 px-3 py-1.5 text-sm font-semibold text-red-700 transition hover:bg-red-100';
             removeButton.textContent = 'ลบรายการ';
 
-            row.append(indicatorId, label, removeButton);
+            row.append(indicatorId, label, removeButton, createActivityEvidenceSection());
             return row;
         };
 
@@ -316,6 +346,7 @@
                 const indicatorId = row.querySelector('[data-support-activity-indicator-id]');
                 const content = row.querySelector('[data-support-activity-content]');
                 const reason = row.querySelector('[data-support-activity-reason]');
+                const evidenceInputs = row.querySelectorAll('[data-support-evidence-input]');
                 if (id) id.name = activityTools().activityEntryFieldName(criterionId, index, 'id');
                 if (indicatorId) {
                     indicatorId.name = activityTools().activityEntryFieldName(
@@ -326,6 +357,9 @@
                 }
                 if (content) content.name = activityTools().activityEntryFieldName(criterionId, index, 'content');
                 if (reason) reason.name = activityTools().activityEntryFieldName(criterionId, index, 'modification_reason');
+                evidenceInputs.forEach((evidenceInput) => {
+                    evidenceInput.name = activityTools().activityEvidenceFieldName(criterionId, index);
+                });
             });
 
             const groups = Array.from(item.querySelectorAll('[data-support-activity-group]'));
@@ -698,10 +732,16 @@
 
             const addButton = event.target.closest('[data-add-support-evidence]');
             if (addButton) {
-                const criterionId = addButton.dataset.addSupportEvidence;
-                const container = document.getElementById(`support-evidence-links-${criterionId}`);
-                if (!container) return;
-                const row = createEvidenceRow(criterionId);
+                const item = addButton.closest('[data-support-item]');
+                const entry = addButton.closest('[data-support-activity-entry]');
+                const section = addButton.closest('[data-support-evidence-section]');
+                const container = section?.querySelector('[data-support-evidence-container]');
+                if (!item || !container) return;
+
+                const entryIndex = entry
+                    ? Array.from(item.querySelectorAll('[data-support-activity-entry]')).indexOf(entry)
+                    : null;
+                const row = createEvidenceRow(item.dataset.supportId, entryIndex);
                 container.appendChild(row);
                 row.querySelector('input')?.focus();
                 return;

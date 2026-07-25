@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    activityEvidenceFieldName,
     activityEntryFieldName,
     activityEntryIdsKeepOriginalOrder,
     activityHtmlHasVisibleText,
@@ -16,6 +17,10 @@ test('builds nested support activity entry field names after add or delete', () 
     assert.equal(
         activityEntryFieldName(7, 0, 'support_indicator_item_id'),
         'support_list[7][activity_entries][0][support_indicator_item_id]',
+    );
+    assert.equal(
+        activityEvidenceFieldName(7, 2),
+        'support_list[7][activity_entries][2][evidence_links][]',
     );
 });
 

@@ -2,6 +2,10 @@ export function activityEntryFieldName(criterionId, index, field) {
     return `support_list[${criterionId}][activity_entries][${index}][${field}]`;
 }
 
+export function activityEvidenceFieldName(criterionId, index) {
+    return `support_list[${criterionId}][activity_entries][${index}][evidence_links][]`;
+}
+
 export function activityHtmlPlainText(html) {
     return String(html ?? '')
         .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
@@ -37,6 +41,7 @@ export function groupActivityEntries(indicatorItems, entries) {
 
 if (typeof window !== 'undefined') {
     window.SupportActivityEntries = {
+        activityEvidenceFieldName,
         activityEntryFieldName,
         activityEntryIdsKeepOriginalOrder,
         activityHtmlHasVisibleText,
