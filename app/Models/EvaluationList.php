@@ -20,8 +20,13 @@ class EvaluationList extends Model
         'sum_score',
         'sequence',
         'annotation',
+        'quantity_enabled',
         'categorie_id',
         'criteria_version_id',
+    ];
+
+    protected $casts = [
+        'quantity_enabled' => 'boolean',
     ];
 
     public function criteriaVersion(): BelongsTo

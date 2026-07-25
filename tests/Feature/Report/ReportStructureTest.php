@@ -195,6 +195,7 @@ class ReportStructureTest extends TestCase
                             'sum_score' => 200,
                             'sequence' => 1,
                             'annotation' => 'Quantitative measurements',
+                            'quantity_enabled' => true,
                             'quantity_main_criterias' => [
                                 [
                                     'name' => 'Performance Index',
@@ -222,6 +223,7 @@ class ReportStructureTest extends TestCase
                             'sum_score' => 300,
                             'sequence' => 2,
                             'annotation' => 'Qualitative assessments',
+                            'quantity_enabled' => false,
                             'quality_main_criterias' => [
                                 [
                                     'name' => 'Service Quality',
@@ -429,6 +431,7 @@ class ReportStructureTest extends TestCase
                             'sum_score' => 150,
                             'sequence' => 1,
                             'annotation' => 'Updated Annotation',
+                            'quantity_enabled' => false,
                         ]
                     ]
                 ]

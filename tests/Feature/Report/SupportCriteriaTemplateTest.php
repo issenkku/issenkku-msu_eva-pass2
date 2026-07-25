@@ -560,6 +560,7 @@ class SupportCriteriaTemplateTest extends TestCase
                     'sum_score' => 100,
                     'sequence' => 1,
                     'annotation' => null,
+                    'quantity_enabled' => false,
                     'quantity_main_criterias' => [],
                     'quality_main_criterias' => [],
                     'support_criterias' => $supportCriterias,

@@ -345,6 +345,7 @@ class ReportStructureController extends Controller
                                 'sum_score' => (float) $evalList->sum_score,
                                 'sequence' => $evalList->sequence,
                                 'annotation' => $evalList->annotation,
+                                'quantity_enabled' => (bool) $evalList->quantity_enabled,
                                 'quantity_main_criterias' => array_values($quantityMainMap),
                                 'quality_main_criterias' => collect($qualityMainMap)
                                     ->sortBy('sequence')
@@ -419,6 +420,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
+            'categories.*.evaluation_lists.*.quantity_enabled' => 'required|boolean',
 
             'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
@@ -528,6 +530,7 @@ class ReportStructureController extends Controller
                                 'sum_score' => $evalListData['sum_score'],
                                 'sequence' => $evalListData['sequence'],
                                 'annotation' => $evalListData['annotation'] ?? null,
+                                'quantity_enabled' => (bool) $evalListData['quantity_enabled'],
                             ]);
 
                             // Quantity Main Criterias
@@ -693,6 +696,7 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.sum_score' => 'required|numeric|min:0',
             'categories.*.evaluation_lists.*.sequence' => 'required|integer|min:1',
             'categories.*.evaluation_lists.*.annotation' => 'nullable|string',
+            'categories.*.evaluation_lists.*.quantity_enabled' => 'required|boolean',
 
             'categories.*.evaluation_lists.*.support_criterias' => 'sometimes|array|min:1',
             'categories.*.evaluation_lists.*.support_criterias.*.support_criteria_id' => 'sometimes|nullable|integer|exists:support_criterias,id',
@@ -850,6 +854,7 @@ class ReportStructureController extends Controller
                                     'sum_score' => $evalListData['sum_score'],
                                     'sequence' => $evalListData['sequence'],
                                     'annotation' => $evalListData['annotation'] ?? null,
+                                    'quantity_enabled' => (bool) $evalListData['quantity_enabled'],
                                 ]);
                             } else {
                                 $evaluationList = EvaluationList::create([
@@ -859,6 +864,7 @@ class ReportStructureController extends Controller
                                     'sum_score' => $evalListData['sum_score'],
                                     'sequence' => $evalListData['sequence'],
                                     'annotation' => $evalListData['annotation'] ?? null,
+                                    'quantity_enabled' => (bool) $evalListData['quantity_enabled'],
                                 ]);
                             }
 
