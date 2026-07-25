@@ -91,6 +91,15 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertInstanceOf(SupportActivityEntry::class, (new EvidenceAnswer)->supportActivityEntry()->getModel());
     }
 
+    public function test_support_criteria_weight_is_nullable(): void
+    {
+        $weightColumn = collect(Schema::getColumns('support_criterias'))
+            ->firstWhere('name', 'weight');
+
+        $this->assertNotNull($weightColumn);
+        $this->assertTrue((bool) $weightColumn['nullable']);
+    }
+
     public function test_evaluatee_defined_support_fields_have_schema_and_model_casts(): void
     {
         $this->assertTrue(Schema::hasColumns('support_criterias', [

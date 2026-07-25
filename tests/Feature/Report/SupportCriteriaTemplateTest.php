@@ -193,6 +193,24 @@ class SupportCriteriaTemplateTest extends TestCase
             );
     }
 
+    public function test_admin_can_create_evaluatee_weighted_criterion_without_admin_weight(): void
+    {
+        $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งาน</p>',
+            'indicator' => '<p>เกณฑ์</p>',
+            'target_value' => 100,
+            'weight' => null,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_weight' => true,
+        ]]))->assertCreated();
+
+        $this->assertDatabaseHas('support_criterias', [
+            'allow_evaluatee_weight' => true,
+            'weight' => null,
+        ]);
+    }
+
     public function test_evaluatee_defined_support_fields_require_activity_entries(): void
     {
         $this->postJson(route('report-structure.store'), $this->payload([[
@@ -385,6 +403,23 @@ class SupportCriteriaTemplateTest extends TestCase
         ]);
     }
 
+    public function test_admin_weight_is_required_and_bounded_when_evaluatee_weight_is_disabled(): void
+    {
+        foreach ([null, 0, -1, 101] as $weight) {
+            $this->postJson(route('report-structure.store'), $this->payload([[
+                'sequence' => 1,
+                'activity_name' => '<p>งาน</p>',
+                'indicator' => '<p>เกณฑ์</p>',
+                'target_value' => 100,
+                'weight' => $weight,
+                'allow_activity_entries' => true,
+                'allow_evaluatee_weight' => false,
+            ]]))->assertUnprocessable()->assertJsonValidationErrors(
+                'categories.0.evaluation_lists.0.support_criterias.0.weight'
+            );
+        }
+    }
+
     public function test_admin_can_update_add_reorder_and_remove_support_criteria(): void
     {
         $created = $this->postJson(route('report-structure.store'), $this->payload([
@@ -522,7 +557,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'activity_name' => $criterion->activity_name,
             'indicator' => $criterion->indicator,
             'target_value' => $criterion->target_value,
-            'weight' => $criterion->weight,
+            'weight' => null,
             'allow_activity_entries' => true,
             'allow_evaluatee_indicator' => true,
             'allow_evaluatee_weight' => true,
@@ -539,6 +574,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'id' => $criterion->id,
             'allow_evaluatee_indicator' => true,
             'allow_evaluatee_weight' => true,
+            'weight' => null,
         ]);
         $this->assertDatabaseHas('support_activity_entries', [
             'id' => $entry->id,

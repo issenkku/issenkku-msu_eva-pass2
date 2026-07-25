@@ -446,7 +446,13 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['nullable', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
-            'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
+            'categories.*.evaluation_lists.*.support_criterias.*.weight' => [
+                'exclude_if:categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_weight,true',
+                'required',
+                'numeric',
+                'gt:0',
+                'max:100',
+            ],
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_indicator' => 'sometimes|boolean',
@@ -624,7 +630,9 @@ class ReportStructureController extends Controller
                                     'activity_name' => $supportData['activity_name'],
                                     'indicator' => $grouped ? null : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
-                                    'weight' => $supportData['weight'],
+                                    'weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false)
+                                        ? null
+                                        : $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
                                     'allow_evaluatee_indicator' => (bool) ($supportData['allow_evaluatee_indicator'] ?? false),
@@ -726,7 +734,13 @@ class ReportStructureController extends Controller
             'categories.*.evaluation_lists.*.support_criterias.*.activity_name' => ['required', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.indicator' => ['nullable', 'string', new HasRichText],
             'categories.*.evaluation_lists.*.support_criterias.*.target_value' => 'required|numeric|min:0',
-            'categories.*.evaluation_lists.*.support_criterias.*.weight' => 'required|numeric|gt:0|max:100',
+            'categories.*.evaluation_lists.*.support_criterias.*.weight' => [
+                'exclude_if:categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_weight,true',
+                'required',
+                'numeric',
+                'gt:0',
+                'max:100',
+            ],
             'categories.*.evaluation_lists.*.support_criterias.*.require_evidence' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_activity_entries' => 'sometimes|boolean',
             'categories.*.evaluation_lists.*.support_criterias.*.allow_evaluatee_indicator' => 'sometimes|boolean',
@@ -1085,7 +1099,9 @@ class ReportStructureController extends Controller
                                     'activity_name' => $supportData['activity_name'],
                                     'indicator' => $grouped ? null : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
-                                    'weight' => $supportData['weight'],
+                                    'weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false)
+                                        ? null
+                                        : $supportData['weight'],
                                     'require_evidence' => (bool) ($supportData['require_evidence'] ?? false),
                                     'allow_activity_entries' => (bool) ($supportData['allow_activity_entries'] ?? false),
                                     'allow_evaluatee_indicator' => (bool) ($supportData['allow_evaluatee_indicator'] ?? false),
