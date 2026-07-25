@@ -50,4 +50,10 @@ class SupportActivityEntry extends Model
     {
         return $this->hasMany(SupportActivityEntryHistory::class)->latest();
     }
+
+    public function evidenceAnswers(): HasMany
+    {
+        return $this->hasMany(EvidenceAnswer::class, 'support_activity_entry_id')
+            ->orderBy('id');
+    }
 }

@@ -77,6 +77,7 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('support_activity_entries'));
         $this->assertTrue(Schema::hasTable('support_activity_entry_histories'));
         $this->assertTrue(Schema::hasColumn('evidence_answers', 'support_criteria_id'));
+        $this->assertTrue(Schema::hasColumn('evidence_answers', 'support_activity_entry_id'));
         $this->assertTrue(Schema::hasColumn('reports', 'support_score_total'));
 
         $this->assertInstanceOf(SupportScore::class, (new SupportCriteria)->scores()->getModel());
@@ -86,6 +87,8 @@ class SupportEvaluationSchemaTest extends TestCase
         $this->assertInstanceOf(SupportScore::class, (new Reports)->supportScores()->getModel());
         $this->assertInstanceOf(SupportActivityEntry::class, (new Reports)->supportActivityEntries()->getModel());
         $this->assertInstanceOf(SupportActivityEntryHistory::class, (new SupportActivityEntry)->histories()->getModel());
+        $this->assertInstanceOf(EvidenceAnswer::class, (new SupportActivityEntry)->evidenceAnswers()->getModel());
+        $this->assertInstanceOf(SupportActivityEntry::class, (new EvidenceAnswer)->supportActivityEntry()->getModel());
     }
 
     public function test_support_indicator_items_schema_and_relations_exist(): void
