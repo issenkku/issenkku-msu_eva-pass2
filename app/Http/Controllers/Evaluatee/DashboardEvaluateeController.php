@@ -19,6 +19,7 @@ use App\Support\EvaluateeDashboardAssignments;
 use App\Support\EvaluateeDashboardOverview;
 use App\Support\EvaluationScoreSummary;
 use App\Support\EvaluationSummaryData;
+use App\Support\ScoreHistoryVisibility;
 use App\Support\SupportCriteriaReadModel;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -259,6 +260,11 @@ class DashboardEvaluateeController extends Controller
             ->where('report_id', $id)
             ->latest()
             ->get()
+            ->filter(fn ($history) => ScoreHistoryVisibility::shouldDisplay(
+                $history->modifier_user_id,
+                $history->modifier_role,
+                $assignment->evaluatee_id
+            ))
             ->groupBy('quantity_sub_criteria_id');
 
         $qualityScores = QualityScore::where('report_id', $id)
@@ -269,6 +275,11 @@ class DashboardEvaluateeController extends Controller
             ->where('report_id', $id)
             ->latest()
             ->get()
+            ->filter(fn ($history) => ScoreHistoryVisibility::shouldDisplay(
+                $history->modifier_user_id,
+                $history->modifier_role,
+                $assignment->evaluatee_id
+            ))
             ->groupBy('quality_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)

@@ -13,6 +13,7 @@ use App\Models\Reports;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Support\EvaluationScoreSummary;
+use App\Support\ScoreHistoryVisibility;
 use App\Support\SupportCriteriaReadModel;
 use Carbon\Carbon;
 
@@ -52,6 +53,7 @@ class ReportDataService
         $supportItemsByList = $this->supportCriteriaReadModel->forReport($report);
 
         $assignment = $report->assignments;
+        $evaluateeId = $assignment?->evaluatee_id;
         $evaluators = $assignment->assignmentData->evaluatorUser?->name ?? '-';
 
         // Add evaluatee info like in dashboard
@@ -100,6 +102,11 @@ class ReportDataService
             ->where('report_id', $id)
             ->latest()
             ->get()
+            ->filter(fn ($history) => ScoreHistoryVisibility::shouldDisplay(
+                $history->modifier_user_id,
+                $history->modifier_role,
+                $evaluateeId
+            ))
             ->groupBy('quantity_sub_criteria_id');
 
         $qualityScores = QualityScore::where('report_id', $id)
@@ -110,6 +117,11 @@ class ReportDataService
             ->where('report_id', $id)
             ->latest()
             ->get()
+            ->filter(fn ($history) => ScoreHistoryVisibility::shouldDisplay(
+                $history->modifier_user_id,
+                $history->modifier_role,
+                $evaluateeId
+            ))
             ->groupBy('quality_sub_criteria_id');
 
         $evidenceAnswers = EvidenceAnswer::where('report_id', $id)
