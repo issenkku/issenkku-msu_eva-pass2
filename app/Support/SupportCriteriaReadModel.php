@@ -81,7 +81,9 @@ class SupportCriteriaReadModel
                         'id' => $criterion->id,
                         'sequence' => $criterion->sequence,
                         'activity_name' => $criterion->activity_name,
-                        'indicator' => $criterion->indicator,
+                        'indicator' => $criterion->allow_evaluatee_indicator
+                            ? null
+                            : $criterion->indicator,
                         'target_value' => $criterion->target_value,
                         'weight' => $criterion->weight,
                         'require_evidence' => (bool) $criterion->require_evidence,

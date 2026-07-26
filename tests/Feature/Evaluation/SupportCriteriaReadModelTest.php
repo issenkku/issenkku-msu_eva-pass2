@@ -282,6 +282,7 @@ class SupportCriteriaReadModelTest extends TestCase
 
         $this->assertTrue($item['allow_evaluatee_indicator']);
         $this->assertTrue($item['allow_evaluatee_weight']);
+        $this->assertNull($item['indicator']);
         $this->assertNull($item['achieved_score']);
         $this->assertSame('86.00', $item['weighted_score']);
         $this->assertSame('<p>ตัวชี้วัดหนึ่ง</p>', $item['activity_entries'][0]['indicator']);

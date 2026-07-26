@@ -193,7 +193,6 @@ class SupportScoreServiceTest extends TestCase
 
         $result = app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => null,
             'activity_entries' => [
                 [
                     'content' => '<p>โครงการหนึ่ง</p>',

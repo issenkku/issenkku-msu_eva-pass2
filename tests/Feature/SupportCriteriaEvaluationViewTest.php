@@ -307,9 +307,56 @@ test('evaluatee owned support fields render per project without criterion score 
         ->toContain('support_list[7][activity_entries][0][indicator]')
         ->toContain('support_list[7][activity_entries][0][weight]')
         ->toContain('support_list[7][activity_entries][0][achieved_score]')
+        ->toContain('data-support-entry-indicator-list="7"')
+        ->toContain('data-support-entry-weight-list="7"')
+        ->toContain('data-support-entry-score-list="7"')
         ->toContain('data-support-entry-weighted')
         ->toContain('32.00')
+        ->not->toContain('ส่งตรงเวลา')
         ->not->toContain('name="support_list[7][achieved_score]"');
+
+    expect(substr_count($html, 'data-support-entry-indicator-list="7"'))->toBe(2)
+        ->and(substr_count($html, 'data-support-entry-weight-list="7"'))->toBe(2)
+        ->and(substr_count($html, 'data-support-entry-score-list="7"'))->toBe(2);
+});
+
+test('desktop support table renders evaluatee owned values as aligned entry rows', function () {
+    $item = supportEvaluateeWeightedViewItem();
+    $item['activity_entries'][] = array_replace($item['activity_entries'][0], [
+        'id' => 42,
+        'sequence' => 2,
+        'content' => '<p>โครงการรายการที่สอง</p>',
+        'indicator' => '<p>ตัวชี้วัดรายการที่สอง</p>',
+        'weight' => '50.00',
+        'achieved_score' => '20.00',
+        'weighted_score' => '10.00',
+        'evidence_links' => ['https://example.com/second-proof'],
+    ]);
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+
+    expect(substr_count($html, 'data-support-entry-row="7"'))->toBe(2)
+        ->and($html)->toContain('data-support-entry-index="0"')
+        ->and($html)->toContain('data-support-entry-index="1"')
+        ->and(substr_count($html, 'data-support-criterion-heading="7"'))->toBe(1)
+        ->and($html)->toContain('colspan="9"')
+        ->and(substr_count($html, 'data-support-entry-activity-cell'))->toBe(2)
+        ->and(substr_count($html, 'data-support-entry-indicator-cell'))->toBe(2)
+        ->and(substr_count($html, 'data-support-entry-evidence-cell'))->toBe(2)
+        ->and($html)->toContain('rowspan="2"')
+        ->and($html)->toContain('aria-label="เปิดหลักฐาน 1 สำหรับรายการ 2"')
+        ->and($html)->toContain('whitespace-nowrap')
+        ->and($html)->toContain('>เปิดดู</span>')
+        ->and($desktopTable[0])->not->toMatch('/>\s*https:\/\/example\.com\/second-proof\s*</u');
+
+    $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
+    expect($script)->toContain('syncDesktopEntryRows');
 });
 
 test('grouped support projects render and edit under their assigned indicator item', function () {
@@ -387,6 +434,16 @@ test('read only support activities show sanitized content without preservation f
     expect(substr_count($html, 'data-support-activity-evidence-list="41"'))->toBe(2);
 });
 
+test('single activity evidence group omits its redundant visible item label', function () {
+    $html = view('components.support-evidence-summary', [
+        'item' => supportActivityViewItem(),
+    ])->render();
+
+    expect(strip_tags($html))
+        ->toContain('เปิดดู')
+        ->not->toContain('รายการ 1');
+});
+
 test('read only support criteria has no editable score or preservation fields', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
@@ -443,7 +500,7 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain("document.createElement('a')")
         ->toContain("anchor.target = '_blank'")
         ->toContain("anchor.rel = 'noopener noreferrer'")
-        ->toContain('anchor.textContent = evidenceUrl')
+        ->toContain('anchor.textContent = `🔗 ${label} ↗`')
         ->toContain('data-support-evidence-list')
         ->not->toContain("'[data-support-evidence-open]'")
         ->toContain("'[data-support-modal-save]'")
@@ -456,6 +513,7 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain('initializeActivityEditors')
         ->toContain('destroyActivityEditors')
         ->toContain('updateActivityDisplays')
+        ->toContain('updateEntryValueDisplays')
         ->toContain('if (contentFields.length === 0) return;')
         ->toContain("'[data-add-support-activity]'")
         ->toContain("'[data-remove-support-activity]'")
@@ -515,8 +573,8 @@ test('support criteria uses a fixed desktop table and cards without horizontal s
         ->toContain('lg:table')
         ->toContain('lg:hidden')
         ->toContain('w-[17%]')
-        ->toContain('w-[25%]')
-        ->toContain('w-[6%]')
+        ->toContain('w-[23%]')
+        ->toContain('w-[8%]')
         ->toContain('break-words')
         ->not->toContain('overflow-x-auto')
         ->not->toContain('min-w-[1180px]')

@@ -24,13 +24,13 @@
                     <tr>
                         <th scope="col" class="w-[5%] break-words px-2 py-3 text-center">ลำดับ</th>
                         <th scope="col" class="w-[17%] break-words px-2 py-3">กิจกรรม/โครงการ/งาน</th>
-                        <th scope="col" class="w-[25%] break-words px-2 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
+                        <th scope="col" class="w-[23%] break-words px-2 py-3">ตัวชี้วัด/เกณฑ์การประเมิน</th>
                         <th scope="col" class="w-[8%] break-words px-2 py-3 text-right">ระดับค่าเป้าหมาย</th>
                         <th scope="col" class="w-[7%] break-words px-2 py-3 text-right">น้ำหนัก</th>
                         <th scope="col" class="w-[8%] break-words px-2 py-3 text-right">ค่าคะแนนที่ได้</th>
                         <th scope="col" class="w-[9%] break-words px-2 py-3 text-right">คะแนนถ่วงน้ำหนัก</th>
                         <th scope="col" class="w-[7%] break-words px-2 py-3 text-center">ประวัติการแก้ไข</th>
-                        <th scope="col" class="w-[6%] break-words px-2 py-3 text-center">หลักฐาน</th>
+                        <th scope="col" class="w-[8%] break-words px-2 py-3 text-center">หลักฐาน</th>
                         @if (!$readonly)
                             <th scope="col" class="w-[8%] break-words px-2 py-3 text-center">จัดการ</th>
                         @endif
@@ -47,20 +47,164 @@
                                 : array_values(array_filter($item['evidence_links'] ?? []));
                             $evidenceCount = count($evidenceLinks);
                             $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                            $alignedEntryRows = !empty($item['allow_activity_entries'])
+                                && (!empty($item['allow_evaluatee_indicator']) || !empty($item['allow_evaluatee_weight']))
+                                    ? array_values($item['activity_entries'] ?? [])
+                                    : [];
+                            $alignedRowCount = max(count($alignedEntryRows), 1);
                         @endphp
+                        @if ($alignedEntryRows !== [])
+                            <tr class="border-b border-amber-100 bg-amber-50/35"
+                                data-support-criterion-heading="{{ $item['id'] }}">
+                                <td class="border-r border-amber-100 px-2 py-3"></td>
+                                <th scope="rowgroup" colspan="{{ $readonly ? 8 : 9 }}"
+                                    class="px-3 py-3 text-left font-semibold text-slate-900">
+                                    <div class="support-criteria-rich-text">
+                                        {!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}
+                                    </div>
+                                </th>
+                            </tr>
+                            @foreach ($alignedEntryRows as $entryIndex => $entry)
+                                <tr data-support-entry-row="{{ $item['id'] }}"
+                                    data-support-entry-index="{{ $entryIndex }}"
+                                    class="{{ $entryIndex > 0 ? 'border-t border-slate-100' : '' }}">
+                                    @if ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            class="border-r border-amber-100 px-2 py-4 text-center align-middle font-semibold text-amber-800">
+                                            {{ $item['sequence'] }}
+                                        </td>
+                                    @endif
+                                    <td class="break-words px-2 py-4 align-top" data-support-entry-activity-cell>
+                                        <div class="flex gap-2 text-slate-700">
+                                            <span class="shrink-0 text-xs font-semibold text-amber-700">{{ $entryIndex + 1 }}.</span>
+                                            <div class="support-criteria-rich-text min-w-0 break-words"
+                                                data-support-entry-activity-value>
+                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="break-words px-2 py-4 align-top leading-6"
+                                        data-support-entry-indicator-cell>
+                                        <div class="support-criteria-rich-text break-words"
+                                            data-support-entry-indicator-list="{{ $item['id'] }}">
+                                            {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                                        </div>
+                                    </td>
+                                    @if ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            class="border-x border-amber-100 px-2 py-4 text-right align-middle tabular-nums">
+                                            {{ $item['target_value'] }}
+                                        </td>
+                                    @endif
+                                    <td class="px-2 py-4 text-right align-top tabular-nums"
+                                        data-support-entry-weight-list="{{ $item['id'] }}">
+                                        {{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}
+                                    </td>
+                                    <td class="px-2 py-4 text-right align-top font-semibold tabular-nums"
+                                        data-support-entry-score-list="{{ $item['id'] }}">
+                                        {{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}
+                                    </td>
+                                    @if ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            class="border-x border-amber-100 px-2 py-4 text-right align-middle">
+                                            <span class="inline-flex min-w-16 justify-end rounded-full bg-amber-100 px-2.5 py-1 font-bold tabular-nums text-amber-900"
+                                                data-support-weighted-display="{{ $item['id'] }}">
+                                                {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
+                                            </span>
+                                        </td>
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            class="px-2 py-4 text-center align-middle">
+                                            @if (count($item['histories'] ?? []) > 0)
+                                                <a href="#support-history-modal" role="button" aria-haspopup="dialog"
+                                                    data-support-history-open="{{ $item['id'] }}"
+                                                    class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                                    {{ count($item['histories']) }} ครั้ง
+                                                </a>
+                                            @else
+                                                <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
+                                            @endif
+                                        </td>
+                                    @endif
+                                    <td class="px-2 py-4 align-top" data-support-entry-evidence-cell>
+                                        <div class="space-y-1 text-left"
+                                            data-support-entry-evidence-list="{{ $entryIndex }}"
+                                            data-support-activity-evidence-list="{{ $entry['id'] ?? "new-{$entryIndex}" }}">
+                                            @forelse (array_values(array_filter($entry['evidence_links'] ?? [])) as $linkIndex => $link)
+                                                @php
+                                                    $entryEvidenceCount = count(array_filter($entry['evidence_links'] ?? []));
+                                                    $evidenceLabel = $entryEvidenceCount > 1
+                                                        ? 'ไฟล์ '.($linkIndex + 1)
+                                                        : 'เปิดดู';
+                                                @endphp
+                                                <x-support-evidence-link
+                                                    :href="$link"
+                                                    :label="$evidenceLabel"
+                                                    :aria-label="'เปิดหลักฐาน '.($linkIndex + 1).' สำหรับรายการ '.($entryIndex + 1)" />
+                                            @empty
+                                                <span class="text-slate-400">ไม่มีหลักฐาน</span>
+                                            @endforelse
+                                        </div>
+                                    </td>
+                                    @if (!$readonly && $entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            class="border-l border-amber-100 px-2 py-4 text-center align-middle">
+                                            <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                                aria-label="{{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
+                                                class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                                {{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
+                                            </button>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        @else
                         <tr>
                             <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
                             <td class="break-words px-2 py-4 align-top">
                                 <x-support-activity-display :item="$item" />
                             </td>
                             <td class="break-words px-2 py-4 leading-6">
-                                <x-support-indicator-display :item="$item" />
+                                @if (!empty($item['allow_evaluatee_indicator']))
+                                    <ol class="list-decimal space-y-2 pl-5" data-support-entry-indicator-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li class="support-criteria-rich-text break-words">
+                                                {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                                            </li>
+                                        @empty
+                                            <li class="list-none text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    <x-support-indicator-display :item="$item" />
+                                @endif
                             </td>
                             <td class="px-2 py-4 text-right tabular-nums">{{ $item['target_value'] }}</td>
-                            <td class="px-2 py-4 text-right tabular-nums">{{ $item['weight'] }}</td>
+                            <td class="px-2 py-4 text-right tabular-nums">
+                                @if (!empty($item['allow_evaluatee_weight']))
+                                    <ol class="space-y-2" data-support-entry-weight-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li>{{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}</li>
+                                        @empty
+                                            <li class="text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    {{ $item['weight'] }}
+                                @endif
+                            </td>
                             <td class="px-2 py-4 text-right font-semibold tabular-nums"
                                 data-support-achieved-display="{{ $item['id'] }}">
-                                {{ filled($item['achieved_score']) ? $item['achieved_score'] : '-' }}
+                                @if (!empty($item['allow_evaluatee_weight']))
+                                    <ol class="space-y-2" data-support-entry-score-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li>{{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}</li>
+                                        @empty
+                                            <li class="text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    {{ filled($item['achieved_score']) ? $item['achieved_score'] : '-' }}
+                                @endif
                             </td>
                             <td class="px-2 py-4 text-right">
                                 <span class="inline-flex min-w-16 justify-end rounded-full bg-amber-100 px-2.5 py-1 font-bold tabular-nums text-amber-900"
@@ -92,6 +236,7 @@
                                 </td>
                             @endif
                         </tr>
+                        @endif
                     @endforeach
                 </tbody>
             </table>
@@ -126,7 +271,19 @@
                         <div class="col-span-2">
                             <dt class="text-xs font-medium text-slate-500">ตัวชี้วัด/เกณฑ์การประเมิน</dt>
                             <dd class="mt-1 leading-6 text-slate-800">
-                                <x-support-indicator-display :item="$item" />
+                                @if (!empty($item['allow_evaluatee_indicator']))
+                                    <ol class="list-decimal space-y-2 pl-5" data-support-entry-indicator-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li class="support-criteria-rich-text break-words">
+                                                {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                                            </li>
+                                        @empty
+                                            <li class="list-none text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    <x-support-indicator-display :item="$item" />
+                                @endif
                             </dd>
                         </div>
                         <div>
@@ -135,13 +292,35 @@
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-slate-500">น้ำหนัก</dt>
-                            <dd class="mt-1 font-semibold tabular-nums text-slate-900">{{ $item['weight'] }}</dd>
+                            <dd class="mt-1 font-semibold tabular-nums text-slate-900">
+                                @if (!empty($item['allow_evaluatee_weight']))
+                                    <ol class="space-y-2" data-support-entry-weight-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li>{{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}</li>
+                                        @empty
+                                            <li class="text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    {{ $item['weight'] }}
+                                @endif
+                            </dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-slate-500">ค่าคะแนนที่ได้</dt>
                             <dd class="mt-1 font-semibold tabular-nums text-slate-900"
                                 data-support-achieved-display="{{ $item['id'] }}">
-                                {{ filled($item['achieved_score']) ? $item['achieved_score'] : '-' }}
+                                @if (!empty($item['allow_evaluatee_weight']))
+                                    <ol class="space-y-2" data-support-entry-score-list="{{ $item['id'] }}">
+                                        @forelse ($item['activity_entries'] ?? [] as $entry)
+                                            <li>{{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}</li>
+                                        @empty
+                                            <li class="text-slate-400">-</li>
+                                        @endforelse
+                                    </ol>
+                                @else
+                                    {{ filled($item['achieved_score']) ? $item['achieved_score'] : '-' }}
+                                @endif
                             </dd>
                         </div>
                         <div>

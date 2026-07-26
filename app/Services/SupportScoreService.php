@@ -223,12 +223,13 @@ class SupportScoreService
                 ->unique()
                 ->values()
                 ->all();
+            $achievedScore = $item['achieved_score'] ?? null;
             $normalizedItems[$index] = [
                 ...$item,
                 'support_criteria_id' => $criterionId,
-                'achieved_score' => $item['achieved_score'] === null || $item['achieved_score'] === ''
+                'achieved_score' => $achievedScore === null || $achievedScore === ''
                     ? null
-                    : round((float) $item['achieved_score'], 2),
+                    : round((float) $achievedScore, 2),
                 'modification_reason' => $item['modification_reason'] ?? null,
                 'evidence_links' => $links,
             ];

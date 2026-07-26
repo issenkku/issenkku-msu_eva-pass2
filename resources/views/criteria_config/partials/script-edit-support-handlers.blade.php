@@ -13,6 +13,17 @@
             grouped.disabled = !allow.checked;
             if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
             if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
+            const indicatorInput = block.querySelector('.support_indicator');
+            const evaluateeOwnsIndicator = Boolean(allowEvaluateeIndicator?.checked);
+            if (indicatorInput) {
+                if (evaluateeOwnsIndicator) indicatorInput.value = '';
+                const $indicatorInput = $(indicatorInput);
+                if (evaluateeOwnsIndicator
+                    && $indicatorInput.next('.note-editor').length > 0
+                    && typeof $indicatorInput.summernote === 'function') {
+                    $indicatorInput.summernote('code', '');
+                }
+            }
             const weightInput = block.querySelector('.support_weight');
             const evaluateeOwnsWeight = Boolean(allowEvaluateeWeight?.checked);
             if (weightInput) {
@@ -22,7 +33,7 @@
             block.querySelector('[data-support-weight-required]')
                 ?.classList.toggle('hidden', evaluateeOwnsWeight);
             block.querySelector('[data-support-legacy-indicator]')
-                ?.classList.toggle('hidden', grouped.checked);
+                ?.classList.toggle('hidden', grouped.checked || evaluateeOwnsIndicator);
             block.querySelector('.support_indicator_items')
                 ?.classList.toggle('hidden', !grouped.checked);
         }

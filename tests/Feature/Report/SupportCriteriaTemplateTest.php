@@ -180,6 +180,7 @@ class SupportCriteriaTemplateTest extends TestCase
 
         $this->assertTrue($criterion->allow_evaluatee_indicator);
         $this->assertTrue($criterion->allow_evaluatee_weight);
+        $this->assertNull($criterion->indicator);
 
         $this->getJson(route('report-structure.show', $response->json('data.id')))
             ->assertOk()
@@ -190,6 +191,10 @@ class SupportCriteriaTemplateTest extends TestCase
             ->assertJsonPath(
                 'data.categories.0.evaluation_lists.0.support_criterias.0.allow_evaluatee_weight',
                 true
+            )
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.support_criterias.0.indicator',
+                null
             );
     }
 
@@ -574,6 +579,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'id' => $criterion->id,
             'allow_evaluatee_indicator' => true,
             'allow_evaluatee_weight' => true,
+            'indicator' => null,
             'weight' => null,
         ]);
         $this->assertDatabaseHas('support_activity_entries', [

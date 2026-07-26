@@ -18,23 +18,25 @@
     @if (!empty($item['allow_activity_entries']))
         @forelse ($activityEvidenceGroups as $group)
             <div class="space-y-1" data-support-activity-evidence-list="{{ $group['id'] }}">
-                <span class="block text-xs font-semibold text-slate-500">{{ $group['label'] }}</span>
-                @foreach ($group['links'] as $link)
-                    <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
-                        class="block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                        {{ $link }}
-                    </a>
+                @if ($activityEvidenceGroups->count() > 1)
+                    <span class="block text-xs font-semibold text-slate-500">{{ $group['label'] }}</span>
+                @endif
+                @foreach ($group['links'] as $linkIndex => $link)
+                    <x-support-evidence-link
+                        :href="$link"
+                        :label="count($group['links']) > 1 ? 'ไฟล์ '.($linkIndex + 1) : 'เปิดดู'"
+                        :aria-label="'เปิดหลักฐาน '.($linkIndex + 1).' สำหรับ'.$group['label']" />
                 @endforeach
             </div>
         @empty
             <span class="text-slate-400">ไม่มีหลักฐาน</span>
         @endforelse
     @else
-        @forelse ($criterionEvidenceLinks as $link)
-            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer"
-                class="block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                {{ $link }}
-            </a>
+        @forelse ($criterionEvidenceLinks as $linkIndex => $link)
+            <x-support-evidence-link
+                :href="$link"
+                :label="count($criterionEvidenceLinks) > 1 ? 'ไฟล์ '.($linkIndex + 1) : 'เปิดดู'"
+                :aria-label="'เปิดหลักฐาน '.($linkIndex + 1)" />
         @empty
             <span class="text-slate-400">ไม่มีหลักฐาน</span>
         @endforelse

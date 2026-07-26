@@ -290,6 +290,17 @@
             grouped.disabled = !allow.checked;
             if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
             if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
+            const indicatorInput = block.querySelector('.support_indicator');
+            const evaluateeOwnsIndicator = Boolean(allowEvaluateeIndicator?.checked);
+            if (indicatorInput) {
+                if (evaluateeOwnsIndicator) indicatorInput.value = '';
+                const $indicatorInput = $(indicatorInput);
+                if (evaluateeOwnsIndicator
+                    && $indicatorInput.next('.note-editor').length > 0
+                    && typeof $indicatorInput.summernote === 'function') {
+                    $indicatorInput.summernote('code', '');
+                }
+            }
             const weightInput = block.querySelector('.support_weight');
             const evaluateeOwnsWeight = Boolean(allowEvaluateeWeight?.checked);
             if (weightInput) {
@@ -299,7 +310,7 @@
             block.querySelector('[data-support-weight-required]')
                 ?.classList.toggle('hidden', evaluateeOwnsWeight);
             block.querySelector('[data-support-legacy-indicator]')
-                ?.classList.toggle('hidden', grouped.checked);
+                ?.classList.toggle('hidden', grouped.checked || evaluateeOwnsIndicator);
             block.querySelector('.support_indicator_items')
                 ?.classList.toggle('hidden', !grouped.checked);
         }
@@ -1411,11 +1422,12 @@
                                 const targetValue = supportBlock.querySelector('.support_target_value').value;
                                 const weight = supportBlock.querySelector('.support_weight').value;
                                 const grouped = supportBlock.querySelector('.support_group_by_indicator')?.checked || false;
+                                const evaluateeOwnsIndicator = supportBlock.querySelector('.support_allow_evaluatee_indicator')?.checked || false;
                                 const evaluateeOwnsWeight = supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false;
                                 const indicatorItems = grouped ? collectSupportIndicatorItems(supportBlock) : [];
 
                                 if (!hasVisibleRichText(activityName)
-                                    || (!grouped && !hasVisibleRichText(indicator))
+                                    || (!grouped && !evaluateeOwnsIndicator && !hasVisibleRichText(indicator))
                                     || targetValue === '' || (!evaluateeOwnsWeight && weight === '')) {
                                     showValidationErrorModal(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
                                     valid = false;
@@ -1443,7 +1455,7 @@
                                 evalList.support_criterias.push({
                                     sequence: supportIndex + 1,
                                     activity_name: activityName,
-                                    indicator: grouped ? null : indicator,
+                                    indicator: (grouped || evaluateeOwnsIndicator) ? null : indicator,
                                     target_value: Number(targetValue),
                                     weight: evaluateeOwnsWeight ? null : Number(weight),
                                     require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,

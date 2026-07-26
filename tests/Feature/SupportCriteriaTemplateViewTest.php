@@ -58,10 +58,13 @@ test('support template exposes and serializes evaluatee owned field controls', f
         ->toContain('allowEvaluateeIndicator.disabled = !allow.checked')
         ->toContain('allowEvaluateeWeight.disabled = !allow.checked')
         ->toContain("const weightInput = block.querySelector('.support_weight')")
+        ->toContain("const indicatorInput = block.querySelector('.support_indicator')")
+        ->toContain("if (evaluateeOwnsIndicator) indicatorInput.value = ''")
         ->toContain('weightInput.disabled = evaluateeOwnsWeight')
         ->toContain("if (evaluateeOwnsWeight) weightInput.value = ''")
         ->toContain("|| (!evaluateeOwnsWeight && weight === '')")
         ->toContain('if (!evaluateeOwnsWeight && (Number(weight) <= 0 || Number(weight) > 100))')
+        ->toContain('indicator: (grouped || evaluateeOwnsIndicator) ? null : indicator')
         ->toContain('weight: evaluateeOwnsWeight ? null : Number(weight)');
     expect($editSupportHandler.$editCollector)
         ->toContain('allow_evaluatee_indicator')
@@ -69,9 +72,12 @@ test('support template exposes and serializes evaluatee owned field controls', f
         ->toContain('allowEvaluateeIndicator.checked = false')
         ->toContain('allowEvaluateeWeight.checked = false')
         ->toContain("const weightInput = block.querySelector('.support_weight')")
+        ->toContain("const indicatorInput = block.querySelector('.support_indicator')")
+        ->toContain("if (evaluateeOwnsIndicator) indicatorInput.value = ''")
         ->toContain('weightInput.disabled = evaluateeOwnsWeight')
         ->toContain("|| (!evaluateeOwnsWeight && weight === '')")
         ->toContain('if (!evaluateeOwnsWeight && (Number(weight) <= 0 || Number(weight) > 100))')
+        ->toContain('indicator: (grouped || evaluateeOwnsIndicator) ? null : indicator')
         ->toContain('weight: evaluateeOwnsWeight ? null : Number(weight)');
 });
 

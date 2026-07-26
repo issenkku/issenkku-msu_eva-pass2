@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Rules\HasRichText;
 use App\Exceptions\QuantityCriteriaInUse;
 use App\Http\Resources\CriteriaVersionResource;
 use App\Models\Category;
@@ -20,6 +19,7 @@ use App\Models\SupportCriteria;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use App\Models\WorkloadFormItem;
+use App\Rules\HasRichText;
 use App\Services\QuantityCriteriaDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -628,7 +628,9 @@ class ReportStructureController extends Controller
                                 $supportCriteria = $evaluationList->supportCriterias()->create([
                                     'sequence' => $supportData['sequence'],
                                     'activity_name' => $supportData['activity_name'],
-                                    'indicator' => $grouped ? null : $supportData['indicator'],
+                                    'indicator' => ($grouped || (bool) ($supportData['allow_evaluatee_indicator'] ?? false))
+                                        ? null
+                                        : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false)
                                         ? null
@@ -1097,7 +1099,9 @@ class ReportStructureController extends Controller
                                 $attributes = [
                                     'sequence' => $supportData['sequence'],
                                     'activity_name' => $supportData['activity_name'],
-                                    'indicator' => $grouped ? null : $supportData['indicator'],
+                                    'indicator' => ($grouped || (bool) ($supportData['allow_evaluatee_indicator'] ?? false))
+                                        ? null
+                                        : $supportData['indicator'],
                                     'target_value' => $supportData['target_value'],
                                     'weight' => (bool) ($supportData['allow_evaluatee_weight'] ?? false)
                                         ? null

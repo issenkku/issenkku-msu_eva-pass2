@@ -70,11 +70,11 @@
                     }
                 }
 
-                document.querySelectorAll(`[data-support-achieved-display="${id}"]`).forEach((display) => {
-                    display.textContent = achieved === null
-                        ? (input ? '-' : display.textContent)
-                        : achieved.toFixed(2);
-                });
+                if (input) {
+                    document.querySelectorAll(`[data-support-achieved-display="${id}"]`).forEach((display) => {
+                        display.textContent = achieved === null ? '-' : achieved.toFixed(2);
+                    });
+                }
                 document.querySelectorAll(`[data-support-weighted-display="${id}"]`).forEach((display) => {
                     display.textContent = weighted === null ? '-' : weighted.toFixed(2);
                 });
@@ -561,6 +561,99 @@
             });
         };
 
+        const updateEntryValueDisplays = (item) => {
+            const id = item.dataset.supportId;
+            const entries = Array.from(item.querySelectorAll('[data-support-activity-entry]'));
+            const fields = [
+                {
+                    selector: '[data-support-entry-indicator]',
+                    target: `[data-support-entry-indicator-list="${id}"]`,
+                    format: (value) => activityTools().activityHtmlPlainText(value),
+                },
+                {
+                    selector: '[data-support-entry-weight]',
+                    target: `[data-support-entry-weight-list="${id}"]`,
+                    format: normalizeScore,
+                },
+                {
+                    selector: '[data-support-entry-score]',
+                    target: `[data-support-entry-score-list="${id}"]`,
+                    format: normalizeScore,
+                },
+            ];
+
+            fields.forEach(({ selector, target, format }) => {
+                const values = entries.map((entry) => format(entry.querySelector(selector)?.value ?? ''));
+                document.querySelectorAll(target).forEach((container) => {
+                    if (container.closest('[data-support-entry-row]')) return;
+                    container.replaceChildren();
+                    (values.length > 0 ? values : ['-']).forEach((value) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = value || '-';
+                        if (values.length === 0) listItem.className = 'text-slate-400';
+                        container.appendChild(listItem);
+                    });
+                });
+            });
+        };
+
+        const syncDesktopEntryRows = (item) => {
+            const id = item.dataset.supportId;
+            const entries = Array.from(item.querySelectorAll('[data-support-activity-entry]'));
+            const rows = Array.from(document.querySelectorAll(`[data-support-entry-row="${id}"]`));
+
+            rows.forEach((row, index) => {
+                const entry = entries[index];
+                if (!entry) {
+                    row.classList.add('hidden');
+                    return;
+                }
+
+                row.classList.remove('hidden');
+                const activity = entry.querySelector('[data-support-activity-content]')?.value ?? '';
+                const indicator = entry.querySelector('[data-support-entry-indicator]')?.value ?? '';
+                const weight = entry.querySelector('[data-support-entry-weight]')?.value ?? '';
+                const achievedScore = entry.querySelector('[data-support-entry-score]')?.value ?? '';
+                const activityDisplay = row.querySelector('[data-support-entry-activity-value]');
+                const indicatorDisplay = row.querySelector('[data-support-entry-indicator-list]');
+                const weightDisplay = row.querySelector('[data-support-entry-weight-list]');
+                const scoreDisplay = row.querySelector('[data-support-entry-score-list]');
+
+                if (activityDisplay) activityDisplay.textContent = activityTools().activityHtmlPlainText(activity) || '-';
+                if (indicatorDisplay) indicatorDisplay.textContent = activityTools().activityHtmlPlainText(indicator) || '-';
+                if (weightDisplay) weightDisplay.textContent = normalizeScore(weight) || '-';
+                if (scoreDisplay) scoreDisplay.textContent = normalizeScore(achievedScore) || '-';
+
+                const evidenceDisplay = row.querySelector('[data-support-entry-evidence-list]');
+                if (!evidenceDisplay) return;
+
+                const evidenceLinks = Array.from(entry.querySelectorAll('[data-support-evidence-input]'))
+                    .map((input) => input.value.trim())
+                    .filter(Boolean);
+                evidenceDisplay.replaceChildren();
+                if (evidenceLinks.length === 0) {
+                    const empty = document.createElement('span');
+                    empty.className = 'text-slate-400';
+                    empty.textContent = 'ไม่มีหลักฐาน';
+                    evidenceDisplay.appendChild(empty);
+                    return;
+                }
+
+                evidenceLinks.forEach((evidenceUrl, evidenceIndex) => {
+                    const anchor = document.createElement('a');
+                    anchor.href = evidenceUrl;
+                    anchor.target = '_blank';
+                    anchor.rel = 'noopener noreferrer';
+                    anchor.className = 'inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold leading-tight text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1';
+                    anchor.textContent = evidenceLinks.length > 1
+                        ? `🔗 ไฟล์ ${evidenceIndex + 1} ↗`
+                        : '🔗 เปิดดู ↗';
+                    anchor.setAttribute('aria-label', `เปิดหลักฐาน ${evidenceIndex + 1} สำหรับรายการ ${index + 1}`);
+                    evidenceDisplay.appendChild(anchor);
+                });
+            });
+        };
+
         const modal = document.querySelector('[data-support-modal]');
         const modalBody = modal?.querySelector('[data-support-modal-body]');
         const editorStore = document.querySelector('[data-support-editor-store]');
@@ -711,13 +804,14 @@
                     return;
                 }
 
-                const appendAnchor = (target, evidenceUrl) => {
+                const appendAnchor = (target, evidenceUrl, label = 'เปิดดู', ariaLabel = label) => {
                     const anchor = document.createElement('a');
                     anchor.href = evidenceUrl;
                     anchor.target = '_blank';
                     anchor.rel = 'noopener noreferrer';
-                    anchor.className = 'block break-all text-sm font-semibold text-blue-700 underline decoration-blue-300 underline-offset-4 focus:outline-none focus:ring-2 focus:ring-blue-400';
-                    anchor.textContent = evidenceUrl;
+                    anchor.className = 'inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold leading-tight text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1';
+                    anchor.textContent = `🔗 ${label} ↗`;
+                    anchor.setAttribute('aria-label', ariaLabel);
                     target.appendChild(anchor);
                 };
 
@@ -727,17 +821,29 @@
                         groupContainer.className = 'space-y-1';
                         groupContainer.dataset.supportActivityEvidenceList = group.id;
 
-                        const label = document.createElement('span');
-                        label.className = 'block text-xs font-semibold text-slate-500';
-                        label.textContent = group.label;
-                        groupContainer.appendChild(label);
-                        group.links.forEach((evidenceUrl) => appendAnchor(groupContainer, evidenceUrl));
+                        if (activityEvidenceGroups.length > 1) {
+                            const label = document.createElement('span');
+                            label.className = 'block text-xs font-semibold text-slate-500';
+                            label.textContent = group.label;
+                            groupContainer.appendChild(label);
+                        }
+                        group.links.forEach((evidenceUrl, evidenceIndex) => appendAnchor(
+                            groupContainer,
+                            evidenceUrl,
+                            group.links.length > 1 ? `ไฟล์ ${evidenceIndex + 1}` : 'เปิดดู',
+                            `เปิดหลักฐาน ${evidenceIndex + 1} สำหรับ${group.label}`,
+                        ));
                         container.appendChild(groupContainer);
                     });
                     return;
                 }
 
-                criterionEvidenceLinks.forEach((evidenceUrl) => appendAnchor(container, evidenceUrl));
+                criterionEvidenceLinks.forEach((evidenceUrl, evidenceIndex) => appendAnchor(
+                    container,
+                    evidenceUrl,
+                    criterionEvidenceLinks.length > 1 ? `ไฟล์ ${evidenceIndex + 1}` : 'เปิดดู',
+                    `เปิดหลักฐาน ${evidenceIndex + 1}`,
+                ));
             });
 
             document.querySelectorAll(`[data-support-manage-open="${id}"]`).forEach((button) => {
@@ -746,6 +852,8 @@
                 button.setAttribute('aria-label', `${label}สำหรับ ${item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน'}`);
             });
             updateActivityDisplays(item);
+            updateEntryValueDisplays(item);
+            syncDesktopEntryRows(item);
         };
 
         const clearModalErrors = () => {

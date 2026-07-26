@@ -201,11 +201,12 @@
                                         const targetValue = supportBlock.querySelector('.support_target_value').value;
                                         const weight = supportBlock.querySelector('.support_weight').value;
                                         const grouped = supportBlock.querySelector('.support_group_by_indicator')?.checked || false;
+                                        const evaluateeOwnsIndicator = supportBlock.querySelector('.support_allow_evaluatee_indicator')?.checked || false;
                                         const evaluateeOwnsWeight = supportBlock.querySelector('.support_allow_evaluatee_weight')?.checked || false;
                                         const indicatorItems = grouped ? collectSupportIndicatorItems(supportBlock) : [];
 
                                         if (!hasVisibleRichText(activityName)
-                                            || (!grouped && !hasVisibleRichText(indicator))
+                                            || (!grouped && !evaluateeOwnsIndicator && !hasVisibleRichText(indicator))
                                             || targetValue === '' || (!evaluateeOwnsWeight && weight === '')) {
                                             throw new Error(`กรุณากรอกข้อมูลเกณฑ์สายสนับสนุนที่ ${supportIndex + 1} ให้ครบถ้วน`);
                                         }
@@ -225,7 +226,7 @@
                                         const supportPayload = {
                                             sequence: supportIndex + 1,
                                             activity_name: activityName,
-                                            indicator: grouped ? null : indicator,
+                                            indicator: (grouped || evaluateeOwnsIndicator) ? null : indicator,
                                             target_value: Number(targetValue),
                                             weight: evaluateeOwnsWeight ? null : Number(weight),
                                             require_evidence: supportBlock.querySelector('.support_require_evidence')?.checked || false,
