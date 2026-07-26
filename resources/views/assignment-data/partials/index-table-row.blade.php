@@ -1,5 +1,5 @@
 {{-- แถวเดียวของตาราง list โดยรับข้อมูลที่จัดรูปเสร็จแล้วจาก controller --}}
-<tr class="hover:bg-gray-50 transition-all">
+<tr class="assignment-data-row hover:bg-gray-50 transition-all">
     <td class="px-4 py-3 align-top">
         {{-- วันที่ถูก format มาแล้วจาก controller จึง render ได้ตรง ๆ --}}
         <div class="text-sm font-medium text-gray-900 break-words leading-snug">
