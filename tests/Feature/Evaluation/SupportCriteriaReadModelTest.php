@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Evaluation;
 
+use App\Models\AssignmentData;
+use App\Models\Assignments;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
@@ -22,6 +24,81 @@ use Tests\TestCase;
 class SupportCriteriaReadModelTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_it_hides_evaluatee_and_legacy_support_histories_without_deleting_audit_rows(): void
+    {
+        $evaluatee = User::factory()->create();
+        $reviewer = User::factory()->create();
+        $version = CriteriaVersion::factory()->create();
+        $reportData = ReportData::factory()->create(['criteria_version_id' => $version->id]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        Assignments::factory()->create([
+            'assignment_data_id' => AssignmentData::factory()->create()->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]);
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => 'งานบริการวิชาการ',
+            'indicator' => 'จำนวนโครงการ',
+            'target_value' => 10,
+            'weight' => 20,
+            'allow_activity_entries' => true,
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการบริการวิชาการ</p>',
+            'created_by' => $evaluatee->id,
+            'updated_by' => $evaluatee->id,
+        ]);
+
+        foreach ([
+            [$evaluatee->id, null, null],
+            [null, null, null],
+            [$reviewer->id, 'ผู้ประเมิน', 'แก้ตามหลักฐาน'],
+        ] as [$modifierUserId, $modifierRole, $reason]) {
+            SupportScoreHistory::create([
+                'report_id' => $report->id,
+                'support_criteria_id' => $criterion->id,
+                'previous_achieved_score' => 3,
+                'new_achieved_score' => 4,
+                'previous_weighted_score' => 0.6,
+                'new_weighted_score' => 0.8,
+                'reason' => $reason,
+                'modifier_user_id' => $modifierUserId,
+                'modifier_role' => $modifierRole,
+            ]);
+            SupportActivityEntryHistory::create([
+                'support_activity_entry_id' => $entry->id,
+                'previous_content' => '<p>ข้อมูลเดิม</p>',
+                'new_content' => '<p>โครงการบริการวิชาการ</p>',
+                'reason' => $reason ?? 'บันทึกการแก้ไข',
+                'modified_by' => $modifierUserId,
+                'modified_by_role' => $modifierRole,
+            ]);
+        }
+
+        $item = app(SupportCriteriaReadModel::class)
+            ->forReport($report)[$evaluationList->id][0];
+
+        $this->assertCount(1, $item['histories']);
+        $this->assertSame($reviewer->display_name, $item['histories'][0]['modified_by_name']);
+        $this->assertCount(1, $item['activity_entries'][0]['histories']);
+        $this->assertSame(
+            $reviewer->display_name,
+            $item['activity_entries'][0]['histories'][0]['modified_by_name']
+        );
+        $this->assertDatabaseCount('support_score_histories', 3);
+        $this->assertDatabaseCount('support_activity_entry_histories', 3);
+    }
 
     public function test_it_returns_support_items_grouped_by_evaluation_list(): void
     {

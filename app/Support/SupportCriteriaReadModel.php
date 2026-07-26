@@ -17,8 +17,9 @@ class SupportCriteriaReadModel
      */
     public function forReport(Reports $report): array
     {
-        $report->loadMissing('reportData');
+        $report->loadMissing('reportData', 'assignments:id,report_id,evaluatee_id');
         $criteriaVersionId = $report->reportData?->criteria_version_id;
+        $evaluateeId = $report->assignments?->evaluatee_id;
 
         if (! $criteriaVersionId) {
             return [];
@@ -48,6 +49,11 @@ class SupportCriteriaReadModel
             ->whereIn('support_criteria_id', $criterionIds)
             ->latest()
             ->get()
+            ->filter(fn (SupportScoreHistory $history) => ScoreHistoryVisibility::shouldDisplay(
+                $history->modifier_user_id,
+                $history->modifier_role,
+                $evaluateeId
+            ))
             ->groupBy('support_criteria_id');
         $evidence = EvidenceAnswer::query()
             ->where('report_id', $report->id)
@@ -71,8 +77,8 @@ class SupportCriteriaReadModel
 
         return $criteria
             ->groupBy('evaluation_list_id')
-            ->map(function ($listCriteria) use ($scores, $histories, $evidence, $activityEntries) {
-                return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence, $activityEntries) {
+            ->map(function ($listCriteria) use ($scores, $histories, $evidence, $activityEntries, $evaluateeId) {
+                return $listCriteria->map(function (SupportCriteria $criterion) use ($scores, $histories, $evidence, $activityEntries, $evaluateeId) {
                     $score = $scores->get($criterion->id);
                     $criterionEntries = $activityEntries->get($criterion->id) ?? collect();
                     $entryWeightedTotal = round((float) $criterionEntries->sum('weighted_score'), 2);
@@ -99,7 +105,7 @@ class SupportCriteriaReadModel
                         'activity_entries' => ! $criterion->allow_activity_entries
                             ? []
                             : $criterionEntries
-                                ->map(function (SupportActivityEntry $entry) {
+                                ->map(function (SupportActivityEntry $entry) use ($evaluateeId) {
                                     return [
                                         'id' => $entry->id,
                                         'sequence' => $entry->sequence,
@@ -116,6 +122,11 @@ class SupportCriteriaReadModel
                                             ->values()
                                             ->all(),
                                         'histories' => $entry->histories
+                                            ->filter(fn (SupportActivityEntryHistory $history) => ScoreHistoryVisibility::shouldDisplay(
+                                                $history->modified_by,
+                                                $history->modified_by_role,
+                                                $evaluateeId
+                                            ))
                                             ->map(function (SupportActivityEntryHistory $history) {
                                                 return [
                                                     'previous_content' => $history->previous_content,
