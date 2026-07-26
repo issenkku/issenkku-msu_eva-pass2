@@ -62,6 +62,33 @@ class QuantityCriteriaActivationTest extends TestCase
             );
     }
 
+    public function test_show_returns_true_when_quantity_criteria_are_enabled(): void
+    {
+        $version = CriteriaVersion::factory()->create([
+            'created_by' => $this->admin->id,
+        ]);
+        ReportData::factory()->create([
+            'criteria_version_id' => $version->id,
+        ]);
+        $category = Category::factory()->create([
+            'criteria_version_id' => $version->id,
+            'sequence' => 1,
+        ]);
+        EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+            'sequence' => 1,
+            'quantity_enabled' => true,
+        ]);
+
+        $this->getJson(route('report-structure.show', $version->id))
+            ->assertOk()
+            ->assertJsonPath(
+                'data.categories.0.evaluation_lists.0.quantity_enabled',
+                true,
+            );
+    }
+
     public function test_migration_enables_only_lists_with_existing_quantity_rows(): void
     {
         $originalConnection = DB::getDefaultConnection();

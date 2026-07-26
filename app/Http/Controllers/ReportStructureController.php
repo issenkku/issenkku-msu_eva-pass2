@@ -181,7 +181,7 @@ class ReportStructureController extends Controller
                             ->orderBy('sequence');
                     },
                     'categories.evaluationLists' => function ($query) {
-                        $query->select('id', 'categorie_id', 'criteria_version_id', 'name', 'sum_score', 'sequence', 'annotation')
+                        $query->select('id', 'categorie_id', 'criteria_version_id', 'name', 'sum_score', 'sequence', 'annotation', 'quantity_enabled')
                             ->orderBy('sequence');
                     },
                     'categories.evaluationLists.quantitySubCriterias' => function ($query) use ($hasQuantityRequireEvidence, $hasQuantityRequireSubject) {
