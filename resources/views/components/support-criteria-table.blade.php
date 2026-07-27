@@ -61,7 +61,8 @@
                                 <td class="border-r border-amber-100 px-2 py-3"></td>
                                 <th scope="rowgroup" colspan="{{ $readonly ? 8 : 9 }}"
                                     class="px-3 py-3 text-left font-semibold text-slate-900">
-                                    <div class="support-criteria-rich-text">
+                                    <div class="support-criteria-rich-text text-base font-bold leading-6 text-slate-950"
+                                        data-support-admin-heading>
                                         {!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}
                                     </div>
                                 </th>
@@ -79,9 +80,11 @@
                                     @endif
                                     <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top"
                                         data-support-entry-activity-cell>
-                                        <div class="flex gap-2 text-slate-700">
-                                            <span class="shrink-0 text-xs font-semibold text-amber-700">{{ $entryIndex + 1 }}.</span>
-                                            <div class="support-criteria-rich-text min-w-0 break-words"
+                                        <div class="flex gap-2">
+                                            <span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+                                                {{ $entryIndex + 1 }}
+                                            </span>
+                                            <div class="support-criteria-rich-text min-w-0 break-words font-semibold text-amber-800"
                                                 data-support-entry-activity-value>
                                                 {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
                                             </div>

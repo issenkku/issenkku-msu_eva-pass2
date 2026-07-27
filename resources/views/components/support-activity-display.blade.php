@@ -8,7 +8,8 @@
 @endphp
 
 <div class="space-y-2">
-    <div class="support-criteria-rich-text font-medium text-slate-900">
+    <div class="support-criteria-rich-text font-semibold text-slate-900"
+        data-support-admin-heading>
         {!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}
     </div>
 
@@ -47,13 +48,18 @@
                     @endforeach
                 </div>
             @elseif (!empty($entries))
-                <ol class="list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700">
-                    @foreach ($entries as $entry)
-                        <li class="support-criteria-rich-text break-words">
-                            {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
-                        </li>
+                <div class="space-y-3">
+                    @foreach ($entries as $entryIndex => $entry)
+                        <div class="flex gap-2">
+                            <span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+                                {{ $entryIndex + 1 }}
+                            </span>
+                            <div class="support-criteria-rich-text min-w-0 break-words text-sm font-normal text-amber-800">
+                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                            </div>
+                        </div>
                     @endforeach
-                </ol>
+                </div>
             @else
                 <p class="text-xs font-normal text-slate-400">ยังไม่มีกิจกรรม/โครงการเพิ่มเติม</p>
             @endif

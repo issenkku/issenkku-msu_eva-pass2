@@ -448,6 +448,48 @@ test('aligned desktop rows use one grouped evidence cell without losing activity
         ->and($desktop)->toContain('รายการ 2');
 });
 
+test('admin heading is black and has no explanatory badge', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeIndicatorOnlyViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+
+    expect(substr_count($desktopTable[0], 'data-support-admin-heading'))->toBe(1)
+        ->and($desktopTable[0])->toContain('font-bold')
+        ->and($desktopTable[0])->toContain('text-slate-950')
+        ->and($html)->not->toContain('หัวข้อที่แอดมินกำหนด');
+});
+
+test('mobile criterion card shows shared score once unless evaluatee weight is enabled', function () {
+    $indicatorOnly = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeIndicatorOnlyViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+    preg_match('/<div class="space-y-3 p-4 lg:hidden">.*?<div class="hidden" data-support-editor-store/su', $indicatorOnly, $mobile);
+
+    expect(substr_count($mobile[0], 'data-support-entry-weight-list="7"'))->toBe(0)
+        ->and(substr_count($mobile[0], 'data-support-entry-score-list="7"'))->toBe(0)
+        ->and($mobile[0])->toMatch('/>\s*20\.00\s*</')
+        ->and($mobile[0])->toMatch('/>\s*80\.00\s*</');
+
+    $weighted = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeWeightedViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+    preg_match('/<div class="space-y-3 p-4 lg:hidden">.*?<div class="hidden" data-support-editor-store/su', $weighted, $weightedMobile);
+
+    expect(substr_count($weightedMobile[0], 'data-support-entry-weight-list="7"'))->toBe(1)
+        ->and(substr_count($weightedMobile[0], 'data-support-entry-score-list="7"'))->toBe(1);
+});
+
 test('grouped support projects render and edit under their assigned indicator item', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportGroupedActivityViewItem()],
