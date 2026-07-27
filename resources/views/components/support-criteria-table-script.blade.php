@@ -578,30 +578,77 @@
         const syncDesktopEntryRows = (item) => {
             const id = item.dataset.supportId;
             const entries = Array.from(item.querySelectorAll('[data-support-activity-entry]'));
-            const rows = Array.from(document.querySelectorAll(`[data-support-entry-row="${id}"]`));
+            const template = Array.from(document.querySelectorAll('[data-support-entry-row-template]'))
+                .find((candidate) => candidate.dataset.supportEntryRowTemplate === String(id));
+            const stateAnchor = document.querySelector(`[data-support-entry-row-end="${id}"]`);
+            const currentRows = Array.from(document.querySelectorAll(`[data-support-entry-row="${id}"]`));
+            if (currentRows.length === 0 || !template || !stateAnchor) return;
 
-            rows.forEach((row, index) => {
-                const entry = entries[index];
-                if (!entry) {
-                    row.classList.add('hidden');
-                    return;
+            const state = activityTools().reconcileActivityEntryRows(
+                currentRows,
+                entries.length,
+                (index) => {
+                    const fragment = template.content.cloneNode(true);
+                    const row = fragment.querySelector('tr');
+                    if (!row) throw new Error('Missing support entry row template');
+                    row.dataset.supportEntryRow = String(id);
+                    row.dataset.supportEntryIndex = String(index);
+                    stateAnchor.before(row);
+                    return row;
+                },
+            );
+
+            state.rows.forEach((row, index) => {
+                const entry = entries[index] || null;
+                row.dataset.supportEntryIndex = String(index);
+                row.toggleAttribute('data-support-entry-empty', !entry);
+
+                row.querySelectorAll('[data-support-entry-cell]').forEach((cell) => {
+                    cell.classList.toggle('border-t', index > 0);
+                    cell.classList.toggle('border-slate-100', index > 0);
+                });
+
+                const number = row.querySelector('[data-support-entry-number]');
+                if (number) {
+                    number.textContent = String(index + 1);
+                    number.classList.toggle('hidden', !entry);
                 }
 
-                row.classList.remove('hidden');
-                const activity = entry.querySelector('[data-support-activity-content]')?.value ?? '';
-                const indicator = entry.querySelector('[data-support-entry-indicator]')?.value ?? '';
-                const weight = entry.querySelector('[data-support-entry-weight]')?.value ?? '';
-                const achievedScore = entry.querySelector('[data-support-entry-score]')?.value ?? '';
                 const activityDisplay = row.querySelector('[data-support-entry-activity-value]');
                 const indicatorDisplay = row.querySelector('[data-support-entry-indicator-list]');
                 const weightDisplay = row.querySelector('[data-support-entry-weight-list]');
                 const scoreDisplay = row.querySelector('[data-support-entry-score-list]');
 
-                if (activityDisplay) activityDisplay.textContent = activityTools().activityHtmlPlainText(activity) || '-';
-                if (indicatorDisplay) indicatorDisplay.textContent = activityTools().activityHtmlPlainText(indicator) || '-';
-                if (weightDisplay) weightDisplay.textContent = normalizeScore(weight) || '-';
-                if (scoreDisplay) scoreDisplay.textContent = normalizeScore(achievedScore) || '-';
+                if (activityDisplay) {
+                    activityDisplay.textContent = entry
+                        ? activityTools().activityHtmlPlainText(
+                            entry.querySelector('[data-support-activity-content]')?.value ?? '',
+                        ) || '-'
+                        : 'ยังไม่มีกิจกรรม/โครงการเพิ่มเติม';
+                    activityDisplay.classList.toggle('text-slate-400', !entry);
+                    activityDisplay.classList.toggle('text-amber-800', Boolean(entry));
+                }
+                if (indicatorDisplay) {
+                    indicatorDisplay.textContent = entry
+                        ? activityTools().activityHtmlPlainText(
+                            entry.querySelector('[data-support-entry-indicator]')?.value ?? '',
+                        ) || '-'
+                        : '-';
+                }
+                if (weightDisplay) {
+                    weightDisplay.textContent = entry
+                        ? normalizeScore(entry.querySelector('[data-support-entry-weight]')?.value ?? '') || '-'
+                        : '-';
+                }
+                if (scoreDisplay) {
+                    scoreDisplay.textContent = entry
+                        ? normalizeScore(entry.querySelector('[data-support-entry-score]')?.value ?? '') || '-'
+                        : '-';
+                }
+            });
 
+            state.rows[0].querySelectorAll('[data-support-shared-cell]').forEach((cell) => {
+                cell.rowSpan = state.rowCount;
             });
         };
 

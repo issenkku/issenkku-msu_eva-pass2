@@ -8,6 +8,7 @@ import {
     activityEntryIdsKeepOriginalOrder,
     activityHtmlHasVisibleText,
     groupActivityEntries,
+    reconcileActivityEntryRows,
 } from '../../resources/js/support-activity-entries.js';
 import * as supportActivityEntries from '../../resources/js/support-activity-entries.js';
 
@@ -30,6 +31,17 @@ class FakeElement {
 
     replaceChildren(...children) {
         this.children = children;
+    }
+}
+
+class FakeRow {
+    constructor(name) {
+        this.name = name;
+        this.removed = false;
+    }
+
+    remove() {
+        this.removed = true;
     }
 }
 
@@ -125,4 +137,28 @@ test('renders live activity updates with the same circular numbering as the serv
     } finally {
         globalThis.document = previousDocument;
     }
+});
+
+test('reconciles live desktop rows when entries are added and removed', () => {
+    const base = new FakeRow('base');
+    const created = [];
+    const expanded = reconcileActivityEntryRows([base], 2, (index) => {
+        const row = new FakeRow(`row-${index}`);
+        created.push(row);
+        return row;
+    });
+
+    assert.equal(expanded.rows.length, 2);
+    assert.equal(expanded.rowCount, 2);
+    assert.equal(expanded.hasEntries, true);
+    assert.deepEqual(expanded.rows.map((row) => row.name), ['base', 'row-1']);
+
+    const reduced = reconcileActivityEntryRows(expanded.rows, 0, () => {
+        throw new Error('must not create a row while reducing');
+    });
+
+    assert.equal(reduced.rows.length, 1);
+    assert.equal(reduced.rowCount, 1);
+    assert.equal(reduced.hasEntries, false);
+    assert.equal(created[0].removed, true);
 });

@@ -204,6 +204,9 @@
                                     @endif
                                 </tr>
                             @endforeach
+                            <tr class="hidden" data-support-entry-row-end="{{ $item['id'] }}">
+                                <td colspan="{{ $readonly ? 9 : 10 }}"></td>
+                            </tr>
                         @elseif ($groupedIndicatorRows !== [])
                             @foreach ($groupedIndicatorRows as $groupIndex => $indicatorItem)
                                 @php

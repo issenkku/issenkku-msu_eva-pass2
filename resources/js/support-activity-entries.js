@@ -46,6 +46,26 @@ export function groupActivityEntries(indicatorItems, entries) {
     }));
 }
 
+export function reconcileActivityEntryRows(currentRows, entryCount, createRow) {
+    const rows = [...currentRows];
+    const normalizedEntryCount = Math.max(Number(entryCount) || 0, 0);
+    const rowCount = Math.max(normalizedEntryCount, 1);
+
+    while (rows.length < rowCount) {
+        rows.push(createRow(rows.length));
+    }
+
+    while (rows.length > rowCount) {
+        rows.pop()?.remove();
+    }
+
+    return {
+        rows,
+        rowCount,
+        hasEntries: normalizedEntryCount > 0,
+    };
+}
+
 export function renderActivityEntryList(target, entries, options = {}) {
     const visibleEntries = entries.filter((entry) => activityHtmlHasVisibleText(entry.html));
     target.replaceChildren();
@@ -89,6 +109,7 @@ if (typeof window !== 'undefined') {
         activityHtmlHasVisibleText,
         activityHtmlPlainText,
         groupActivityEntries,
+        reconcileActivityEntryRows,
         renderActivityEntryList,
     };
 }
