@@ -26,7 +26,7 @@
             }
         }
 
-        function validateForm(isSubmit = false) {
+        function validateForm() {
             const errors = [];
 
             const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_C]"]');
@@ -59,30 +59,8 @@
                 }
             });
 
-            if (isSubmit) {
-                document.querySelectorAll('[id^="evidence-links-quality-"][data-require-evidence="1"]').forEach(container => {
-                    const mainCriteriaName = container.dataset.mainCriteriaName || 'เกณฑ์ที่เลือก';
-                    const qualityMainCard = container.closest('details');
-                    const hasSelectedScore = qualityMainCard
-                        ? Array.from(qualityMainCard.querySelectorAll('input[name^="quality_list"][name$="[score]"]')).some(input => input.value.trim() !== '')
-                        : false;
-
-                    if (!hasSelectedScore) {
-                        return;
-                    }
-
-                    const hasEvidence = Array.from(container.querySelectorAll('input[type="url"]'))
-                        .some(input => input.value.trim() !== '');
-
-                    if (!hasEvidence) {
-                        errors.push(`กรุณาแนบหลักฐานสำหรับเกณฑ์ "${mainCriteriaName}"`);
-                    }
-                });
-            }
-
             errors.push(
-                ...(window.validateScoreChangeReasons?.() ?? []),
-                ...(window.validateSupportCriteria?.() ?? [])
+                ...(window.validateScoreChangeReasons?.() ?? [])
             );
 
             return errors;
@@ -316,7 +294,7 @@
         evaluationForm.addEventListener('submit', function(e) {
             const status = document.getElementById('formStatus').value;
             if (status === 'Draft') {
-                const errors = validateForm(false);
+                const errors = validateForm();
                 if (errors.length > 0) {
                     e.preventDefault();
                     showValidationErrors(errors);
@@ -328,7 +306,7 @@
         openModalBtn.addEventListener('click', (e) => {
             e.preventDefault();
 
-            const errors = validateForm(true);
+            const errors = validateForm();
             if (errors.length > 0) {
                 showValidationErrors(errors);
                 return;

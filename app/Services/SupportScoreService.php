@@ -207,7 +207,6 @@ class SupportScoreService
         bool $requireReasonForChanges
     ): array {
         $normalizedItems = [];
-        $itemIndexByCriterion = [];
 
         foreach ($items as $index => $item) {
             $criterionId = (int) $item['support_criteria_id'];
@@ -233,31 +232,6 @@ class SupportScoreService
                 'modification_reason' => $item['modification_reason'] ?? null,
                 'evidence_links' => $links,
             ];
-            $itemIndexByCriterion[$criterionId] = $index;
-        }
-
-        foreach ($allowedCriteria->where('require_evidence', true) as $criterion) {
-            $itemIndex = $itemIndexByCriterion[$criterion->id] ?? null;
-            if ($itemIndex === null) {
-                throw ValidationException::withMessages([
-                    'support_list' => ['กรุณาแนบหลักฐานสำหรับเกณฑ์สายสนับสนุนที่กำหนด'],
-                ]);
-            }
-
-            $hasEvidence = $criterion->allow_activity_entries
-                ? collect($normalizedItems[$itemIndex]['activity_entries'] ?? [])
-                    ->contains(fn (array $entry): bool => ($entry['evidence_links'] ?? []) !== [])
-                : $normalizedItems[$itemIndex]['evidence_links'] !== [];
-
-            if (! $hasEvidence) {
-                throw ValidationException::withMessages([
-                    $criterion->allow_activity_entries
-                        ? "support_list.{$itemIndex}.activity_entries"
-                        : "support_list.{$itemIndex}.evidence_links" => [
-                            'กรุณาแนบหลักฐานสำหรับเกณฑ์นี้',
-                        ],
-                ]);
-            }
         }
 
         return $normalizedItems;

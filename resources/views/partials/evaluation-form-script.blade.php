@@ -61,7 +61,6 @@
         evaluationForm.addEventListener('submit', (event) => {
             const errors = [
                 ...(window.validateScoreChangeReasons?.() ?? []),
-                ...(window.validateSupportCriteria?.() ?? []),
             ];
             if (errors.length === 0) return;
 
@@ -73,7 +72,6 @@
             event.preventDefault();
             const errors = [
                 ...(window.validateScoreChangeReasons?.() ?? []),
-                ...(window.validateSupportCriteria?.() ?? []),
             ];
             if (errors.length > 0) {
                 showSupportValidationErrors(errors);

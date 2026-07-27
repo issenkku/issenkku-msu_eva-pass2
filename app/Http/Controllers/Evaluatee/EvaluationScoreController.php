@@ -21,7 +21,6 @@ use App\Support\SupportScoreRules;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Facades\Activity;
@@ -118,61 +117,6 @@ class EvaluationScoreController extends Controller
 
                 ...SupportScoreRules::validation(),
             ]);
-
-            if (
-                ($validated['status'] ?? 'Draft') === 'Pending'
-                && Schema::hasColumn('quality_main_criterias', 'require_evidence')
-            ) {
-                $selectedQualitySubIds = collect($validated['quality_list'] ?? [])
-                    ->filter(function ($item) {
-                        return array_key_exists('score', $item)
-                            && $item['score'] !== null
-                            && $item['score'] !== '';
-                    })
-                    ->map(function ($item) {
-                        return is_array($item['quality_sub_criteria_id'])
-                            ? (int) $item['quality_sub_criteria_id'][0]
-                            : (int) $item['quality_sub_criteria_id'];
-                    })
-                    ->filter()
-                    ->unique()
-                    ->values();
-
-                if ($selectedQualitySubIds->isNotEmpty()) {
-                    $requiredMains = QualitySubCriteria::query()
-                        ->with('mainCriteria:id,name,require_evidence')
-                        ->whereIn('id', $selectedQualitySubIds)
-                        ->get()
-                        ->pluck('mainCriteria')
-                        ->filter(function ($mainCriteria) {
-                            return $mainCriteria && $mainCriteria->require_evidence;
-                        })
-                        ->unique('id')
-                        ->values();
-
-                    if ($requiredMains->isNotEmpty()) {
-                        $evidenceCountsByMain = collect($validated['evidence_list_flat'] ?? [])
-                            ->groupBy('quality_main_criteria_id')
-                            ->map->count();
-
-                        $missingEvidenceNames = $requiredMains
-                            ->filter(function ($mainCriteria) use ($evidenceCountsByMain) {
-                                return (int) ($evidenceCountsByMain[$mainCriteria->id] ?? 0) === 0;
-                            })
-                            ->pluck('name')
-                            ->values()
-                            ->all();
-
-                        if (! empty($missingEvidenceNames)) {
-                            throw ValidationException::withMessages([
-                                'evidence_list' => [
-                                    'กรุณาแนบหลักฐานให้ครบสำหรับเกณฑ์ที่กำหนด: '.implode(', ', $missingEvidenceNames),
-                                ],
-                            ]);
-                        }
-                    }
-                }
-            }
 
             DB::beginTransaction();
             $transactionStarted = true;

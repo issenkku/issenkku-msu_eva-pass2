@@ -497,23 +497,55 @@ class EvaluateeTest extends TestCase
         ]);
     }
 
-    public function test_support_evidence_is_required_for_both_draft_and_submit(): void
+    public function test_evaluatee_can_save_draft_without_required_support_evidence(): void
     {
         $this->supportCriterion->update(['require_evidence' => true]);
+        $report = $this->createReportWithStatus('Assigned');
+        $payload = $this->supportPayload('Draft', null, [
+            ['content' => '<p>โครงการไม่มีหลักฐาน</p>', 'evidence_links' => []],
+        ]);
 
-        foreach ([['Assigned', 'Draft'], ['Draft', 'Pending']] as [$initialStatus, $requestedStatus]) {
-            $report = $this->createReportWithStatus($initialStatus);
-            $payload = $this->supportPayload($requestedStatus, null, [
-                ['content' => '<p>โครงการไม่มีหลักฐาน</p>', 'evidence_links' => []],
-            ]);
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
 
-            $this->actingAs($this->evaluatee, 'web')
-                ->postJson(route('evaluation_score.store', ['id' => $report->id]), $payload)
-                ->assertUnprocessable()
-                ->assertJsonValidationErrors([
-                    "support_list.{$this->supportCriterion->id}.activity_entries",
-                ]);
-        }
+        $this->assertSame('Draft', $report->fresh()->status);
+    }
+
+    public function test_evaluatee_can_submit_without_required_support_evidence(): void
+    {
+        $this->supportCriterion->update(['require_evidence' => true]);
+        $report = $this->createReportWithStatus('Draft');
+        $payload = $this->supportPayload('Pending', null, [
+            ['content' => '<p>โครงการไม่มีหลักฐาน</p>', 'evidence_links' => []],
+        ]);
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $payload)
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Pending', $report->fresh()->status);
+    }
+
+    public function test_evaluatee_can_submit_selected_quality_score_without_required_evidence(): void
+    {
+        $this->qualitySubCriteria->mainCriteria()->update(['require_evidence' => true]);
+        $report = $this->createReportWithStatus('Draft');
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(route('evaluation_score.store', ['id' => $report->id]), [
+                'quality_list' => [[
+                    'quality_sub_criteria_id' => $this->qualitySubCriteria->id,
+                    'score' => 5,
+                ]],
+                'status' => 'Pending',
+            ])
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Pending', $report->fresh()->status);
     }
 
     public function test_support_score_cannot_be_saved_after_evaluatee_stage(): void
