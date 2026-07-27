@@ -161,6 +161,7 @@
                         sum_score: ev.sum_score ?? 0,
                         sequence: ev.sequence ?? 1,
                         annotation: ev.annotation || null,
+                        quantity_enabled: Boolean(ev.quantity_enabled),
                         quantity_main_criterias: (ev.quantity_main_criterias || []).map((qm) => ({
                             name: qm.name || '',
                             tooltips: qm.tooltips || null,
