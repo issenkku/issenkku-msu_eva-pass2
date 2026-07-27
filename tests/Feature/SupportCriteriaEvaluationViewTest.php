@@ -385,7 +385,7 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         ->and($html)->toContain('colspan="9"')
         ->and(substr_count($html, 'data-support-entry-activity-cell'))->toBe(2)
         ->and(substr_count($html, 'data-support-entry-indicator-cell'))->toBe(2)
-        ->and(substr_count($html, 'data-support-entry-evidence-cell'))->toBe(2)
+        ->and(substr_count($desktopTable[0], 'data-support-shared-evidence="7"'))->toBe(1)
         ->and($html)->toContain('rowspan="2"')
         ->and($html)->toContain('aria-label="เปิดหลักฐาน 1 สำหรับรายการ 2"')
         ->and($html)->toContain('whitespace-nowrap')
@@ -426,6 +426,26 @@ test('indicator-only entry rows keep criterion scores in shared cells', function
         ->and($desktop)->toContain('rowspan="2"')
         ->and($desktop)->toMatch('/>\s*20\.00\s*</')
         ->and($desktop)->toMatch('/>\s*80\.00\s*</');
+});
+
+test('aligned desktop rows use one grouped evidence cell without losing activity links', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeIndicatorOnlyViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-shared-evidence="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-evidence-list="7"'))->toBe(1)
+        ->and($desktop)->toContain('rowspan="2"')
+        ->and($desktop)->toContain('href="https://example.com/one"')
+        ->and($desktop)->toContain('href="https://example.com/two"')
+        ->and($desktop)->toContain('รายการ 1')
+        ->and($desktop)->toContain('รายการ 2');
 });
 
 test('grouped support projects render and edit under their assigned indicator item', function () {

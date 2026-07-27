@@ -156,26 +156,14 @@
                                             @endif
                                         </td>
                                     @endif
-                                    <td class="px-2 py-4 align-top" data-support-entry-evidence-cell>
-                                        <div class="space-y-1 text-left"
-                                            data-support-entry-evidence-list="{{ $entryIndex }}"
-                                            data-support-activity-evidence-list="{{ $entry['id'] ?? "new-{$entryIndex}" }}">
-                                            @forelse (array_values(array_filter($entry['evidence_links'] ?? [])) as $linkIndex => $link)
-                                                @php
-                                                    $entryEvidenceCount = count(array_filter($entry['evidence_links'] ?? []));
-                                                    $evidenceLabel = $entryEvidenceCount > 1
-                                                        ? 'ไฟล์ '.($linkIndex + 1)
-                                                        : 'เปิดดู';
-                                                @endphp
-                                                <x-support-evidence-link
-                                                    :href="$link"
-                                                    :label="$evidenceLabel"
-                                                    :aria-label="'เปิดหลักฐาน '.($linkIndex + 1).' สำหรับรายการ '.($entryIndex + 1)" />
-                                            @empty
-                                                <span class="text-slate-400">ไม่มีหลักฐาน</span>
-                                            @endforelse
-                                        </div>
-                                    </td>
+                                    @if ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-evidence="{{ $item['id'] }}"
+                                            class="px-2 py-4 align-middle">
+                                            <x-support-evidence-summary :item="$item" />
+                                        </td>
+                                    @endif
                                     @if (!$readonly && $entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
                                             data-support-shared-cell

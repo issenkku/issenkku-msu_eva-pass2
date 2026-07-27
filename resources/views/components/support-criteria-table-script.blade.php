@@ -624,33 +624,6 @@
                 if (weightDisplay) weightDisplay.textContent = normalizeScore(weight) || '-';
                 if (scoreDisplay) scoreDisplay.textContent = normalizeScore(achievedScore) || '-';
 
-                const evidenceDisplay = row.querySelector('[data-support-entry-evidence-list]');
-                if (!evidenceDisplay) return;
-
-                const evidenceLinks = Array.from(entry.querySelectorAll('[data-support-evidence-input]'))
-                    .map((input) => input.value.trim())
-                    .filter(Boolean);
-                evidenceDisplay.replaceChildren();
-                if (evidenceLinks.length === 0) {
-                    const empty = document.createElement('span');
-                    empty.className = 'text-slate-400';
-                    empty.textContent = 'ไม่มีหลักฐาน';
-                    evidenceDisplay.appendChild(empty);
-                    return;
-                }
-
-                evidenceLinks.forEach((evidenceUrl, evidenceIndex) => {
-                    const anchor = document.createElement('a');
-                    anchor.href = evidenceUrl;
-                    anchor.target = '_blank';
-                    anchor.rel = 'noopener noreferrer';
-                    anchor.className = 'inline-flex max-w-full items-center justify-center gap-1 whitespace-nowrap rounded-lg border border-blue-200 bg-blue-50 px-2 py-1.5 text-xs font-semibold leading-tight text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1';
-                    anchor.textContent = evidenceLinks.length > 1
-                        ? `🔗 ไฟล์ ${evidenceIndex + 1} ↗`
-                        : '🔗 เปิดดู ↗';
-                    anchor.setAttribute('aria-label', `เปิดหลักฐาน ${evidenceIndex + 1} สำหรับรายการ ${index + 1}`);
-                    evidenceDisplay.appendChild(anchor);
-                });
             });
         };
 
