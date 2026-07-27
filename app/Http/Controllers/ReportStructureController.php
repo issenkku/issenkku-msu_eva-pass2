@@ -114,6 +114,7 @@ class ReportStructureController extends Controller
                     }
 
                     if (! $grouped
+                        && ! $allowEvaluateeIndicator
                         && \App\Support\SafeHtml::plainText($supportData['indicator'] ?? null) === '') {
                         $errors["{$base}.indicator"][] = 'กรุณากรอกตัวชี้วัดหรือเกณฑ์การประเมิน';
                     }

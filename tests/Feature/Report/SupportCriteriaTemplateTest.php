@@ -590,6 +590,59 @@ class SupportCriteriaTemplateTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_disable_indicator_grouping_when_evaluatee_owns_the_indicator(): void
+    {
+        $created = $this->postJson(route('report-structure.store'), $this->payload([[
+            'sequence' => 1,
+            'activity_name' => '<p>งานบริการวิชาการ</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => null,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [
+                ['sequence' => 1, 'code' => '2.1'],
+            ],
+        ]]))->assertCreated();
+
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias',
+        ])->findOrFail($created->json('data.id'));
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $criterion = $evaluationList->supportCriterias->first();
+        $payload = $this->payload([[
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'activity_name' => $criterion->activity_name,
+            'indicator' => null,
+            'target_value' => $criterion->target_value,
+            'weight' => null,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+            'group_activity_entries_by_indicator' => false,
+            'indicator_items' => [],
+        ]]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertOk();
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $criterion->id,
+            'allow_evaluatee_indicator' => true,
+            'group_activity_entries_by_indicator' => false,
+            'indicator' => null,
+        ]);
+    }
+
     public function test_admin_cannot_remove_or_disable_grouped_indicator_items_with_projects(): void
     {
         $created = $this->postJson(route('report-structure.store'), $this->payload([[
