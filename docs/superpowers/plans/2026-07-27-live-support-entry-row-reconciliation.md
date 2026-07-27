@@ -402,22 +402,7 @@ state.rows[0].querySelectorAll('[data-support-shared-cell]').forEach((cell) => {
 
 Keep `updateSupportRow` calling `syncDesktopEntryRows(item)` after activity, entry-value and evidence updates. The existing cancel flow already restores the snapshot before `updateSupportRow(item)`, so the same reconciler removes newly created rows on cancel.
 
-- [ ] **Step 6: Add a view contract assertion for the live wiring**
-
-In the zero-entry feature test, read the script and assert:
-
-```php
-$script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
-
-expect($script)
-    ->toContain('reconcileActivityEntryRows')
-    ->toContain('data-support-entry-row-template')
-    ->toContain('data-support-entry-row-end')
-    ->toContain("cell.classList.toggle('border-t', index > 0)")
-    ->toContain('cell.rowSpan = state.rowCount');
-```
-
-- [ ] **Step 7: Run focused tests**
+- [ ] **Step 6: Run focused tests**
 
 Run:
 
@@ -428,7 +413,7 @@ php vendor/bin/pest tests/Feature/SupportCriteriaEvaluationViewTest.php --compac
 
 Expected: all tests PASS.
 
-- [ ] **Step 8: Commit Task 2**
+- [ ] **Step 7: Commit Task 2**
 
 ```powershell
 git add -- resources/js/support-activity-entries.js resources/views/components/support-criteria-table-script.blade.php resources/views/components/support-criteria-table.blade.php tests/js/support-activity-entries.test.mjs tests/Feature/SupportCriteriaEvaluationViewTest.php
