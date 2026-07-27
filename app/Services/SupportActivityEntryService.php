@@ -48,12 +48,21 @@ class SupportActivityEntryService
                 continue;
             }
 
+            $existingEntries = SupportActivityEntry::query()
+                ->where('report_id', $report->id)
+                ->where('support_criteria_id', $criterionId)
+                ->orderBy('sequence')
+                ->orderBy('id')
+                ->get();
+            $existingById = $existingEntries->keyBy('id');
+
             foreach ($activityEntries as $entryIndex => &$entryData) {
                 $entryData['support_indicator_item_id'] = $this->validateIndicatorAssignment(
                     $criterion,
                     $entryData,
                     $itemIndex,
-                    $entryIndex
+                    $entryIndex,
+                    $existingById
                 );
                 $entryData = [
                     ...$entryData,
@@ -61,13 +70,6 @@ class SupportActivityEntryService
                 ];
             }
             unset($entryData);
-
-            $existingEntries = SupportActivityEntry::query()
-                ->where('report_id', $report->id)
-                ->where('support_criteria_id', $criterionId)
-                ->orderBy('sequence')
-                ->orderBy('id')
-                ->get();
 
             if ($requireReasonForChanges) {
                 $this->persistReviewerChanges(
@@ -289,7 +291,8 @@ class SupportActivityEntryService
         SupportCriteria $criterion,
         array $entryData,
         int|string $itemIndex,
-        int $entryIndex
+        int $entryIndex,
+        Collection $existingById
     ): ?int {
         $indicatorItemId = filled($entryData['support_indicator_item_id'] ?? null)
             ? (int) $entryData['support_indicator_item_id']
@@ -307,13 +310,25 @@ class SupportActivityEntryService
             return $indicatorItemId;
         }
 
-        if ($indicatorItemId !== null) {
+        if ($indicatorItemId === null) {
+            return null;
+        }
+
+        $entryId = filled($entryData['id'] ?? null)
+            ? (int) $entryData['id']
+            : null;
+        /** @var SupportActivityEntry|null $existing */
+        $existing = $entryId ? $existingById->get($entryId) : null;
+
+        if (! $existing
+            || (int) $existing->support_indicator_item_id !== $indicatorItemId
+            || ! $criterion->indicatorItems->contains('id', $indicatorItemId)) {
             throw ValidationException::withMessages([
-                $errorKey => ['เกณฑ์นี้ไม่ได้แบ่งโครงการตามตัวชี้วัดย่อย'],
+                $errorKey => ['โหมดนี้อนุญาตให้คงตัวชี้วัดย่อยเดิมของโครงการที่มีอยู่เท่านั้น'],
             ]);
         }
 
-        return null;
+        return $indicatorItemId;
     }
 
     /**

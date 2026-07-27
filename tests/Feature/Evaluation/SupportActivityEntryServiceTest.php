@@ -287,6 +287,88 @@ class SupportActivityEntryServiceTest extends TestCase
         }
     }
 
+    public function test_ungrouped_project_can_keep_its_existing_hidden_indicator_link(): void
+    {
+        $item = $this->criterion->indicatorItems()->create([
+            'sequence' => 1,
+            'code' => '2.1',
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'support_indicator_item_id' => $item->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+        ]);
+        $this->criterion->update([
+            'indicator' => null,
+            'allow_evaluatee_indicator' => true,
+            'group_activity_entries_by_indicator' => false,
+        ]);
+
+        $this->persist([[
+            'id' => $entry->id,
+            'support_indicator_item_id' => $item->id,
+            'content' => '<p>โครงการเดิมที่แก้ไขแล้ว</p>',
+            'indicator' => '<p>ตัวชี้วัดที่ผู้ถูกประเมินกรอก</p>',
+        ]]);
+
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'support_indicator_item_id' => $item->id,
+            'content' => '<p>โครงการเดิมที่แก้ไขแล้ว</p>',
+            'indicator' => '<p>ตัวชี้วัดที่ผู้ถูกประเมินกรอก</p>',
+        ]);
+    }
+
+    public function test_ungrouped_mode_rejects_changed_or_new_indicator_links(): void
+    {
+        $first = $this->criterion->indicatorItems()->create([
+            'sequence' => 1,
+            'code' => '2.1',
+        ]);
+        $second = $this->criterion->indicatorItems()->create([
+            'sequence' => 2,
+            'code' => '2.2',
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'support_indicator_item_id' => $first->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+        ]);
+        $this->criterion->update([
+            'indicator' => null,
+            'allow_evaluatee_indicator' => true,
+            'group_activity_entries_by_indicator' => false,
+        ]);
+
+        foreach ([
+            [
+                'id' => $entry->id,
+                'support_indicator_item_id' => $second->id,
+                'content' => '<p>เปลี่ยนข้อย่อย</p>',
+                'indicator' => '<p>ตัวชี้วัด</p>',
+            ],
+            [
+                'support_indicator_item_id' => $first->id,
+                'content' => '<p>โครงการใหม่</p>',
+                'indicator' => '<p>ตัวชี้วัด</p>',
+            ],
+        ] as $payload) {
+            try {
+                $this->persist([$payload]);
+                $this->fail('Expected hidden indicator validation failure');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    'support_list.0.activity_entries.0.support_indicator_item_id',
+                    $exception->errors()
+                );
+            }
+        }
+    }
+
     public function test_evaluatee_can_update_delete_and_append_without_creating_history(): void
     {
         $this->persist([
