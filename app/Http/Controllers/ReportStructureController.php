@@ -83,6 +83,11 @@ class ReportStructureController extends Controller
                     $allowEvaluateeWeight = (bool) ($supportData['allow_evaluatee_weight'] ?? false);
                     $items = array_values($supportData['indicator_items'] ?? []);
 
+                    if ($grouped && $allowEvaluateeIndicator) {
+                        $errors["{$base}.group_activity_entries_by_indicator"][] =
+                            'ไม่สามารถแยกโครงการตามตัวชี้วัดย่อยพร้อมกับให้ผู้ถูกประเมินกรอกตัวชี้วัดได้';
+                    }
+
                     if (! $allowActivities && $allowEvaluateeIndicator) {
                         $errors["{$base}.allow_evaluatee_indicator"][] =
                             'ต้องเปิดให้ผู้ถูกประเมินเพิ่มกิจกรรมหรือโครงการก่อน';

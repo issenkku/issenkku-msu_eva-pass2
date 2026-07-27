@@ -590,6 +590,60 @@ class SupportCriteriaTemplateTest extends TestCase
         ]);
     }
 
+    public function test_evaluatee_indicator_and_grouped_indicator_modes_are_mutually_exclusive(): void
+    {
+        $invalidCriterion = [
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => null,
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => true,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [
+                ['sequence' => 1, 'code' => '2.1'],
+            ],
+        ];
+        $errorKey = 'categories.0.evaluation_lists.0.support_criterias.0.group_activity_entries_by_indicator';
+
+        $this->postJson(route('report-structure.store'), $this->payload([$invalidCriterion]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors($errorKey);
+
+        $created = $this->postJson(route('report-structure.store'), $this->payload([[
+            ...$invalidCriterion,
+            'allow_evaluatee_indicator' => false,
+        ]]))->assertCreated();
+
+        $version = CriteriaVersion::with([
+            'reportDatas',
+            'categories.evaluationLists.supportCriterias.indicatorItems',
+        ])->findOrFail($created->json('data.id'));
+        $category = $version->categories->first();
+        $evaluationList = $category->evaluationLists->first();
+        $criterion = $evaluationList->supportCriterias->first();
+        $item = $criterion->indicatorItems->first();
+
+        $update = $this->payload([[
+            ...$invalidCriterion,
+            'support_criteria_id' => $criterion->id,
+            'indicator_items' => [[
+                'support_indicator_item_id' => $item->id,
+                'sequence' => 1,
+                'code' => $item->code,
+            ]],
+        ]]);
+        $update['version_name'] = $version->version_name;
+        $update['report_datas'][0]['report_data_id'] = $version->reportDatas->first()->id;
+        $update['categories'][0]['categorie_id'] = $category->id;
+        $update['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $version->id), $update)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors($errorKey);
+    }
+
     public function test_admin_can_disable_indicator_grouping_when_evaluatee_owns_the_indicator(): void
     {
         $created = $this->postJson(route('report-structure.store'), $this->payload([[
@@ -599,7 +653,7 @@ class SupportCriteriaTemplateTest extends TestCase
             'target_value' => 100,
             'weight' => null,
             'allow_activity_entries' => true,
-            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_indicator' => false,
             'allow_evaluatee_weight' => true,
             'group_activity_entries_by_indicator' => true,
             'indicator_items' => [
