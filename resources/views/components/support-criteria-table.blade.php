@@ -55,10 +55,16 @@
                                     ? array_values($item['activity_entries'] ?? [])
                                     : [];
                             $alignedRowCount = max(count($alignedEntryRows), 1);
+                            $groupedIndicatorRows = $usesActivityRowGroup
+                                && !empty($item['group_activity_entries_by_indicator'])
+                                    ? array_values($item['indicator_items'] ?? [])
+                                    : [];
+                            $groupedIndicatorRowCount = max(count($groupedIndicatorRows), 1);
                         @endphp
                         @if ($usesActivityRowGroup)
                             <tr class="border-b border-amber-100 bg-amber-50/35"
-                                data-support-criterion-heading="{{ $item['id'] }}">
+                                data-support-criterion-heading="{{ $item['id'] }}"
+                                @if ($groupedIndicatorRows !== []) data-support-activity-grouped="1" @endif>
                                 <td class="border-r border-amber-100 px-2 py-3"></td>
                                 <th scope="rowgroup" colspan="{{ $readonly ? 8 : 9 }}"
                                     class="px-3 py-3 text-left font-semibold text-slate-900">
@@ -181,6 +187,142 @@
                                                 {{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
                                             </button>
                                         </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        @elseif ($groupedIndicatorRows !== [])
+                            @foreach ($groupedIndicatorRows as $groupIndex => $indicatorItem)
+                                @php
+                                    $groupEntries = collect($item['activity_entries'] ?? [])
+                                        ->filter(fn (array $entry) => (string) ($entry['support_indicator_item_id'] ?? '') === (string) $indicatorItem['id'])
+                                        ->values()
+                                        ->all();
+                                    $groupDividerClass = $groupIndex > 0 ? 'border-t border-amber-200 ' : '';
+                                @endphp
+                                <tr data-support-grouped-indicator-row="{{ $item['id'] }}"
+                                    data-support-grouped-indicator-id="{{ $indicatorItem['id'] }}">
+                                    @if ($groupIndex === 0)
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            class="border-r border-amber-100 px-2 py-4 text-center align-middle font-semibold text-amber-800">
+                                            {{ $item['sequence'] }}
+                                        </td>
+                                    @endif
+                                    <td class="{{ $groupDividerClass }}break-words px-2 py-4 align-top"
+                                        @if ($groupIndex > 0) data-support-group-divider @endif>
+                                        <div data-support-activity-list="{{ $item['id'] }}">
+                                            <section data-support-display-group="{{ $indicatorItem['id'] }}">
+                                                <div class="space-y-2" data-support-display-group-entries>
+                                                    @forelse ($groupEntries as $entryIndex => $entry)
+                                                        <div class="flex gap-2">
+                                                            <span data-support-grouped-project-number
+                                                                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+                                                                {{ $entryIndex + 1 }}
+                                                            </span>
+                                                            <div class="support-criteria-rich-text min-w-0 break-words font-semibold text-amber-800">
+                                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                                            </div>
+                                                        </div>
+                                                    @empty
+                                                        <p data-support-grouped-project-empty
+                                                            class="text-xs font-normal text-slate-400">
+                                                            ยังไม่มีโครงการในข้อนี้
+                                                        </p>
+                                                    @endforelse
+                                                </div>
+                                            </section>
+                                        </div>
+                                    </td>
+                                    <td class="{{ $groupDividerClass }}break-words px-2 py-4 align-top leading-6"
+                                        @if ($groupIndex > 0) data-support-group-divider @endif>
+                                        <div class="support-criteria-rich-text break-words font-semibold text-slate-800">
+                                            {!! \App\Support\SafeHtml::richText($indicatorItem['code'] ?? '') !!}
+                                        </div>
+                                    </td>
+                                    @if ($groupIndex === 0)
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            class="border-x border-amber-100 px-2 py-4 text-right align-middle tabular-nums">
+                                            {{ $item['target_value'] }}
+                                        </td>
+                                    @endif
+                                    @if ($splitsWeightByEntry)
+                                        <td class="{{ $groupDividerClass }}px-2 py-4 text-right align-top tabular-nums">
+                                            <ol class="space-y-2"
+                                                data-support-entry-weight-list="{{ $item['id'] }}"
+                                                data-support-entry-group="{{ $indicatorItem['id'] }}">
+                                                @forelse ($groupEntries as $entry)
+                                                    <li>{{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}</li>
+                                                @empty
+                                                    <li class="text-slate-400">-</li>
+                                                @endforelse
+                                            </ol>
+                                        </td>
+                                        <td class="{{ $groupDividerClass }}px-2 py-4 text-right align-top font-semibold tabular-nums">
+                                            <ol class="space-y-2"
+                                                data-support-entry-score-list="{{ $item['id'] }}"
+                                                data-support-entry-group="{{ $indicatorItem['id'] }}">
+                                                @forelse ($groupEntries as $entry)
+                                                    <li>{{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}</li>
+                                                @empty
+                                                    <li class="text-slate-400">-</li>
+                                                @endforelse
+                                            </ol>
+                                        </td>
+                                    @elseif ($groupIndex === 0)
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-weight="{{ $item['id'] }}"
+                                            class="px-2 py-4 text-right align-middle tabular-nums">
+                                            {{ filled($item['weight'] ?? null) ? $item['weight'] : '-' }}
+                                        </td>
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-score="{{ $item['id'] }}"
+                                            data-support-achieved-display="{{ $item['id'] }}"
+                                            class="px-2 py-4 text-right align-middle font-semibold tabular-nums">
+                                            {{ filled($item['achieved_score'] ?? null) ? $item['achieved_score'] : '-' }}
+                                        </td>
+                                    @endif
+                                    @if ($groupIndex === 0)
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            class="border-x border-amber-100 px-2 py-4 text-right align-middle">
+                                            <span class="inline-flex min-w-16 justify-end rounded-full bg-amber-100 px-2.5 py-1 font-bold tabular-nums text-amber-900"
+                                                data-support-weighted-display="{{ $item['id'] }}">
+                                                {{ filled($item['weighted_score']) ? $item['weighted_score'] : '-' }}
+                                            </span>
+                                        </td>
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            class="px-2 py-4 text-center align-middle">
+                                            @if (count($item['histories'] ?? []) > 0)
+                                                <a href="#support-history-modal" role="button" aria-haspopup="dialog"
+                                                    data-support-history-open="{{ $item['id'] }}"
+                                                    class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                                                    {{ count($item['histories']) }} ครั้ง
+                                                </a>
+                                            @else
+                                                <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
+                                            @endif
+                                        </td>
+                                        <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-evidence="{{ $item['id'] }}"
+                                            class="px-2 py-4 align-middle">
+                                            <x-support-evidence-summary :item="$item" />
+                                        </td>
+                                        @if (!$readonly)
+                                            <td rowspan="{{ $groupedIndicatorRowCount }}"
+                                                data-support-shared-cell
+                                                class="border-l border-amber-100 px-2 py-4 text-center align-middle">
+                                                <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                                    aria-label="{{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
+                                                    class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                                    {{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
+                                                </button>
+                                            </td>
+                                        @endif
                                     @endif
                                 </tr>
                             @endforeach

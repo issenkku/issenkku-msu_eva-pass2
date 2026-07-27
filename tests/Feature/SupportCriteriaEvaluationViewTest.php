@@ -543,6 +543,47 @@ test('grouped indicator mode renders under a full-width admin heading', function
         ->and($desktop)->toContain('โครงการ C');
 });
 
+test('grouped indicator mode renders aligned table rows with circular project numbers', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportGroupedActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-grouped-indicator-row="7"'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-group-divider'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-grouped-indicator-id="11"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-grouped-indicator-id="12"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-grouped-project-number'))->toBe(3)
+        ->and($desktop)->toContain('rowspan="2"')
+        ->and($desktop)->toContain('rounded-full bg-amber-100');
+});
+
+test('grouped indicator mode keeps an aligned row when an indicator has no project', function () {
+    $item = supportGroupedActivityViewItem();
+    $item['activity_entries'] = [];
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-grouped-indicator-row="7"'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-display-group-entries'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-grouped-project-empty'))->toBe(2);
+});
+
 test('empty activity mode keeps its admin heading separate from the placeholder row', function () {
     $item = supportActivityViewItem();
     $item['activity_name'] = '<p>หัวข้อที่ยังไม่มีรายการย่อย</p>';

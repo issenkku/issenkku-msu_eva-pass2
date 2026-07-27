@@ -36,13 +36,19 @@
                             <p class="text-xs font-semibold text-amber-800">ข้อ {{ $indicatorReference }}</p>
                             <div data-support-display-group-entries>
                                 @if ($groupEntries->isNotEmpty())
-                                    <ol class="list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700">
-                                        @foreach ($groupEntries as $entry)
-                                            <li class="support-criteria-rich-text break-words">
-                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
-                                            </li>
+                                    <div class="space-y-2">
+                                        @foreach ($groupEntries->values() as $entryIndex => $entry)
+                                            <div class="flex gap-2">
+                                                <span data-support-grouped-project-number
+                                                    class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+                                                    {{ $entryIndex + 1 }}
+                                                </span>
+                                                <div class="support-criteria-rich-text min-w-0 break-words text-sm font-normal text-amber-800">
+                                                    {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                                </div>
+                                            </div>
                                         @endforeach
-                                    </ol>
+                                    </div>
                                 @else
                                     <p class="text-xs font-normal text-slate-400">ยังไม่มีโครงการในข้อนี้</p>
                                 @endif

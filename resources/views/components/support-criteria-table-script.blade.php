@@ -522,17 +522,28 @@
                         if (groupEntries.length === 0) {
                             const empty = document.createElement('p');
                             empty.className = 'text-xs font-normal text-slate-400';
+                            empty.dataset.supportGroupedProjectEmpty = '';
                             empty.textContent = 'ยังไม่มีโครงการในข้อนี้';
                             target.appendChild(empty);
                             return;
                         }
 
-                        const list = document.createElement('ol');
-                        list.className = 'list-decimal space-y-2 pl-5 text-sm font-normal text-slate-700';
-                        groupEntries.forEach((entryData) => {
-                            const entry = document.createElement('li');
-                            entry.className = 'break-words';
-                            entry.textContent = activityTools().activityHtmlPlainText(entryData.html);
+                        const list = document.createElement('div');
+                        list.className = 'space-y-2';
+                        groupEntries.forEach((entryData, entryIndex) => {
+                            const entry = document.createElement('div');
+                            entry.className = 'flex gap-2';
+
+                            const number = document.createElement('span');
+                            number.className = 'inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800';
+                            number.dataset.supportGroupedProjectNumber = '';
+                            number.textContent = String(entryIndex + 1);
+
+                            const content = document.createElement('div');
+                            content.className = 'min-w-0 break-words font-semibold text-amber-800';
+                            content.textContent = activityTools().activityHtmlPlainText(entryData.html);
+
+                            entry.append(number, content);
                             list.appendChild(entry);
                         });
                         target.appendChild(list);
@@ -583,9 +594,17 @@
             ];
 
             fields.forEach(({ selector, target, format }) => {
-                const values = entries.map((entry) => format(entry.querySelector(selector)?.value ?? ''));
                 document.querySelectorAll(target).forEach((container) => {
                     if (container.closest('[data-support-entry-row]')) return;
+                    const groupId = container.dataset.supportEntryGroup;
+                    const matchingEntries = groupId
+                        ? entries.filter((entry) => (
+                            entry.querySelector('[data-support-activity-indicator-id]')?.value === groupId
+                        ))
+                        : entries;
+                    const values = matchingEntries.map(
+                        (entry) => format(entry.querySelector(selector)?.value ?? ''),
+                    );
                     container.replaceChildren();
                     (values.length > 0 ? values : ['-']).forEach((value) => {
                         const listItem = document.createElement('li');
