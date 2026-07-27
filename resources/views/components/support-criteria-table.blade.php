@@ -47,15 +47,16 @@
                                 : array_values(array_filter($item['evidence_links'] ?? []));
                             $evidenceCount = count($evidenceLinks);
                             $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                            $usesActivityRowGroup = !empty($item['allow_activity_entries']);
                             $splitsIndicatorByEntry = !empty($item['allow_evaluatee_indicator']);
                             $splitsWeightByEntry = !empty($item['allow_evaluatee_weight']);
-                            $alignedEntryRows = !empty($item['allow_activity_entries'])
+                            $alignedEntryRows = $usesActivityRowGroup
                                 && empty($item['group_activity_entries_by_indicator'])
                                     ? array_values($item['activity_entries'] ?? [])
                                     : [];
                             $alignedRowCount = max(count($alignedEntryRows), 1);
                         @endphp
-                        @if ($alignedEntryRows !== [])
+                        @if ($usesActivityRowGroup)
                             <tr class="border-b border-amber-100 bg-amber-50/35"
                                 data-support-criterion-heading="{{ $item['id'] }}">
                                 <td class="border-r border-amber-100 px-2 py-3"></td>
@@ -67,6 +68,8 @@
                                     </div>
                                 </th>
                             </tr>
+                        @endif
+                        @if ($alignedEntryRows !== [])
                             @foreach ($alignedEntryRows as $entryIndex => $entry)
                                 <tr data-support-entry-row="{{ $item['id'] }}"
                                     data-support-entry-index="{{ $entryIndex }}"
@@ -185,7 +188,7 @@
                         <tr>
                             <td class="px-2 py-4 text-center font-semibold text-amber-800">{{ $item['sequence'] }}</td>
                             <td class="break-words px-2 py-4 align-top">
-                                <x-support-activity-display :item="$item" />
+                                <x-support-activity-display :item="$item" :show-heading="!$usesActivityRowGroup" />
                             </td>
                             <td class="break-words px-2 py-4 leading-6">
                                 @if (!empty($item['allow_evaluatee_indicator']))

@@ -521,6 +521,48 @@ test('mobile criterion card shows shared score once unless evaluatee weight is e
         ->and(substr_count($weightedMobile[0], 'data-support-entry-score-list="7"'))->toBe(1);
 });
 
+test('grouped indicator mode renders under a full-width admin heading', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportGroupedActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-criterion-heading="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-admin-heading'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-activity-grouped="1"'))->toBe(1)
+        ->and($desktop)->toContain('2.1 ดำเนินการวิจัยเพื่อพัฒนางาน')
+        ->and($desktop)->toContain('2.2 การเผยแพร่งานวิจัย')
+        ->and($desktop)->toContain('โครงการ A')
+        ->and($desktop)->toContain('โครงการ B')
+        ->and($desktop)->toContain('โครงการ C');
+});
+
+test('empty activity mode keeps its admin heading separate from the placeholder row', function () {
+    $item = supportActivityViewItem();
+    $item['activity_name'] = '<p>หัวข้อที่ยังไม่มีรายการย่อย</p>';
+    $item['activity_entries'] = [];
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-criterion-heading="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-admin-heading'))->toBe(1)
+        ->and($desktop)->toContain('ยังไม่มีกิจกรรม/โครงการเพิ่มเติม');
+});
+
 test('grouped support projects render and edit under their assigned indicator item', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportGroupedActivityViewItem()],

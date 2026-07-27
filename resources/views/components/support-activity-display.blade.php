@@ -1,5 +1,6 @@
 @props([
     'item',
+    'showHeading' => true,
 ])
 
 @php
@@ -8,10 +9,12 @@
 @endphp
 
 <div class="space-y-2">
-    <div class="support-criteria-rich-text font-semibold text-slate-900"
-        data-support-admin-heading>
-        {!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}
-    </div>
+    @if ($showHeading)
+        <div class="support-criteria-rich-text font-semibold text-slate-900"
+            data-support-admin-heading>
+            {!! \App\Support\SafeHtml::richText($item['activity_name'] ?? '') !!}
+        </div>
+    @endif
 
     @if (!empty($item['allow_activity_entries']))
         <div data-support-activity-list="{{ $criterionId }}"
