@@ -47,8 +47,10 @@
                                 : array_values(array_filter($item['evidence_links'] ?? []));
                             $evidenceCount = count($evidenceLinks);
                             $activityNameText = \App\Support\SafeHtml::plainText($item['activity_name'] ?? '');
+                            $splitsIndicatorByEntry = !empty($item['allow_evaluatee_indicator']);
+                            $splitsWeightByEntry = !empty($item['allow_evaluatee_weight']);
                             $alignedEntryRows = !empty($item['allow_activity_entries'])
-                                && (!empty($item['allow_evaluatee_indicator']) || !empty($item['allow_evaluatee_weight']))
+                                && ($splitsIndicatorByEntry || $splitsWeightByEntry)
                                     ? array_values($item['activity_entries'] ?? [])
                                     : [];
                             $alignedRowCount = max(count($alignedEntryRows), 1);
@@ -67,14 +69,16 @@
                             @foreach ($alignedEntryRows as $entryIndex => $entry)
                                 <tr data-support-entry-row="{{ $item['id'] }}"
                                     data-support-entry-index="{{ $entryIndex }}"
-                                    class="{{ $entryIndex > 0 ? 'border-t border-slate-100' : '' }}">
+                                    class="">
                                     @if ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
                                             class="border-r border-amber-100 px-2 py-4 text-center align-middle font-semibold text-amber-800">
                                             {{ $item['sequence'] }}
                                         </td>
                                     @endif
-                                    <td class="break-words px-2 py-4 align-top" data-support-entry-activity-cell>
+                                    <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top"
+                                        data-support-entry-activity-cell>
                                         <div class="flex gap-2 text-slate-700">
                                             <span class="shrink-0 text-xs font-semibold text-amber-700">{{ $entryIndex + 1 }}.</span>
                                             <div class="support-criteria-rich-text min-w-0 break-words"
@@ -83,29 +87,55 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="break-words px-2 py-4 align-top leading-6"
-                                        data-support-entry-indicator-cell>
-                                        <div class="support-criteria-rich-text break-words"
-                                            data-support-entry-indicator-list="{{ $item['id'] }}">
-                                            {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
-                                        </div>
-                                    </td>
+                                    @if ($splitsIndicatorByEntry)
+                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top leading-6"
+                                            data-support-entry-indicator-cell>
+                                            <div class="support-criteria-rich-text break-words"
+                                                data-support-entry-indicator-list="{{ $item['id'] }}">
+                                                {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                                            </div>
+                                        </td>
+                                    @elseif ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
+                                            class="break-words px-2 py-4 align-middle leading-6">
+                                            <x-support-indicator-display :item="$item" />
+                                        </td>
+                                    @endif
                                     @if ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
                                             class="border-x border-amber-100 px-2 py-4 text-right align-middle tabular-nums">
                                             {{ $item['target_value'] }}
                                         </td>
                                     @endif
-                                    <td class="px-2 py-4 text-right align-top tabular-nums"
-                                        data-support-entry-weight-list="{{ $item['id'] }}">
-                                        {{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}
-                                    </td>
-                                    <td class="px-2 py-4 text-right align-top font-semibold tabular-nums"
-                                        data-support-entry-score-list="{{ $item['id'] }}">
-                                        {{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}
-                                    </td>
+                                    @if ($splitsWeightByEntry)
+                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top tabular-nums"
+                                            data-support-entry-weight-list="{{ $item['id'] }}">
+                                            {{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}
+                                        </td>
+                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top font-semibold tabular-nums"
+                                            data-support-entry-score-list="{{ $item['id'] }}">
+                                            {{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}
+                                        </td>
+                                    @elseif ($entryIndex === 0)
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-weight="{{ $item['id'] }}"
+                                            class="px-2 py-4 text-right align-middle tabular-nums">
+                                            {{ filled($item['weight'] ?? null) ? $item['weight'] : '-' }}
+                                        </td>
+                                        <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
+                                            data-support-shared-score="{{ $item['id'] }}"
+                                            data-support-achieved-display="{{ $item['id'] }}"
+                                            class="px-2 py-4 text-right align-middle font-semibold tabular-nums">
+                                            {{ filled($item['achieved_score'] ?? null) ? $item['achieved_score'] : '-' }}
+                                        </td>
+                                    @endif
                                     @if ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
                                             class="border-x border-amber-100 px-2 py-4 text-right align-middle">
                                             <span class="inline-flex min-w-16 justify-end rounded-full bg-amber-100 px-2.5 py-1 font-bold tabular-nums text-amber-900"
                                                 data-support-weighted-display="{{ $item['id'] }}">
@@ -113,6 +143,7 @@
                                             </span>
                                         </td>
                                         <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
                                             class="px-2 py-4 text-center align-middle">
                                             @if (count($item['histories'] ?? []) > 0)
                                                 <a href="#support-history-modal" role="button" aria-haspopup="dialog"
@@ -147,6 +178,7 @@
                                     </td>
                                     @if (!$readonly && $entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
+                                            data-support-shared-cell
                                             class="border-l border-amber-100 px-2 py-4 text-center align-middle">
                                             <button type="button" data-support-manage-open="{{ $item['id'] }}"
                                                 aria-label="{{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"

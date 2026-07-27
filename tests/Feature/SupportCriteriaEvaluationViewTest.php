@@ -115,6 +115,43 @@ function supportEvaluateeWeightedViewItem(): array
     ]);
 }
 
+function supportEvaluateeIndicatorOnlyViewItem(): array
+{
+    return array_replace(supportActivityViewItem(), [
+        'activity_name' => '<p>หัวข้อจากแอดมิน</p>',
+        'indicator' => null,
+        'allow_evaluatee_indicator' => true,
+        'allow_evaluatee_weight' => false,
+        'weight' => '20.00',
+        'achieved_score' => '80.00',
+        'weighted_score' => '16.00',
+        'activity_entries' => [
+            [
+                'id' => 41,
+                'sequence' => 1,
+                'content' => '<p>กิจกรรมหนึ่ง</p>',
+                'indicator' => '<p>ตัวชี้วัดหนึ่ง</p>',
+                'weight' => null,
+                'achieved_score' => null,
+                'weighted_score' => null,
+                'evidence_links' => ['https://example.com/one'],
+                'histories' => [],
+            ],
+            [
+                'id' => 42,
+                'sequence' => 2,
+                'content' => '<p>กิจกรรมสอง</p>',
+                'indicator' => '<p>ตัวชี้วัดสอง</p>',
+                'weight' => null,
+                'achieved_score' => null,
+                'weighted_score' => null,
+                'evidence_links' => ['https://example.com/two'],
+                'histories' => [],
+            ],
+        ],
+    ]);
+}
+
 test('support criteria component renders one responsive editable form control set', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportViewItem()],
@@ -355,8 +392,40 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         ->and($html)->toContain('>เปิดดู</span>')
         ->and($desktopTable[0])->not->toMatch('/>\s*https:\/\/example\.com\/second-proof\s*</u');
 
+    expect(substr_count($desktopTable[0], 'data-support-entry-weight-list="7"'))->toBe(2)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-score-list="7"'))->toBe(2)
+        ->and(substr_count($desktopTable[0], 'data-support-shared-weight="7"'))->toBe(0)
+        ->and(substr_count($desktopTable[0], 'data-support-shared-score="7"'))->toBe(0)
+        ->and($desktopTable[0])->toMatch('/>\s*40\.00\s*</')
+        ->and($desktopTable[0])->toMatch('/>\s*50\.00\s*</')
+        ->and($desktopTable[0])->toMatch('/>\s*80\.00\s*</')
+        ->and($desktopTable[0])->toMatch('/>\s*20\.00\s*</');
+
     $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
     expect($script)->toContain('syncDesktopEntryRows');
+});
+
+test('indicator-only entry rows keep criterion scores in shared cells', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeIndicatorOnlyViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-entry-row="7"'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-entry-activity-cell'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-entry-indicator-cell'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-entry-weight-list="7"'))->toBe(0)
+        ->and(substr_count($desktop, 'data-support-entry-score-list="7"'))->toBe(0)
+        ->and(substr_count($desktop, 'data-support-shared-weight="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-shared-score="7"'))->toBe(1)
+        ->and($desktop)->toContain('rowspan="2"')
+        ->and($desktop)->toMatch('/>\s*20\.00\s*</')
+        ->and($desktop)->toMatch('/>\s*80\.00\s*</');
 });
 
 test('grouped support projects render and edit under their assigned indicator item', function () {
