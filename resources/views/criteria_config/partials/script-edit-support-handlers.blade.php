@@ -5,16 +5,24 @@
             const allowEvaluateeWeight = block.querySelector('.support_allow_evaluatee_weight');
             if (!allow || !grouped) return;
 
-            if (!allow.checked) {
-                grouped.checked = false;
-                if (allowEvaluateeIndicator) allowEvaluateeIndicator.checked = false;
-                if (allowEvaluateeWeight) allowEvaluateeWeight.checked = false;
+            const mode = window.SupportIndicatorMode.resolveSupportIndicatorMode({
+                allowActivities: allow.checked,
+                allowEvaluateeIndicator: allowEvaluateeIndicator?.checked || false,
+                grouped: grouped.checked,
+            });
+
+            grouped.checked = mode.groupedChecked;
+            grouped.disabled = mode.groupedDisabled;
+            if (allowEvaluateeIndicator) {
+                allowEvaluateeIndicator.checked = mode.allowEvaluateeIndicatorChecked;
+                allowEvaluateeIndicator.disabled = mode.allowEvaluateeIndicatorDisabled;
             }
-            grouped.disabled = !allow.checked;
-            if (allowEvaluateeIndicator) allowEvaluateeIndicator.disabled = !allow.checked;
+            if (!allow.checked && allowEvaluateeWeight) {
+                allowEvaluateeWeight.checked = false;
+            }
             if (allowEvaluateeWeight) allowEvaluateeWeight.disabled = !allow.checked;
             const indicatorInput = block.querySelector('.support_indicator');
-            const evaluateeOwnsIndicator = Boolean(allowEvaluateeIndicator?.checked);
+            const evaluateeOwnsIndicator = mode.allowEvaluateeIndicatorChecked;
             if (indicatorInput) {
                 if (evaluateeOwnsIndicator) indicatorInput.value = '';
                 const $indicatorInput = $(indicatorInput);

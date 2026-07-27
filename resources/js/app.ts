@@ -1,6 +1,7 @@
 import '../css/app.css';
 import './assignment-participant-selection';
 import './support-activity-entries';
+import './support-indicator-mode';
 import './support-score-calculator';
 import './workload-formula-preview';
 
