@@ -24,7 +24,9 @@
 
 - `resources/views/criteria_config/partials/create-script.blade.php` — จัดสถานะ checkbox และส่วนแสดงผลในหน้าสร้าง
 - `resources/views/criteria_config/partials/script-edit-support-handlers.blade.php` — ใช้กติกา checkbox เดียวกันในหน้าแก้ไขและ normalize ข้อมูลเดิม
-- `tests/Feature/SupportCriteriaTemplateViewTest.php` — contract test สำหรับ JavaScript ในหน้าสร้างและแก้ไข
+- `resources/js/support-indicator-mode.js` — pure state resolver ที่เป็นแหล่งกติกา mutual exclusion กลาง
+- `resources/js/app.ts` — โหลด state resolver และเปิด API ให้ inline criteria scripts ใช้
+- `tests/js/support-indicator-mode.test.mjs` — behavioral test ของทุกสถานะ checkbox
 - `app/Http/Controllers/ReportStructureController.php` — ตรวจ invariant ของ payload ทั้ง create/update
 - `app/Services/SupportIndicatorItemService.php` — นโยบายปิด/เปิดโหมดและการรักษาข้อย่อย
 - `tests/Feature/Report/SupportCriteriaTemplateTest.php` — feature test ของการตั้งค่า การเปลี่ยนโหมด และการรักษาข้อมูล
@@ -36,26 +38,89 @@
 ### Task 1: ทำให้ checkbox สองโหมดเป็น mutually exclusive
 
 **Files:**
-- Modify: `tests/Feature/SupportCriteriaTemplateViewTest.php`
+- Create: `tests/js/support-indicator-mode.test.mjs`
+- Create: `resources/js/support-indicator-mode.js`
+- Modify: `resources/js/app.ts`
 - Modify: `resources/views/criteria_config/partials/create-script.blade.php`
 - Modify: `resources/views/criteria_config/partials/script-edit-support-handlers.blade.php`
 
 **Interfaces:**
 - Consumes: `.support_allow_activity_entries`, `.support_allow_evaluatee_indicator`, `.support_group_by_indicator`
-- Produces: `toggleSupportIndicatorMode(block)` ที่ให้โหมดผู้ถูกประเมินกรอกตัวชี้วัดมีสิทธิ์เหนือข้อมูลเดิมที่เปิดสองโหมดพร้อมกัน
+- Produces: `resolveSupportIndicatorMode({ allowActivities, allowEvaluateeIndicator, grouped })` และ `window.SupportIndicatorMode.resolveSupportIndicatorMode`
 
-- [ ] **Step 1: เพิ่ม contract test ที่ต้อง fail ก่อน**
+- [ ] **Step 1: เพิ่ม behavioral test ที่ต้อง fail ก่อน**
 
-เพิ่ม assertion ใน test `support template exposes and serializes evaluatee owned field controls` ให้ตรวจทั้ง `$createScript` และ `$editSupportHandler`:
+สร้าง `tests/js/support-indicator-mode.test.mjs`:
 
-```php
-foreach ([$createScript, $editSupportHandler] as $script) {
-    expect($script)
-        ->toContain('if (evaluateeOwnsIndicator && grouped.checked)')
-        ->toContain('grouped.checked = false')
-        ->toContain('grouped.disabled = !allow.checked || evaluateeOwnsIndicator')
-        ->toContain('allowEvaluateeIndicator.disabled = !allow.checked || grouped.checked');
-}
+```javascript
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { resolveSupportIndicatorMode } from '../../resources/js/support-indicator-mode.js';
+
+test('disables and clears indicator modes when activity entries are disabled', () => {
+    assert.deepEqual(
+        resolveSupportIndicatorMode({
+            allowActivities: false,
+            allowEvaluateeIndicator: true,
+            grouped: true,
+        }),
+        {
+            allowEvaluateeIndicatorChecked: false,
+            allowEvaluateeIndicatorDisabled: true,
+            groupedChecked: false,
+            groupedDisabled: true,
+        },
+    );
+});
+
+test('evaluatee-owned indicator mode wins over conflicting grouped data', () => {
+    assert.deepEqual(
+        resolveSupportIndicatorMode({
+            allowActivities: true,
+            allowEvaluateeIndicator: true,
+            grouped: true,
+        }),
+        {
+            allowEvaluateeIndicatorChecked: true,
+            allowEvaluateeIndicatorDisabled: false,
+            groupedChecked: false,
+            groupedDisabled: true,
+        },
+    );
+});
+
+test('grouped mode prevents enabling evaluatee-owned indicators', () => {
+    assert.deepEqual(
+        resolveSupportIndicatorMode({
+            allowActivities: true,
+            allowEvaluateeIndicator: false,
+            grouped: true,
+        }),
+        {
+            allowEvaluateeIndicatorChecked: false,
+            allowEvaluateeIndicatorDisabled: true,
+            groupedChecked: true,
+            groupedDisabled: false,
+        },
+    );
+});
+
+test('leaves both choices enabled when neither exclusive mode is selected', () => {
+    assert.deepEqual(
+        resolveSupportIndicatorMode({
+            allowActivities: true,
+            allowEvaluateeIndicator: false,
+            grouped: false,
+        }),
+        {
+            allowEvaluateeIndicatorChecked: false,
+            allowEvaluateeIndicatorDisabled: false,
+            groupedChecked: false,
+            groupedDisabled: false,
+        },
+    );
+});
 ```
 
 - [ ] **Step 2: รัน test เพื่อยืนยัน RED**
@@ -63,46 +128,92 @@ foreach ([$createScript, $editSupportHandler] as $script) {
 Run:
 
 ```powershell
-php artisan test tests/Feature/SupportCriteriaTemplateViewTest.php --filter="support template exposes"
+node --test tests/js/support-indicator-mode.test.mjs
 ```
 
-Expected: FAIL เพราะ script ปัจจุบันไม่มี mutual-exclusion conditions
+Expected: FAIL ด้วย `ERR_MODULE_NOT_FOUND` เพราะ state resolver ยังไม่มี
 
-- [ ] **Step 3: แก้ `toggleSupportIndicatorMode` ทั้งสองไฟล์**
+- [ ] **Step 3: สร้าง state resolver และเปิดผ่าน app bundle**
 
-หลังจากจัดการกรณี `!allow.checked` และก่อนอัปเดต `disabled` ให้ใช้โค้ดเดียวกัน:
+สร้าง `resources/js/support-indicator-mode.js`:
 
 ```javascript
-const evaluateeOwnsIndicator = Boolean(allowEvaluateeIndicator?.checked);
-if (evaluateeOwnsIndicator && grouped.checked) {
-    grouped.checked = false;
+export function resolveSupportIndicatorMode({ allowActivities, allowEvaluateeIndicator, grouped }) {
+    if (!allowActivities) {
+        return {
+            allowEvaluateeIndicatorChecked: false,
+            allowEvaluateeIndicatorDisabled: true,
+            groupedChecked: false,
+            groupedDisabled: true,
+        };
+    }
+
+    const evaluateeOwnsIndicator = Boolean(allowEvaluateeIndicator);
+    const groupedMode = Boolean(grouped) && !evaluateeOwnsIndicator;
+
+    return {
+        allowEvaluateeIndicatorChecked: evaluateeOwnsIndicator,
+        allowEvaluateeIndicatorDisabled: groupedMode,
+        groupedChecked: groupedMode,
+        groupedDisabled: evaluateeOwnsIndicator,
+    };
 }
 
-grouped.disabled = !allow.checked || evaluateeOwnsIndicator;
+if (typeof window !== 'undefined') {
+    window.SupportIndicatorMode = { resolveSupportIndicatorMode };
+}
+```
+
+เพิ่มใน `resources/js/app.ts`:
+
+```typescript
+import './support-indicator-mode';
+```
+
+- [ ] **Step 4: ใช้ resolver ใน `toggleSupportIndicatorMode` ทั้งสองไฟล์**
+
+แทน logic checked/disabled เดิมด้วย:
+
+```javascript
+const mode = window.SupportIndicatorMode.resolveSupportIndicatorMode({
+    allowActivities: allow.checked,
+    allowEvaluateeIndicator: allowEvaluateeIndicator?.checked || false,
+    grouped: grouped.checked,
+});
+
+grouped.checked = mode.groupedChecked;
+grouped.disabled = mode.groupedDisabled;
 if (allowEvaluateeIndicator) {
-    allowEvaluateeIndicator.disabled = !allow.checked || grouped.checked;
+    allowEvaluateeIndicator.checked = mode.allowEvaluateeIndicatorChecked;
+    allowEvaluateeIndicator.disabled = mode.allowEvaluateeIndicatorDisabled;
+}
+if (!allow.checked && allowEvaluateeWeight) {
+    allowEvaluateeWeight.checked = false;
 }
 if (allowEvaluateeWeight) {
     allowEvaluateeWeight.disabled = !allow.checked;
 }
+
+const evaluateeOwnsIndicator = mode.allowEvaluateeIndicatorChecked;
 ```
 
-ลบ declaration ซ้ำของ `evaluateeOwnsIndicator` ที่อยู่ถัดจาก `indicatorInput` แต่คง logic ล้าง rich text และการซ่อน `[data-support-legacy-indicator]`/`.support_indicator_items` เดิมไว้
+คง logic ล้าง rich text, น้ำหนัก และการซ่อน `[data-support-legacy-indicator]`/`.support_indicator_items` เดิมไว้
 
-- [ ] **Step 4: รัน test เพื่อยืนยัน GREEN**
+- [ ] **Step 5: รัน tests เพื่อยืนยัน GREEN**
 
 Run:
 
 ```powershell
+node --test tests/js/support-indicator-mode.test.mjs
 php artisan test tests/Feature/SupportCriteriaTemplateViewTest.php
 ```
 
-Expected: PASS ทั้งไฟล์
+Expected: PASS ทั้งสองคำสั่ง
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```powershell
-git add -- tests/Feature/SupportCriteriaTemplateViewTest.php resources/views/criteria_config/partials/create-script.blade.php resources/views/criteria_config/partials/script-edit-support-handlers.blade.php
+git add -- tests/js/support-indicator-mode.test.mjs resources/js/support-indicator-mode.js resources/js/app.ts resources/views/criteria_config/partials/create-script.blade.php resources/views/criteria_config/partials/script-edit-support-handlers.blade.php
 git commit -m "fix: make support indicator modes exclusive"
 ```
 
@@ -538,9 +649,10 @@ php artisan test tests/Feature/SupportCriteriaTemplateViewTest.php
 php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php
 php artisan test tests/Feature/Evaluation/SupportActivityEntryServiceTest.php
 php artisan test tests/Feature/SupportCriteriaEvaluationViewTest.php
+node --test tests/js/support-indicator-mode.test.mjs
 ```
 
-Expected: PASS ทั้งสี่คำสั่ง ไม่มี warning/error ใหม่ โดย view suite เดิมยืนยันว่าโหมดไม่แยกแสดงโครงการเป็นรายการรวม
+Expected: PASS ทั้งห้าคำสั่ง ไม่มี warning/error ใหม่ โดย view suite เดิมยืนยันว่าโหมดไม่แยกแสดงโครงการเป็นรายการรวม
 
 - [ ] **Step 2: รันชุดทดสอบทั้งหมด**
 
