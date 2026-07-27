@@ -5,6 +5,7 @@ namespace Tests\Feature\Report;
 use App\Models\Category;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
@@ -663,11 +664,28 @@ class SupportCriteriaTemplateTest extends TestCase
 
         $version = CriteriaVersion::with([
             'reportDatas',
-            'categories.evaluationLists.supportCriterias',
+            'categories.evaluationLists.supportCriterias.indicatorItems',
         ])->findOrFail($created->json('data.id'));
         $category = $version->categories->first();
         $evaluationList = $category->evaluationLists->first();
         $criterion = $evaluationList->supportCriterias->first();
+        $item = $criterion->indicatorItems->first();
+        $report = Reports::factory()->create([
+            'report_data_id' => $version->reportDatas->first()->id,
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'support_indicator_item_id' => $item->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+        ]);
+        $entry->evidenceAnswers()->create([
+            'evaluation_list_id' => $criterion->evaluation_list_id,
+            'support_criteria_id' => $criterion->id,
+            'report_id' => $report->id,
+            'link' => 'https://example.com/project-proof',
+        ]);
         $payload = $this->payload([[
             'support_criteria_id' => $criterion->id,
             'sequence' => 1,
@@ -695,9 +713,84 @@ class SupportCriteriaTemplateTest extends TestCase
             'group_activity_entries_by_indicator' => false,
             'indicator' => null,
         ]);
+        $this->assertDatabaseHas('support_indicator_items', ['id' => $item->id]);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'support_indicator_item_id' => $item->id,
+        ]);
+        $this->assertDatabaseHas('evidence_answers', [
+            'support_activity_entry_id' => $entry->id,
+            'link' => 'https://example.com/project-proof',
+        ]);
     }
 
-    public function test_admin_cannot_remove_or_disable_grouped_indicator_items_with_projects(): void
+    public function test_admin_cannot_enable_grouping_while_a_project_has_no_indicator_item(): void
+    {
+        $version = CriteriaVersion::factory()->create();
+        $reportData = ReportData::factory()->create(['criteria_version_id' => $version->id]);
+        $category = Category::factory()->create(['criteria_version_id' => $version->id]);
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $version->id,
+            'categorie_id' => $category->id,
+        ]);
+        $criterion = SupportCriteria::create([
+            'evaluation_list_id' => $evaluationList->id,
+            'sequence' => 1,
+            'activity_name' => '<p>งานวิจัย</p>',
+            'indicator' => '<p>เกณฑ์เดิม</p>',
+            'target_value' => 100,
+            'weight' => 100,
+            'allow_activity_entries' => true,
+            'group_activity_entries_by_indicator' => false,
+        ]);
+        $item = $criterion->indicatorItems()->create([
+            'sequence' => 1,
+            'code' => '2.1',
+        ]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        SupportActivityEntry::create([
+            'report_id' => $report->id,
+            'support_criteria_id' => $criterion->id,
+            'support_indicator_item_id' => null,
+            'sequence' => 1,
+            'content' => '<p>โครงการที่ยังไม่สังกัดข้อย่อย</p>',
+        ]);
+
+        $payload = $this->payload([[
+            'support_criteria_id' => $criterion->id,
+            'sequence' => 1,
+            'activity_name' => $criterion->activity_name,
+            'indicator' => null,
+            'target_value' => $criterion->target_value,
+            'weight' => $criterion->weight,
+            'allow_activity_entries' => true,
+            'allow_evaluatee_indicator' => false,
+            'group_activity_entries_by_indicator' => true,
+            'indicator_items' => [[
+                'support_indicator_item_id' => $item->id,
+                'sequence' => 1,
+                'code' => $item->code,
+            ]],
+        ]]);
+        $payload['version_name'] = $version->version_name;
+        $payload['report_datas'][0]['report_data_id'] = $reportData->id;
+        $payload['categories'][0]['categorie_id'] = $category->id;
+        $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
+
+        $this->putJson(route('report-structure.update', $version->id), $payload)
+            ->assertUnprocessable()
+            ->assertJsonPath(
+                'error.support_criterias.0',
+                'ไม่สามารถเปิดการแบ่งตามตัวชี้วัดย่อยได้ เนื่องจากมีโครงการที่ยังไม่ได้สังกัดตัวชี้วัดย่อย'
+            );
+
+        $this->assertDatabaseHas('support_criterias', [
+            'id' => $criterion->id,
+            'group_activity_entries_by_indicator' => false,
+        ]);
+    }
+
+    public function test_admin_cannot_remove_grouped_indicator_items_with_projects(): void
     {
         $created = $this->postJson(route('report-structure.store'), $this->payload([[
             'sequence' => 1,
@@ -754,17 +847,6 @@ class SupportCriteriaTemplateTest extends TestCase
         $payload['categories'][0]['evaluation_lists'][0]['evaluation_id'] = $evaluationList->id;
 
         $this->putJson(route('report-structure.update', $version->id), $payload)
-            ->assertUnprocessable();
-
-        $disablePayload = $payload;
-        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0][
-            'group_activity_entries_by_indicator'
-        ] = false;
-        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0]['indicator'] =
-            '<p>เกณฑ์เดิม</p>';
-        $disablePayload['categories'][0]['evaluation_lists'][0]['support_criterias'][0]['indicator_items'] = [];
-
-        $this->putJson(route('report-structure.update', $version->id), $disablePayload)
             ->assertUnprocessable();
 
         $this->assertDatabaseHas('support_criterias', [

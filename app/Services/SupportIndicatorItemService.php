@@ -20,16 +20,18 @@ class SupportIndicatorItemService
             ->keyBy('id');
 
         if (! $grouped) {
-            if ($wasGrouped
-                && $existing->contains(fn ($item) => $item->activity_entries_count > 0)) {
-                throw ValidationException::withMessages([
-                    'support_criterias' => [
-                        'ไม่สามารถปิดการแบ่งตามตัวชี้วัดย่อยได้ เนื่องจากมีโครงการอ้างอิงอยู่',
-                    ],
-                ]);
-            }
-
             return;
+        }
+
+        if (! $wasGrouped
+            && $criterion->activityEntries()
+                ->whereNull('support_indicator_item_id')
+                ->exists()) {
+            throw ValidationException::withMessages([
+                'support_criterias' => [
+                    'ไม่สามารถเปิดการแบ่งตามตัวชี้วัดย่อยได้ เนื่องจากมีโครงการที่ยังไม่ได้สังกัดตัวชี้วัดย่อย',
+                ],
+            ]);
         }
 
         $keptIds = [];
