@@ -339,6 +339,7 @@ test('evaluatee owned support fields render per project without criterion score 
         'requireReason' => false,
         'activityEntryRole' => 'evaluatee',
     ])->render();
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
 
     expect($html)
         ->toContain('support_list[7][activity_entries][0][indicator]')
@@ -352,9 +353,9 @@ test('evaluatee owned support fields render per project without criterion score 
         ->not->toContain('ส่งตรงเวลา')
         ->not->toContain('name="support_list[7][achieved_score]"');
 
-    expect(substr_count($html, 'data-support-entry-indicator-list="7"'))->toBe(2)
-        ->and(substr_count($html, 'data-support-entry-weight-list="7"'))->toBe(2)
-        ->and(substr_count($html, 'data-support-entry-score-list="7"'))->toBe(2);
+    expect(substr_count($desktopTable[0], 'data-support-entry-indicator-list="7"'))->toBe(1)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-weight-list="7"'))->toBe(1)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-score-list="7"'))->toBe(1);
 });
 
 test('desktop support table renders evaluatee owned values as aligned entry rows', function () {
@@ -383,8 +384,8 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         ->and($html)->toContain('data-support-entry-index="1"')
         ->and(substr_count($html, 'data-support-criterion-heading="7"'))->toBe(1)
         ->and($html)->toContain('colspan="9"')
-        ->and(substr_count($html, 'data-support-entry-activity-cell'))->toBe(2)
-        ->and(substr_count($html, 'data-support-entry-indicator-cell'))->toBe(2)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-activity-cell'))->toBe(2)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-indicator-cell'))->toBe(2)
         ->and(substr_count($desktopTable[0], 'data-support-shared-evidence="7"'))->toBe(1)
         ->and($html)->toContain('rowspan="2"')
         ->and($html)->toContain('aria-label="เปิดหลักฐาน 1 สำหรับรายการ 2"')
@@ -403,6 +404,30 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
 
     $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
     expect($script)->toContain('syncDesktopEntryRows');
+});
+
+test('empty non grouped support mode renders a live desktop row shell', function () {
+    $item = supportEvaluateeWeightedViewItem();
+    $item['activity_entries'] = [];
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-entry-row="7"'))->toBe(1)
+        ->and($desktop)->toContain('data-support-entry-empty')
+        ->and($desktop)->toContain('data-support-entry-cell')
+        ->and($desktop)->toContain('data-support-entry-number')
+        ->and($html)->toContain('data-support-entry-row-template="7"')
+        ->and($desktop)->toContain('rowspan="1"')
+        ->and($desktop)->toContain('ยังไม่มีกิจกรรม/โครงการเพิ่มเติม');
 });
 
 test('indicator-only entry rows keep criterion scores in shared cells', function () {

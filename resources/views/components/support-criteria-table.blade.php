@@ -50,10 +50,14 @@
                             $usesActivityRowGroup = !empty($item['allow_activity_entries']);
                             $splitsIndicatorByEntry = !empty($item['allow_evaluatee_indicator']);
                             $splitsWeightByEntry = !empty($item['allow_evaluatee_weight']);
-                            $alignedEntryRows = $usesActivityRowGroup
-                                && empty($item['group_activity_entries_by_indicator'])
-                                    ? array_values($item['activity_entries'] ?? [])
-                                    : [];
+                            $usesAlignedEntryRows = $usesActivityRowGroup
+                                && empty($item['group_activity_entries_by_indicator']);
+                            $alignedEntryRows = $usesAlignedEntryRows
+                                ? array_values($item['activity_entries'] ?? [])
+                                : [];
+                            $renderedAlignedEntryRows = $usesAlignedEntryRows
+                                ? ($alignedEntryRows !== [] ? $alignedEntryRows : [null])
+                                : [];
                             $alignedRowCount = max(count($alignedEntryRows), 1);
                             $groupedIndicatorRows = $usesActivityRowGroup
                                 && !empty($item['group_activity_entries_by_indicator'])
@@ -75,10 +79,11 @@
                                 </th>
                             </tr>
                         @endif
-                        @if ($alignedEntryRows !== [])
-                            @foreach ($alignedEntryRows as $entryIndex => $entry)
+                        @if ($usesAlignedEntryRows)
+                            @foreach ($renderedAlignedEntryRows as $entryIndex => $entry)
                                 <tr data-support-entry-row="{{ $item['id'] }}"
                                     data-support-entry-index="{{ $entryIndex }}"
+                                    @if ($entry === null) data-support-entry-empty @endif
                                     class="">
                                     @if ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
@@ -87,24 +92,31 @@
                                             {{ $item['sequence'] }}
                                         </td>
                                     @endif
-                                    <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top"
+                                    <td data-support-entry-cell
+                                        class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top"
                                         data-support-entry-activity-cell>
                                         <div class="flex gap-2">
-                                            <span class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800">
+                                            <span data-support-entry-number
+                                                class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800 {{ is_array($entry) ? '' : 'hidden' }}">
                                                 {{ $entryIndex + 1 }}
                                             </span>
-                                            <div class="support-criteria-rich-text min-w-0 break-words font-semibold text-amber-800"
+                                            <div class="support-criteria-rich-text min-w-0 break-words font-semibold {{ is_array($entry) ? 'text-amber-800' : 'text-slate-400' }}"
                                                 data-support-entry-activity-value>
-                                                {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                                @if (is_array($entry))
+                                                    {!! \App\Support\SafeHtml::richText($entry['content'] ?? '') !!}
+                                                @else
+                                                    ยังไม่มีกิจกรรม/โครงการเพิ่มเติม
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
                                     @if ($splitsIndicatorByEntry)
-                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top leading-6"
+                                        <td data-support-entry-cell
+                                            class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}break-words px-2 py-4 align-top leading-6"
                                             data-support-entry-indicator-cell>
                                             <div class="support-criteria-rich-text break-words"
                                                 data-support-entry-indicator-list="{{ $item['id'] }}">
-                                                {!! \App\Support\SafeHtml::richText($entry['indicator'] ?? '') !!}
+                                                {!! is_array($entry) ? \App\Support\SafeHtml::richText($entry['indicator'] ?? '') : '-' !!}
                                             </div>
                                         </td>
                                     @elseif ($entryIndex === 0)
@@ -123,13 +135,15 @@
                                         </td>
                                     @endif
                                     @if ($splitsWeightByEntry)
-                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top tabular-nums"
+                                        <td data-support-entry-cell
+                                            class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top tabular-nums"
                                             data-support-entry-weight-list="{{ $item['id'] }}">
-                                            {{ filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}
+                                            {{ is_array($entry) && filled($entry['weight'] ?? null) ? $entry['weight'] : '-' }}
                                         </td>
-                                        <td class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top font-semibold tabular-nums"
+                                        <td data-support-entry-cell
+                                            class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 text-right align-top font-semibold tabular-nums"
                                             data-support-entry-score-list="{{ $item['id'] }}">
-                                            {{ filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}
+                                            {{ is_array($entry) && filled($entry['achieved_score'] ?? null) ? $entry['achieved_score'] : '-' }}
                                         </td>
                                     @elseif ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
@@ -409,6 +423,46 @@
                     @endforeach
                 </tbody>
             </table>
+
+        @if (!$readonly)
+            @foreach ($items as $item)
+                @php
+                    $templateUsesAlignedRows = !empty($item['allow_activity_entries'])
+                        && empty($item['group_activity_entries_by_indicator']);
+                    $templateSplitsIndicator = !empty($item['allow_evaluatee_indicator']);
+                    $templateSplitsWeight = !empty($item['allow_evaluatee_weight']);
+                @endphp
+                @if ($templateUsesAlignedRows)
+                    <template data-support-entry-row-template="{{ $item['id'] }}">
+                        <table><tbody><tr>
+                            <td data-support-entry-cell data-support-entry-activity-cell
+                                class="break-words px-2 py-4 align-top">
+                                <div class="flex gap-2">
+                                    <span data-support-entry-number
+                                        class="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800"></span>
+                                    <div data-support-entry-activity-value
+                                        class="support-criteria-rich-text min-w-0 break-words font-semibold text-amber-800"></div>
+                                </div>
+                            </td>
+                            @if ($templateSplitsIndicator)
+                                <td data-support-entry-cell data-support-entry-indicator-cell
+                                    class="break-words px-2 py-4 align-top leading-6">
+                                    <div data-support-entry-indicator-list="{{ $item['id'] }}"></div>
+                                </td>
+                            @endif
+                            @if ($templateSplitsWeight)
+                                <td data-support-entry-cell
+                                    data-support-entry-weight-list="{{ $item['id'] }}"
+                                    class="px-2 py-4 text-right align-top tabular-nums"></td>
+                                <td data-support-entry-cell
+                                    data-support-entry-score-list="{{ $item['id'] }}"
+                                    class="px-2 py-4 text-right align-top font-semibold tabular-nums"></td>
+                            @endif
+                        </tr></tbody></table>
+                    </template>
+                @endif
+            @endforeach
+        @endif
 
         <div class="space-y-3 p-4 lg:hidden">
                     @foreach ($items as $item)
