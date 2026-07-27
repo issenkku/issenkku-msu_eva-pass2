@@ -205,7 +205,7 @@ Run:
 
 ```powershell
 node --test tests/js/support-indicator-mode.test.mjs
-php artisan test tests/Feature/SupportCriteriaTemplateViewTest.php
+php vendor/bin/pest tests/Feature/SupportCriteriaTemplateViewTest.php
 ```
 
 Expected: PASS ทั้งสองคำสั่ง
@@ -297,7 +297,7 @@ public function test_evaluatee_indicator_and_grouped_indicator_modes_are_mutuall
 Run:
 
 ```powershell
-php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="mutually_exclusive"
+php vendor/bin/pest tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="mutually_exclusive"
 ```
 
 Expected: FAIL เพราะ create/update ปัจจุบันยอมรับสองโหมดพร้อมกัน
@@ -318,7 +318,7 @@ if ($grouped && $allowEvaluateeIndicator) {
 Run:
 
 ```powershell
-php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="mutually_exclusive"
+php vendor/bin/pest tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="mutually_exclusive"
 ```
 
 Expected: PASS
@@ -410,7 +410,7 @@ $this->putJson(route('report-structure.update', $version->id), $enablePayload)
 Run:
 
 ```powershell
-php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="disable_grouping|enable_grouping"
+php vendor/bin/pest tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="disable_grouping|enable_grouping"
 ```
 
 Expected:
@@ -449,7 +449,7 @@ if (! $wasGrouped
 Run:
 
 ```powershell
-php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="grouping|grouped_indicator_items_with_projects"
+php vendor/bin/pest tests/Feature/Report/SupportCriteriaTemplateTest.php --filter="grouping|grouped_indicator_items_with_projects"
 ```
 
 Expected: PASS รวมทั้ง regression ที่ยังห้ามลบข้อย่อย
@@ -561,7 +561,7 @@ public function test_ungrouped_mode_rejects_changed_or_new_indicator_links(): vo
 Run:
 
 ```powershell
-php artisan test tests/Feature/Evaluation/SupportActivityEntryServiceTest.php --filter="hidden_indicator|indicator_links"
+php vendor/bin/pest tests/Feature/Evaluation/SupportActivityEntryServiceTest.php --filter="hidden_indicator|indicator_links"
 ```
 
 Expected: test แรก FAIL เพราะโหมดไม่แยกปฏิเสธ non-null ID; test ป้องกันยังผ่าน
@@ -619,7 +619,7 @@ private function validateIndicatorAssignment(
 Run:
 
 ```powershell
-php artisan test tests/Feature/Evaluation/SupportActivityEntryServiceTest.php
+php vendor/bin/pest tests/Feature/Evaluation/SupportActivityEntryServiceTest.php
 ```
 
 Expected: PASS ทั้งไฟล์
@@ -645,10 +645,10 @@ git commit -m "fix: retain legacy support indicator links"
 - [ ] **Step 1: รัน targeted suites**
 
 ```powershell
-php artisan test tests/Feature/SupportCriteriaTemplateViewTest.php
-php artisan test tests/Feature/Report/SupportCriteriaTemplateTest.php
-php artisan test tests/Feature/Evaluation/SupportActivityEntryServiceTest.php
-php artisan test tests/Feature/SupportCriteriaEvaluationViewTest.php
+php vendor/bin/pest tests/Feature/SupportCriteriaTemplateViewTest.php
+php vendor/bin/pest tests/Feature/Report/SupportCriteriaTemplateTest.php
+php vendor/bin/pest tests/Feature/Evaluation/SupportActivityEntryServiceTest.php
+php vendor/bin/pest tests/Feature/SupportCriteriaEvaluationViewTest.php
 node --test tests/js/support-indicator-mode.test.mjs
 ```
 
@@ -657,8 +657,8 @@ Expected: PASS ทั้งห้าคำสั่ง ไม่มี warning/e
 - [ ] **Step 2: รันชุดทดสอบทั้งหมด**
 
 ```powershell
-php artisan test
-npm test
+composer test
+npm run test:js
 ```
 
 Expected: PASS ทั้ง PHP และ JavaScript suites
