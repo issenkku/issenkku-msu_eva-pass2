@@ -50,7 +50,7 @@
                             $splitsIndicatorByEntry = !empty($item['allow_evaluatee_indicator']);
                             $splitsWeightByEntry = !empty($item['allow_evaluatee_weight']);
                             $alignedEntryRows = !empty($item['allow_activity_entries'])
-                                && ($splitsIndicatorByEntry || $splitsWeightByEntry)
+                                && empty($item['group_activity_entries_by_indicator'])
                                     ? array_values($item['activity_entries'] ?? [])
                                     : [];
                             $alignedRowCount = max(count($alignedEntryRows), 1);
@@ -101,6 +101,7 @@
                                     @elseif ($entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
                                             data-support-shared-cell
+                                            data-support-shared-indicator="{{ $item['id'] }}"
                                             class="break-words px-2 py-4 align-middle leading-6">
                                             <x-support-indicator-display :item="$item" />
                                         </td>

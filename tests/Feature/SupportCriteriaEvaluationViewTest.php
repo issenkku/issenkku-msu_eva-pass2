@@ -428,6 +428,37 @@ test('indicator-only entry rows keep criterion scores in shared cells', function
         ->and($desktop)->toMatch('/>\s*80\.00\s*</');
 });
 
+test('activity-only entries still render under a full-width admin heading', function () {
+    $item = supportActivityViewItem();
+    $item['activity_name'] = '<p>หัวข้อค่าร่วมจากแอดมิน</p>';
+    $item['activity_entries'][] = [
+        'id' => 42,
+        'sequence' => 2,
+        'content' => '<p>กิจกรรมสอง</p>',
+        'evidence_links' => [],
+        'histories' => [],
+    ];
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
+    $desktop = $desktopTable[0];
+
+    expect(substr_count($desktop, 'data-support-criterion-heading="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-entry-row="7"'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-entry-activity-cell'))->toBe(2)
+        ->and(substr_count($desktop, 'data-support-shared-indicator="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-shared-weight="7"'))->toBe(1)
+        ->and(substr_count($desktop, 'data-support-shared-score="7"'))->toBe(1)
+        ->and($desktop)->toContain('data-support-admin-heading')
+        ->and($desktop)->toContain('rowspan="2"');
+});
+
 test('aligned desktop rows use one grouped evidence cell without losing activity links', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportEvaluateeIndicatorOnlyViewItem()],
