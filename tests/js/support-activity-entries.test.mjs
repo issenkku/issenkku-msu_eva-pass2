@@ -9,6 +9,29 @@ import {
     activityHtmlHasVisibleText,
     groupActivityEntries,
 } from '../../resources/js/support-activity-entries.js';
+import * as supportActivityEntries from '../../resources/js/support-activity-entries.js';
+
+class FakeElement {
+    constructor(tagName) {
+        this.tagName = tagName;
+        this.children = [];
+        this.className = '';
+        this.dataset = {};
+        this.textContent = '';
+    }
+
+    append(...children) {
+        this.children.push(...children);
+    }
+
+    appendChild(child) {
+        this.children.push(child);
+    }
+
+    replaceChildren(...children) {
+        this.children = children;
+    }
+}
 
 test('builds nested support activity entry field names after add or delete', () => {
     assert.equal(
@@ -75,4 +98,31 @@ test('detects reviewer attempts to create delete or reorder entries', () => {
     assert.equal(activityEntryIdsKeepOriginalOrder([2, 1], [1, 2]), false);
     assert.equal(activityEntryIdsKeepOriginalOrder([1], [1, 2]), false);
     assert.equal(activityEntryIdsKeepOriginalOrder([1, 2, null], [1, 2]), false);
+});
+
+test('renders live activity updates with the same circular numbering as the server view', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = {
+        createElement: (tagName) => new FakeElement(tagName),
+    };
+
+    try {
+        const target = new FakeElement('div');
+
+        supportActivityEntries.renderActivityEntryList(target, [
+            { html: '<p>โครงการแรก</p>' },
+            { html: '<p>โครงการที่สอง</p>' },
+        ]);
+
+        const list = target.children[0];
+        assert.equal(list.tagName, 'div');
+        assert.equal(list.className, 'space-y-2');
+        assert.equal(list.children.length, 2);
+        assert.equal(list.children[0].children[0].textContent, '1');
+        assert.equal(list.children[0].children[1].textContent, 'โครงการแรก');
+        assert.match(list.children[0].children[0].className, /rounded-full/);
+        assert.doesNotMatch(list.className, /list-decimal/);
+    } finally {
+        globalThis.document = previousDocument;
+    }
 });
