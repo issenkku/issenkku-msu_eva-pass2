@@ -333,7 +333,7 @@ class SupportActivityEntryService
 
     /**
      * @param  array<string, mixed>  $entryData
-     * @return array{indicator:?string,weight:?float,achieved_score:?float,weighted_score:?float}
+     * @return array{indicator:?string,weight:?float,achieved_score:?int,weighted_score:?float}
      */
     private function scoreAttributes(
         SupportCriteria $criterion,
@@ -360,7 +360,7 @@ class SupportActivityEntryService
                 ? ['required', 'numeric', 'gt:0', 'max:100', 'decimal:0,2']
                 : ['prohibited'],
             "{$base}.achieved_score" => $criterion->allow_evaluatee_weight
-                ? ['required', 'numeric', 'min:0', 'max:100', 'decimal:0,2']
+                ? ['required', 'integer', 'between:1,5', 'max:'.$criterion->target_value]
                 : ['prohibited'],
         ])->validate();
 
@@ -371,7 +371,7 @@ class SupportActivityEntryService
             ? round((float) $entryData['weight'], 2)
             : null;
         $achievedScore = $criterion->allow_evaluatee_weight
-            ? round((float) $entryData['achieved_score'], 2)
+            ? (int) $entryData['achieved_score']
             : null;
 
         return [

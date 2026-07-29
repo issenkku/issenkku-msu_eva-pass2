@@ -411,15 +411,55 @@ class SupportActivityEntryServiceTest extends TestCase
             'content' => '<p>โครงการหนึ่ง</p>',
             'indicator' => '<p>ผ่านความเห็นชอบ</p>',
             'weight' => 40,
-            'achieved_score' => 80,
+            'achieved_score' => 4,
         ]]);
 
         $this->assertDatabaseHas('support_activity_entries', [
             'support_criteria_id' => $this->criterion->id,
             'indicator' => '<p>ผ่านความเห็นชอบ</p>',
             'weight' => '40.00',
-            'achieved_score' => '80.00',
-            'weighted_score' => '32.00',
+            'achieved_score' => '4.00',
+            'weighted_score' => '1.60',
+        ]);
+    }
+
+    public function test_activity_score_must_be_a_whole_number_from_one_to_five_within_the_criterion_target(): void
+    {
+        $this->criterion->update([
+            'target_value' => 3.5,
+            'weight' => null,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+
+        foreach ([0, 3.5, 4, 6] as $score) {
+            try {
+                $this->persist([[
+                    'content' => '<p>โครงการ</p>',
+                    'indicator' => '<p>ตัวชี้วัด</p>',
+                    'weight' => 40,
+                    'achieved_score' => $score,
+                ]]);
+                $this->fail("Expected score {$score} validation failure");
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey(
+                    'support_list.0.activity_entries.0.achieved_score',
+                    $exception->errors()
+                );
+            }
+        }
+
+        $this->persist([[
+            'content' => '<p>โครงการ</p>',
+            'indicator' => '<p>ตัวชี้วัด</p>',
+            'weight' => 40,
+            'achieved_score' => 3,
+        ]]);
+
+        $this->assertDatabaseHas('support_activity_entries', [
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => '3.00',
+            'weighted_score' => '1.20',
         ]);
     }
 
@@ -432,12 +472,13 @@ class SupportActivityEntryServiceTest extends TestCase
         ]);
 
         foreach ([
-            ['field' => 'indicator', 'entry' => ['indicator' => '<p><br></p>', 'weight' => 40, 'achieved_score' => 80]],
-            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 0, 'achieved_score' => 80]],
-            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => -1, 'achieved_score' => 80]],
-            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 100.01, 'achieved_score' => 80]],
-            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => -0.01]],
-            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => 100.01]],
+            ['field' => 'indicator', 'entry' => ['indicator' => '<p><br></p>', 'weight' => 40, 'achieved_score' => 4]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 0, 'achieved_score' => 4]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => -1, 'achieved_score' => 4]],
+            ['field' => 'weight', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 100.01, 'achieved_score' => 4]],
+            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => 0]],
+            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => 6]],
+            ['field' => 'achieved_score', 'entry' => ['indicator' => '<p>ตัวชี้วัด</p>', 'weight' => 40, 'achieved_score' => 3.5]],
         ] as $case) {
             try {
                 $this->persist([[
@@ -613,22 +654,22 @@ class SupportActivityEntryServiceTest extends TestCase
             'content' => '<p>โครงการเดิม</p>',
             'indicator' => '<p>ตัวชี้วัดเดิม</p>',
             'weight' => 40,
-            'achieved_score' => 80,
-            'weighted_score' => 32,
+            'achieved_score' => 4,
+            'weighted_score' => 1.6,
             'created_by' => $this->evaluatee->id,
             'updated_by' => $this->evaluatee->id,
         ]);
 
         foreach ([
-            ['indicator' => '<p>ตัวชี้วัดใหม่</p>', 'weight' => 40, 'achieved_score' => 80],
-            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 50, 'achieved_score' => 80],
-            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 40, 'achieved_score' => 90],
+            ['indicator' => '<p>ตัวชี้วัดใหม่</p>', 'weight' => 40, 'achieved_score' => 4],
+            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 50, 'achieved_score' => 4],
+            ['indicator' => '<p>ตัวชี้วัดเดิม</p>', 'weight' => 40, 'achieved_score' => 5],
         ] as $next) {
             SupportActivityEntry::query()->whereKey($entry->id)->update([
                 'indicator' => '<p>ตัวชี้วัดเดิม</p>',
                 'weight' => 40,
-                'achieved_score' => 80,
-                'weighted_score' => 32,
+                'achieved_score' => 4,
+                'weighted_score' => 1.6,
             ]);
             $entry->histories()->delete();
 
@@ -659,7 +700,7 @@ class SupportActivityEntryServiceTest extends TestCase
                 'new_indicator' => $next['indicator'],
                 'previous_weight' => '40.00',
                 'new_weight' => number_format($next['weight'], 2, '.', ''),
-                'previous_achieved_score' => '80.00',
+                'previous_achieved_score' => '4.00',
                 'new_achieved_score' => number_format($next['achieved_score'], 2, '.', ''),
                 'reason' => 'ปรับตามหลักฐาน',
             ]);

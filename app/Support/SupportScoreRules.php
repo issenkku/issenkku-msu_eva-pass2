@@ -24,7 +24,7 @@ final class SupportScoreRules
             'support_list.*.activity_entries.*.content' => ['required', 'string', new HasRichText],
             'support_list.*.activity_entries.*.indicator' => ['nullable', 'string'],
             'support_list.*.activity_entries.*.weight' => ['nullable', 'numeric', 'decimal:0,2'],
-            'support_list.*.activity_entries.*.achieved_score' => ['nullable', 'numeric', 'decimal:0,2'],
+            'support_list.*.activity_entries.*.achieved_score' => ['nullable', 'integer', 'between:1,5'],
             'support_list.*.activity_entries.*.modification_reason' => ['nullable', 'string', 'max:2000'],
             'support_list.*.activity_entries.*.evidence_links' => ['nullable', 'array'],
             'support_list.*.activity_entries.*.evidence_links.*' => ['nullable', 'url:http,https'],
