@@ -12,9 +12,26 @@ export function calculateEntryWeightedScore(weight, achievedScore) {
     return Number.isFinite(result) ? Math.round(result * 100) / 100 : null;
 }
 
+export function isCriterionScoreValid(value, targetValue) {
+    const rawValue = String(value ?? '').trim();
+    if (rawValue === '') return true;
+
+    const score = Number(rawValue);
+    const target = Number(targetValue);
+
+    return (
+        Number.isInteger(score) &&
+        score >= 1 &&
+        score <= 5 &&
+        Number.isFinite(target) &&
+        score <= target
+    );
+}
+
 if (typeof window !== 'undefined') {
     window.SupportScoreCalculator = {
         calculateEntryWeightedScore,
         calculateSupportAchievement,
+        isCriterionScoreValid,
     };
 }
