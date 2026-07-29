@@ -180,25 +180,61 @@
 
             const modalSupport = document.getElementById('modal-support-summary');
             let supportTotal = 0;
+            const calculateSupportItemWeightedScore =
+                window.SupportScoreCalculator?.calculateSupportItemWeightedScore
+                || (({ criterionWeight, criterionScore, activityEntries }) => {
+                    const rawCriterionScore = String(criterionScore ?? '').trim();
+                    if (rawCriterionScore !== '') {
+                        const weightedScore = (Number(criterionWeight) * Number(rawCriterionScore)) / 100;
+                        return {
+                            weightedScore: Number.isFinite(weightedScore) ? weightedScore : 0,
+                            hasData: Number.isFinite(weightedScore),
+                        };
+                    }
+
+                    const entryScores = activityEntries
+                        .map(({ weight, achievedScore }) => {
+                            if (weight === '' || achievedScore === '') return null;
+                            const weightedScore = (Number(weight) * Number(achievedScore)) / 100;
+                            return Number.isFinite(weightedScore) ? weightedScore : null;
+                        })
+                        .filter(value => value !== null);
+
+                    return {
+                        weightedScore: entryScores.reduce((total, value) => total + value, 0),
+                        hasData: entryScores.length > 0,
+                    };
+                });
 
             document.querySelectorAll('[data-summary-support-main]').forEach(row => {
                 const supportId = row.dataset.supportId;
-                const input = document.querySelector(`[data-support-item][data-support-id="${supportId}"] [data-support-score]`);
-                const rawValue = input?.value?.trim() || '';
-                const achieved = rawValue !== '' && Number.isFinite(Number(rawValue)) && Number(rawValue) >= 0
-                    ? Number(rawValue)
-                    : null;
-                const weight = Number(row.dataset.supportWeight || 0) || 0;
-                const weighted = achieved === null ? 0 : (weight * achieved) / 100;
+                const supportItem = document.querySelector(
+                    `[data-support-item][data-support-id="${supportId}"]`
+                );
+                const input = supportItem?.querySelector('[data-support-score]');
+                const activityEntries = Array.from(
+                    supportItem?.querySelectorAll('[data-support-activity-entry]') || []
+                ).map(entry => ({
+                    weight: entry.querySelector('[data-support-entry-weight]')?.value?.trim() || '',
+                    achievedScore: entry.querySelector('[data-support-entry-score]')?.value?.trim() || '',
+                }));
+                const {
+                    weightedScore: weighted,
+                    hasData,
+                } = calculateSupportItemWeightedScore({
+                    criterionWeight: row.dataset.supportWeight || '',
+                    criterionScore: input?.value?.trim() || '',
+                    activityEntries,
+                });
                 const statusEl = document.getElementById(`summary-support-status-${supportId}`);
                 const scoreEl = document.getElementById(`summary-support-score-${supportId}`);
 
-                row.dataset.supportHasData = achieved === null ? '0' : '1';
+                row.dataset.supportHasData = hasData ? '1' : '0';
                 row.dataset.supportWeightedScore = weighted.toString();
 
                 if (statusEl) {
-                    statusEl.textContent = achieved === null ? 'ยังไม่มีข้อมูล' : 'มีข้อมูลแล้ว';
-                    statusEl.className = achieved === null ? 'mt-1 text-xs text-gray-500' : 'mt-1 text-xs text-emerald-700';
+                    statusEl.textContent = hasData ? 'มีข้อมูลแล้ว' : 'ยังไม่มีข้อมูล';
+                    statusEl.className = hasData ? 'mt-1 text-xs text-emerald-700' : 'mt-1 text-xs text-gray-500';
                 }
                 if (scoreEl) scoreEl.textContent = weighted.toFixed(2);
                 supportTotal += weighted;

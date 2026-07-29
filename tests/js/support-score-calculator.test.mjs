@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
     calculateEntryWeightedScore,
+    calculateSupportItemWeightedScore,
     calculateSupportAchievement,
     getSupportScoreValidationState,
     isCriterionScoreValid,
@@ -18,6 +19,41 @@ test('calculates and rounds weighted scores for one support project', () => {
     assert.equal(calculateEntryWeightedScore(33.33, 66.67), 22.22);
     assert.equal(calculateEntryWeightedScore('', 80), null);
     assert.equal(calculateEntryWeightedScore(40, ''), null);
+});
+
+test('calculates a confirmation score from activity entries when the criterion has no score input', () => {
+    assert.deepEqual(calculateSupportItemWeightedScore({
+        criterionWeight: null,
+        criterionScore: '',
+        activityEntries: [
+            { weight: '40', achievedScore: '4' },
+            { weight: '60', achievedScore: '5' },
+        ],
+    }), {
+        weightedScore: 4.6,
+        hasData: true,
+    });
+});
+
+test('keeps criterion scoring and empty support items distinct in confirmation', () => {
+    assert.deepEqual(calculateSupportItemWeightedScore({
+        criterionWeight: '20',
+        criterionScore: '4',
+        activityEntries: [],
+    }), {
+        weightedScore: 0.8,
+        hasData: true,
+    });
+    assert.deepEqual(calculateSupportItemWeightedScore({
+        criterionWeight: null,
+        criterionScore: '',
+        activityEntries: [
+            { weight: '40', achievedScore: '' },
+        ],
+    }), {
+        weightedScore: 0,
+        hasData: false,
+    });
 });
 
 test('accepts only nullable whole criterion scores from one through five within target', () => {

@@ -12,6 +12,34 @@ export function calculateEntryWeightedScore(weight, achievedScore) {
     return Number.isFinite(result) ? Math.round(result * 100) / 100 : null;
 }
 
+export function calculateSupportItemWeightedScore({
+    criterionWeight,
+    criterionScore,
+    activityEntries = [],
+} = {}) {
+    const rawCriterionScore = String(criterionScore ?? '').trim();
+    if (rawCriterionScore !== '') {
+        const weightedScore = calculateEntryWeightedScore(criterionWeight, rawCriterionScore);
+
+        return {
+            weightedScore: weightedScore ?? 0,
+            hasData: weightedScore !== null,
+        };
+    }
+
+    const entryScores = activityEntries
+        .map(({ weight, achievedScore }) => calculateEntryWeightedScore(
+            String(weight ?? '').trim(),
+            String(achievedScore ?? '').trim(),
+        ))
+        .filter((value) => value !== null);
+
+    return {
+        weightedScore: Math.round(entryScores.reduce((total, value) => total + value, 0) * 100) / 100,
+        hasData: entryScores.length > 0,
+    };
+}
+
 export function isCriterionScoreValid(value, targetValue) {
     const rawValue = String(value ?? '').trim();
     if (rawValue === '') return true;
@@ -47,6 +75,7 @@ export function getSupportScoreValidationState(value, targetValue, { required = 
 if (typeof window !== 'undefined') {
     window.SupportScoreCalculator = {
         calculateEntryWeightedScore,
+        calculateSupportItemWeightedScore,
         calculateSupportAchievement,
         getSupportScoreValidationState,
         isCriterionScoreValid,
