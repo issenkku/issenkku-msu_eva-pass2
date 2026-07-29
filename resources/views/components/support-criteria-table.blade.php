@@ -724,20 +724,24 @@
                             value="{{ $item['id'] }}">
 
                         @if (empty($item['allow_evaluatee_weight']))
+                        @php
+                            $criterionScoreMaximum = min(5, (float) $item['target_value']);
+                        @endphp
                         <div class="grid gap-4 lg:grid-cols-2">
                             <label for="support-score-{{ $item['id'] }}" class="block text-sm font-semibold text-slate-700">
                                 ค่าคะแนนที่ได้
-                                <input id="support-score-{{ $item['id'] }}" type="number" min="0" step="0.01"
+                                <input id="support-score-{{ $item['id'] }}" type="number" min="1" max="{{ $criterionScoreMaximum }}" step="1"
                                     name="support_list[{{ $item['id'] }}][achieved_score]"
                                     value="{{ $item['achieved_score'] }}"
                                     aria-describedby="support-score-help-{{ $item['id'] }}"
                                     data-support-score
+                                    data-support-target="{{ $item['target_value'] }}"
                                     data-support-id="{{ $item['id'] }}"
                                     data-support-weight="{{ $item['weight'] }}"
                                     data-support-original-score="{{ $item['achieved_score'] }}"
                                     class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                    placeholder="0.00">
-                                <span id="support-score-help-{{ $item['id'] }}" class="mt-1 block text-xs font-normal text-slate-500">กรอกได้ตั้งแต่ 0 และทศนิยมไม่เกิน 2 ตำแหน่ง</span>
+                                    placeholder="1">
+                                <span id="support-score-help-{{ $item['id'] }}" class="mt-1 block text-xs font-normal text-slate-500">กรอกเฉพาะจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย {{ $item['target_value'] }}</span>
                             </label>
 
                             <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">

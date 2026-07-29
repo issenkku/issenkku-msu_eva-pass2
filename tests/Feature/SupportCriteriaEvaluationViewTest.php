@@ -11,13 +11,13 @@ function supportViewItem(): array
         'sequence' => 1,
         'activity_name' => 'จัดทำรายงาน',
         'indicator' => 'ส่งตรงเวลา',
-        'target_value' => '12.00',
+        'target_value' => '5.00',
         'weight' => '20.00',
         'require_evidence' => true,
         'allow_activity_entries' => false,
         'activity_entries' => [],
-        'achieved_score' => '125.50',
-        'weighted_score' => '25.10',
+        'achieved_score' => '5.00',
+        'weighted_score' => '1.00',
         'modification_reason' => null,
         'evidence_links' => ['https://example.com/evidence'],
         'histories' => [],
@@ -195,6 +195,36 @@ test('support criteria component renders one responsive editable form control se
     expect(substr_count($html, 'name="support_list[7][achieved_score]"'))->toBe(1);
     expect(substr_count($html, 'data-support-evidence-list="7"'))->toBe(2);
     expect(substr_count($html, 'href="https://example.com/evidence"'))->toBe(2);
+});
+
+test('criterion score input accepts whole values from one through its target', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [array_replace(supportViewItem(), [
+            'target_value' => '4.00',
+            'achieved_score' => '4.00',
+        ])],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    expect($html)
+        ->toContain('type="number" min="1" max="4" step="1"')
+        ->toContain('data-support-target="4.00"')
+        ->toContain('กรอกเฉพาะจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย 4.00');
+});
+
+test('criterion score input caps its browser maximum at five', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [array_replace(supportViewItem(), ['target_value' => '12.00'])],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+    ])->render();
+
+    expect($html)
+        ->toContain('type="number" min="1" max="5" step="1"')
+        ->toContain('data-support-target="12.00"');
 });
 
 test('support criteria activity and indicator render as sanitized rich text', function () {
@@ -806,7 +836,10 @@ test('shared support script and all role components expose the same contracts', 
         ->toContain('const trapSupportModalFocus =')
         ->toContain("event.key === 'Tab'")
         ->toContain("setAttribute('aria-invalid', 'true')")
-        ->toContain("'support-modal-errors'");
+        ->toContain("'support-modal-errors'")
+        ->toContain('isCriterionScoreValid')
+        ->toContain('input.dataset.supportTarget')
+        ->toContain('ต้องเป็นจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย');
 
     foreach (['unified-evaluation', 'unified-evaluator', 'unified-director'] as $component) {
         $source = file_get_contents(resource_path("views/components/{$component}.blade.php"));

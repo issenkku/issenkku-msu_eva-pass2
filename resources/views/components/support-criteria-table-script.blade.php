@@ -33,6 +33,21 @@
             return Number.isFinite(result) ? Math.round(result * 100) / 100 : null;
         };
 
+        const isCriterionScoreValid = (value, targetValue) => {
+            const validator = window.SupportScoreCalculator?.isCriterionScoreValid;
+            if (validator) return validator(value, targetValue);
+
+            const rawValue = String(value ?? '').trim();
+            if (rawValue === '') return true;
+            const score = Number(rawValue);
+            const target = Number(targetValue);
+            return Number.isInteger(score)
+                && score >= 1
+                && score <= 5
+                && Number.isFinite(target)
+                && score <= target;
+        };
+
         const updateEntryWeightedScore = (entry) => {
             const weight = entry.querySelector('[data-support-entry-weight]')?.value.trim() ?? '';
             const achievedScore = entry.querySelector('[data-support-entry-score]')?.value.trim() ?? '';
@@ -130,8 +145,9 @@
 
             const activity = item.dataset.supportActivity || 'เกณฑ์สายสนับสนุน';
             const value = input?.value.trim() ?? '';
-            if (input && value !== '' && (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) < 0)) {
-                errors.push(`ค่าคะแนนที่ได้ของ "${activity}" ต้องเป็นเลขตั้งแต่ 0 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
+            const targetValue = input ? (input.dataset.supportTarget ?? '') : '';
+            if (input && !isCriterionScoreValid(value, targetValue)) {
+                errors.push(`ค่าคะแนนที่ได้ของ "${activity}" ต้องเป็นจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย ${targetValue}`);
                 rememberInvalid(input);
             }
 
