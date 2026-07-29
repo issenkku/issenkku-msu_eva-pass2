@@ -315,6 +315,16 @@ test('evaluatee can add edit and delete optional support activity entries', func
         'activityEntryRole' => 'evaluatee',
     ])->render();
 
+    $activityContainerPosition = strpos($html, 'data-support-activity-container');
+    $activityEvidencePosition = strpos($html, 'value="https://example.com/activity-proof"');
+    $addActivityButtonPosition = strpos($html, 'data-add-support-activity="7"');
+
+    expect($activityContainerPosition)->not->toBeFalse()
+        ->and($activityEvidencePosition)->not->toBeFalse()
+        ->and($addActivityButtonPosition)->not->toBeFalse()
+        ->and($addActivityButtonPosition)->toBeGreaterThan($activityContainerPosition)
+        ->and($addActivityButtonPosition)->toBeGreaterThan($activityEvidencePosition);
+
     expect($html)
         ->toContain('<strong>โครงการประจำเดือน</strong>')
         ->not->toContain('alert(1)')

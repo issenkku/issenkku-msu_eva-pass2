@@ -684,17 +684,9 @@
                                     @endforeach
                                 </div>
                             @else
-                            <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                    <h5 class="font-semibold text-slate-800">กิจกรรม/โครงการเพิ่มเติม</h5>
-                                    <p class="mt-1 text-xs text-slate-500">รายการนี้เป็นข้อมูลเพิ่มเติมจากหัวข้อที่ Admin กำหนด</p>
-                                </div>
-                                @if ($canEditActivities && $activityEntryRole === 'evaluatee')
-                                    <button type="button" data-add-support-activity="{{ $item['id'] }}"
-                                        class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                                        + เพิ่มกิจกรรม/โครงการ
-                                    </button>
-                                @endif
+                            <div class="mb-3">
+                                <h5 class="font-semibold text-slate-800">กิจกรรม/โครงการเพิ่มเติม</h5>
+                                <p class="mt-1 text-xs text-slate-500">รายการนี้เป็นข้อมูลเพิ่มเติมจากหัวข้อที่ Admin กำหนด</p>
                             </div>
 
                             <div class="space-y-4" data-support-activity-container>
@@ -713,6 +705,15 @@
                                     ยังไม่มีกิจกรรม/โครงการเพิ่มเติม
                                 </p>
                             </div>
+
+                            @if ($canEditActivities && $activityEntryRole === 'evaluatee')
+                                <div class="mt-4">
+                                    <button type="button" data-add-support-activity="{{ $item['id'] }}"
+                                        class="rounded-lg bg-amber-100 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                        + เพิ่มกิจกรรม/โครงการ
+                                    </button>
+                                </div>
+                            @endif
                             @endif
                         </section>
                     @endif
