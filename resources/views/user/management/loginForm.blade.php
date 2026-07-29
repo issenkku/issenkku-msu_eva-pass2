@@ -564,6 +564,27 @@
             display: block;
         }
 
+        .login-notice {
+            margin-bottom: 1rem;
+            padding: 0.75rem 0.9rem;
+            border: 1px solid;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .login-notice--warning {
+            border-color: #fbbf24;
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        .login-notice--success {
+            border-color: #86efac;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
         .btn-submit {
             position: relative;
             display: flex;
@@ -846,6 +867,18 @@
                             </button>
                         </div>
                     </div>
+
+                    @if (session('session_warning'))
+                        <div class="login-notice login-notice--warning" role="alert" aria-live="assertive">
+                            {{ session('session_warning') }}
+                        </div>
+                    @endif
+
+                    @if (session('success'))
+                        <div class="login-notice login-notice--success" role="status" aria-live="polite">
+                            {{ session('success') }}
+                        </div>
+                    @endif
 
                     <div id="error" class="hidden"></div>
 

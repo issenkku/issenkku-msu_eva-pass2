@@ -303,7 +303,7 @@ class AuthenticateTest extends TestCase
         ]);
 
         $response->assertRedirect('/login');
-        $response->assertSessionHas('success', 'ออกจากระบบสำเร็จ');
+        $response->assertSessionHas('success', \App\Support\FriendlyErrorPage::LOGOUT_MESSAGE);
         $this->assertGuest();
     }
 

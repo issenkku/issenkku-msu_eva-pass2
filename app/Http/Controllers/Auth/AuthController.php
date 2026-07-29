@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting\Settings;
 use App\Models\User;
 use App\Support\AuditLog;
+use App\Support\FriendlyErrorPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -133,7 +134,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login')->with('success', 'ออกจากระบบสำเร็จ');
+        return redirect('/login')->with('success', FriendlyErrorPage::LOGOUT_MESSAGE);
     }
 
     public function user(Request $request)
