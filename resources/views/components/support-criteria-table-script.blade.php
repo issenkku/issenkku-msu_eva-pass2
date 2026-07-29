@@ -48,6 +48,49 @@
                 && score <= target;
         };
 
+        const getSupportScoreValidationState = (value, targetValue, options = {}) => {
+            const validator = window.SupportScoreCalculator?.getSupportScoreValidationState;
+            if (validator) return validator(value, targetValue, options);
+
+            const rawValue = String(value ?? '').trim();
+            const required = options.required ?? false;
+            const valid = (!required && rawValue === '')
+                || (rawValue !== '' && isCriterionScoreValid(rawValue, targetValue));
+
+            return {
+                valid,
+                message: valid
+                    ? ''
+                    : `กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย ${targetValue}`,
+            };
+        };
+
+        const setScoreFieldValidity = (input, { required = false } = {}) => {
+            if (!input) return true;
+
+            const targetValue = input.dataset.supportTarget
+                ?? input.dataset.supportEntryTarget
+                ?? '';
+            const state = getSupportScoreValidationState(input.value, targetValue, { required });
+            const error = input.parentElement?.querySelector('[data-support-score-error]');
+
+            input.classList.toggle('border-slate-300', state.valid);
+            input.classList.toggle('border-red-500', !state.valid);
+            input.classList.toggle('focus:border-red-500', !state.valid);
+            input.classList.toggle('focus:ring-red-200', !state.valid);
+            if (state.valid) {
+                input.removeAttribute('aria-invalid');
+            } else {
+                input.setAttribute('aria-invalid', 'true');
+            }
+            if (error) {
+                error.textContent = state.message;
+                error.classList.toggle('hidden', state.valid);
+            }
+
+            return state.valid;
+        };
+
         const updateEntryWeightedScore = (entry) => {
             const weight = entry.querySelector('[data-support-entry-weight]')?.value.trim() ?? '';
             const achievedScore = entry.querySelector('[data-support-entry-score]')?.value.trim() ?? '';
@@ -205,9 +248,15 @@
                     errors.push(`น้ำหนักรายการที่ ${entryIndex + 1} ของ "${activity}" ต้องมากกว่า 0 ไม่เกิน 100 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
                     rememberInvalid(weight);
                 }
-                if (achievedScore && (!decimalPattern.test(achievedScore.value.trim())
-                    || Number(achievedScore.value) < 0 || Number(achievedScore.value) > 100)) {
-                    errors.push(`ค่าคะแนนที่ได้รายการที่ ${entryIndex + 1} ของ "${activity}" ต้องอยู่ระหว่าง 0–100 และมีทศนิยมไม่เกิน 2 ตำแหน่ง`);
+                if (achievedScore && (
+                    achievedScore.value.trim() === ''
+                    || !isCriterionScoreValid(
+                        achievedScore.value,
+                        achievedScore.dataset.supportEntryTarget ?? '',
+                    )
+                )) {
+                    const targetValue = achievedScore.dataset.supportEntryTarget ?? '';
+                    errors.push(`ค่าคะแนนที่ได้รายการที่ ${entryIndex + 1} ของ "${activity}" ต้องเป็นจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย ${targetValue}`);
                     rememberInvalid(achievedScore);
                 }
 
@@ -406,22 +455,40 @@
                 const scoreGrid = document.createElement('div');
                 scoreGrid.className = 'mt-4 grid gap-4 sm:grid-cols-3';
                 [
-                    ['น้ำหนัก', 'supportEntryWeight', '0.01', '0.01'],
-                    ['ค่าคะแนนที่ได้', 'supportEntryScore', '0', '0.01'],
-                ].forEach(([text, datasetKey, min, step]) => {
+                    ['น้ำหนัก', 'supportEntryWeight'],
+                    ['ค่าคะแนนที่ได้', 'supportEntryScore'],
+                ].forEach(([text, datasetKey]) => {
                     const scoreLabel = document.createElement('label');
                     scoreLabel.className = 'block text-sm font-semibold text-slate-700';
                     scoreLabel.append(text);
                     const scoreInput = document.createElement('input');
                     scoreInput.type = 'number';
-                    scoreInput.min = min;
-                    scoreInput.max = '100';
-                    scoreInput.step = step;
                     scoreInput.dataset[datasetKey] = '';
                     scoreInput.className = 'mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900';
-                    if (datasetKey === 'supportEntryWeight') scoreInput.dataset.originalWeight = '';
-                    if (datasetKey === 'supportEntryScore') scoreInput.dataset.originalScore = '';
-                    scoreLabel.appendChild(scoreInput);
+                    if (datasetKey === 'supportEntryWeight') {
+                        scoreInput.min = '0.01';
+                        scoreInput.max = '100';
+                        scoreInput.step = '0.01';
+                        scoreInput.dataset.originalWeight = '';
+                        scoreLabel.appendChild(scoreInput);
+                    } else {
+                        const targetValue = item.dataset.supportTarget ?? '';
+                        scoreInput.min = '1';
+                        scoreInput.max = String(Math.min(5, Number(targetValue)));
+                        scoreInput.step = '1';
+                        scoreInput.dataset.supportEntryTarget = targetValue;
+                        scoreInput.dataset.originalScore = '';
+
+                        const help = document.createElement('span');
+                        help.dataset.supportScoreHelp = '';
+                        help.className = 'mt-1 block text-xs font-normal text-slate-500';
+                        help.textContent = `กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย ${targetValue}`;
+                        const error = document.createElement('span');
+                        error.dataset.supportScoreError = '';
+                        error.className = 'mt-1 hidden text-xs font-normal text-red-600';
+                        error.setAttribute('aria-live', 'polite');
+                        scoreLabel.append(scoreInput, help, error);
+                    }
                     scoreGrid.appendChild(scoreLabel);
                 });
                 const weightedCard = document.createElement('div');
@@ -481,6 +548,13 @@
                         index,
                         'achieved_score',
                     );
+                    const help = achievedScore.parentElement?.querySelector('[data-support-score-help]');
+                    const error = achievedScore.parentElement?.querySelector('[data-support-score-error]');
+                    const helpId = `support-entry-score-help-${criterionId}-${index}`;
+                    const errorId = `support-entry-score-error-${criterionId}-${index}`;
+                    if (help) help.id = helpId;
+                    if (error) error.id = errorId;
+                    achievedScore.setAttribute('aria-describedby', `${helpId} ${errorId}`);
                 }
                 if (reason) reason.name = activityTools().activityEntryFieldName(criterionId, index, 'modification_reason');
                 evidenceInputs.forEach((evidenceInput) => {
@@ -679,6 +753,19 @@
         let previousBodyOverflow = '';
         let supportHistoryTrigger = null;
         let supportHistoryPreviousOverflow = '';
+
+        const updateModalScoreValidity = (item) => {
+            if (!item) return true;
+
+            const criterionValid = setScoreFieldValidity(item.querySelector('[data-support-score]'));
+            const activityValidities = Array.from(item.querySelectorAll('[data-support-entry-score]'))
+                .map((input) => setScoreFieldValidity(input, { required: true }));
+            const allValid = criterionValid && activityValidities.every(Boolean);
+            const saveButton = modal?.querySelector('[data-support-modal-save]');
+            if (saveButton) saveButton.disabled = !allValid;
+
+            return allValid;
+        };
 
         const scoreHistoryValue = (value) => value === null || value === undefined || value === ''
             ? 'ไม่มีคะแนน'
@@ -938,6 +1025,7 @@
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden';
             initializeActivityEditors(item);
+            updateModalScoreValidity(item);
 
             const target = section === 'evidence'
                 ? item.querySelector('[data-support-evidence-input], [data-support-evidence-section] a, [data-add-support-evidence]')
@@ -948,6 +1036,9 @@
         document.addEventListener('input', (event) => {
             if (event.target.closest('[data-support-score], [data-support-entry-weight], [data-support-entry-score]')) {
                 window.recalculateSupportScores();
+            }
+            if (activeItem && event.target.closest('[data-support-score], [data-support-entry-score]')) {
+                updateModalScoreValidity(activeItem);
             }
         });
 
@@ -990,6 +1081,7 @@
                 container.appendChild(row);
                 reindexActivityEntries(item);
                 initializeActivityEditors(row);
+                updateModalScoreValidity(item);
                 window.requestAnimationFrame(() => row.querySelector('.note-editable, textarea')?.focus());
                 return;
             }
@@ -1003,6 +1095,7 @@
                 row.remove();
                 reindexActivityEntries(item);
                 window.recalculateSupportScores();
+                updateModalScoreValidity(item);
                 return;
             }
 

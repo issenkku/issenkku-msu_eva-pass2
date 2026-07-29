@@ -28,10 +28,25 @@ export function isCriterionScoreValid(value, targetValue) {
     );
 }
 
+export function getSupportScoreValidationState(value, targetValue, { required = false } = {}) {
+    const rawValue = String(value ?? '').trim();
+    const valid =
+        (!required && rawValue === '') ||
+        (rawValue !== '' && isCriterionScoreValid(rawValue, targetValue));
+
+    return {
+        valid,
+        message: valid
+            ? ''
+            : `กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย ${targetValue}`,
+    };
+}
+
 if (typeof window !== 'undefined') {
     window.SupportScoreCalculator = {
         calculateEntryWeightedScore,
         calculateSupportAchievement,
+        getSupportScoreValidationState,
         isCriterionScoreValid,
     };
 }

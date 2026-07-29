@@ -613,6 +613,7 @@
                     data-support-grouped="{{ !empty($item['group_activity_entries_by_indicator']) ? '1' : '0' }}"
                     data-support-allow-entry-indicator="{{ !empty($item['allow_evaluatee_indicator']) ? '1' : '0' }}"
                     data-support-allow-entry-weight="{{ !empty($item['allow_evaluatee_weight']) ? '1' : '0' }}"
+                    data-support-target="{{ $item['target_value'] }}"
                     data-support-existing-weighted="{{ $item['weighted_score'] ?? '' }}">
                     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div>

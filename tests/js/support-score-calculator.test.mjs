@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
     calculateEntryWeightedScore,
     calculateSupportAchievement,
+    getSupportScoreValidationState,
     isCriterionScoreValid,
 } from '../../resources/js/support-score-calculator.js';
 
@@ -32,4 +33,30 @@ test('rejects criterion scores outside the integer range or above target', () =>
     assert.equal(isCriterionScoreValid('3.5', 5), false);
     assert.equal(isCriterionScoreValid('4', 3.5), false);
     assert.equal(isCriterionScoreValid('1', 0.5), false);
+});
+
+test('keeps an empty criterion score valid but requires an activity score', () => {
+    assert.deepEqual(getSupportScoreValidationState('', 5), {
+        valid: true,
+        message: '',
+    });
+    assert.deepEqual(getSupportScoreValidationState('', 5, { required: true }), {
+        valid: false,
+        message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 5',
+    });
+});
+
+test('returns inline feedback for an invalid score without changing its value', () => {
+    assert.deepEqual(getSupportScoreValidationState('7', '5.00', { required: true }), {
+        valid: false,
+        message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 5.00',
+    });
+    assert.deepEqual(getSupportScoreValidationState('4', '3.50', { required: true }), {
+        valid: false,
+        message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 3.50',
+    });
+    assert.deepEqual(getSupportScoreValidationState('5', '5.00', { required: true }), {
+        valid: true,
+        message: '',
+    });
 });
