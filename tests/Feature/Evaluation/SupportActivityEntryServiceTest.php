@@ -46,7 +46,7 @@ class SupportActivityEntryServiceTest extends TestCase
             'sequence' => 1,
             'activity_name' => 'งานตามหน้าที่',
             'indicator' => 'ส่งงานตรงเวลา',
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 20,
             'allow_activity_entries' => true,
         ]);
@@ -223,7 +223,7 @@ class SupportActivityEntryServiceTest extends TestCase
             'sequence' => 2,
             'activity_name' => 'เกณฑ์อื่น',
             'indicator' => null,
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 20,
             'allow_activity_entries' => true,
             'group_activity_entries_by_indicator' => true,
@@ -518,8 +518,8 @@ class SupportActivityEntryServiceTest extends TestCase
         SupportScore::create([
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 50,
-            'weighted_score' => 10,
+            'achieved_score' => 4,
+            'weighted_score' => 0.8,
         ]);
 
         try {
@@ -671,7 +671,7 @@ class SupportActivityEntryServiceTest extends TestCase
     {
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 50,
+            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 4,
             'evidence_links' => [],
             'activity_entries' => $activityEntries,
         ]], $this->evaluatee, null, false);
@@ -686,14 +686,14 @@ class SupportActivityEntryServiceTest extends TestCase
                 'support_criteria_id' => $this->criterion->id,
             ],
             [
-                'achieved_score' => 50,
-                'weighted_score' => 10,
+                'achieved_score' => 4,
+                'weighted_score' => 0.8,
             ]
         );
 
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 50,
+            'achieved_score' => $this->criterion->allow_evaluatee_weight ? null : 4,
             'evidence_links' => [],
             'activity_entries' => $activityEntries,
         ]], $this->reviewer, 'ผู้ประเมิน', true);
