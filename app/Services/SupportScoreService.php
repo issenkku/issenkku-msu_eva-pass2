@@ -216,6 +216,8 @@ class SupportScoreService
                 ]);
             }
 
+            /** @var SupportCriteria $criterion */
+            $criterion = $allowedCriteria->get($criterionId);
             $links = collect($item['evidence_links'] ?? [])
                 ->map(fn ($link) => trim((string) $link))
                 ->filter()
@@ -223,12 +225,22 @@ class SupportScoreService
                 ->values()
                 ->all();
             $achievedScore = $item['achieved_score'] ?? null;
+            $normalizedScore = $achievedScore === null || $achievedScore === ''
+                ? null
+                : (int) $achievedScore;
+
+            if ($normalizedScore !== null && $normalizedScore > (float) $criterion->target_value) {
+                throw ValidationException::withMessages([
+                    "support_list.{$index}.achieved_score" => [
+                        "ค่าคะแนนที่ได้ต้องไม่เกินระดับค่าเป้าหมาย {$criterion->target_value}",
+                    ],
+                ]);
+            }
+
             $normalizedItems[$index] = [
                 ...$item,
                 'support_criteria_id' => $criterionId,
-                'achieved_score' => $achievedScore === null || $achievedScore === ''
-                    ? null
-                    : round((float) $achievedScore, 2),
+                'achieved_score' => $normalizedScore,
                 'modification_reason' => $item['modification_reason'] ?? null,
                 'evidence_links' => $links,
             ];

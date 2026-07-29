@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\SupportScoreService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SupportScoreServiceTest extends TestCase
@@ -53,7 +54,7 @@ class SupportScoreServiceTest extends TestCase
             'sequence' => 1,
             'activity_name' => 'จัดทำรายงาน',
             'indicator' => 'ส่งตรงเวลา',
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 20,
             'require_evidence' => true,
         ]);
@@ -61,7 +62,69 @@ class SupportScoreServiceTest extends TestCase
         $this->evaluator = User::factory()->create();
     }
 
-    public function test_it_calculates_and_keeps_the_uncapped_total_without_deleting_other_evidence(): void
+    public function test_it_accepts_whole_criterion_scores_within_one_through_five_and_target(): void
+    {
+        foreach ([1, 5] as $score) {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => $score,
+                'evidence_links' => ['https://example.com/evidence'],
+            ]], $this->evaluatee, null, false);
+
+            $this->assertDatabaseHas('support_scores', [
+                'report_id' => $this->report->id,
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => number_format($score, 2, '.', ''),
+            ]);
+        }
+    }
+
+    #[DataProvider('invalidCriterionScores')]
+    public function test_it_rejects_non_integer_criterion_scores_outside_one_through_five(
+        int|float|string $score
+    ): void {
+        try {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => $score,
+                'evidence_links' => ['https://example.com/evidence'],
+            ]], $this->evaluatee, null, false);
+            $this->fail('Expected validation failure');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('support_list.0.achieved_score', $exception->errors());
+        }
+    }
+
+    public static function invalidCriterionScores(): array
+    {
+        return [
+            'zero' => [0],
+            'above five' => [6],
+            'decimal' => [3.5],
+        ];
+    }
+
+    public function test_it_rejects_a_criterion_score_above_its_target(): void
+    {
+        $this->criterion->update(['target_value' => 3.5]);
+
+        try {
+            app(SupportScoreService::class)->persist($this->report, [[
+                'support_criteria_id' => $this->criterion->id,
+                'achieved_score' => 4,
+                'evidence_links' => ['https://example.com/evidence'],
+            ]], $this->evaluatee, null, false);
+            $this->fail('Expected validation failure');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('support_list.0.achieved_score', $exception->errors());
+            $this->assertStringContainsString(
+                'ต้องไม่เกินระดับค่าเป้าหมาย 3.50',
+                $exception->errors()['support_list.0.achieved_score'][0]
+            );
+        }
+    }
+
+    public function test_it_calculates_the_weighted_total_without_deleting_other_evidence(): void
     {
         $qualityMain = QualityMainCriteria::create([
             'criteria_version_id' => $this->report->reportData->criteria_version_id,
@@ -78,7 +141,7 @@ class SupportScoreServiceTest extends TestCase
 
         $result = app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => '125.50',
+            'achieved_score' => 5,
             'modification_reason' => null,
             'evidence_links' => [
                 ' https://example.com/evidence ',
@@ -90,16 +153,16 @@ class SupportScoreServiceTest extends TestCase
         $this->assertDatabaseHas('support_scores', [
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => '125.50',
-            'weighted_score' => '25.10',
+            'achieved_score' => '5.00',
+            'weighted_score' => '1.00',
         ]);
         $this->assertDatabaseHas('evidence_answers', [
             'quality_main_criteria_id' => $qualityMain->id,
             'link' => 'https://example.com/quality',
         ]);
         $this->assertDatabaseCount('evidence_answers', 2);
-        $this->assertSame(25.10, $result['support_score_total']);
-        $this->assertSame('25.10', $this->report->fresh()->support_score_total);
+        $this->assertSame(1.0, $result['support_score_total']);
+        $this->assertSame('1.00', $this->report->fresh()->support_score_total);
     }
 
     public function test_it_persists_the_support_achievement_score_using_five_target_levels(): void
@@ -108,17 +171,17 @@ class SupportScoreServiceTest extends TestCase
 
         $result = app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 4.30,
+            'achieved_score' => 4,
             'evidence_links' => ['https://example.com/evidence'],
             'support_achievement_score' => 99,
         ]], $this->evaluatee, null, false);
 
-        $this->assertSame(4.30, $result['support_score_total']);
-        $this->assertSame(0.86, $result['support_achievement_score']);
+        $this->assertSame(4.0, $result['support_score_total']);
+        $this->assertSame(0.8, $result['support_achievement_score']);
         $this->assertDatabaseHas('reports', [
             'id' => $this->report->id,
-            'support_score_total' => '4.30',
-            'support_achievement_score' => '0.86',
+            'support_score_total' => '4.00',
+            'support_achievement_score' => '0.80',
         ]);
     }
 
@@ -219,18 +282,6 @@ class SupportScoreServiceTest extends TestCase
         $this->assertSame('86.00', $this->report->fresh()->support_score_total);
     }
 
-    public function test_the_persisted_total_is_not_capped_at_one_hundred(): void
-    {
-        $result = app(SupportScoreService::class)->persist($this->report, [[
-            'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 600,
-            'evidence_links' => ['https://example.com/evidence'],
-        ]], $this->evaluatee, null, false);
-
-        $this->assertSame(120.0, $result['support_score_total']);
-        $this->assertSame('120.00', $this->report->fresh()->support_score_total);
-    }
-
     public function test_required_criterion_cannot_be_omitted_from_the_payload(): void
     {
         try {
@@ -252,14 +303,14 @@ class SupportScoreServiceTest extends TestCase
         SupportScore::create([
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 80,
-            'weighted_score' => 16,
+            'achieved_score' => 4,
+            'weighted_score' => 0.8,
         ]);
 
         try {
             app(SupportScoreService::class)->persist($this->report, [[
                 'support_criteria_id' => $this->criterion->id,
-                'achieved_score' => 90,
+                'achieved_score' => 5,
                 'evidence_links' => ['https://example.com/evidence'],
             ]], $this->evaluator, 'ผู้ประเมิน', true);
             $this->fail('Expected validation failure');
@@ -269,16 +320,16 @@ class SupportScoreServiceTest extends TestCase
 
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 90,
+            'achieved_score' => 5,
             'modification_reason' => 'ปรับตามหลักฐาน',
             'evidence_links' => ['https://example.com/evidence'],
         ]], $this->evaluator, 'ผู้ประเมิน', true);
 
         $this->assertDatabaseHas('support_score_histories', [
-            'previous_achieved_score' => '80.00',
-            'new_achieved_score' => '90.00',
-            'previous_weighted_score' => '16.00',
-            'new_weighted_score' => '18.00',
+            'previous_achieved_score' => '4.00',
+            'new_achieved_score' => '5.00',
+            'previous_weighted_score' => '0.80',
+            'new_weighted_score' => '1.00',
             'reason' => 'ปรับตามหลักฐาน',
             'modifier_user_id' => $this->evaluator->id,
             'modifier_role' => 'ผู้ประเมิน',
@@ -290,7 +341,7 @@ class SupportScoreServiceTest extends TestCase
         try {
             app(SupportScoreService::class)->persist($this->report, [[
                 'support_criteria_id' => $this->criterion->id,
-                'achieved_score' => 40,
+                'achieved_score' => 4,
                 'evidence_links' => ['https://example.com/evidence'],
             ]], $this->evaluator, 'ผู้ประเมิน', true);
             $this->fail('Expected validation failure');
@@ -300,7 +351,7 @@ class SupportScoreServiceTest extends TestCase
 
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 40,
+            'achieved_score' => 4,
             'modification_reason' => 'เพิ่มคะแนนหลังตรวจหลักฐาน',
             'evidence_links' => ['https://example.com/evidence'],
         ]], $this->evaluator, 'ผู้ประเมิน', true);
@@ -309,7 +360,7 @@ class SupportScoreServiceTest extends TestCase
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
             'previous_achieved_score' => null,
-            'new_achieved_score' => '40.00',
+            'new_achieved_score' => '4.00',
             'reason' => 'เพิ่มคะแนนหลังตรวจหลักฐาน',
         ]);
     }
@@ -335,7 +386,7 @@ class SupportScoreServiceTest extends TestCase
 
         app(SupportScoreService::class)->persist($this->report, [[
             'support_criteria_id' => $otherCriterion->id,
-            'achieved_score' => 10,
+            'achieved_score' => 1,
             'evidence_links' => [],
         ]], $this->evaluatee, null, false);
     }
@@ -346,8 +397,8 @@ class SupportScoreServiceTest extends TestCase
         SupportScore::create([
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => 80,
-            'weighted_score' => 16,
+            'achieved_score' => 4,
+            'weighted_score' => 0.8,
         ]);
         EvidenceAnswer::create([
             'evaluation_list_id' => $this->criterion->evaluation_list_id,
@@ -359,7 +410,7 @@ class SupportScoreServiceTest extends TestCase
         try {
             app(SupportScoreService::class)->persist($this->report, [[
                 'support_criteria_id' => $this->criterion->id,
-                'achieved_score' => 90,
+                'achieved_score' => 5,
                 'evidence_links' => ['https://example.com/replacement'],
                 'activity_entries' => [['content' => '<p>รายการที่ไม่อนุญาต</p>']],
             ]], $this->evaluatee, null, false);
@@ -371,8 +422,8 @@ class SupportScoreServiceTest extends TestCase
         $this->assertDatabaseHas('support_scores', [
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
-            'achieved_score' => '80.00',
-            'weighted_score' => '16.00',
+            'achieved_score' => '4.00',
+            'weighted_score' => '0.80',
         ]);
         $this->assertDatabaseHas('evidence_answers', [
             'report_id' => $this->report->id,
