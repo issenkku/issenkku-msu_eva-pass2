@@ -211,7 +211,10 @@ test('criterion score input accepts whole values from one through its target', f
     expect($html)
         ->toContain('type="number" min="1" max="4" step="1"')
         ->toContain('data-support-target="4.00"')
-        ->toContain('กรอกเฉพาะจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย 4.00');
+        ->toContain('data-support-score-help')
+        ->toContain('data-support-score-error')
+        ->toContain('aria-describedby="support-score-help-7 support-score-error-7"')
+        ->toContain('กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 4.00');
 });
 
 test('criterion score input caps its browser maximum at five', function () {
@@ -225,6 +228,30 @@ test('criterion score input caps its browser maximum at five', function () {
     expect($html)
         ->toContain('type="number" min="1" max="5" step="1"')
         ->toContain('data-support-target="12.00"');
+});
+
+test('activity score input uses the one-to-five target-limited contract', function () {
+    $item = array_replace(supportEvaluateeWeightedViewItem(), [
+        'target_value' => '4.00',
+    ]);
+    $item['activity_entries'][0]['achieved_score'] = '4.00';
+    $item['activity_entries'][0]['weighted_score'] = '1.60';
+
+    $html = view('components.support-criteria-table', [
+        'items' => [$item],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    expect($html)
+        ->toContain('type="number" min="1" max="4" step="1"')
+        ->toContain('data-support-entry-target="4.00"')
+        ->toContain('data-support-score-help')
+        ->toContain('data-support-score-error')
+        ->toContain('กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 4.00')
+        ->toContain('aria-describedby="support-entry-score-help-7-0 support-entry-score-error-7-0"');
 });
 
 test('support criteria activity and indicator render as sanitized rich text', function () {

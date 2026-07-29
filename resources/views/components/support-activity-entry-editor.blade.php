@@ -50,6 +50,11 @@
         @endif
 
         @if ($allowEvaluateeWeight)
+            @php
+                $entryScoreMaximum = min(5, (float) $item['target_value']);
+                $entryScoreHelpId = "support-entry-score-help-{$item['id']}-{$entryIndex}";
+                $entryScoreErrorId = "support-entry-score-error-{$item['id']}-{$entryIndex}";
+            @endphp
             <div class="mt-4 grid gap-4 sm:grid-cols-3">
                 <label class="block text-sm font-semibold text-slate-700">
                     น้ำหนัก
@@ -62,12 +67,20 @@
                 </label>
                 <label class="block text-sm font-semibold text-slate-700">
                     ค่าคะแนนที่ได้
-                    <input type="number" min="0" max="100" step="0.01"
+                    <input type="number" min="1" max="{{ $entryScoreMaximum }}" step="1"
                         name="support_list[{{ $item['id'] }}][activity_entries][{{ $entryIndex }}][achieved_score]"
                         value="{{ $entry['achieved_score'] ?? '' }}"
+                        aria-describedby="{{ $entryScoreHelpId }} {{ $entryScoreErrorId }}"
                         data-support-entry-score
+                        data-support-entry-target="{{ $item['target_value'] }}"
                         data-original-score="{{ $entry['achieved_score'] ?? '' }}"
                         class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900">
+                    <span id="{{ $entryScoreHelpId }}" data-support-score-help
+                        class="mt-1 block text-xs font-normal text-slate-500">
+                        กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย {{ $item['target_value'] }}
+                    </span>
+                    <span id="{{ $entryScoreErrorId }}" data-support-score-error
+                        class="mt-1 hidden text-xs font-normal text-red-600" aria-live="polite"></span>
                 </label>
                 <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
                     <span class="text-xs font-semibold text-amber-700">คะแนนถ่วงน้ำหนัก</span>

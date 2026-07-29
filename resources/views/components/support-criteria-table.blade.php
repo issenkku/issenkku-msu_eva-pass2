@@ -733,7 +733,7 @@
                                 <input id="support-score-{{ $item['id'] }}" type="number" min="1" max="{{ $criterionScoreMaximum }}" step="1"
                                     name="support_list[{{ $item['id'] }}][achieved_score]"
                                     value="{{ $item['achieved_score'] }}"
-                                    aria-describedby="support-score-help-{{ $item['id'] }}"
+                                    aria-describedby="support-score-help-{{ $item['id'] }} support-score-error-{{ $item['id'] }}"
                                     data-support-score
                                     data-support-target="{{ $item['target_value'] }}"
                                     data-support-id="{{ $item['id'] }}"
@@ -741,7 +741,12 @@
                                     data-support-original-score="{{ $item['achieved_score'] }}"
                                     class="mt-2 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-900 shadow-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
                                     placeholder="1">
-                                <span id="support-score-help-{{ $item['id'] }}" class="mt-1 block text-xs font-normal text-slate-500">กรอกเฉพาะจำนวนเต็ม 1–5 และไม่เกินระดับค่าเป้าหมาย {{ $item['target_value'] }}</span>
+                                <span id="support-score-help-{{ $item['id'] }}" data-support-score-help
+                                    class="mt-1 block text-xs font-normal text-slate-500">
+                                    กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย {{ $item['target_value'] }}
+                                </span>
+                                <span id="support-score-error-{{ $item['id'] }}" data-support-score-error
+                                    class="mt-1 hidden text-xs font-normal text-red-600" aria-live="polite"></span>
                             </label>
 
                             <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
@@ -852,7 +857,7 @@
                 </button>
                 @if (!$readonly)
                     <button type="button" data-support-modal-save
-                        class="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2">
+                        class="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500">
                         บันทึก
                     </button>
                 @endif
