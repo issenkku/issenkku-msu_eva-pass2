@@ -64,6 +64,18 @@ return Application::configure(basePath: dirname(__DIR__))
                     ->with('session_warning', FriendlyErrorPage::SESSION_EXPIRED_MESSAGE);
             }
 
-            return $response;
+            if (! in_array($status, [403, 404, 500, 503], true)) {
+                return $response;
+            }
+
+            try {
+                return response()->view("errors.{$status}", [
+                    'homeUrl' => FriendlyErrorPage::destinationUrl($request->user()),
+                    'loginUrl' => route('login'),
+                    'retryUrl' => $request->fullUrl(),
+                ], $status);
+            } catch (\Throwable) {
+                return $response;
+            }
         });
     })->create();
