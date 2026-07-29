@@ -62,6 +62,8 @@
                 message: valid
                     ? ''
                     : `กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย ${targetValue}`,
+                helpVisible: valid,
+                errorVisible: !valid,
             };
         };
 
@@ -72,6 +74,7 @@
                 ?? input.dataset.supportEntryTarget
                 ?? '';
             const state = getSupportScoreValidationState(input.value, targetValue, { required });
+            const help = input.parentElement?.querySelector('[data-support-score-help]');
             const error = input.parentElement?.querySelector('[data-support-score-error]');
 
             input.classList.toggle('border-slate-300', state.valid);
@@ -83,9 +86,10 @@
             } else {
                 input.setAttribute('aria-invalid', 'true');
             }
+            if (help) help.classList.toggle('hidden', !state.helpVisible);
             if (error) {
                 error.textContent = state.message;
-                error.classList.toggle('hidden', state.valid);
+                error.classList.toggle('hidden', !state.errorVisible);
             }
 
             return state.valid;

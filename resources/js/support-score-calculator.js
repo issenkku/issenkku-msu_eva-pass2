@@ -39,6 +39,8 @@ export function getSupportScoreValidationState(value, targetValue, { required = 
         message: valid
             ? ''
             : `กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย ${targetValue}`,
+        helpVisible: valid,
+        errorVisible: !valid,
     };
 }
 

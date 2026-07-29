@@ -39,10 +39,14 @@ test('keeps an empty criterion score valid but requires an activity score', () =
     assert.deepEqual(getSupportScoreValidationState('', 5), {
         valid: true,
         message: '',
+        helpVisible: true,
+        errorVisible: false,
     });
     assert.deepEqual(getSupportScoreValidationState('', 5, { required: true }), {
         valid: false,
         message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 5',
+        helpVisible: false,
+        errorVisible: true,
     });
 });
 
@@ -50,13 +54,19 @@ test('returns inline feedback for an invalid score without changing its value', 
     assert.deepEqual(getSupportScoreValidationState('7', '5.00', { required: true }), {
         valid: false,
         message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 5.00',
+        helpVisible: false,
+        errorVisible: true,
     });
     assert.deepEqual(getSupportScoreValidationState('4', '3.50', { required: true }), {
         valid: false,
         message: 'กรอกเฉพาะจำนวนเต็มตั้งแต่ 1–5 และต้องไม่เกินระดับค่าเป้าหมาย 3.50',
+        helpVisible: false,
+        errorVisible: true,
     });
     assert.deepEqual(getSupportScoreValidationState('5', '5.00', { required: true }), {
         valid: true,
         message: '',
+        helpVisible: true,
+        errorVisible: false,
     });
 });
