@@ -165,7 +165,7 @@ class EvaluateeTest extends TestCase
             'sequence' => 1,
             'activity_name' => 'จัดทำรายงาน',
             'indicator' => 'ส่งตรงเวลา',
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 20,
             'require_evidence' => false,
             'allow_activity_entries' => true,
@@ -450,7 +450,7 @@ class EvaluateeTest extends TestCase
 
         $response = $this->actingAs($this->evaluatee, 'web')->post(
             route('evaluation_score.store', ['id' => $report->id]),
-            $this->supportPayload('Draft', '125.50', [
+            $this->supportPayload('Draft', 5, [
                 ['content' => '<p>โครงการพร้อมหลักฐาน</p>'],
             ])
         );
@@ -459,8 +459,8 @@ class EvaluateeTest extends TestCase
         $this->assertDatabaseHas('support_scores', [
             'report_id' => $report->id,
             'support_criteria_id' => $this->supportCriterion->id,
-            'achieved_score' => '125.50',
-            'weighted_score' => '25.10',
+            'achieved_score' => '5.00',
+            'weighted_score' => '1.00',
         ]);
         $this->assertDatabaseHas('evidence_answers', [
             'report_id' => $report->id,
@@ -470,7 +470,7 @@ class EvaluateeTest extends TestCase
         $this->assertDatabaseHas('reports', [
             'id' => $report->id,
             'status' => 'Draft',
-            'support_score_total' => '25.10',
+            'support_score_total' => '1.00',
         ]);
     }
 
@@ -555,7 +555,7 @@ class EvaluateeTest extends TestCase
         $this->actingAs($this->evaluatee, 'web')
             ->postJson(
                 route('evaluation_score.store', ['id' => $report->id]),
-                $this->supportPayload('Draft', 50)
+                $this->supportPayload('Draft', 4)
             )
             ->assertForbidden();
 
@@ -593,7 +593,7 @@ class EvaluateeTest extends TestCase
             'workload_entry_id' => $workloadEntry->id,
             'link' => 'https://example.com/workload-evidence',
         ]);
-        $payload = $this->supportPayload('Draft', 100, [
+        $payload = $this->supportPayload('Draft', 4, [
             ['content' => '<p>โครงการพร้อมหลักฐาน</p>'],
         ]);
         $payload['evidence_list'] = [
@@ -621,7 +621,7 @@ class EvaluateeTest extends TestCase
     public function test_evaluatee_can_add_update_and_delete_support_activities_across_draft_and_submit(): void
     {
         $report = $this->createReportWithStatus('Assigned');
-        $draftPayload = $this->supportPayload('Draft', 100, [
+        $draftPayload = $this->supportPayload('Draft', 4, [
             ['content' => '<p>โครงการแรก</p>'],
             ['content' => '<p>โครงการที่จะลบ</p>'],
         ]);
@@ -634,7 +634,7 @@ class EvaluateeTest extends TestCase
             ->where('report_id', $report->id)
             ->orderBy('sequence')
             ->firstOrFail();
-        $submitPayload = $this->supportPayload('Pending', 100, [
+        $submitPayload = $this->supportPayload('Pending', 4, [
             ['id' => $first->id, 'content' => '<p>แก้ไขโครงการแรก</p>'],
             ['content' => '<p>โครงการใหม่</p>'],
         ]);
@@ -671,7 +671,7 @@ class EvaluateeTest extends TestCase
             'sequence' => 3, 'code' => '2.3', 'description' => '<p>กลุ่มว่าง</p>',
         ]);
         $report = $this->createReportWithStatus('Assigned');
-        $draftPayload = $this->supportPayload('Draft', 100, [
+        $draftPayload = $this->supportPayload('Draft', 4, [
             ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ A</p>'],
             ['support_indicator_item_id' => $first->id, 'content' => '<p>โครงการ B</p>'],
             ['support_indicator_item_id' => $second->id, 'content' => '<p>โครงการ C</p>'],
@@ -686,7 +686,7 @@ class EvaluateeTest extends TestCase
             ->where('report_id', $report->id)
             ->orderBy('sequence')
             ->get();
-        $submitPayload = $this->supportPayload('Pending', 100, $savedEntries
+        $submitPayload = $this->supportPayload('Pending', 4, $savedEntries
             ->map(fn (SupportActivityEntry $entry) => [
                 'id' => $entry->id,
                 'support_indicator_item_id' => $entry->support_indicator_item_id,
@@ -723,7 +723,7 @@ class EvaluateeTest extends TestCase
             'sequence' => 2,
             'activity_name' => '<p>เกณฑ์อื่น</p>',
             'indicator' => null,
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 10,
             'allow_activity_entries' => true,
             'group_activity_entries_by_indicator' => true,
@@ -734,7 +734,7 @@ class EvaluateeTest extends TestCase
         $report = $this->createReportWithStatus('Assigned');
 
         foreach ([null, $foreign->id] as $indicatorItemId) {
-            $payload = $this->supportPayload('Draft', 100, [[
+            $payload = $this->supportPayload('Draft', 4, [[
                 'support_indicator_item_id' => $indicatorItemId,
                 'content' => '<p>โครงการ</p>',
             ]]);
@@ -755,13 +755,13 @@ class EvaluateeTest extends TestCase
     {
         $report = $this->createReportWithStatus('Assigned');
         $this->actingAs($this->evaluatee, 'web')
-            ->post(route('evaluation_score.store', ['id' => $report->id]), $this->supportPayload('Draft', 80, [
+            ->post(route('evaluation_score.store', ['id' => $report->id]), $this->supportPayload('Draft', 4, [
                 ['content' => '<p>ข้อมูลเดิม</p>'],
             ]))
             ->assertRedirect('/evaluatee-dashboard')
             ->assertSessionHasNoErrors();
 
-        $payload = $this->supportPayload('Pending', 90, [
+        $payload = $this->supportPayload('Pending', 5, [
             ['content' => '<p><br></p>'],
         ]);
         $this->actingAs($this->evaluatee, 'web')
@@ -774,7 +774,7 @@ class EvaluateeTest extends TestCase
         $this->assertDatabaseHas('support_scores', [
             'report_id' => $report->id,
             'support_criteria_id' => $this->supportCriterion->id,
-            'achieved_score' => '80.00',
+            'achieved_score' => '4.00',
         ]);
         $this->assertDatabaseHas('support_activity_entries', [
             'report_id' => $report->id,
