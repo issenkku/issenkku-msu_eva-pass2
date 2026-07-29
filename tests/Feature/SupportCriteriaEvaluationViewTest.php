@@ -99,7 +99,7 @@ function supportEvaluateeWeightedViewItem(): array
         'allow_evaluatee_indicator' => true,
         'allow_evaluatee_weight' => true,
         'achieved_score' => null,
-        'weighted_score' => '32.00',
+        'weighted_score' => '1.60',
         'activity_entries' => [[
             'id' => 41,
             'sequence' => 1,
@@ -107,8 +107,8 @@ function supportEvaluateeWeightedViewItem(): array
             'content' => '<p>โครงการประจำเดือน</p>',
             'indicator' => '<p>ผ่านความเห็นชอบ</p>',
             'weight' => '40.00',
-            'achieved_score' => '80.00',
-            'weighted_score' => '32.00',
+            'achieved_score' => '4.00',
+            'weighted_score' => '1.60',
             'evidence_links' => [],
             'histories' => [],
         ]],
@@ -123,8 +123,8 @@ function supportEvaluateeIndicatorOnlyViewItem(): array
         'allow_evaluatee_indicator' => true,
         'allow_evaluatee_weight' => false,
         'weight' => '20.00',
-        'achieved_score' => '80.00',
-        'weighted_score' => '16.00',
+        'achieved_score' => '4.00',
+        'weighted_score' => '0.80',
         'activity_entries' => [
             [
                 'id' => 41,
@@ -297,10 +297,10 @@ test('reviewer can edit score with a reason while evidence is preserved read onl
 
 test('support score history is available from its own desktop and mobile column in every mode', function () {
     $history = [
-        'previous_achieved_score' => '80.00',
-        'new_achieved_score' => '90.00',
-        'previous_weighted_score' => '16.00',
-        'new_weighted_score' => '18.00',
+        'previous_achieved_score' => '4.00',
+        'new_achieved_score' => '5.00',
+        'previous_weighted_score' => '0.80',
+        'new_weighted_score' => '1.00',
         'reason' => 'ปรับตามหลักฐาน',
         'modified_by_name' => 'ผู้ประเมิน',
         'modified_by_role' => 'Evaluator',
@@ -416,7 +416,7 @@ test('evaluatee owned support fields render per project without criterion score 
         ->toContain('data-support-entry-weight-list="7"')
         ->toContain('data-support-entry-score-list="7"')
         ->toContain('data-support-entry-weighted')
-        ->toContain('32.00')
+        ->toContain('1.60')
         ->not->toContain('ส่งตรงเวลา')
         ->not->toContain('name="support_list[7][achieved_score]"');
 
@@ -433,8 +433,8 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         'content' => '<p>โครงการรายการที่สอง</p>',
         'indicator' => '<p>ตัวชี้วัดรายการที่สอง</p>',
         'weight' => '50.00',
-        'achieved_score' => '20.00',
-        'weighted_score' => '10.00',
+        'achieved_score' => '5.00',
+        'weighted_score' => '2.50',
         'evidence_links' => ['https://example.com/second-proof'],
     ]);
 
@@ -466,8 +466,8 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         ->and(substr_count($desktopTable[0], 'data-support-shared-score="7"'))->toBe(0)
         ->and($desktopTable[0])->toMatch('/>\s*40\.00\s*</')
         ->and($desktopTable[0])->toMatch('/>\s*50\.00\s*</')
-        ->and($desktopTable[0])->toMatch('/>\s*80\.00\s*</')
-        ->and($desktopTable[0])->toMatch('/>\s*20\.00\s*</');
+        ->and($desktopTable[0])->toMatch('/>\s*4\.00\s*</')
+        ->and($desktopTable[0])->toMatch('/>\s*5\.00\s*</');
 
     $script = file_get_contents(resource_path('views/components/support-criteria-table-script.blade.php'));
     expect($script)->toContain('syncDesktopEntryRows');
@@ -517,7 +517,7 @@ test('indicator-only entry rows keep criterion scores in shared cells', function
         ->and(substr_count($desktop, 'data-support-shared-score="7"'))->toBe(1)
         ->and($desktop)->toContain('rowspan="2"')
         ->and($desktop)->toMatch('/>\s*20\.00\s*</')
-        ->and($desktop)->toMatch('/>\s*80\.00\s*</');
+        ->and($desktop)->toMatch('/>\s*4\.00\s*</');
 });
 
 test('activity-only entries still render under a full-width admin heading', function () {
@@ -599,7 +599,7 @@ test('mobile criterion card shows shared score once unless evaluatee weight is e
     expect(substr_count($mobile[0], 'data-support-entry-weight-list="7"'))->toBe(0)
         ->and(substr_count($mobile[0], 'data-support-entry-score-list="7"'))->toBe(0)
         ->and($mobile[0])->toMatch('/>\s*20\.00\s*</')
-        ->and($mobile[0])->toMatch('/>\s*80\.00\s*</');
+        ->and($mobile[0])->toMatch('/>\s*4\.00\s*</');
 
     $weighted = view('components.support-criteria-table', [
         'items' => [supportEvaluateeWeightedViewItem()],

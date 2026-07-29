@@ -240,7 +240,7 @@ class SupportCriteriaReadModelTest extends TestCase
             'sequence' => 1,
             'activity_name' => 'หัวข้อจากแอดมิน',
             'indicator' => 'ตัวชี้วัด',
-            'target_value' => 100,
+            'target_value' => 5,
             'weight' => 20,
             'allow_activity_entries' => false,
         ]);
@@ -343,8 +343,8 @@ class SupportCriteriaReadModelTest extends TestCase
             'allow_evaluatee_weight' => true,
         ]);
         foreach ([
-            ['indicator' => '<p>ตัวชี้วัดหนึ่ง</p>', 'weight' => 40, 'achieved_score' => 80, 'weighted_score' => 32],
-            ['indicator' => '<p>ตัวชี้วัดสอง</p>', 'weight' => 60, 'achieved_score' => 90, 'weighted_score' => 54],
+            ['indicator' => '<p>ตัวชี้วัดหนึ่ง</p>', 'weight' => 40, 'achieved_score' => 4, 'weighted_score' => 1.6],
+            ['indicator' => '<p>ตัวชี้วัดสอง</p>', 'weight' => 60, 'achieved_score' => 5, 'weighted_score' => 3],
         ] as $index => $values) {
             SupportActivityEntry::create([
                 'report_id' => $report->id,
@@ -361,11 +361,11 @@ class SupportCriteriaReadModelTest extends TestCase
         $this->assertTrue($item['allow_evaluatee_weight']);
         $this->assertNull($item['indicator']);
         $this->assertNull($item['achieved_score']);
-        $this->assertSame('86.00', $item['weighted_score']);
+        $this->assertSame('4.60', $item['weighted_score']);
         $this->assertSame('<p>ตัวชี้วัดหนึ่ง</p>', $item['activity_entries'][0]['indicator']);
         $this->assertSame('40.00', $item['activity_entries'][0]['weight']);
-        $this->assertSame('80.00', $item['activity_entries'][0]['achieved_score']);
-        $this->assertSame('32.00', $item['activity_entries'][0]['weighted_score']);
+        $this->assertSame('4.00', $item['activity_entries'][0]['achieved_score']);
+        $this->assertSame('1.60', $item['activity_entries'][0]['weighted_score']);
     }
 
     public function test_activity_evidence_query_does_not_reference_a_nonexistent_id_column(): void

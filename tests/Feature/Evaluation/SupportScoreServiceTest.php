@@ -261,14 +261,14 @@ class SupportScoreServiceTest extends TestCase
                     'content' => '<p>โครงการหนึ่ง</p>',
                     'indicator' => '<p>ผ่านความเห็นชอบ</p>',
                     'weight' => 40,
-                    'achieved_score' => 80,
+                    'achieved_score' => 4,
                     'evidence_links' => ['https://example.com/project-one'],
                 ],
                 [
                     'content' => '<p>โครงการสอง</p>',
                     'indicator' => '<p>เผยแพร่แล้ว</p>',
                     'weight' => 60,
-                    'achieved_score' => 90,
+                    'achieved_score' => 5,
                     'evidence_links' => [],
                 ],
             ],
@@ -278,8 +278,8 @@ class SupportScoreServiceTest extends TestCase
             'report_id' => $this->report->id,
             'support_criteria_id' => $this->criterion->id,
         ]);
-        $this->assertSame(86.0, $result['support_score_total']);
-        $this->assertSame('86.00', $this->report->fresh()->support_score_total);
+        $this->assertSame(4.6, $result['support_score_total']);
+        $this->assertSame('4.60', $this->report->fresh()->support_score_total);
     }
 
     public function test_required_criterion_cannot_be_omitted_from_the_payload(): void
