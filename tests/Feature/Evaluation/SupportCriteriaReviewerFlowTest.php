@@ -43,7 +43,7 @@ beforeEach(function () {
         'sequence' => 1,
         'activity_name' => 'จัดทำรายงาน',
         'indicator' => 'ส่งตรงเวลา',
-        'target_value' => 100,
+        'target_value' => 5,
         'weight' => 20,
         'require_evidence' => false,
         'allow_activity_entries' => true,
@@ -74,7 +74,7 @@ test('each reviewer role must explain a changed support score and keeps its repo
     $report = createSupportReviewerReport($this, $initialStatus);
     $actor = $this->{$actorProperty};
     $comment = "ความคิดเห็นจาก{$role}";
-    $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 90, null, $comment);
+    $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 5, null, $comment);
 
     $this->actingAs($actor, 'web')
         ->from('/review-support')
@@ -92,16 +92,16 @@ test('each reviewer role must explain a changed support score and keeps its repo
     $this->assertDatabaseHas('support_scores', [
         'report_id' => $report->id,
         'support_criteria_id' => $this->criterion->id,
-        'achieved_score' => '90.00',
-        'weighted_score' => '18.00',
+        'achieved_score' => '5.00',
+        'weighted_score' => '1.00',
     ]);
     $this->assertDatabaseHas('support_score_histories', [
         'report_id' => $report->id,
         'support_criteria_id' => $this->criterion->id,
-        'previous_achieved_score' => '80.00',
-        'new_achieved_score' => '90.00',
-        'previous_weighted_score' => '16.00',
-        'new_weighted_score' => '18.00',
+        'previous_achieved_score' => '4.00',
+        'new_achieved_score' => '5.00',
+        'previous_weighted_score' => '0.80',
+        'new_weighted_score' => '1.00',
         'reason' => 'ปรับตามหลักฐาน',
         'modifier_user_id' => $actor->id,
         'modifier_role' => $role,
@@ -138,7 +138,7 @@ test('each reviewer role must explain a changed support activity and keeps its r
         'updated_by' => $this->evaluatee->id,
     ]);
     $comment = "ตรวจแก้กิจกรรมโดย{$role}";
-    $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 80, null, $comment);
+    $payload = supportReviewerPayload($this->criterion->id, $draftStatus, 4, null, $comment);
     $payload['support_list'][$this->criterion->id]['activity_entries'] = [[
         'id' => $entry->id,
         'support_indicator_item_id' => $indicatorItem->id,
@@ -206,7 +206,7 @@ test('each reviewer role cannot move a grouped project to another indicator item
     $payload = supportReviewerPayload(
         $this->criterion->id,
         $draftStatus,
-        80,
+        4,
         null,
         'ความคิดเห็นที่ต้อง rollback'
     );
@@ -239,7 +239,7 @@ test('saving an unchanged support score does not create history', function () {
     $payload = supportReviewerPayload(
         $this->criterion->id,
         'Evaluator_draft',
-        '80.00',
+        '4.00',
         null,
         'ตรวจสอบแล้ว'
     );
@@ -259,7 +259,7 @@ function createSupportReviewerReport(object $context, string $status): Reports
     $report = Reports::factory()->create([
         'report_data_id' => $context->reportData->id,
         'status' => $status,
-        'support_score_total' => 16,
+        'support_score_total' => 0.8,
     ]);
     Assignments::factory()->create([
         'assignment_data_id' => $context->assignmentData->id,
@@ -269,8 +269,8 @@ function createSupportReviewerReport(object $context, string $status): Reports
     SupportScore::create([
         'report_id' => $report->id,
         'support_criteria_id' => $context->criterion->id,
-        'achieved_score' => 80,
-        'weighted_score' => 16,
+        'achieved_score' => 4,
+        'weighted_score' => 0.8,
     ]);
 
     return $report;
