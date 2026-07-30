@@ -2,7 +2,20 @@
 
 ## Decision
 
-Rewrite all visible copy in the academic and support training decks in polite, natural Thai that a facilitator can comfortably say aloud. Preserve the approved layouts, colors, branding, slide count, system workflow, and technical meaning.
+Rewrite all visible copy in the academic and support training decks in polite, natural Thai that a facilitator can comfortably say aloud. Preserve the approved layouts, colors, branding, system workflow, and technical meaning.
+
+Expand each deck from 14 to 16 slides so participants who have never used the reviewer or executive roles can see and practice those steps. Add approximately one minute of facilitator script to the Speaker Notes of every slide.
+
+## Audience
+
+The room contains four participant types:
+
+- returning participants who joined an earlier system test
+- new participants who have not used the system
+- reviewers who have not tested the review workflow
+- executives who may act as the last configured reviewer
+
+The training therefore begins with a short shared foundation, then alternates between explanation, facilitator demonstration, participant practice, and group verification.
 
 ## Communication Style
 
@@ -44,9 +57,11 @@ Do not alternate between ผู้ตรวจ, ผู้ตรวจคนส�
 9. แนบหลักฐานที่เปิดดูได้และตรงกับผลงาน
 10. หากข้อมูลยังไม่ครบ ให้บันทึกร่างไว้ก่อน
 11. หลังส่งแบบประเมิน ระบบจะส่งงานตามลำดับผู้ประเมิน
-12. เมื่อผู้ประเมินคนสุดท้ายยืนยัน งานจะเสร็จสมบูรณ์
-13. ลองกรอกแบบประเมิน 1 รายการให้ครบ
-14. หากใช้งานไม่ได้ ให้ตรวจสอบ 4 จุดนี้ก่อน
+12. เมื่อได้รับงานประเมิน ให้ตรวจข้อมูลและหลักฐานก่อนให้ผล
+13. ผู้ประเมินแต่ละคนส่งต่องานตามลำดับ
+14. เมื่อผู้ประเมินคนสุดท้ายยืนยัน งานจะเสร็จสมบูรณ์
+15. ลองกรอกแบบประเมิน 1 รายการให้ครบ
+16. หากใช้งานไม่ได้ ให้ตรวจสอบ 4 จุดนี้ก่อน
 
 ### Academic Key Body Copy
 
@@ -66,6 +81,11 @@ Do not alternate between ผู้ตรวจ, ผู้ตรวจคนส�
   - ระบบส่งงานให้ผู้ประเมินตามลำดับ
   - คุณจะแก้ไขข้อมูลในขั้นนี้ไม่ได้
   - ตรวจข้อมูลและหลักฐานอีกครั้งก่อนยืนยัน
+- Reviewer checklist:
+  - ตรวจว่าข้อมูลตรงกับเกณฑ์
+  - เปิดหลักฐานและตรวจความสอดคล้อง
+  - ให้คะแนนหรือความเห็นตามสิทธิ์ของบทบาท
+  - ส่งต่อเมื่อข้อมูลครบ
 - Completion explanation: เมื่อผู้ประเมินคนสุดท้ายยืนยัน สถานะจะเปลี่ยนเป็น “ประเมินเสร็จสิ้น” (`Completed`)
 
 ## Support Deck — Revised Slide Titles
@@ -82,8 +102,10 @@ Do not alternate between ผู้ตรวจ, ผู้ตรวจคนส�
 10. แนบหลักฐานที่เปิดดูได้และตรงกับกิจกรรม
 11. หากข้อมูลยังไม่ครบ ให้บันทึกร่างไว้ก่อน
 12. หลังส่งแบบประเมิน ระบบจะส่งงานตามลำดับผู้ประเมิน
-13. ลองบันทึกกิจกรรม 1 รายการให้ครบ
-14. หากใช้งานไม่ได้ ให้ตรวจสอบ 4 จุดนี้ก่อน
+13. เมื่อได้รับงานประเมิน ให้ตรวจผลกิจกรรม คะแนน และหลักฐาน
+14. ผู้ประเมินแต่ละคนส่งต่องานตามลำดับ
+15. ลองบันทึกกิจกรรม 1 รายการให้ครบ
+16. หากใช้งานไม่ได้ ให้ตรวจสอบ 4 จุดนี้ก่อน
 
 ### Support Key Body Copy
 
@@ -104,7 +126,89 @@ Do not alternate between ผู้ตรวจ, ผู้ตรวจคนส�
   - ระบบตรวจช่องบังคับและหลักฐาน
   - ระบบส่งงานให้ผู้ประเมินตามลำดับ
   - ตรวจข้อมูลอีกครั้งก่อนยืนยัน
-- Review close: ผู้ประเมินแต่ละคนตรวจและส่งต่องาน เมื่อถึงผู้ประเมินคนสุดท้าย ระบบจึงปิดงาน
+- Reviewer checklist:
+  - ตรวจผลกิจกรรมและรายละเอียดที่ผู้รับการประเมินกรอก
+  - ตรวจคะแนนถ่วงน้ำหนัก
+  - เปิดหลักฐานและตรวจความสอดคล้อง
+  - ให้คะแนนหรือความเห็นตามสิทธิ์ของบทบาท
+- Review close: ผู้ประเมินแต่ละคนตรวจและส่งต่องาน เมื่อผู้ประเมินคนสุดท้ายยืนยัน สถานะจะเปลี่ยนเป็น “ประเมินเสร็จสิ้น” (`Completed`)
+
+## Speaker Notes Contract
+
+Every slide must contain a natural Thai talk track of approximately one minute. Notes use these markers only where relevant:
+
+- `[พูด]` — a complete facilitator talk track that can be read aloud naturally
+- `[สาธิต]` — the exact action to show in the live test system
+- `[ถามผู้เข้าอบรม]` — one short comprehension or experience question
+- `[เริ่มทดลองใช้งาน — 30 นาที]` — the participant practice handoff
+- `[ให้ผู้เข้าอบรมหยุดที่บันทึกร่าง]` — the common checkpoint before submission
+- `[กลับมาที่สไลด์]` — the point to return from the live system
+
+Each notes page must retain its `[Sources]` block after the facilitator script.
+
+### Opening Script
+
+Use this message on the first two slides of both decks:
+
+> ทุกท่านเคยทดลองใช้ระบบมาแล้วบางส่วน แต่วันนี้อาจมีเพื่อนร่วมงานที่เพิ่งเริ่มใช้งาน รวมถึงผู้ประเมินและผู้บริหารที่ยังไม่เคยทดลองขั้นตอนของตนเอง เราจะทบทวนพื้นฐานสั้น ๆ แล้วทดลองทำหนึ่งรายการให้ครบตั้งแต่การกรอกข้อมูลจนถึงการส่งและปิดงาน
+
+### Demonstration Transition
+
+> ต่อไปผมจะทำให้ดูหนึ่งรายการก่อน ทุกท่านยังไม่ต้องทำตาม ให้สังเกตว่าผมเริ่มจากตรงไหน กรอกข้อมูลอะไร และตรวจความพร้อมอย่างไรก่อนส่ง
+
+### Practice Transition
+
+> ตอนนี้ทุกท่านทดลองด้วยบัญชีที่เตรียมไว้ได้เลย ให้ทำจนถึงการบันทึกร่างก่อน เมื่อเสร็จแล้วให้ยกมือหรือเรียกผู้ช่วย ยังไม่ต้องกดส่งแบบประเมิน
+
+### Submission Transition
+
+> เมื่อทุกคนตรวจข้อมูลและหลักฐานเรียบร้อยแล้ว เราจะกดส่งพร้อมกัน จากนั้นให้ผู้ประเมินเปิดบัญชีของตนเองและรับงานต่อ
+
+## Facilitation and Demonstration Plan
+
+Assume approximately three hours per audience group. If the official schedule changes, retain the activity order and scale the practice blocks first.
+
+### Morning — Academic Personnel
+
+| Time | Activity | Slides / mode |
+|---|---|---|
+| 09:00–09:15 | Opening, goals, and recognition of new/returning participants | Slides 1–2 |
+| 09:15–09:30 | Roles and full workflow | Slides 3–4 |
+| 09:30–09:45 | Demonstrate login, evaluation cycle, and opening an assigned item | Live system after slide 5 |
+| 09:45–10:10 | Explain subject, workload, performance, and evidence | Slides 6–9 |
+| 10:10–10:30 | Demonstrate one academic entry | Live system |
+| 10:30–10:40 | Break | — |
+| 10:40–11:10 | Participants enter data and stop at Save Draft | Hands-on |
+| 11:10–11:25 | Explain submission and configured reviewer order | Slides 10–11 |
+| 11:25–11:40 | Demonstrate reviewer and last-reviewer actions | Slides 12–14 plus live system |
+| 11:40–11:50 | Participants submit, review, forward, and close one item | Role-based hands-on |
+| 11:50–12:00 | Debrief, troubleshooting, and questions | Slides 15–16 |
+
+### Afternoon — Support Personnel
+
+| Time | Activity | Slides / mode |
+|---|---|---|
+| 13:00–13:15 | Opening, goals, and recognition of new/returning participants | Slides 1–2 |
+| 13:15–13:30 | Roles and full workflow | Slides 3–4 |
+| 13:30–13:45 | Demonstrate login, evaluation cycle, and opening an assigned item | Live system after slide 5 |
+| 13:45–14:10 | Explain project, activity, indicator, and evidence | Slides 6–7 |
+| 14:10–14:25 | Explain the weighted-score formula and example | Slides 8–9 |
+| 14:25–14:40 | Demonstrate activity entry, score, and evidence | Live system after slide 10 |
+| 14:40–14:50 | Break | — |
+| 14:50–15:20 | Participants enter data and stop at Save Draft | Hands-on |
+| 15:20–15:35 | Explain submission and configured reviewer order | Slides 11–12 |
+| 15:35–15:50 | Demonstrate reviewer and last-reviewer actions | Slides 13–14 plus live system |
+| 15:50–16:00 | Role-based practice, debrief, and questions | Slides 15–16 |
+
+## Hands-On Role Design
+
+- New participants follow the facilitator step by step.
+- Returning testers may work ahead and support a nearby new participant.
+- Evaluatees complete one assigned test item and stop at Save Draft for a facilitator check.
+- Reviewers open the submitted item, check data and evidence, record their result, and forward it.
+- The last configured reviewer confirms the item and verifies the final status.
+- Use only prepared test accounts and test data.
+- Pair evaluatee and reviewer accounts so the same test item can move through the complete workflow.
 
 ## Shared Troubleshooting Copy
 
@@ -117,17 +221,19 @@ Use the same four participant-facing checks in both decks:
 
 ## Layout Rules During Copy Revision
 
-- Preserve 14 slides per deck and the current visual identity.
+- Expand each deck to exactly 16 slides and preserve the current visual identity.
 - Reflow text boxes only where the revised copy requires it.
 - Do not reduce text below the approved minimum sizes.
 - Keep slide titles to no more than two deliberate lines.
-- Do not add new diagrams, screenshots, claims, or workflow steps.
+- Add only the two approved reviewer-role slides; do not add other diagrams, screenshots, claims, or workflow steps.
 - Keep `[Sources]` blocks in speaker notes.
 
 ## Verification
 
-- Render all 28 slides in Microsoft PowerPoint.
+- Render all 32 slides in Microsoft PowerPoint.
 - Inspect each slide at full size for natural line breaks and Thai glyph rendering.
 - Confirm no title or body text is clipped or overflowing.
 - Search visible text for deprecated terms and replace them consistently.
 - Confirm the support formula and `Completed` explanation remain technically correct.
+- Confirm every slide has facilitator script and source notes.
+- Confirm the planned demonstration and hands-on cues appear at the correct transition slides.
