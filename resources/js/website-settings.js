@@ -17,9 +17,7 @@ function setBackgroundImage(documentRef, imageUrl) {
     appBackgroundShell?.classList?.remove('is-white-background');
 }
 
-export function applyWebsiteSettingsResponse(documentRef, payload, {
-    revokeObjectURL = globalThis.URL?.revokeObjectURL?.bind(globalThis.URL),
-} = {}) {
+export function applyWebsiteSettingsResponse(documentRef, payload, { revokeObjectURL = globalThis.URL?.revokeObjectURL?.bind(globalThis.URL) } = {}) {
     const settings = payload?.data?.settings || {};
     const logoPreview = documentRef.querySelector?.('#logoPreview');
     const backgroundPreview = documentRef.querySelector?.('#backgroundPreview');
@@ -126,7 +124,7 @@ function initializeSettingsInteractions(form, documentRef) {
         documentRef.querySelector('#logo'),
         documentRef.querySelector('#logoPreview'),
         documentRef.querySelector('input[name="remove_logo"]'),
-        'defaultLogo'
+        'defaultLogo',
     );
     bindPreview(
         documentRef.querySelector('#background'),
@@ -138,7 +136,7 @@ function initializeSettingsInteractions(form, documentRef) {
             const whiteInput = documentRef.querySelector('#useWhiteBackground');
             if (whiteInput) whiteInput.checked = false;
             clearSelectedBackground();
-        }
+        },
     );
 
     if (form.dataset.settingsLibraryBound !== '1') {
@@ -153,8 +151,7 @@ function initializeSettingsInteractions(form, documentRef) {
                 event.stopPropagation();
                 const path = item.dataset.backgroundPath;
                 if (!path || item.classList.contains('is-pending-delete')) return;
-                const wasSelected = documentRef.querySelector('#selectedBackgroundPath')?.value === path
-                    || item.classList.contains('is-active');
+                const wasSelected = documentRef.querySelector('#selectedBackgroundPath')?.value === path || item.classList.contains('is-active');
                 item.classList.add('is-pending-delete');
                 item.style.display = 'none';
                 const holder = documentRef.querySelector('#deletedBackgroundInputs');
@@ -242,4 +239,3 @@ if (typeof window !== 'undefined') {
         initialize();
     }
 }
-

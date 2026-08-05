@@ -42,12 +42,7 @@ export function applyResourceMutation(documentRef, payload, options = {}) {
     container.append(replacement);
 }
 
-export async function refreshTableRegion(
-    url,
-    selector,
-    fetchImpl = globalThis.fetch,
-    documentRef = globalThis.document,
-) {
+export async function refreshTableRegion(url, selector, fetchImpl = globalThis.fetch, documentRef = globalThis.document) {
     const response = await fetchImpl(url, {
         headers: {
             Accept: 'text/html',

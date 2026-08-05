@@ -41,10 +41,11 @@ export function applyMasterDataValidationErrors(form, errors, aliases = {}, docu
     firstInput?.focus?.();
 }
 
-export async function reconcileMasterDataMutation(documentRef, payload, {
-    refresh = refreshTableRegion,
-    url = globalThis.location?.href || '',
-} = {}) {
+export async function reconcileMasterDataMutation(
+    documentRef,
+    payload,
+    { refresh = refreshTableRegion, url = globalThis.location?.href || '' } = {},
+) {
     const hasQuery = new URL(url || '/', globalThis.location?.origin || 'https://example.test').searchParams.size > 0;
     if (payload?.html?.row && (!documentRef.querySelector('[data-resource-rows]') || hasQuery)) {
         await refresh(url, '[data-async-table-region]', globalThis.fetch, documentRef);

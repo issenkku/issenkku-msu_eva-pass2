@@ -1,14 +1,14 @@
 import '../css/app.css';
+import './assignment-participant-selection';
 import './async-form';
 import './async-resource-table';
-import './assignment-participant-selection';
 import './master-data-page';
 import './support-activity-entries';
 import './support-indicator-mode';
 import './support-score-calculator';
+import './website-settings';
 import './workload-entry-submit';
 import './workload-formula-preview';
-import './website-settings';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
