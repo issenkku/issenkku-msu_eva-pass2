@@ -56,11 +56,13 @@
     @include('departments.partials.index-modal')
 
     <x-delete-warning-modal
+        :async="true"
         text="แผนก"
         formAction="{{ route('departments.destroy', ':id') }}"
         entityUrl="/departments" />
 
     <x-bulk-delete-modal
+        :async="true"
         modalId="bulkDeleteDepartmentsModal"
         title="ยืนยันการลบแผนก"
         entityText="แผนก"

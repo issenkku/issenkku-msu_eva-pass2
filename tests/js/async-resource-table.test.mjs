@@ -59,6 +59,39 @@ test('applyResourceMutation replaces an existing row with the server fragment', 
     assert.equal(documentRef.appended.length, 0);
 });
 
+test('applyResourceMutation preserves the visible sequence when replacing a row', () => {
+    const currentSequence = { textContent: '4' };
+    const replacementSequence = { textContent: '' };
+    const replacement = { querySelector: () => replacementSequence };
+    const current = {
+        querySelector: () => currentSequence,
+        replaceWith(value) {
+            this.replacement = value;
+        },
+    };
+    const documentRef = {
+        createElement() {
+            return {
+                content: { firstElementChild: replacement },
+                set innerHTML(value) {
+                    this.html = value;
+                },
+            };
+        },
+        querySelector(selector) {
+            return selector.includes('data-resource-id="7"') ? current : null;
+        },
+    };
+
+    applyResourceMutation(documentRef, {
+        html: { row: '<tr data-resource-id="7"><td data-sequence></td></tr>' },
+        state: { id: 7 },
+        success: true,
+    });
+
+    assert.equal(replacementSequence.textContent, '4');
+});
+
 test('applyResourceMutation appends a new row and removes every deleted id', () => {
     const deletedOne = row(2);
     const deletedTwo = row(3);

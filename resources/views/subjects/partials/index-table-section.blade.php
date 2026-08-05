@@ -10,7 +10,7 @@
     .reorder-disabled .reorder-handle { cursor: not-allowed; opacity: .45; }
 </style>
 
-<div class="table-container" data-reorder-table data-reorder-url="{{ route('subjects.reorder') }}" data-can-reorder="{{ $canReorder ? 1 : 0 }}" data-start-order="{{ $subjects->firstItem() ?? 1 }}">
+<div class="table-container" data-async-table-region data-reorder-table data-reorder-url="{{ route('subjects.reorder') }}" data-can-reorder="{{ $canReorder ? 1 : 0 }}" data-start-order="{{ $subjects->firstItem() ?? 1 }}">
     <div class="table-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
         <h4><i class="fas fa-table me-2"></i>ข้อมูลรายวิชา</h4>
         <small class="text-muted" data-reorder-status></small>
@@ -31,13 +31,13 @@
                         <th style="width: 25%">การจัดการ</th>
                     </tr>
                 </thead>
-                <tbody data-reorder-body>
+                <tbody data-reorder-body data-resource-rows>
                     @foreach ($subjects as $index => $subject)
                         @php
                             $displayName = $subject->display_name ?? $subject->name_th ?? $subject->name_en ?? '';
                             $secondaryName = !empty($subject->name_th) ? ($subject->name_en ?? null) : null;
                         @endphp
-                        <tr class="reorder-row" data-id="{{ $subject->id }}">
+                        <tr class="reorder-row" data-id="{{ $subject->id }}" data-resource-row data-resource-id="{{ $subject->id }}">
                             <td class="text-center align-middle">
                                 <input type="checkbox" class="form-check-input" value="{{ $subject->id }}" aria-label="เลือก {{ $subject->code }} {{ $displayName }}" data-bulk-checkbox>
                             </td>

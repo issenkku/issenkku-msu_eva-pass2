@@ -105,7 +105,16 @@ class SubjectController extends Controller
         $subject = Subject::create($validated);
 
         if ($request->expectsJson()) {
-            return response()->json($subject, 201);
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มข้อมูลรายวิชาเรียบร้อยแล้ว',
+                'data' => ['subject' => $subject],
+                'html' => ['row' => view('subjects.partials.index-table-row', [
+                    'subject' => $subject,
+                    'sequence' => Subject::count(),
+                ])->render()],
+                'state' => ['id' => $subject->id],
+            ], 201);
         }
 
         $redirectTo = $request->input('redirect_to')
@@ -126,7 +135,13 @@ class SubjectController extends Controller
             $subject->update($request->validated());
 
             if ($request->expectsJson()) {
-                return response()->json($subject);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'อัปเดตข้อมูลรายวิชาเรียบร้อยแล้ว',
+                    'data' => ['subject' => $subject],
+                    'html' => ['row' => view('subjects.partials.index-table-row', compact('subject'))->render()],
+                    'state' => ['id' => $subject->id],
+                ]);
             }
 
             $redirectTo = $request->input('redirect_to')
@@ -162,7 +177,11 @@ class SubjectController extends Controller
             $subject->delete();
 
             if (request()->expectsJson()) {
-                return response()->json(['message' => 'Subject deleted successfully']);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'ลบข้อมูลรายวิชาเรียบร้อยแล้ว',
+                    'state' => ['deleted_ids' => [(int) $id], 'total' => Subject::count()],
+                ]);
             }
 
             $redirectTo = request()->input('redirect_to')
@@ -199,6 +218,17 @@ class SubjectController extends Controller
         ]);
 
         $deletedCount = Subject::whereIn('id', $validated['ids'])->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "ลบรายวิชาที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ",
+                'state' => [
+                    'deleted_ids' => collect($validated['ids'])->map(fn ($id) => (int) $id)->values(),
+                    'total' => Subject::count(),
+                ],
+            ]);
+        }
 
         return redirect()
             ->route('subjects.index')

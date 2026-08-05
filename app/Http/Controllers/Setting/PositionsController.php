@@ -60,6 +60,13 @@ class PositionsController extends Controller
         $existingPosition = Positions::where('name', $request->name)->first();
 
         if ($existingPosition) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น',
+                    'errors' => ['name' => ['ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']],
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
@@ -73,7 +80,19 @@ class PositionsController extends Controller
             $payload['sort_order'] = (Positions::max('sort_order') ?? 0) + 1;
         }
 
-        Positions::create($payload);
+        $position = Positions::create($payload);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มข้อมูลเรียบร้อยแล้ว',
+                'html' => ['row' => view('positions.partials.index-table-row', [
+                    'position' => $position,
+                    'sequence' => Positions::count(),
+                ])->render()],
+                'state' => ['id' => $position->id],
+            ], 201);
+        }
 
         return redirect()->route('positions.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
@@ -89,6 +108,13 @@ class PositionsController extends Controller
             ->first();
 
         if ($existingPosition) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น',
+                    'errors' => ['name' => ['ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']],
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['name' => 'ชื่อตำแหน่งนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
@@ -96,12 +122,25 @@ class PositionsController extends Controller
 
         $positions = Positions::find($id);
         if (! $positions) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลตำแหน่งที่ต้องการแก้ไข'], 404);
+            }
+
             return redirect()->route('positions.index')->with('error', 'ไม่พบข้อมูลตำแหน่งที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
         }
 
         $positions->update([
             'name' => $request->name,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตข้อมูลเรียบร้อยแล้ว',
+                'html' => ['row' => view('positions.partials.index-table-row', ['position' => $positions])->render()],
+                'state' => ['id' => $positions->id],
+            ]);
+        }
 
         return redirect()->route('positions.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
@@ -110,6 +149,10 @@ class PositionsController extends Controller
     {
         $positions = Positions::find($id);
         if (! $positions) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลตำแหน่งที่ต้องการลบ'], 404);
+            }
+
             return redirect()->route('positions.index')->with('error', 'ไม่พบข้อมูลตำแหน่งที่ต้องการลบ อาจถูกลบไปแล้ว');
         }
 
@@ -139,6 +182,10 @@ class PositionsController extends Controller
         }
 
         if ($bindings !== []) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => "ไม่สามารถลบตำแหน่ง {$positions->name} ได้ เนื่องจากยังถูกใช้งานอยู่"], 409);
+            }
+
             return redirect()->route('positions.index')->with(
                 'error',
                 "ไม่สามารถลบตำแหน่ง {$positions->name} ได้ เนื่องจากยังมีการผูกกับ ".implode(', ', $bindings)
@@ -146,6 +193,14 @@ class PositionsController extends Controller
         }
 
         $positions->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบข้อมูลเรียบร้อยแล้ว',
+                'state' => ['deleted_ids' => [(int) $id], 'total' => Positions::count()],
+            ]);
+        }
 
         return redirect()->route('positions.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }
@@ -178,6 +233,10 @@ class PositionsController extends Controller
         $deleteIds = $positions->pluck('id')->diff($blockedIds)->values();
 
         if ($deleteIds->isEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่สามารถลบตำแหน่งที่เลือกได้ เนื่องจากยังถูกใช้งานอยู่'], 409);
+            }
+
             return redirect()
                 ->route('positions.index')
                 ->with('error', 'ไม่สามารถลบตำแหน่งที่เลือกได้ เนื่องจากยังมีการผูกกับข้อมูลอื่น');
@@ -187,9 +246,25 @@ class PositionsController extends Controller
         $message = "ลบตำแหน่งที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
 
         if ($blockedIds->isNotEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$message} และข้าม {$blockedIds->count()} รายการที่ยังถูกใช้งานอยู่",
+                    'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => Positions::count()],
+                ]);
+            }
+
             return redirect()
                 ->route('positions.index')
                 ->with('success', "{$message} และข้าม {$blockedIds->count()} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => Positions::count()],
+            ]);
         }
 
         return redirect()->route('positions.index')->with('success', $message);

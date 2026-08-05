@@ -43,11 +43,13 @@
     @include('Job Level.partials.index-modal')
 
     <x-delete-warning-modal
+        :async="true"
         text="ระดับตำแหน่งงาน"
         formAction="{{ route('job-level.destroy', ':id') }}"
         entityUrl="/job-level" />
 
     <x-bulk-delete-modal
+        :async="true"
         modalId="bulkDeleteJobLevelsModal"
         title="ยืนยันการลบระดับตำแหน่งงาน"
         entityText="ระดับตำแหน่งงาน"

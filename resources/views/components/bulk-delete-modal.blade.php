@@ -4,6 +4,7 @@
     'entityText',
     'formAction',
     'inputName' => 'ids',
+    'async' => false,
     'buttonText' => 'ลบรายการที่เลือก',
 ])
 
@@ -29,7 +30,7 @@
                 <button type="button" class="rounded-md bg-gray-200 px-6 py-2 font-semibold text-gray-700 hover:bg-gray-300" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>ยกเลิก
                 </button>
-                <form method="POST" action="{{ $formAction }}" data-bulk-delete-form>
+                <form method="POST" action="{{ $formAction }}" data-bulk-delete-form @if($async) data-async-bulk-delete-form @endif>
                     @csrf
                     @method('DELETE')
                     <div data-bulk-delete-selected-inputs data-bulk-delete-input-name="{{ $inputName }}"></div>

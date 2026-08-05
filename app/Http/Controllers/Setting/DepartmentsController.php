@@ -59,6 +59,13 @@ class DepartmentsController extends Controller
         $existingDepartment = Departments::where('department_name', $request->department_name)->first();
 
         if ($existingDepartment) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น',
+                    'errors' => ['department_name' => ['ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']],
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['department_name' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
@@ -72,7 +79,19 @@ class DepartmentsController extends Controller
             $payload['sort_order'] = (Departments::max('sort_order') ?? 0) + 1;
         }
 
-        Departments::create($payload);
+        $department = Departments::create($payload);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มข้อมูลเรียบร้อยแล้ว',
+                'html' => ['row' => view('departments.partials.index-table-row', [
+                    'department' => $department,
+                    'sequence' => Departments::count(),
+                ])->render()],
+                'state' => ['id' => $department->id],
+            ], 201);
+        }
 
         return redirect()->route('departments.index')->with('success', 'เพิ่มข้อมูลเรียบร้อยแล้ว');
     }
@@ -88,6 +107,13 @@ class DepartmentsController extends Controller
             ->first();
 
         if ($existingDepartment) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น',
+                    'errors' => ['department_name' => ['ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']],
+                ], 422);
+            }
+
             return redirect()->back()
                 ->withInput()
                 ->withErrors(['department_name' => 'ชื่อแผนกนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น']);
@@ -95,12 +121,25 @@ class DepartmentsController extends Controller
 
         $department = Departments::find($id);
         if (! $department) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลแผนกที่ต้องการแก้ไข'], 404);
+            }
+
             return redirect()->route('departments.index')->with('error', 'ไม่พบข้อมูลแผนกที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
         }
 
         $department->update([
             'department_name' => $request->department_name,
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตข้อมูลเรียบร้อยแล้ว',
+                'html' => ['row' => view('departments.partials.index-table-row', compact('department'))->render()],
+                'state' => ['id' => $department->id],
+            ]);
+        }
 
         return redirect()->route('departments.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
     }
@@ -109,12 +148,20 @@ class DepartmentsController extends Controller
     {
         $department = Departments::find($id);
         if (! $department) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลแผนกที่ต้องการลบ'], 404);
+            }
+
             return redirect()->route('departments.index')->with('error', 'ไม่พบข้อมูลแผนกที่ต้องการลบ อาจถูกลบไปแล้ว');
         }
 
         $userCount = $department->user()->count();
 
         if ($userCount > 0) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => "ไม่สามารถลบหน่วยงาน {$department->department_name} ได้ เนื่องจากยังถูกใช้งานอยู่"], 409);
+            }
+
             return redirect()->route('departments.index')->with(
                 'error',
                 "ไม่สามารถลบหน่วยงาน {$department->department_name} ได้ เนื่องจากยังมีการผูกกับผู้ใช้ {$userCount} รายการ"
@@ -122,6 +169,14 @@ class DepartmentsController extends Controller
         }
 
         $department->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบข้อมูลเรียบร้อยแล้ว',
+                'state' => ['deleted_ids' => [(int) $id], 'total' => Departments::count()],
+            ]);
+        }
 
         return redirect()->route('departments.index')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
     }
@@ -140,6 +195,10 @@ class DepartmentsController extends Controller
         $deleteIds = $departments->where('user_count', 0)->pluck('id');
 
         if ($deleteIds->isEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่สามารถลบแผนกที่เลือกได้ เนื่องจากยังถูกใช้งานอยู่'], 409);
+            }
+
             return redirect()
                 ->route('departments.index')
                 ->with('error', 'ไม่สามารถลบแผนกที่เลือกได้ เนื่องจากยังมีการผูกกับผู้ใช้');
@@ -149,9 +208,25 @@ class DepartmentsController extends Controller
         $message = "ลบแผนกที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
 
         if ($blockedCount > 0) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่",
+                    'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => Departments::count()],
+                ]);
+            }
+
             return redirect()
                 ->route('departments.index')
                 ->with('success', "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => Departments::count()],
+            ]);
         }
 
         return redirect()->route('departments.index')->with('success', $message);

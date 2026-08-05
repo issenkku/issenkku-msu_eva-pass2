@@ -57,7 +57,19 @@ class JobLevelsController extends Controller
             $validated['sort_order'] = (JobLevel::max('sort_order') ?? 0) + 1;
         }
 
-        JobLevel::create($validated);
+        $jobLevel = JobLevel::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เพิ่มข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว',
+                'html' => ['row' => view('Job Level.partials.index-table-row', [
+                    'jobLevel' => $jobLevel,
+                    'sequence' => JobLevel::count(),
+                ])->render()],
+                'state' => ['id' => $jobLevel->id],
+            ], 201);
+        }
 
         return redirect()->route('job-level.index')->with('success', 'เพิ่มข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');
     }
@@ -66,6 +78,10 @@ class JobLevelsController extends Controller
     {
         $jobLevel = JobLevel::find($id);
         if (! $jobLevel) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการแก้ไข'], 404);
+            }
+
             return redirect()->route('job-level.index')->with('error', 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการแก้ไข อาจถูกลบไปแล้ว');
         }
 
@@ -78,6 +94,15 @@ class JobLevelsController extends Controller
 
         $jobLevel->update($validated);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'อัปเดตข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว',
+                'html' => ['row' => view('Job Level.partials.index-table-row', compact('jobLevel'))->render()],
+                'state' => ['id' => $jobLevel->id],
+            ]);
+        }
+
         return redirect()->route('job-level.index')->with('success', 'อัปเดตข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');
     }
 
@@ -85,12 +110,20 @@ class JobLevelsController extends Controller
     {
         $jobLevel = JobLevel::find($id);
         if (! $jobLevel) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการลบ'], 404);
+            }
+
             return redirect()->route('job-level.index')->with('error', 'ไม่พบข้อมูลระดับตำแหน่งงานที่ต้องการลบ อาจถูกลบไปแล้ว');
         }
 
         $userCount = $jobLevel->users()->count();
 
         if ($userCount > 0) {
+            if (request()->expectsJson()) {
+                return response()->json(['message' => "ไม่สามารถลบระดับตำแหน่งงาน {$jobLevel->name} ได้ เนื่องจากยังถูกใช้งานอยู่"], 409);
+            }
+
             return redirect()->route('job-level.index')->with(
                 'error',
                 "ไม่สามารถลบระดับตำแหน่งงาน {$jobLevel->name} ได้ เนื่องจากยังมีการผูกกับผู้ใช้ {$userCount} รายการ"
@@ -98,6 +131,14 @@ class JobLevelsController extends Controller
         }
 
         $jobLevel->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว',
+                'state' => ['deleted_ids' => [(int) $id], 'total' => JobLevel::count()],
+            ]);
+        }
 
         return redirect()->route('job-level.index')->with('success', 'ลบข้อมูลระดับตำแหน่งงานเรียบร้อยแล้ว');
     }
@@ -116,6 +157,10 @@ class JobLevelsController extends Controller
         $deleteIds = $jobLevels->where('users_count', 0)->pluck('id');
 
         if ($deleteIds->isEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'ไม่สามารถลบระดับตำแหน่งงานที่เลือกได้ เนื่องจากยังถูกใช้งานอยู่'], 409);
+            }
+
             return redirect()
                 ->route('job-level.index')
                 ->with('error', 'ไม่สามารถลบระดับตำแหน่งงานที่เลือกได้ เนื่องจากยังมีการผูกกับผู้ใช้');
@@ -125,9 +170,25 @@ class JobLevelsController extends Controller
         $message = "ลบระดับตำแหน่งงานที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
 
         if ($blockedCount > 0) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่",
+                    'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => JobLevel::count()],
+                ]);
+            }
+
             return redirect()
                 ->route('job-level.index')
                 ->with('success', "{$message} และข้าม {$blockedCount} รายการที่ยังถูกใช้งานอยู่");
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'state' => ['deleted_ids' => $deleteIds->map(fn ($id) => (int) $id)->values(), 'total' => JobLevel::count()],
+            ]);
         }
 
         return redirect()->route('job-level.index')->with('success', $message);

@@ -182,7 +182,7 @@
 
         if (form && modalEl && isFormValid) {
             const submitBtn = document.getElementById('subjectSubmitBtn');
-            if (submitBtn) {
+            if (submitBtn && !window.MasterDataPage) {
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>กำลังบันทึก...';
                 submitBtn.disabled = true;
@@ -193,11 +193,22 @@
                 }, 5000);
             }
 
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
+            if (!window.MasterDataPage) {
+                bootstrap.Modal.getInstance(modalEl)?.hide();
+                form.submit();
+                return;
             }
-            form.submit();
+
+            window.MasterDataPage.submitMasterDataForm({
+                applyMutation: (payload) => window.MasterDataPage.reconcileMasterDataMutation(document, payload),
+                applyValidationErrors: (errors) => window.MasterDataPage.applyMasterDataValidationErrors(form, errors, {
+                    name_th: 'subjectNameError',
+                }),
+                button: submitBtn,
+                form,
+                hideModal: () => bootstrap.Modal.getInstance(modalEl)?.hide(),
+                resetForm,
+            });
         }
     }
 
@@ -264,19 +275,20 @@
             creditsError.textContent = 'กรุณากรอกหน่วยกิต';
         }
 
-        document.querySelectorAll('[data-role="subject-edit-trigger"]').forEach((button) => {
-            button.addEventListener('click', function() {
+        document.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-role="subject-edit-trigger"]');
+            if (button) {
                 handleEdit(
-                    this.dataset.id,
-                    this.dataset.code || '',
-                    this.dataset.nameTh || '',
-                    this.dataset.nameEn || '',
-                    this.dataset.credits || 0,
-                    this.dataset.lectureCredits || 0,
-                    this.dataset.labCredits || 0,
-                    this.dataset.selfStudyCredits || 0
+                    button.dataset.id,
+                    button.dataset.code || '',
+                    button.dataset.nameTh || '',
+                    button.dataset.nameEn || '',
+                    button.dataset.credits || 0,
+                    button.dataset.lectureCredits || 0,
+                    button.dataset.labCredits || 0,
+                    button.dataset.selfStudyCredits || 0
                 );
-            });
+            }
         });
 
         const codeInput = document.getElementById('code');

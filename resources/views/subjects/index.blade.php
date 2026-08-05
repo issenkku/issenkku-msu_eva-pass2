@@ -69,11 +69,13 @@
     ])
 
     <x-delete-warning-modal
+        :async="true"
         text="รายวิชา"
         formAction="{{ route('subjects.destroy', ':id') }}"
         entityUrl="/subjects" />
 
     <x-bulk-delete-modal
+        :async="true"
         modalId="bulkDeleteSubjectsModal"
         title="ยืนยันการลบรายวิชา"
         entityText="รายวิชา"

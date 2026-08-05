@@ -56,11 +56,13 @@
     @include('positions.partials.index-modal')
 
     <x-delete-warning-modal
+        :async="true"
         text="ตำแหน่ง"
         formAction="{{ route('positions.destroy', ':id') }}"
         entityUrl="/positions" />
 
     <x-bulk-delete-modal
+        :async="true"
         modalId="bulkDeletePositionsModal"
         title="ยืนยันการลบตำแหน่ง"
         entityText="ตำแหน่ง"

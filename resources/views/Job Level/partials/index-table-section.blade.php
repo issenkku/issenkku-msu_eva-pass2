@@ -10,7 +10,7 @@
     .reorder-disabled .reorder-handle { cursor: not-allowed; opacity: .45; }
 </style>
 
-<div class="table-container" data-reorder-table data-reorder-url="{{ route('job-level.reorder') }}" data-can-reorder="{{ $canReorder ? 1 : 0 }}" data-start-order="{{ $jobLevels->firstItem() ?? 1 }}">
+<div class="table-container" data-async-table-region data-reorder-table data-reorder-url="{{ route('job-level.reorder') }}" data-can-reorder="{{ $canReorder ? 1 : 0 }}" data-start-order="{{ $jobLevels->firstItem() ?? 1 }}">
     <div class="table-header d-flex justify-content-between align-items-center gap-3 flex-wrap">
         <h4><i class="fas fa-table me-2"></i>ข้อมูลระดับตำแหน่งงาน</h4>
         <small class="text-muted" data-reorder-status></small>
@@ -30,9 +30,9 @@
                         <th style="width: 20%">การจัดการ</th>
                     </tr>
                 </thead>
-                <tbody data-reorder-body>
+                <tbody data-reorder-body data-resource-rows>
                     @foreach ($jobLevels as $index => $jobLevel)
-                        <tr class="reorder-row" data-id="{{ $jobLevel->id }}">
+                        <tr class="reorder-row" data-id="{{ $jobLevel->id }}" data-resource-row data-resource-id="{{ $jobLevel->id }}">
                             <td class="text-center align-middle">
                                 <input type="checkbox" class="form-check-input" value="{{ $jobLevel->id }}" aria-label="เลือก {{ $jobLevel->name }}" data-bulk-checkbox>
                             </td>

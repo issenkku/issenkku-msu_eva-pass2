@@ -104,7 +104,7 @@
 
         if (form && modalEl && isFormValid) {
             const submitBtn = document.getElementById('departmentSubmitBtn');
-            if (submitBtn) {
+            if (submitBtn && !window.MasterDataPage) {
                 const originalText = submitBtn.innerHTML;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>กำลังบันทึก...';
                 submitBtn.disabled = true;
@@ -115,12 +115,20 @@
                 }, 5000);
             }
 
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            if (modal) {
-                modal.hide();
+            if (!window.MasterDataPage) {
+                bootstrap.Modal.getInstance(modalEl)?.hide();
+                form.submit();
+                return;
             }
 
-            form.submit();
+            window.MasterDataPage.submitMasterDataForm({
+                applyMutation: (payload) => window.MasterDataPage.reconcileMasterDataMutation(document, payload),
+                applyValidationErrors: (errors) => window.MasterDataPage.applyMasterDataValidationErrors(form, errors),
+                button: submitBtn,
+                form,
+                hideModal: () => bootstrap.Modal.getInstance(modalEl)?.hide(),
+                resetForm,
+            });
         }
     }
 
@@ -196,10 +204,9 @@
             });
         }
 
-        document.querySelectorAll('[data-department-edit]').forEach((button) => {
-            button.addEventListener('click', function() {
-                handleEdit(this.dataset.departmentId, this.dataset.departmentName || '');
-            });
+        document.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-department-edit]');
+            if (button) handleEdit(button.dataset.departmentId, button.dataset.departmentName || '');
         });
 
         const messages = document.querySelectorAll('#successMessage, #warningMessage, #errorMessage');

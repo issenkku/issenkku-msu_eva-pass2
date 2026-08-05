@@ -2,6 +2,7 @@
     'text',
     'formAction' => '#',
     'entityUrl' => null,
+    'async' => false,
 ])
 
 {{-- Delete Confirmation Modal --}}
@@ -25,7 +26,7 @@
                 <button type="button" class="rounded-md bg-gray-200 px-6 py-2 font-semibold text-gray-700 hover:bg-gray-300" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>ยกเลิก
                 </button>
-                <form id="deleteForm" method="POST" style="display: inline;">
+                <form id="deleteForm" method="POST" style="display: inline;" @if($async) data-async-delete-form @endif>
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="rounded-md bg-red-600 px-6 py-2 font-semibold text-white hover:bg-red-500">

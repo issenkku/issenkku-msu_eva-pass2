@@ -27,6 +27,11 @@ export function applyResourceMutation(documentRef, payload, options = {}) {
 
     const current = documentRef.querySelector(resourceSelector(state.id));
     if (current) {
+        const currentSequence = current.querySelector?.('[data-sequence]')?.textContent;
+        const replacementSequence = replacement.querySelector?.('[data-sequence]');
+        if (replacementSequence && currentSequence !== undefined) {
+            replacementSequence.textContent = currentSequence;
+        }
         current.replaceWith(replacement);
         return;
     }
