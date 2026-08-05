@@ -156,6 +156,7 @@ git commit -m "feat: return live workload data after deletion"
 - Modify: `resources/views/evaluatee/partials/workload-row-actions.blade.php`
 - Create: `resources/views/evaluatee/partials/workload-script-entry-delete.blade.php`
 - Modify: `resources/views/evaluatee/partials/workload-scripts.blade.php`
+- Modify: `resources/views/evaluatee/partials/workload-script-save-reminder.blade.php`
 - Test: `tests/js/workload-entry-submit.test.mjs`
 
 **Interfaces:**
@@ -279,7 +280,7 @@ showMessage: function (message, isError) {
 },
 ```
 
-Expose the existing `showWorkloadSaveMessage` as `window.showWorkloadSaveMessage` in the entry submit partial, and include the new delete initializer after `workload-script-entry-modal` in `workload-scripts.blade.php`.
+Expose the existing `showWorkloadSaveMessage` as `window.showWorkloadSaveMessage` in the entry submit partial, and include the new delete initializer after `workload-script-entry-modal` in `workload-scripts.blade.php`. In `workload-script-save-reminder.blade.php`, treat `#deleteForm[data-workload-item-id]` like `#workloadEntryForm` so its intercepted async submit does not set `allowPageExit`.
 
 - [ ] **Step 8: Run focused tests to verify GREEN**
 
@@ -302,7 +303,7 @@ php vendor/bin/pest tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php test
 php vendor/bin/pint --test app/Http/Controllers/Evaluatee/EvaluateeWorkloadEntryController.php tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php
 npx prettier --check resources/js/workload-entry-submit.js tests/js/workload-entry-submit.test.mjs
 npm run build
-git diff --check -- app/Http/Controllers/Evaluatee/EvaluateeWorkloadEntryController.php resources/js/workload-entry-submit.js resources/views/evaluatee/partials/workload-row-actions.blade.php resources/views/evaluatee/partials/workload-script-entry-delete.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/views/evaluatee/partials/workload-scripts.blade.php tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php tests/js/workload-entry-submit.test.mjs
+git diff --check -- app/Http/Controllers/Evaluatee/EvaluateeWorkloadEntryController.php resources/js/workload-entry-submit.js resources/views/evaluatee/partials/workload-row-actions.blade.php resources/views/evaluatee/partials/workload-script-entry-delete.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/views/evaluatee/partials/workload-script-save-reminder.blade.php resources/views/evaluatee/partials/workload-scripts.blade.php tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php tests/js/workload-entry-submit.test.mjs
 ```
 
 Expected: all commands exit `0`; JavaScript and PHP suites report zero failures; Vite produces a production bundle.
@@ -310,6 +311,6 @@ Expected: all commands exit `0`; JavaScript and PHP suites report zero failures;
 - [ ] **Step 10: Commit the client behavior**
 
 ```powershell
-git add resources/js/workload-entry-submit.js resources/views/evaluatee/partials/workload-row-actions.blade.php resources/views/evaluatee/partials/workload-script-entry-delete.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/views/evaluatee/partials/workload-scripts.blade.php tests/js/workload-entry-submit.test.mjs
+git add resources/js/workload-entry-submit.js resources/views/evaluatee/partials/workload-row-actions.blade.php resources/views/evaluatee/partials/workload-script-entry-delete.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/views/evaluatee/partials/workload-script-save-reminder.blade.php resources/views/evaluatee/partials/workload-scripts.blade.php tests/js/workload-entry-submit.test.mjs
 git commit -m "feat: delete workload entries without refresh"
 ```
