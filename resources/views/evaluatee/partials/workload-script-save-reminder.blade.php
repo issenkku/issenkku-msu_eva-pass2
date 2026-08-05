@@ -73,7 +73,13 @@
         }
 
         document.addEventListener('submit', function (event) {
-            if (event.target && event.target.id === 'workloadEntryForm') {
+            if (
+                event.target &&
+                (
+                    event.target.id === 'workloadEntryForm' ||
+                    (event.target.id === 'deleteForm' && event.target.dataset.workloadItemId)
+                )
+            ) {
                 return;
             }
             allowPageExit = true;

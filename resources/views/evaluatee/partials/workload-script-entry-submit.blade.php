@@ -19,6 +19,8 @@
         }, 5000);
     }
 
+    window.showWorkloadSaveMessage = showWorkloadSaveMessage;
+
     function initWorkloadEntrySubmit() {
         if (!workloadForm) {
             return;

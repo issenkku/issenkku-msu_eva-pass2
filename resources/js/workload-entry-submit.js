@@ -163,6 +163,40 @@ export function createWorkloadEntrySubmitCoordinator(options) {
     };
 }
 
+export function createWorkloadEntryDeleteCoordinator(options) {
+    let isDeleting = false;
+
+    return async function handleWorkloadEntryDelete(event) {
+        event.preventDefault();
+        if (isDeleting) {
+            return;
+        }
+
+        isDeleting = true;
+        const submitButton = options.getSubmitButton?.();
+        const originalButtonLabel = submitButton?.textContent ?? '';
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = options.deletingLabel ?? 'กำลังลบ...';
+        }
+
+        try {
+            const payload = await options.requestDelete(options.form);
+            options.applyResponse(payload);
+            options.hideModal();
+            options.showMessage(payload.message, false);
+        } catch {
+            options.showMessage('ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง', true);
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonLabel;
+            }
+            isDeleting = false;
+        }
+    };
+}
+
 export function hideWorkloadEntryModalIfCurrent(submissionSession, currentSession, hideModal) {
     if (submissionSession !== currentSession) {
         return false;
@@ -218,6 +252,7 @@ if (typeof window !== 'undefined') {
     window.WorkloadEntrySubmit = {
         requestWorkloadEntrySave,
         applyWorkloadEntrySaveResponse,
+        createWorkloadEntryDeleteCoordinator,
         createWorkloadEntrySubmitCoordinator,
         hideWorkloadEntryModalIfCurrent,
         markWorkloadValidationErrors,

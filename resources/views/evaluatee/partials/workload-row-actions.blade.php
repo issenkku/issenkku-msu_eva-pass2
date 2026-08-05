@@ -23,6 +23,7 @@
             class="workload-mini-btn workload-delete-btn"
             data-delete-trigger
             data-delete-id="{{ $rowView['id'] }}"
+            data-workload-item-id="{{ $itemView['id'] ?? '' }}"
         >
             <i class="fas fa-trash-alt"></i>
             <span>&#3621;&#3610;</span>

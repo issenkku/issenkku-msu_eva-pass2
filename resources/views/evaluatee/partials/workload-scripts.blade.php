@@ -4,6 +4,7 @@
 />
 
 @include('evaluatee.partials.workload-script-entry-modal')
+@include('evaluatee.partials.workload-script-entry-delete')
 @include('evaluatee.partials.workload-script-subject-modal')
 @include('evaluatee.partials.workload-script-subject-form')
 @include('evaluatee.partials.workload-script-evidence-links')

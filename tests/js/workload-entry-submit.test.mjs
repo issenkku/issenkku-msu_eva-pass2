@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const {
     applyWorkloadEntrySaveResponse,
+    createWorkloadEntryDeleteCoordinator,
     createWorkloadEntrySubmitCoordinator,
     hideWorkloadEntryModalIfCurrent,
     markWorkloadValidationErrors,
@@ -343,6 +344,82 @@ test('submit coordinator snapshots the originating dropdown when submission star
     assert.deepEqual(harness.calls.applyContext, [{ dropdownItemId: '12' }]);
 });
 
+test('delete coordinator prevents navigation, blocks duplicates, and applies success', async () => {
+    const pending = deferred();
+    const calls = { apply: [], hide: 0, requests: 0, messages: [] };
+    const button = { disabled: false, textContent: 'Delete' };
+    const form = { dataset: { workloadItemId: '12' } };
+    const coordinator = createWorkloadEntryDeleteCoordinator({
+        applyResponse(payload) {
+            calls.apply.push(payload);
+        },
+        form,
+        getSubmitButton: () => button,
+        hideModal() {
+            calls.hide += 1;
+        },
+        requestDelete: async (submittedForm) => {
+            assert.equal(submittedForm, form);
+            calls.requests += 1;
+            return pending.promise;
+        },
+        showMessage(message, isError) {
+            calls.messages.push({ message, isError });
+        },
+    });
+    const first = submitEvent();
+    const duplicate = submitEvent();
+
+    const submission = coordinator(first);
+    const duplicateSubmission = coordinator(duplicate);
+    pending.resolve({ message: 'Deleted', panels_html: '', summary_html: '', total_score: 0, active_item_id: 12 });
+    await Promise.all([submission, duplicateSubmission]);
+
+    assert.equal(first.prevented, 1);
+    assert.equal(duplicate.prevented, 1);
+    assert.equal(calls.requests, 1);
+    assert.equal(calls.hide, 1);
+    assert.equal(button.disabled, false);
+    assert.equal(button.textContent, 'Delete');
+    assert.equal(calls.apply[0].active_item_id, 12);
+    assert.deepEqual(calls.messages, [{ message: 'Deleted', isError: false }]);
+});
+
+test('delete coordinator preserves the page and restores controls after failure', async () => {
+    const error = Object.assign(new Error('Delete failed'), { status: 500 });
+    const calls = { apply: 0, hide: 0, messages: [] };
+    const button = { disabled: false, textContent: 'Delete' };
+    const coordinator = createWorkloadEntryDeleteCoordinator({
+        applyResponse() {
+            calls.apply += 1;
+        },
+        form: { dataset: { workloadItemId: '12' } },
+        getSubmitButton: () => button,
+        hideModal() {
+            calls.hide += 1;
+        },
+        requestDelete: async () => {
+            throw error;
+        },
+        showMessage(message, isError) {
+            calls.messages.push({ message, isError });
+        },
+    });
+
+    await coordinator(submitEvent());
+
+    assert.equal(calls.apply, 0);
+    assert.equal(calls.hide, 0);
+    assert.equal(button.disabled, false);
+    assert.equal(button.textContent, 'Delete');
+    assert.deepEqual(calls.messages, [
+        {
+            message: 'ไม่สามารถลบข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+            isError: true,
+        },
+    ]);
+});
+
 test('submit coordinator keeps values and restores the button for 422, network, and malformed failures', async (t) => {
     const cases = [
         {
@@ -580,6 +657,11 @@ test('workload entry partials retain the async submission contract', () => {
         new URL('../../resources/views/evaluatee/partials/workload-script-save-reminder.blade.php', import.meta.url),
         'utf8',
     );
+    const rowActions = readFileSync(new URL('../../resources/views/evaluatee/partials/workload-row-actions.blade.php', import.meta.url), 'utf8');
+    const entryDelete = readFileSync(
+        new URL('../../resources/views/evaluatee/partials/workload-script-entry-delete.blade.php', import.meta.url),
+        'utf8',
+    );
 
     assert.match(entrySubmit, /event\.preventDefault\(\)/);
     assert.match(entrySubmit, /createWorkloadEntrySubmitCoordinator/);
@@ -591,4 +673,9 @@ test('workload entry partials retain the async submission contract', () => {
     assert.match(saveReminder, /let currentTotal/);
     assert.match(saveReminder, /workload:total-updated/);
     assert.match(saveReminder, /event\.target\.id === 'workloadEntryForm'/);
+    assert.match(saveReminder, /event\.target\.id === 'deleteForm'/);
+    assert.match(rowActions, /data-workload-item-id/);
+    assert.match(entryDelete, /createWorkloadEntryDeleteCoordinator/);
+    assert.match(entryDelete, /event\.target\.closest\('\[data-delete-trigger\]'\)/);
+    assert.match(entryDelete, /applyWorkloadEntrySaveResponse/);
 });
