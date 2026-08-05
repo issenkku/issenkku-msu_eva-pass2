@@ -20,7 +20,7 @@
                 <button type="button" class="rounded-md bg-gray-200 px-6 py-2 font-semibold text-gray-700 hover:bg-gray-300" data-bs-dismiss="modal">
                     <i class="fas fa-times me-2"></i>ยกเลิก
                 </button>
-                <form method="POST" action="{{ route('users.bulk-destroy') }}" data-user-bulk-delete-form>
+                <form method="POST" action="{{ route('users.bulk-destroy') }}" data-user-bulk-delete-form data-async-bulk-delete-form>
                     @csrf
                     @method('DELETE')
                     <div data-user-bulk-delete-selected-inputs></div>

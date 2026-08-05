@@ -127,12 +127,32 @@
                 }
             });
 
-            statusConfirmButton?.addEventListener('click', () => {
+            statusConfirmButton?.addEventListener('click', async () => {
                 if (!bulkStatusForm || !bulkStatusValue?.value || getSelectedIds().length === 0) {
                     return;
                 }
 
-                bulkStatusForm.submit();
+                const coordinator = window.AsyncForm?.createAsyncFormCoordinator({
+                    applySuccess: async () => {
+                        await window.AsyncResourceTable.refreshTableRegion(
+                            window.location.href,
+                            '[data-async-table-region]',
+                        );
+                        bootstrap.Modal.getOrCreateInstance(statusModalElement).hide();
+                        window.MasterDataPage.initializeAsyncDeleteForms(document);
+                        updateBulkDeleteState();
+                    },
+                    form: bulkStatusForm,
+                    getSubmitButton: () => statusConfirmButton,
+                    request: window.AsyncForm.requestFormMutation,
+                    showMessage: window.MasterDataPage.showMasterDataMessage,
+                });
+
+                if (coordinator) {
+                    await coordinator({ preventDefault() {} });
+                } else {
+                    bulkStatusForm.submit();
+                }
             });
 
             updateBulkDeleteState();

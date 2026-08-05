@@ -14,7 +14,6 @@
         const checkUniqueUrl = @json(route('users.users.check-unique'));
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         let currentUserId = null;
-        let submitAfterValidation = false;
 
         const fieldNames = [
             'prefix',
@@ -319,23 +318,35 @@
         });
 
         form?.addEventListener('submit', async (event) => {
-            if (submitAfterValidation) {
-                submitAfterValidation = false;
+            event.preventDefault();
+
+            if (!await validateBeforeSubmit()) {
                 return;
             }
 
-            event.preventDefault();
+            const coordinator = window.MasterDataPage?.createMasterDataSubmitCoordinator({
+                applyMutation: async () => {
+                    await window.AsyncResourceTable.refreshTableRegion(
+                        window.location.href,
+                        '[data-async-table-region]',
+                    );
+                    window.MasterDataPage.initializeAsyncDeleteForms(document);
+                },
+                applyValidationErrors: (errors) => {
+                    Object.entries(errors || {}).forEach(([name, messages]) => {
+                        const field = name.split('.')[0];
+                        setFieldError(field, Array.isArray(messages) ? messages[0] : String(messages));
+                    });
+                },
+                button: form.querySelector('button[type="submit"]'),
+                form,
+                hideModal: window.closeModal,
+            });
 
-            const submitButton = form.querySelector('button[type="submit"]');
-            submitButton?.setAttribute('disabled', 'disabled');
-
-            try {
-                if (await validateBeforeSubmit()) {
-                    submitAfterValidation = true;
-                    form.requestSubmit();
-                }
-            } finally {
-                submitButton?.removeAttribute('disabled');
+            if (coordinator) {
+                await coordinator({ preventDefault() {} });
+            } else {
+                form.submit();
             }
         });
 

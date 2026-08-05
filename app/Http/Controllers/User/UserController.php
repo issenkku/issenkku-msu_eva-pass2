@@ -29,7 +29,7 @@ use Spatie\Permission\Models\Role;
 class UserController extends Controller
 {
     // create page to add use
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $request->validate([
             'prefix' => 'required|string|max:50',
@@ -78,7 +78,18 @@ class UserController extends Controller
         // ป้องกัน assignRole ถ้าไม่มีค่า role
         $user->syncRoles($request->input('roles', []));
 
-        return redirect()->route('users.index')->with('success', 'เพิ่มผู้ใช้เรียบร้อยแล้ว');
+        $message = 'เพิ่มผู้ใช้เรียบร้อยแล้ว';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'html' => ['row' => $this->renderUserRow($user)],
+                'state' => ['id' => $user->id],
+            ], 201);
+        }
+
+        return redirect()->route('users.index')->with('success', $message);
     }
 
     // Add this method to your UserController
@@ -458,7 +469,7 @@ class UserController extends Controller
         return view('user.management.index', compact('users', 'departments', 'positions', 'jobLevels', 'roles', 'user'));
     }
 
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user)
     {
         $rules = [
             'prefix' => 'required|string|max:50',
@@ -511,6 +522,13 @@ class UserController extends Controller
         $validated['bio'] = $this->buildEducationBio($educationHistory, $validated['bio'] ?? null);
 
         if ($this->wouldRemoveLastActiveAdmin($user, $validated['status'], $request->input('roles', []))) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน',
+                ], 409);
+            }
+
             return redirect()
                 ->route('users.index')
                 ->with('error', 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน');
@@ -546,23 +564,50 @@ class UserController extends Controller
             ], $user, $request->user());
         }
 
-        return redirect()->route('users.index')->with('success', 'อัปเดตข้อมูลเรียบร้อยแล้ว');
+        $message = 'อัปเดตข้อมูลเรียบร้อยแล้ว';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'html' => ['row' => $this->renderUserRow($user)],
+                'state' => ['id' => $user->id],
+            ]);
+        }
+
+        return redirect()->route('users.index')->with('success', $message);
     }
 
     public function destroy(User $user)
     {
         if ($this->wouldRemoveLastActiveAdmin($user, 'inactive', [])) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน',
+                ], 409);
+            }
+
             return redirect()
                 ->route('users.index')
                 ->with('error', 'ต้องเหลือผู้ดูแลระบบที่เปิดใช้งานอย่างน้อย 1 คน');
         }
 
+        $userId = $user->id;
         $user->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'ลบเรียบร้อยแล้ว',
+                'state' => ['deleted_ids' => [$userId]],
+            ]);
+        }
 
         return redirect()->route('users.index')->with('success', 'ลบเรียบร้อยแล้ว');
     }
 
-    public function bulkDestroy(Request $request): RedirectResponse
+    public function bulkDestroy(Request $request)
     {
         $validated = $request->validate([
             'user_ids' => ['required', 'array', 'min:1'],
@@ -577,6 +622,13 @@ class UserController extends Controller
         $userIds = $this->skipAdminsNeededToKeepOneActiveAdmin($userIds, $currentUserId);
 
         if ($userIds->isEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้',
+                ], 409);
+            }
+
             return redirect()
                 ->route('users.index')
                 ->with('error', 'ไม่สามารถลบบัญชีที่กำลังใช้งานอยู่ได้');
@@ -601,12 +653,25 @@ class UserController extends Controller
             'skipped_current_user_id' => in_array($currentUserId, $validated['user_ids'], true) ? $currentUserId : null,
         ], null, $request->user());
 
+        $message = "ลบเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ";
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'state' => [
+                    'deleted_ids' => $userIds->all(),
+                    'total' => $deletedCount,
+                ],
+            ]);
+        }
+
         return redirect()
             ->route('users.index')
-            ->with('success', "ลบเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$deletedCount} รายการ");
+            ->with('success', $message);
     }
 
-    public function bulkUpdateStatus(Request $request): RedirectResponse
+    public function bulkUpdateStatus(Request $request)
     {
         $validated = $request->validate([
             'user_ids' => ['required', 'array', 'min:1'],
@@ -626,6 +691,13 @@ class UserController extends Controller
         }
 
         if ($userIds->isEmpty()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ไม่สามารถปิดใช้งานบัญชีที่กำลังใช้งานอยู่ได้',
+                ], 409);
+            }
+
             return redirect()
                 ->route('users.index')
                 ->with('error', 'ไม่สามารถปิดใช้งานบัญชีที่กำลังใช้งานอยู่ได้');
@@ -654,9 +726,33 @@ class UserController extends Controller
                 : null,
         ], null, $request->user());
 
+        $message = "เปลี่ยนสถานะเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$updatedCount} รายการ";
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'state' => [
+                    'updated_ids' => $userIds->all(),
+                    'status' => $status,
+                    'total' => $updatedCount,
+                ],
+            ]);
+        }
+
         return redirect()
             ->route('users.index')
-            ->with('success', "เปลี่ยนสถานะเจ้าหน้าที่ที่เลือกเรียบร้อยแล้ว {$updatedCount} รายการ");
+            ->with('success', $message);
+    }
+
+    private function renderUserRow(User $user): string
+    {
+        $user->loadMissing(['position', 'jobLevel', 'roles']);
+
+        return view('user.management.partials.index-table-row', [
+            'index' => 1,
+            'user' => $user,
+        ])->render();
     }
 
     private function wouldRemoveLastActiveAdmin(User $user, string $nextStatus, array $nextRoles): bool

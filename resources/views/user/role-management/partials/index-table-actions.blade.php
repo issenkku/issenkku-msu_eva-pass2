@@ -6,6 +6,7 @@
     action="{{ route('roles.destroy', $role) }}"
     class="inline-block"
     onsubmit="return confirm('ลบบทบาทนี้ใช่หรือไม่?')"
+    data-async-delete-form
 >
     @csrf
     @method('DELETE')

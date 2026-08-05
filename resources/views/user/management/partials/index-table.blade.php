@@ -2,7 +2,7 @@
 <div class="overflow-x-auto">
     <table class="min-w-full bg-white rounded-lg shadow">
         @include('user.management.partials.index-table-head')
-        <tbody>
+        <tbody data-resource-rows data-async-table-region>
             @forelse ($users as $index => $user)
                 <x-user-table :index="$users->firstItem() + $index" :employee="[
                     'id' => $user['id'],

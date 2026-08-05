@@ -7,4 +7,5 @@
     text="เจ้าหน้าที่"
     formAction="{{ route('users.destroy', ':id') }}"
     entityUrl="/users"
+    :async="true"
 />

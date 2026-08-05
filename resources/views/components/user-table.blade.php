@@ -42,7 +42,7 @@
     $editUserPayloadEncoded = base64_encode(json_encode($editUserPayload, JSON_UNESCAPED_UNICODE));
 @endphp
 
-<tr class="border-b">
+<tr class="border-b" data-resource-row data-resource-id="{{ $employee['id'] }}">
     <td class="p-4 text-center">
         <input
             type="checkbox"

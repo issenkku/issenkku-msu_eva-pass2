@@ -63,8 +63,25 @@ class RoleAndPermissionController extends Controller
             'permissions' => 'nullable|array',
         ]);
 
-        $role = Role::create(['name' => $request->name]);
+        $role = Role::create([
+            'name' => $request->name,
+            'guard_name' => 'web',
+        ]);
         $role->syncPermissions($request->permissions ?? []);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role created.',
+                'html' => [
+                    'row' => view('user.role-management.partials.index-table-row', [
+                        'index' => Role::count(),
+                        'role' => $role->load('permissions'),
+                    ])->render(),
+                ],
+                'state' => ['id' => $role->id],
+            ], 201);
+        }
 
         return redirect()->route('roles.index')->with('success', 'Role created.');
     }
@@ -162,7 +179,16 @@ class RoleAndPermissionController extends Controller
 
     public function destroy(Role $role)
     {
+        $roleId = $role->id;
         $role->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role deleted successfully.',
+                'state' => ['deleted_ids' => [$roleId]],
+            ]);
+        }
 
         return redirect()->route('roles.index')->with(['message' => 'Role deleted successfully.']);
     }
