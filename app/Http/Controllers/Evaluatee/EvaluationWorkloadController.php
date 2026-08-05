@@ -8,6 +8,7 @@ use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\Subject;
+use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Rules\ActiveQuantitySubCriteria;
 use App\Services\PreviousWorkloadImportService;
