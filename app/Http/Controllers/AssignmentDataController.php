@@ -283,10 +283,11 @@ class AssignmentDataController extends Controller
     /**
      * ลบรอบการประเมินพร้อมข้อมูลลูกที่เกี่ยวข้อง
      */
-    public function destroy(AssignmentData $assignmentData)
+    public function destroy(Request $request, AssignmentData $assignmentData)
     {
         try {
             DB::beginTransaction();
+            $assignmentDataId = $assignmentData->id;
 
             // ลบ report ที่ผูกอยู่กับ assignment แต่ละรายการก่อน
             foreach ($assignmentData->assignments as $assignment) {
@@ -301,10 +302,20 @@ class AssignmentDataController extends Controller
 
             DB::commit();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'ลบรอบการประเมินเรียบร้อยแล้ว',
-            ]);
+            $message = 'ลบรอบการประเมินเรียบร้อยแล้ว';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'state' => [
+                        'deleted_ids' => [$assignmentDataId],
+                        'total' => AssignmentData::count(),
+                    ],
+                ]);
+            }
+
+            return redirect()->route('assignment-data.index')->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting assignment data', [

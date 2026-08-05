@@ -157,8 +157,14 @@
         $.ajax({
             url: `/assignment-data/${id}`,
             type: 'DELETE',
+            dataType: 'json',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             success: function(response) {
                 if (response.success) {
+                    window.AsyncResourceTable.applyResourceMutation(document, response);
                     const successHtml = `
                         <div id="deleteSuccessMessage" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] transform transition-transform duration-300">
                             <div class="flex items-center space-x-3">
@@ -172,10 +178,17 @@
                     $('body').append(successHtml);
 
                     setTimeout(() => {
-                        $('#deleteSuccessMessage').fadeOut(() => {
-                            location.reload();
+                        $('#deleteSuccessMessage').fadeOut(function () {
+                            $(this).remove();
                         });
                     }, 1500);
+
+                    if (!document.querySelector('[data-async-table-region] [data-resource-row]')) {
+                        window.AsyncResourceTable.refreshTableRegion(
+                            window.location.href,
+                            '[data-async-table-region]',
+                        );
+                    }
                     return;
                 }
 

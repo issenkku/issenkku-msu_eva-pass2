@@ -491,7 +491,9 @@ class ReportStructureTest extends TestCase
         $response = $this->deleteJson(route('report-structure.destroy', $criteriaVersion->id));
 
         // Assert: Check successful deletion
-        $response->assertStatus(204);
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('state.deleted_ids.0', $criteriaVersion->id);
 
         // Verify data is deleted from database
         $this->assertDatabaseMissing('criteria_versions', [

@@ -83,6 +83,8 @@
                 // item = CriteriaVersionResource
                 const card = document.createElement('div');
                 card.className = 'bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col justify-between';
+                card.setAttribute('data-resource-row', '');
+                card.setAttribute('data-resource-id', item.id);
                 // Fix: support both created_by (object) and created_by_name (string or null)
                 let creatorName = '-';
                 if (item.created_by && typeof item.created_by === 'object' && item.created_by.name) {
@@ -226,9 +228,12 @@
                 });
             })
             .then(res => res.ok ? res.json() : res.json().then(err => { throw new Error(err.message || 'เกิดข้อผิดพลาดในการคัดลอก'); }))
-            .then(() => {
+            .then((response) => {
+                window.AsyncResourceTable.applyResourceMutation(document, response, {
+                    rowsSelector: '#criteria-grid'
+                });
                 showAlert('คัดลอกเวอร์ชันสำเร็จ', 'success');
-                setTimeout(() => { window.location.reload(); }, 1200);
+                if (btn) btn.disabled = false;
             })
             .catch(err => {
                 console.error('Copy error:', err.message || err);
@@ -306,14 +311,16 @@
                 },
                 credentials: 'same-origin'
             })
-            .then(res => {
-                if (res.ok) {
+            .then(res => res.ok ? res.json() : res.json().then(data => {
+                throw new Error(data.message || 'ลบไม่สำเร็จ');
+            }))
+            .then(response => {
+                    window.AsyncResourceTable.applyResourceMutation(document, response);
                     hideDeleteModal();
                     showAlert('ลบข้อมูลสำเร็จ', 'success');
-                    setTimeout(() => { window.location.reload(); }, 1200);
-                } else {
-                    return res.json().then(data => { throw new Error(data.message || 'ลบไม่สำเร็จ'); });
-                }
+                    if (!document.querySelector('[data-resource-row]')) {
+                        fetchCriteriaVersions();
+                    }
             })
             .catch(err => {
                 let msg = err.message;

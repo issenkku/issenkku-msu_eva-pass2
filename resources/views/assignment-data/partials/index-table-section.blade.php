@@ -1,5 +1,5 @@
 {{-- ตารางรายการรอบการประเมิน --}}
-<div class="bg-white shadow-sm rounded-lg overflow-hidden">
+<div class="bg-white shadow-sm rounded-lg overflow-hidden" data-async-table-region>
     <div class="px-6 py-4 border-b border-gray-200">
         <h2 class="text-lg font-semibold text-gray-800">รายการรอบการประเมิน</h2>
     </div>
@@ -29,7 +29,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
+                <tbody class="bg-white divide-y divide-gray-100" data-resource-rows>
                     @foreach ($assignmentData as $assignmentRow)
                         @include('assignment-data.partials.index-table-row', [
                             'assignmentRow' => $assignmentRow,

@@ -373,7 +373,7 @@ class AssignmentDataTest extends TestCase
         ]);
 
         $this->actingAs($this->admin, 'web')
-            ->delete(route('assignment-data.destroy', $assignmentData->id),[
+            ->deleteJson(route('assignment-data.destroy', $assignmentData->id),[
                 '_token' => $token,
             ])
             ->assertOk()

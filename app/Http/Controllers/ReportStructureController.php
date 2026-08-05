@@ -669,9 +669,17 @@ class ReportStructureController extends Controller
                 return $version;
             });
 
+            $version->load(['createdByUser', 'reportDatas']);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Criteria version and related records created successfully',
+                'html' => [
+                    'row' => view('criteria_config.partials.index-list-item', [
+                        'criteriaVersion' => $version,
+                    ])->render(),
+                ],
+                'state' => ['id' => $version->id],
                 'data' => $version->load([
                     'quantityMainCriterias.quantitySubCriterias',
                     'quantityMainCriterias.formulas',
@@ -1307,12 +1315,18 @@ class ReportStructureController extends Controller
             }
         }
 
+        $criteriaVersionId = $criteriaVersion->id;
+
         DB::transaction(function () use ($criteriaVersion) {
             $criteriaVersion->reportDatas()->delete();
             $criteriaVersion->delete();
         });
 
-        return response()->json(null, 204);
+        return response()->json([
+            'success' => true,
+            'message' => 'ลบข้อมูลสำเร็จ',
+            'state' => ['deleted_ids' => [$criteriaVersionId]],
+        ]);
     }
 
     public function destroyQuantityCriteria(
