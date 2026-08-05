@@ -38,7 +38,7 @@ class FakeElement {
     }
 }
 
-test('evaluatee subject save button creates the subject without native form submission', async () => {
+test('evaluatee subject save defaults empty credits to zero without native form submission', async () => {
     const domListeners = new Map();
     const dispatchedEvents = [];
     const form = new FakeElement();
@@ -49,10 +49,10 @@ test('evaluatee subject save button creates the subject without native form subm
         ['subjectRedirectTo', new FakeElement()],
         ['code', new FakeElement('122222')],
         ['name_th', new FakeElement('ผู้ดูแลระบบ')],
-        ['lecture_credits', new FakeElement('1')],
-        ['lab_credits', new FakeElement('0')],
-        ['self_study_credits', new FakeElement('1')],
-        ['credits', new FakeElement('2')],
+        ['lecture_credits', new FakeElement('')],
+        ['lab_credits', new FakeElement('')],
+        ['self_study_credits', new FakeElement('')],
+        ['credits', new FakeElement('')],
     ]);
 
     const document = {
@@ -110,6 +110,10 @@ test('evaluatee subject save button creates the subject without native form subm
 
     assert.equal(typeof submitButton.listeners.get('click'), 'function');
     await submitButton.listeners.get('click')();
+    assert.equal(elements.get('credits').value, '0');
+    assert.equal(elements.get('lecture_credits').value, '0');
+    assert.equal(elements.get('lab_credits').value, '0');
+    assert.equal(elements.get('self_study_credits').value, '0');
     assert.equal(form.submitted, false);
     assert.equal(form.wasReset, true);
     assert.equal(dispatchedEvents[0].type, 'workload:subject-created');

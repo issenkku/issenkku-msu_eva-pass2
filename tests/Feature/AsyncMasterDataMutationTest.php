@@ -159,3 +159,51 @@ test('master data normal form fallback still redirects', function () {
         ->post(route('departments.store'), ['department_name' => 'Redirect Department'])
         ->assertRedirect(route('departments.index'));
 });
+
+test('subject create and update persist empty or missing credits as zero', function () {
+    $admin = asyncMasterAdmin();
+
+    $createResponse = $this->actingAs($admin)->postJson(route('subjects.store'), [
+        'code' => 'ZERO101',
+        'name_th' => 'รายวิชาหน่วยกิตศูนย์',
+        'credits' => '',
+        'lecture_credits' => null,
+        'lab_credits' => '',
+        'self_study_credits' => null,
+    ])->assertCreated();
+
+    $subject = Subject::findOrFail($createResponse->json('state.id'));
+    expect($subject->only(['credits', 'lecture_credits', 'lab_credits', 'self_study_credits']))
+        ->toMatchArray([
+            'credits' => 0,
+            'lecture_credits' => 0,
+            'lab_credits' => 0,
+            'self_study_credits' => 0,
+        ]);
+
+    $this->actingAs($admin)->putJson(route('subjects.update', $subject), [
+        'code' => 'ZERO102',
+        'name_th' => 'แก้ไขรายวิชาหน่วยกิตศูนย์',
+    ])->assertOk();
+
+    expect($subject->fresh()->only(['credits', 'lecture_credits', 'lab_credits', 'self_study_credits']))
+        ->toMatchArray([
+            'credits' => 0,
+            'lecture_credits' => 0,
+            'lab_credits' => 0,
+            'self_study_credits' => 0,
+        ]);
+});
+
+test('subject credits still reject negative values', function () {
+    $admin = asyncMasterAdmin();
+
+    $this->actingAs($admin)->postJson(route('subjects.store'), [
+        'code' => 'NEGATIVE101',
+        'name_th' => 'รายวิชาหน่วยกิตติดลบ',
+        'credits' => -1,
+        'lecture_credits' => 0,
+        'lab_credits' => 0,
+        'self_study_credits' => 0,
+    ])->assertUnprocessable()->assertJsonValidationErrors('credits');
+});

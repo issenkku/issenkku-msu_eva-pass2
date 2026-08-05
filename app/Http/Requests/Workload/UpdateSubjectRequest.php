@@ -24,6 +24,12 @@ class UpdateSubjectRequest extends FormRequest
             }
         }
 
+        foreach (['credits', 'lecture_credits', 'lab_credits', 'self_study_credits'] as $field) {
+            if ($this->input($field) === null || $this->input($field) === '') {
+                $normalized[$field] = 0;
+            }
+        }
+
         if ($this->exists('code')) {
             $normalized['code'] = SubjectCode::normalize($this->input('code'));
         }

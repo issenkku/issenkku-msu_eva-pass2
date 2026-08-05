@@ -1,10 +1,5 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const creditsLabel = document.querySelector('#subjectModal label[for="credits"]');
-        if (creditsLabel) {
-            creditsLabel.innerHTML = 'หน่วยกิต <span class="text-danger">*</span>';
-        }
-
         const creditsError = document.getElementById('creditsError');
         if (creditsError) {
             creditsError.textContent = 'กรุณากรอกหน่วยกิต';
@@ -35,12 +30,16 @@
                 return true;
             }
 
+            [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput].forEach(function (input) {
+                if (input.value.trim() === '') input.value = '0';
+            });
+
             const codeValid = codeInput.value.trim() !== '';
             const nameValid = nameThInput.value.trim() !== '';
-            const lectureValid = lectureCreditsInput.value.trim() !== '' && !Number.isNaN(Number(lectureCreditsInput.value));
-            const labValid = labCreditsInput.value.trim() !== '' && !Number.isNaN(Number(labCreditsInput.value));
-            const selfStudyValid = selfStudyCreditsInput.value.trim() !== '' && !Number.isNaN(Number(selfStudyCreditsInput.value));
-            const creditsValid = creditsInput.value.trim() !== '' && !Number.isNaN(Number(creditsInput.value));
+            const lectureValid = Number.isInteger(Number(lectureCreditsInput.value)) && Number(lectureCreditsInput.value) >= 0;
+            const labValid = Number.isInteger(Number(labCreditsInput.value)) && Number(labCreditsInput.value) >= 0;
+            const selfStudyValid = Number.isInteger(Number(selfStudyCreditsInput.value)) && Number(selfStudyCreditsInput.value) >= 0;
+            const creditsValid = Number.isInteger(Number(creditsInput.value)) && Number(creditsInput.value) >= 0;
 
             toggleError(codeInput, 'codeError', codeValid);
             toggleError(nameThInput, 'nameThError', nameValid);

@@ -36,25 +36,25 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="credits" class="form-label">หน่วยกิต <span class="text-danger">*</span></label>
-                        <input type="number" id="credits" name="credits" class="form-control" min="0" required placeholder="0">
+                        <label for="credits" class="form-label">หน่วยกิต</label>
+                        <input type="number" id="credits" name="credits" class="form-control" min="0" value="0" placeholder="0">
                         <div class="text-red-500 text-sm mt-1 hidden" id="creditsError">กรุณากรอกหน่วยกิต</div>
                     </div>
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="lecture_credits" class="form-label">หน่วยกิตบรรยาย <span class="text-danger">*</span></label>
-                            <input type="number" id="lecture_credits" name="lecture_credits" class="form-control" min="0" required placeholder="0">
+                            <label for="lecture_credits" class="form-label">หน่วยกิตบรรยาย</label>
+                            <input type="number" id="lecture_credits" name="lecture_credits" class="form-control" min="0" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="lectureCreditsError">กรุณากรอกหน่วยกิตบรรยาย</div>
                         </div>
                         <div class="col-md-4">
-                            <label for="lab_credits" class="form-label">หน่วยกิตปฏิบัติ <span class="text-danger">*</span></label>
-                            <input type="number" id="lab_credits" name="lab_credits" class="form-control" min="0" required placeholder="0">
+                            <label for="lab_credits" class="form-label">หน่วยกิตปฏิบัติ</label>
+                            <input type="number" id="lab_credits" name="lab_credits" class="form-control" min="0" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="labCreditsError">กรุณากรอกหน่วยกิตปฏิบัติ</div>
                         </div>
                         <div class="col-md-4">
-                            <label for="self_study_credits" class="form-label">หน่วยกิตศึกษาด้วยตนเอง <span class="text-danger">*</span></label>
-                            <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" required placeholder="0">
+                            <label for="self_study_credits" class="form-label">หน่วยกิตศึกษาด้วยตนเอง</label>
+                            <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="selfStudyCreditsError">กรุณากรอกหน่วยกิตศึกษาด้วยตนเอง</div>
                         </div>
                     </div>

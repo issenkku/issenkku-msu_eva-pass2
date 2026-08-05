@@ -24,6 +24,10 @@
             return false;
         }
 
+        [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput].forEach((input) => {
+            if (input.value.trim() === '') input.value = '0';
+        });
+
         const codeValue = codeInput.value.trim();
         const nameThValue = nameThInput.value.trim();
         const nameEnValue = nameEnInput.value.trim();
@@ -59,7 +63,7 @@
             subjectNameError.style.display = 'none';
         }
 
-        if (lectureCreditsValue === '' || Number.isNaN(Number(lectureCreditsValue))) {
+        if (!Number.isInteger(Number(lectureCreditsValue)) || Number(lectureCreditsValue) < 0) {
             lectureCreditsInput.classList.add('is-invalid');
             lectureCreditsError.style.display = 'block';
             lectureCreditsError.textContent = 'กรุณากรอกหน่วยกิตบรรยาย';
@@ -69,7 +73,7 @@
             lectureCreditsError.style.display = 'none';
         }
 
-        if (labCreditsValue === '' || Number.isNaN(Number(labCreditsValue))) {
+        if (!Number.isInteger(Number(labCreditsValue)) || Number(labCreditsValue) < 0) {
             labCreditsInput.classList.add('is-invalid');
             labCreditsError.style.display = 'block';
             labCreditsError.textContent = 'กรุณากรอกหน่วยกิตปฏิบัติ';
@@ -79,7 +83,7 @@
             labCreditsError.style.display = 'none';
         }
 
-        if (selfStudyCreditsValue === '' || Number.isNaN(Number(selfStudyCreditsValue))) {
+        if (!Number.isInteger(Number(selfStudyCreditsValue)) || Number(selfStudyCreditsValue) < 0) {
             selfStudyCreditsInput.classList.add('is-invalid');
             selfStudyCreditsError.style.display = 'block';
             selfStudyCreditsError.textContent = 'กรุณากรอกหน่วยกิตศึกษาด้วยตนเอง';
@@ -89,7 +93,7 @@
             selfStudyCreditsError.style.display = 'none';
         }
 
-        if (creditsValue === '' || Number.isNaN(Number(creditsValue))) {
+        if (!Number.isInteger(Number(creditsValue)) || Number(creditsValue) < 0) {
             creditsInput.classList.add('is-invalid');
             creditsError.style.display = 'block';
             creditsError.textContent = 'กรุณากรอกหน่วยกิต';
@@ -264,11 +268,6 @@
         document.querySelectorAll('[data-modal-submit-trigger]').forEach((button) => {
             button.addEventListener('click', submitForm);
         });
-
-        const creditsLabel = document.querySelector('#subjectModal label[for="credits"]');
-        if (creditsLabel) {
-            creditsLabel.innerHTML = 'หน่วยกิต <span class="text-danger">*</span>';
-        }
 
         const creditsError = document.getElementById('creditsError');
         if (creditsError) {
