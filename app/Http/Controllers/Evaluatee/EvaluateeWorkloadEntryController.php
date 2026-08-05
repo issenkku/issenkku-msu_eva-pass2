@@ -86,9 +86,9 @@ class EvaluateeWorkloadEntryController extends Controller
             }
         }
 
-        return $this->successfulSaveResponse(
+        return $this->successfulMutationResponse(
             $request,
-            $entry,
+            (int) $entry->report_id,
             $form,
             'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว',
             $form->quantity_sub_criteria_item_id ? (int) $form->quantity_sub_criteria_item_id : null,
@@ -161,9 +161,9 @@ class EvaluateeWorkloadEntryController extends Controller
                 }
             }
 
-            return $this->successfulSaveResponse(
+            return $this->successfulMutationResponse(
                 $request,
-                $entry,
+                (int) $entry->report_id,
                 $form,
                 'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว',
                 $form->quantity_sub_criteria_item_id ? (int) $form->quantity_sub_criteria_item_id : null,
@@ -180,28 +180,38 @@ class EvaluateeWorkloadEntryController extends Controller
         }
     }
 
-    public function destroy($id): RedirectResponse
+    public function destroy($id): RedirectResponse|JsonResponse
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
             $this->ensureReportEditable((int) $entry->report_id, (int) request()->user()->id);
+            $form = WorkloadForm::findOrFail($entry->workload_form_id);
 
             EvidenceAnswer::where('workload_entry_id', $entry->id)->delete();
             $entry->delete();
 
-            return redirect()
-                ->back()
-                ->with('success', 'ลบข้อมูลภาระงานเรียบร้อยแล้ว');
+            return $this->successfulMutationResponse(
+                request(),
+                (int) $entry->report_id,
+                $form,
+                'ลบข้อมูลภาระงานเรียบร้อยแล้ว',
+                $form->quantity_sub_criteria_item_id ? (int) $form->quantity_sub_criteria_item_id : null,
+            );
         } catch (ModelNotFoundException $e) {
+            $message = 'ไม่พบข้อมูลภาระงานที่ต้องการลบ';
+            if (request()->expectsJson()) {
+                return response()->json(['message' => $message], 404);
+            }
+
             return redirect()
                 ->back()
-                ->with('error', 'ไม่พบข้อมูลภาระงานที่ต้องการลบ');
+                ->with('error', $message);
         }
     }
 
-    private function successfulSaveResponse(
+    private function successfulMutationResponse(
         Request $request,
-        WorkloadEntry $entry,
+        int $reportId,
         WorkloadForm $form,
         string $message,
         ?int $activeItemId,
@@ -218,7 +228,7 @@ class EvaluateeWorkloadEntryController extends Controller
         $liveData = EvaluateeWorkloadLiveData::build(
             $quantitySubCriteria,
             $workloadForms,
-            (int) $entry->report_id,
+            $reportId,
         );
 
         return response()->json([

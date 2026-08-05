@@ -4,6 +4,7 @@ use App\Http\Controllers\Evaluatee\EvaluationWorkloadController;
 use App\Models\Assignments;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\EvidenceAnswer;
 use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\QuantitySubCriteriaGroup;
@@ -75,7 +76,7 @@ function workloadAsyncSaveContext(): array
         ]);
     }
 
-    return compact('evaluatee', 'report', 'form', 'item');
+    return compact('evaluatee', 'evaluationList', 'report', 'form', 'item');
 }
 
 function workloadAsyncSavePayload(Reports $report, WorkloadForm $form, int $hours = 2, int $rate = 3): array
@@ -281,4 +282,64 @@ test('JSON update returns not found instead of following a redirect', function (
         )
         ->assertNotFound()
         ->assertJsonPath('message', 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข');
+});
+
+test('JSON delete removes the entry and returns refreshed workload fragments', function () {
+    [
+        'evaluatee' => $evaluatee,
+        'evaluationList' => $evaluationList,
+        'report' => $report,
+        'form' => $form,
+        'item' => $item,
+    ] = workloadAsyncSaveContext();
+    $deletedEntry = WorkloadEntry::create([
+        ...workloadAsyncSavePayload($report, $form),
+        'calculated_score' => 6,
+    ]);
+    $remainingEntry = WorkloadEntry::create([
+        ...workloadAsyncSavePayload($report, $form, 4, 3),
+        'calculated_score' => 12,
+    ]);
+    EvidenceAnswer::create([
+        'evaluation_list_id' => $evaluationList->id,
+        'report_id' => $report->id,
+        'workload_entry_id' => $deletedEntry->id,
+        'link' => 'https://example.test/deleted-evidence',
+    ]);
+    Sanctum::actingAs($evaluatee);
+
+    $response = $this->deleteJson(route('evaluatee.workload-entries.destroy', $deletedEntry->id));
+
+    $response
+        ->assertOk()
+        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score', 'active_item_id'])
+        ->assertJsonPath('total_score', 12)
+        ->assertJsonPath('active_item_id', $item->id);
+
+    expect($response->json('panels_html'))->toContain('12.00')
+        ->and(WorkloadEntry::find($deletedEntry->id))->toBeNull()
+        ->and(WorkloadEntry::find($remainingEntry->id))->not->toBeNull()
+        ->and(EvidenceAnswer::where('workload_entry_id', $deletedEntry->id)->exists())->toBeFalse();
+});
+
+test('redirect fallback keeps the existing delete response', function () {
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    $entry = WorkloadEntry::create([
+        ...workloadAsyncSavePayload($report, $form),
+        'calculated_score' => 6,
+    ]);
+    Sanctum::actingAs($evaluatee);
+
+    $this->delete(route('evaluatee.workload-entries.destroy', $entry->id))
+        ->assertRedirect()
+        ->assertSessionHas('success');
+});
+
+test('JSON delete returns not found without following a redirect', function () {
+    ['evaluatee' => $evaluatee] = workloadAsyncSaveContext();
+    Sanctum::actingAs($evaluatee);
+
+    $this->deleteJson(route('evaluatee.workload-entries.destroy', 999999999))
+        ->assertNotFound()
+        ->assertJsonStructure(['message']);
 });
