@@ -198,7 +198,7 @@ export function applyWorkloadEntrySaveResponse(documentRef, payload, dropdownIte
 
     if (panelsRegion) {
         panelsRegion.innerHTML = payload.panels_html ?? '';
-        const normalizedItemId = String(dropdownItemId || '');
+        const normalizedItemId = String(payload.active_item_id ?? dropdownItemId ?? '');
         const dropdowns = panelsRegion.querySelectorAll?.('[data-workload-item-id]') ?? [];
         dropdowns.forEach((dropdown) => {
             dropdown.open = normalizedItemId !== '' && String(dropdown.dataset.workloadItemId || '') === normalizedItemId;

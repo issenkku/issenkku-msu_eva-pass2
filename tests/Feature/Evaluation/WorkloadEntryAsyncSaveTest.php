@@ -224,8 +224,9 @@ test('JSON create returns saved workload fragments and total', function () {
 
     $response
         ->assertOk()
-        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score'])
-        ->assertJsonPath('total_score', 6);
+        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score', 'active_item_id'])
+        ->assertJsonPath('total_score', 6)
+        ->assertJsonPath('active_item_id', $item->id);
 
     expect($response->json('total_score'))->toBeNumeric()
         ->and($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('6.00')
@@ -259,8 +260,9 @@ test('JSON update returns updated workload fragments and total', function () {
 
     $response
         ->assertOk()
-        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score'])
-        ->assertJsonPath('total_score', 12);
+        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score', 'active_item_id'])
+        ->assertJsonPath('total_score', 12)
+        ->assertJsonPath('active_item_id', null);
 
     expect($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('12.00')
         ->and($response->json('summary_html'))->toBeString()->toContain('12.00');

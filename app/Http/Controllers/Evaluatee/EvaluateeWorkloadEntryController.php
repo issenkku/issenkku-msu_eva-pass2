@@ -91,6 +91,7 @@ class EvaluateeWorkloadEntryController extends Controller
             $entry,
             $form,
             'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว',
+            $form->quantity_sub_criteria_item_id ? (int) $form->quantity_sub_criteria_item_id : null,
         );
     }
 
@@ -165,6 +166,7 @@ class EvaluateeWorkloadEntryController extends Controller
                 $entry,
                 $form,
                 'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว',
+                null,
             );
         } catch (ModelNotFoundException $e) {
             $message = 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข';
@@ -202,6 +204,7 @@ class EvaluateeWorkloadEntryController extends Controller
         WorkloadEntry $entry,
         WorkloadForm $form,
         string $message,
+        ?int $activeItemId,
     ): RedirectResponse|JsonResponse {
         if (! $request->expectsJson()) {
             return redirect()->back()->with('success', $message);
@@ -228,6 +231,7 @@ class EvaluateeWorkloadEntryController extends Controller
                 'totalDisplay' => $liveData['workloadView']['total_display'],
             ])->render(),
             'total_score' => $liveData['workloadTotalScore'],
+            'active_item_id' => $activeItemId,
         ]);
     }
 

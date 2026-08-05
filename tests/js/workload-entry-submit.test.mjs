@@ -511,6 +511,38 @@ test('applyWorkloadEntrySaveResponse opens only the originating workload dropdow
     );
 });
 
+test('applyWorkloadEntrySaveResponse uses the server item id when client origin state is missing', () => {
+    const dropdowns = ['11', '12', '13'].map((id) => ({
+        dataset: { workloadItemId: id },
+        open: false,
+    }));
+    const panels = {
+        innerHTML: '',
+        querySelectorAll() {
+            return dropdowns;
+        },
+    };
+    const documentRef = {
+        getElementById(id) {
+            return id === 'workloadPanelsLiveRegion' ? panels : null;
+        },
+        dispatchEvent() {},
+    };
+
+    applyWorkloadEntrySaveResponse(documentRef, {
+        message: 'Saved',
+        panels_html: '<details></details>',
+        summary_html: '',
+        total_score: 8.5,
+        active_item_id: 12,
+    });
+
+    assert.deepEqual(
+        dropdowns.map((dropdown) => dropdown.open),
+        [false, true, false],
+    );
+});
+
 test('applyWorkloadEntrySaveResponse opens no dropdown for an absent or unknown origin', () => {
     for (const itemId of ['', '999']) {
         const dropdowns = ['11', '12'].map((id) => ({
