@@ -265,3 +265,16 @@ test('JSON update returns updated workload fragments and total', function () {
 
     expect(WorkloadEntry::where('report_id', $report->id)->count())->toBe(1);
 });
+
+test('JSON update returns not found instead of following a redirect', function () {
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    Sanctum::actingAs($evaluatee);
+
+    $this
+        ->putJson(
+            route('evaluatee.workload-entries.update', 999999999),
+            workloadAsyncSavePayload($report, $form),
+        )
+        ->assertNotFound()
+        ->assertJsonPath('message', 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข');
+});

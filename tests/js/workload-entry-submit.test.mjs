@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const { applyWorkloadEntrySaveResponse, hideWorkloadEntryModalIfCurrent, requestWorkloadEntrySave } = await import(
-    '../../resources/js/workload-entry-submit.js'
-);
+const {
+    applyWorkloadEntrySaveResponse,
+    createWorkloadEntrySubmitCoordinator,
+    hideWorkloadEntryModalIfCurrent,
+    markWorkloadValidationErrors,
+    requestWorkloadEntrySave,
+} = await import('../../resources/js/workload-entry-submit.js');
 
 class TestFormData {
     constructor(form) {
@@ -24,6 +28,94 @@ function withFormData(testBody) {
     return Promise.resolve(testBody()).finally(() => {
         globalThis.FormData = originalFormData;
     });
+}
+
+function deferred() {
+    let resolve;
+    let reject;
+    const promise = new Promise((resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+    });
+
+    return { promise, reject, resolve };
+}
+
+function fakeClassList() {
+    const values = new Set();
+    return {
+        add(value) {
+            values.add(value);
+        },
+        contains(value) {
+            return values.has(value);
+        },
+        remove(value) {
+            values.delete(value);
+        },
+    };
+}
+
+function submitCoordinatorHarness(requestSave) {
+    let modalSession = 1;
+    const calls = { apply: [], hide: 0, mark: [], messages: [], requests: 0, reset: 0 };
+    const form = {
+        value: 'visible form value',
+        reset() {
+            calls.reset += 1;
+            this.value = '';
+        },
+    };
+    const submitButton = { disabled: false, textContent: 'Save' };
+    const coordinator = createWorkloadEntrySubmitCoordinator({
+        applyResponse(payload) {
+            calls.apply.push(payload);
+        },
+        clearInvalid() {},
+        form,
+        getMissingFields: () => [],
+        getModalSession: () => modalSession,
+        hideModal() {
+            calls.hide += 1;
+        },
+        markValidationErrors(errors) {
+            calls.mark.push(errors);
+            return Object.values(errors).flat();
+        },
+        onMissingFields() {},
+        requestSave: async (submittedForm) => {
+            calls.requests += 1;
+            assert.equal(submittedForm, form);
+            return requestSave();
+        },
+        resetForm() {
+            form.reset();
+        },
+        savingLabel: 'Saving...',
+        showMessage(message, isError) {
+            calls.messages.push({ isError, message });
+        },
+        submitButton,
+    });
+
+    return {
+        calls,
+        coordinator,
+        form,
+        reopenModal() {
+            modalSession += 1;
+        },
+        submitButton,
+    };
+}
+
+function submitEvent() {
+    return {
+        prevented: 0,
+        preventDefault() {
+            this.prevented += 1;
+        },
+    };
 }
 
 test('requestWorkloadEntrySave posts the form action with its complete FormData payload', async () => {
@@ -132,6 +224,43 @@ test('requestWorkloadEntrySave rejects a followed HTML response before any live 
     });
 });
 
+test('requestWorkloadEntrySave rejects malformed total_score values', async (t) => {
+    const invalidTotals = [
+        ['null', null, true],
+        ['empty string', '', true],
+        ['whitespace string', '   ', true],
+        ['true', true, true],
+        ['false', false, true],
+        ['omitted', undefined, false],
+        ['NaN', Number.NaN, true],
+        ['object', {}, true],
+    ];
+
+    for (const [label, total, includeTotal] of invalidTotals) {
+        await t.test(label, async () => {
+            await withFormData(async () => {
+                const payload = {
+                    message: 'Saved',
+                    panels_html: '<section>Saved</section>',
+                    summary_html: '<strong>Saved</strong>',
+                };
+                if (includeTotal) {
+                    payload.total_score = total;
+                }
+
+                await assert.rejects(
+                    requestWorkloadEntrySave({ action: 'https://example.test/workload-entries', fields: [] }, async () => ({
+                        ok: true,
+                        status: 200,
+                        json: async () => payload,
+                    })),
+                    /Unable to save workload entry/,
+                );
+            });
+        });
+    }
+});
+
 test('a save completion does not hide a modal session reopened after submission', () => {
     let hideCount = 0;
 
@@ -141,6 +270,150 @@ test('a save completion does not hide a modal session reopened after submission'
 
     assert.equal(didHide, false);
     assert.equal(hideCount, 0);
+});
+
+test('submit coordinator prevents navigation and blocks duplicate requests', async () => {
+    const pending = deferred();
+    const harness = submitCoordinatorHarness(() => pending.promise);
+    const firstEvent = submitEvent();
+    const duplicateEvent = submitEvent();
+
+    const firstSubmit = harness.coordinator(firstEvent);
+    const duplicateSubmit = harness.coordinator(duplicateEvent);
+
+    assert.equal(firstEvent.prevented, 1);
+    assert.equal(duplicateEvent.prevented, 1);
+    assert.equal(harness.calls.requests, 1);
+    pending.resolve({ message: 'Saved', panels_html: 'panels', summary_html: 'summary', total_score: 4 });
+    await Promise.all([firstSubmit, duplicateSubmit]);
+});
+
+test('submit coordinator applies success, resets, restores, and closes the initiating session', async () => {
+    const payload = { message: 'Saved', panels_html: 'panels', summary_html: 'summary', total_score: 4 };
+    const harness = submitCoordinatorHarness(async () => payload);
+    const event = submitEvent();
+
+    await harness.coordinator(event);
+
+    assert.equal(event.prevented, 1);
+    assert.deepEqual(harness.calls.apply, [payload]);
+    assert.equal(harness.calls.reset, 1);
+    assert.equal(harness.calls.hide, 1);
+    assert.equal(harness.submitButton.disabled, false);
+    assert.equal(harness.submitButton.textContent, 'Save');
+    assert.deepEqual(harness.calls.messages, [{ message: 'Saved', isError: false }]);
+});
+
+test('submit coordinator applies an earlier success without resetting or closing a reopened session', async () => {
+    const pending = deferred();
+    const payload = { message: 'Saved', panels_html: 'panels', summary_html: 'summary', total_score: 4 };
+    const harness = submitCoordinatorHarness(() => pending.promise);
+    const submission = harness.coordinator(submitEvent());
+
+    harness.reopenModal();
+    harness.form.value = 'newly reopened value';
+    pending.resolve(payload);
+    await submission;
+
+    assert.deepEqual(harness.calls.apply, [payload]);
+    assert.equal(harness.calls.reset, 0);
+    assert.equal(harness.calls.hide, 0);
+    assert.equal(harness.form.value, 'newly reopened value');
+    assert.equal(harness.submitButton.disabled, false);
+    assert.equal(harness.submitButton.textContent, 'Save');
+});
+
+test('submit coordinator keeps values and restores the button for 422, network, and malformed failures', async (t) => {
+    const cases = [
+        {
+            label: '422',
+            error: Object.assign(new Error('Invalid'), {
+                errors: { 'field_values.hours': ['Hours is required'] },
+                status: 422,
+            }),
+            expectedMessage: 'Hours is required',
+            marksValidation: true,
+        },
+        {
+            label: 'network',
+            error: new TypeError('Failed to fetch'),
+            expectedMessage: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง',
+            marksValidation: false,
+        },
+        {
+            label: 'malformed 2xx',
+            error: Object.assign(new Error('Unable to save workload entry'), { errors: {}, status: 200 }),
+            expectedMessage: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+            marksValidation: false,
+        },
+    ];
+
+    for (const testCase of cases) {
+        await t.test(testCase.label, async () => {
+            const harness = submitCoordinatorHarness(async () => {
+                throw testCase.error;
+            });
+
+            await harness.coordinator(submitEvent());
+
+            assert.equal(harness.form.value, 'visible form value');
+            assert.equal(harness.calls.reset, 0);
+            assert.equal(harness.calls.hide, 0);
+            assert.equal(harness.submitButton.disabled, false);
+            assert.equal(harness.submitButton.textContent, 'Save');
+            assert.deepEqual(harness.calls.messages.at(-1), {
+                message: testCase.expectedMessage,
+                isError: true,
+            });
+            assert.equal(harness.calls.mark.length, testCase.marksValidation ? 1 : 0);
+        });
+    }
+});
+
+test('markWorkloadValidationErrors marks broad field, evidence, and visible subject controls', () => {
+    const fieldContainer = { classList: fakeClassList() };
+    const activeField = {
+        classList: fakeClassList(),
+        closest: () => fieldContainer,
+        disabled: false,
+        name: 'field_values[hours]',
+        type: 'number',
+    };
+    const disabledField = { classList: fakeClassList(), disabled: true, name: 'field_values[rate]', type: 'number' };
+    const evidence = { classList: fakeClassList(), disabled: false, name: 'evidence_links[]', type: 'text' };
+    const hiddenSubject = { classList: fakeClassList(), disabled: false, name: 'subject_id', type: 'hidden' };
+    const evidenceContainer = { classList: fakeClassList() };
+    const subjectSection = { classList: fakeClassList() };
+    const subjectTrigger = { classList: fakeClassList() };
+    const controls = [activeField, disabledField, evidence, hiddenSubject];
+    const form = {
+        querySelectorAll(selector) {
+            if (selector === '[name^="field_values["]') return [activeField, disabledField];
+            if (selector === '[name="evidence_links[]"]') return [evidence];
+            if (selector === '[name]') return controls;
+            return [];
+        },
+    };
+
+    const messages = markWorkloadValidationErrors(
+        form,
+        {
+            field_values: ['Check workload fields'],
+            evidence_links: ['Evidence required'],
+            subject_id: ['Subject required'],
+        },
+        { evidenceContainer, subjectSection, subjectTrigger },
+    );
+
+    assert.equal(activeField.classList.contains('is-invalid'), true);
+    assert.equal(fieldContainer.classList.contains('is-invalid'), true);
+    assert.equal(disabledField.classList.contains('is-invalid'), false);
+    assert.equal(evidence.classList.contains('is-invalid'), true);
+    assert.equal(evidenceContainer.classList.contains('is-invalid'), true);
+    assert.equal(subjectTrigger.classList.contains('is-invalid'), true);
+    assert.equal(subjectSection.classList.contains('is-invalid'), true);
+    assert.equal(hiddenSubject.classList.contains('is-invalid'), false);
+    assert.deepEqual(messages, ['Check workload fields', 'Evidence required', 'Subject required']);
 });
 
 test('applyWorkloadEntrySaveResponse refreshes workload HTML and broadcasts the numeric total', () => {
@@ -174,7 +447,7 @@ test('applyWorkloadEntrySaveResponse refreshes workload HTML and broadcasts the 
     applyWorkloadEntrySaveResponse(documentRef, {
         panels_html: '<section>New entry</section>',
         summary_html: '<strong>8.5</strong>',
-        total_score: '8.5',
+        total_score: 8.5,
     });
 
     assert.equal(panels.innerHTML, '<section>New entry</section>');
@@ -196,12 +469,12 @@ test('workload entry partials retain the async submission contract', () => {
     );
 
     assert.match(entrySubmit, /event\.preventDefault\(\)/);
-    assert.match(entrySubmit, /isSubmitting/);
+    assert.match(entrySubmit, /createWorkloadEntrySubmitCoordinator/);
     assert.match(entrySubmit, /requestWorkloadEntrySave/);
     assert.match(entrySubmit, /applyWorkloadEntrySaveResponse/);
-    assert.match(entrySubmit, /hideWorkloadEntryModalIfCurrent/);
+    assert.match(entrySubmit, /markWorkloadValidationErrors/);
+    assert.match(entrySubmit, /workloadForm\.reset\(\)/);
     assert.match(entrySubmit, /bootstrap\.Modal\.getOrCreateInstance\(workloadModalEl\)\.hide\(\)/);
-    assert.match(entrySubmit, /classList\.add\('is-invalid'\)/);
     assert.match(saveReminder, /let currentTotal/);
     assert.match(saveReminder, /workload:total-updated/);
     assert.match(saveReminder, /event\.target\.id === 'workloadEntryForm'/);

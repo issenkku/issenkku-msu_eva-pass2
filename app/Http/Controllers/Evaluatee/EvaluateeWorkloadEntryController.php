@@ -167,9 +167,14 @@ class EvaluateeWorkloadEntryController extends Controller
                 'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว',
             );
         } catch (ModelNotFoundException $e) {
+            $message = 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 404);
+            }
+
             return redirect()
                 ->back()
-                ->with('error', 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข');
+                ->with('error', $message);
         }
     }
 

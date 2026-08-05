@@ -19,109 +19,75 @@
         }, 5000);
     }
 
-    function workloadInputNameForError(errorKey) {
-        const keyParts = String(errorKey).split('.');
-        if (keyParts.length < 2) {
-            return keyParts[0];
-        }
-
-        return keyParts[0] + keyParts.slice(1).map(function (part) {
-            return '[' + part + ']';
-        }).join('');
-    }
-
-    function showWorkloadValidationErrors(errors) {
-        const messages = [];
-        Object.keys(errors || {}).forEach(function (errorKey) {
-            const field = Array.from(workloadForm.querySelectorAll('[name]')).find(function (input) {
-                return input.name === workloadInputNameForError(errorKey);
-            });
-            if (field) {
-                field.classList.add('is-invalid');
-            }
-
-            const fieldMessages = Array.isArray(errors[errorKey]) ? errors[errorKey] : [errors[errorKey]];
-            fieldMessages.forEach(function (message) {
-                if (message) {
-                    messages.push(String(message));
-                }
-            });
-        });
-
-        return messages;
-    }
-
     function initWorkloadEntrySubmit() {
         if (!workloadForm) {
             return;
         }
 
-        let isSubmitting = false;
         let workloadModalSession = 0;
         if (workloadModalEl) {
             workloadModalEl.addEventListener('show.bs.modal', function () {
                 workloadModalSession += 1;
             });
         }
-        workloadForm.addEventListener('submit', async function (event) {
-            const missingFields = getMissingWorkloadFields(true);
-            if (missingFields.length > 0) {
+
+        if (!window.WorkloadEntrySubmit || !window.WorkloadEntrySubmit.createWorkloadEntrySubmitCoordinator) {
+            workloadForm.addEventListener('submit', function (event) {
+                const missingFields = getMissingWorkloadFields(true);
                 event.preventDefault();
+                if (missingFields.length > 0) {
+                    updateWorkloadSubmitState();
+                    alert('กรุณากรอกข้อมูลให้ครบก่อนบันทึก: ' + missingFields.join(', '));
+                    return;
+                }
+
+                workloadForm.submit();
+            });
+            return;
+        }
+
+        const submitCoordinator = window.WorkloadEntrySubmit.createWorkloadEntrySubmitCoordinator({
+            form: workloadForm,
+            submitButton: workloadSubmitButton,
+            savingLabel: 'กำลังบันทึก...',
+            getMissingFields: getMissingWorkloadFields,
+            getModalSession: function () {
+                return workloadModalSession;
+            },
+            onMissingFields: function (missingFields) {
                 updateWorkloadSubmitState();
                 alert('กรุณากรอกข้อมูลให้ครบก่อนบันทึก: ' + missingFields.join(', '));
-                return;
-            }
-
-            event.preventDefault();
-            if (isSubmitting) {
-                return;
-            }
-
-            if (!window.WorkloadEntrySubmit) {
-                workloadForm.submit();
-                return;
-            }
-
-            isSubmitting = true;
-            const submissionModalSession = workloadModalSession;
-            const originalButtonLabel = workloadSubmitButton ? workloadSubmitButton.textContent : '';
-            if (workloadSubmitButton) {
-                workloadSubmitButton.disabled = true;
-                workloadSubmitButton.textContent = 'กำลังบันทึก...';
-            }
-            workloadForm.querySelectorAll('.is-invalid').forEach(function (field) {
-                field.classList.remove('is-invalid');
-            });
-
-            try {
-                const payload = await window.WorkloadEntrySubmit.requestWorkloadEntrySave(workloadForm);
+            },
+            clearInvalid: function () {
+                workloadForm.querySelectorAll('.is-invalid').forEach(function (field) {
+                    field.classList.remove('is-invalid');
+                });
+            },
+            requestSave: window.WorkloadEntrySubmit.requestWorkloadEntrySave,
+            applyResponse: function (payload) {
                 window.WorkloadEntrySubmit.applyWorkloadEntrySaveResponse(document, payload);
-                window.WorkloadEntrySubmit.hideWorkloadEntryModalIfCurrent(
-                    submissionModalSession,
-                    workloadModalSession,
-                    function () {
-                        bootstrap.Modal.getOrCreateInstance(workloadModalEl).hide();
-                    },
-                );
-                showWorkloadSaveMessage(payload.message || 'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว', false);
-            } catch (error) {
-                if (error.status === 422) {
-                    const validationMessages = showWorkloadValidationErrors(error.errors);
-                    showWorkloadSaveMessage(
-                        validationMessages.join(' ') || error.message || 'กรุณาตรวจสอบข้อมูลแล้วลองใหม่อีกครั้ง',
-                        true,
-                    );
-                } else {
-                    showWorkloadSaveMessage(error.message || 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง', true);
-                }
-            } finally {
-                if (workloadSubmitButton) {
-                    workloadSubmitButton.disabled = false;
-                    workloadSubmitButton.textContent = originalButtonLabel;
-                }
-                isSubmitting = false;
-            }
+            },
+            markValidationErrors: function (errors) {
+                return window.WorkloadEntrySubmit.markWorkloadValidationErrors(workloadForm, errors, {
+                    evidenceContainer: evidenceContainer,
+                    subjectSection: subjectSection,
+                    subjectTrigger: subjectTrigger,
+                });
+            },
+            resetForm: function () {
+                workloadForm.reset();
+                setFormMode('create');
+                clearSubjectSelection();
+                setEvidenceLinks(['']);
+                selectDefaultForForm(lastDefaultFormId);
+            },
+            hideModal: function () {
+                bootstrap.Modal.getOrCreateInstance(workloadModalEl).hide();
+            },
+            showMessage: showWorkloadSaveMessage,
         });
+
+        workloadForm.addEventListener('submit', submitCoordinator);
     }
 
     function initWorkloadEntryDefaults() {
