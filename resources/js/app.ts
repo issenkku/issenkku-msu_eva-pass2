@@ -8,6 +8,7 @@ import './support-indicator-mode';
 import './support-score-calculator';
 import './workload-entry-submit';
 import './workload-formula-preview';
+import './website-settings';
 
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';

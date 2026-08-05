@@ -60,27 +60,7 @@
             <small class="field-help">
                 รองรับ PNG, JPG หรือ WEBP ขนาดไม่เกิน 4MB ใช้เป็นพื้นหลังของหน้ากรอกภาระงาน
             </small>
-            @if(!empty($backgroundAssets))
-                <div class="background-library" aria-label="background image library">
-                    <div class="background-library-title">รูปพื้นหลังที่มีในระบบ</div>
-                    <div class="background-library-grid">
-                        @foreach($backgroundAssets as $backgroundAsset)
-                            <div
-                                class="background-library-item {{ $selectedBackgroundPath === $backgroundAsset['path'] ? 'is-active' : '' }}"
-                                data-background-path="{{ $backgroundAsset['path'] }}"
-                                data-background-url="{{ $backgroundAsset['url'] }}"
-                                role="button"
-                                tabindex="0">
-                                <button type="button" class="background-library-delete" aria-label="ลบรูปพื้นหลัง" title="ลบรูปนี้">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                                <img src="{{ $backgroundAsset['url'] }}" alt="{{ $backgroundAsset['name'] }}">
-                                <span>{{ $backgroundAsset['name'] }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+            @include('settings.partials.background-library')
             @if($setting?->background_path)
                 <label class="remove-logo-option">
                     <input type="checkbox" name="remove_background" value="1">

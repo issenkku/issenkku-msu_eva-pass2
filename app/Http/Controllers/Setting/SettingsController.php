@@ -114,15 +114,15 @@ class SettingsController extends Controller
 
         // เช็คเพิ่มเติมด้วย PHP function (สำรอง)
         if ($request->has('university') && ! $this->isThaiOrEnglish($request->university)) {
-            return redirect()->back()
-                ->withErrors(['university' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
-                ->withInput();
+            return $this->validationFailure($request, [
+                'university' => 'ชื่อมหาวิทยาลัยต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ',
+            ]);
         }
 
         if ($request->has('faculty') && ! $this->isThaiOrEnglish($request->faculty)) {
-            return redirect()->back()
-                ->withErrors(['faculty' => 'ชื่อคณะต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ'])
-                ->withInput();
+            return $this->validationFailure($request, [
+                'faculty' => 'ชื่อคณะต้องเป็นภาษาไทยหรืออังกฤษเท่านั้น ห้ามใช้อักษรพิเศษ',
+            ]);
         }
 
         $data = $request->only(['university', 'faculty', 'notification_days']);
@@ -134,15 +134,15 @@ class SettingsController extends Controller
             ->values();
 
         if ($selectedBackgroundPath && ! $this->isValidBackgroundPath($selectedBackgroundPath)) {
-            return redirect()->back()
-                ->withErrors(['selected_background_path' => 'รูปพื้นหลังที่เลือกไม่มีอยู่ในระบบ'])
-                ->withInput();
+            return $this->validationFailure($request, [
+                'selected_background_path' => 'รูปพื้นหลังที่เลือกไม่มีอยู่ในระบบ',
+            ]);
         }
 
         if ($deleteBackgroundPaths->contains(fn ($path) => ! $this->isValidBackgroundPath($path))) {
-            return redirect()->back()
-                ->withErrors(['delete_background_paths' => 'ไม่สามารถลบรูปพื้นหลังที่เลือกได้'])
-                ->withInput();
+            return $this->validationFailure($request, [
+                'delete_background_paths' => 'ไม่สามารถลบรูปพื้นหลังที่เลือกได้',
+            ]);
         }
 
         if ($request->has('id')) {
@@ -225,7 +225,42 @@ class SettingsController extends Controller
             ], $setting, $request->user());
         }
 
+        if ($request->expectsJson()) {
+            $backgroundAssets = $this->getBackgroundAssets();
+            $selectedBackgroundPath = $setting->background_path;
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data' => [
+                    'settings' => $setting->toArray(),
+                    'logo_url' => $setting->logo_url,
+                    'background_url' => $setting->background_url,
+                ],
+                'html' => [
+                    'background_library' => view('settings.partials.background-library', compact(
+                        'backgroundAssets',
+                        'selectedBackgroundPath'
+                    ))->render(),
+                    'info' => view('settings.partials.index-info-box', compact('setting'))->render(),
+                ],
+            ]);
+        }
+
         return redirect()->route('settings.index')->with('success', $message);
+    }
+
+    private function validationFailure(Request $request, array $errors)
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($errors)->first(),
+                'errors' => collect($errors)->map(fn ($message) => [$message])->all(),
+            ], 422);
+        }
+
+        return redirect()->back()->withErrors($errors)->withInput();
     }
 
     /**

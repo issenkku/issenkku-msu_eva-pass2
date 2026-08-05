@@ -1,5 +1,5 @@
 {{-- กล่องสรุปการนำค่าตั้งค่าไปใช้จริงในระบบ --}}
-<div class="form-group-custom">
+<div class="form-group-custom" data-settings-info-region>
     <div class="info-box settings-impact-box">
         <h6>
             <i class="fas fa-circle-info me-2"></i>ค่านี้ถูกใช้ที่ไหน
