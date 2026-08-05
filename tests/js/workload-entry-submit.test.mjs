@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const { applyWorkloadEntrySaveResponse, requestWorkloadEntrySave } = await import('../../resources/js/workload-entry-submit.js');
+const { applyWorkloadEntrySaveResponse, hideWorkloadEntryModalIfCurrent, requestWorkloadEntrySave } = await import(
+    '../../resources/js/workload-entry-submit.js'
+);
 
 class TestFormData {
     constructor(form) {
@@ -41,7 +43,13 @@ test('requestWorkloadEntrySave posts the form action with its complete FormData 
 
             return {
                 ok: true,
-                json: async () => ({ message: 'Saved', total_score: 9 }),
+                status: 200,
+                json: async () => ({
+                    message: 'Saved',
+                    panels_html: '<section>Saved entry</section>',
+                    summary_html: '<strong>9</strong>',
+                    total_score: 9,
+                }),
             };
         });
 
@@ -89,6 +97,50 @@ test('requestWorkloadEntrySave propagates network failures', async () => {
             networkError,
         );
     });
+});
+
+test('requestWorkloadEntrySave rejects a followed HTML response before any live update', async () => {
+    await withFormData(async () => {
+        const panels = { innerHTML: 'Existing panels' };
+        const documentRef = {
+            getElementById(id) {
+                return id === 'workloadPanelsLiveRegion' ? panels : null;
+            },
+            dispatchEvent() {},
+        };
+
+        await assert.rejects(
+            async () => {
+                const payload = await requestWorkloadEntrySave({ action: 'https://example.test/workload-entries/999', fields: [] }, async () => ({
+                    ok: true,
+                    status: 200,
+                    redirected: true,
+                    json: async () => {
+                        throw new SyntaxError('Unexpected token < in JSON');
+                    },
+                }));
+                applyWorkloadEntrySaveResponse(documentRef, payload);
+            },
+            (error) => {
+                assert.equal(error.status, 200);
+                assert.equal(error.message, 'Unable to save workload entry');
+                return true;
+            },
+        );
+
+        assert.equal(panels.innerHTML, 'Existing panels');
+    });
+});
+
+test('a save completion does not hide a modal session reopened after submission', () => {
+    let hideCount = 0;
+
+    const didHide = hideWorkloadEntryModalIfCurrent(1, 2, () => {
+        hideCount += 1;
+    });
+
+    assert.equal(didHide, false);
+    assert.equal(hideCount, 0);
 });
 
 test('applyWorkloadEntrySaveResponse refreshes workload HTML and broadcasts the numeric total', () => {
@@ -147,6 +199,7 @@ test('workload entry partials retain the async submission contract', () => {
     assert.match(entrySubmit, /isSubmitting/);
     assert.match(entrySubmit, /requestWorkloadEntrySave/);
     assert.match(entrySubmit, /applyWorkloadEntrySaveResponse/);
+    assert.match(entrySubmit, /hideWorkloadEntryModalIfCurrent/);
     assert.match(entrySubmit, /bootstrap\.Modal\.getOrCreateInstance\(workloadModalEl\)\.hide\(\)/);
     assert.match(entrySubmit, /classList\.add\('is-invalid'\)/);
     assert.match(saveReminder, /let currentTotal/);

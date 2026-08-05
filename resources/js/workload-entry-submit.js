@@ -7,14 +7,46 @@ export async function requestWorkloadEntrySave(form, fetchImpl = window.fetch.bi
             'X-Requested-With': 'XMLHttpRequest',
         },
     });
-    const payload = await response.json().catch(() => ({}));
+    let payload;
+    try {
+        payload = await response.json();
+    } catch {
+        payload = {};
+    }
     if (!response.ok) {
         const error = new Error(payload.message || 'Unable to save workload entry');
         error.status = response.status;
         error.errors = payload.errors || {};
         throw error;
     }
+    if (!isWorkloadEntrySavePayload(payload)) {
+        const error = new Error('Unable to save workload entry');
+        error.status = response.status;
+        error.errors = {};
+        throw error;
+    }
     return payload;
+}
+
+function isWorkloadEntrySavePayload(payload) {
+    return (
+        payload !== null &&
+        typeof payload === 'object' &&
+        typeof payload.message === 'string' &&
+        typeof payload.panels_html === 'string' &&
+        typeof payload.summary_html === 'string' &&
+        Object.hasOwn(payload, 'total_score') &&
+        Number.isFinite(Number(payload.total_score))
+    );
+}
+
+export function hideWorkloadEntryModalIfCurrent(submissionSession, currentSession, hideModal) {
+    if (submissionSession !== currentSession) {
+        return false;
+    }
+
+    hideModal();
+    return true;
 }
 
 function createTotalUpdatedEvent(documentRef, total) {
@@ -58,5 +90,6 @@ if (typeof window !== 'undefined') {
     window.WorkloadEntrySubmit = {
         requestWorkloadEntrySave,
         applyWorkloadEntrySaveResponse,
+        hideWorkloadEntryModalIfCurrent,
     };
 }

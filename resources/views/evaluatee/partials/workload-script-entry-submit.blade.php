@@ -57,6 +57,12 @@
         }
 
         let isSubmitting = false;
+        let workloadModalSession = 0;
+        if (workloadModalEl) {
+            workloadModalEl.addEventListener('show.bs.modal', function () {
+                workloadModalSession += 1;
+            });
+        }
         workloadForm.addEventListener('submit', async function (event) {
             const missingFields = getMissingWorkloadFields(true);
             if (missingFields.length > 0) {
@@ -77,6 +83,7 @@
             }
 
             isSubmitting = true;
+            const submissionModalSession = workloadModalSession;
             const originalButtonLabel = workloadSubmitButton ? workloadSubmitButton.textContent : '';
             if (workloadSubmitButton) {
                 workloadSubmitButton.disabled = true;
@@ -89,7 +96,13 @@
             try {
                 const payload = await window.WorkloadEntrySubmit.requestWorkloadEntrySave(workloadForm);
                 window.WorkloadEntrySubmit.applyWorkloadEntrySaveResponse(document, payload);
-                bootstrap.Modal.getOrCreateInstance(workloadModalEl).hide();
+                window.WorkloadEntrySubmit.hideWorkloadEntryModalIfCurrent(
+                    submissionModalSession,
+                    workloadModalSession,
+                    function () {
+                        bootstrap.Modal.getOrCreateInstance(workloadModalEl).hide();
+                    },
+                );
                 showWorkloadSaveMessage(payload.message || 'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว', false);
             } catch (error) {
                 if (error.status === 422) {
