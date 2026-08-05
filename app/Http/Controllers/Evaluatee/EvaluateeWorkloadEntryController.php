@@ -166,7 +166,7 @@ class EvaluateeWorkloadEntryController extends Controller
                 $entry,
                 $form,
                 'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว',
-                null,
+                $form->quantity_sub_criteria_item_id ? (int) $form->quantity_sub_criteria_item_id : null,
             );
         } catch (ModelNotFoundException $e) {
             $message = 'ไม่พบข้อมูลภาระงานที่ต้องการแก้ไข';

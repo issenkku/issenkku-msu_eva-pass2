@@ -246,7 +246,7 @@ test('redirect fallback keeps the existing create response', function () {
 });
 
 test('JSON update returns updated workload fragments and total', function () {
-    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form, 'item' => $item] = workloadAsyncSaveContext();
     $entry = WorkloadEntry::create([
         ...workloadAsyncSavePayload($report, $form),
         'calculated_score' => 6,
@@ -262,7 +262,7 @@ test('JSON update returns updated workload fragments and total', function () {
         ->assertOk()
         ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score', 'active_item_id'])
         ->assertJsonPath('total_score', 12)
-        ->assertJsonPath('active_item_id', null);
+        ->assertJsonPath('active_item_id', $item->id);
 
     expect($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('12.00')
         ->and($response->json('summary_html'))->toBeString()->toContain('12.00');
