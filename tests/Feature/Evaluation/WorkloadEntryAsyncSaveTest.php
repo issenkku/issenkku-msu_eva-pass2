@@ -17,6 +17,78 @@ use App\Models\WorkloadForm;
 use App\Models\WorkloadFormField;
 use App\Support\EvaluateeWorkloadLiveData;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\Sanctum;
+use Spatie\Permission\Models\Role;
+
+function workloadAsyncSaveContext(): array
+{
+    Role::findOrCreate('ผู้รับการประเมิน');
+
+    $evaluatee = User::factory()->create();
+    $evaluatee->assignRole('ผู้รับการประเมิน');
+    $criteriaVersion = CriteriaVersion::factory()->create();
+    $evaluationList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+    $report = Reports::factory()->create([
+        'status' => 'Draft',
+        'report_data_id' => ReportData::factory()->create([
+            'criteria_version_id' => $criteriaVersion->id,
+        ])->id,
+    ]);
+    Assignments::factory()->create([
+        'report_id' => $report->id,
+        'evaluatee_id' => $evaluatee->id,
+    ]);
+    $quantitySubCriteria = QuantitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $evaluationList->id,
+        'require_subject' => false,
+        'require_evidence' => false,
+    ]);
+    $group = QuantitySubCriteriaGroup::create([
+        'name' => 'Async teaching group',
+        'sequence' => 1,
+        'quantity_sub_criteria_id' => $quantitySubCriteria->id,
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $evaluationList->id,
+    ]);
+    $item = QuantitySubCriteriaItem::create([
+        'name' => 'Async teaching entry',
+        'sequence' => 1,
+        'quantity_sub_criteria_group_id' => $group->id,
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $evaluationList->id,
+        'require_subject' => false,
+    ]);
+    $form = WorkloadForm::create([
+        'formula_logic' => 'hours * rate',
+        'quantity_sub_criteria_id' => $quantitySubCriteria->id,
+        'quantity_sub_criteria_item_id' => $item->id,
+    ]);
+    foreach (['hours', 'rate'] as $variableName) {
+        WorkloadFormField::create([
+            'label' => ucfirst($variableName),
+            'variable_name' => $variableName,
+            'field_type' => 'number',
+            'workload_form_id' => $form->id,
+        ]);
+    }
+
+    return compact('evaluatee', 'report', 'form');
+}
+
+function workloadAsyncSavePayload(Reports $report, WorkloadForm $form, int $hours = 2, int $rate = 3): array
+{
+    return [
+        'report_id' => $report->id,
+        'workload_form_id' => $form->id,
+        'field_values' => [
+            'hours' => $hours,
+            'rate' => $rate,
+        ],
+    ];
+}
 
 test('builds live workload data', function () {
     $evaluatee = User::factory()->create();
@@ -139,4 +211,57 @@ test('stores the aggregate workload score', function () {
 
     expect((float) $quantityScore->score_C)->toBe(6.0)
         ->and((float) $quantityScore->score_D)->toBe(3.0);
+});
+
+test('JSON create returns saved workload fragments and total', function () {
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    Sanctum::actingAs($evaluatee);
+
+    $response = $this->postJson(
+        route('evaluatee.workload-entries.store'),
+        workloadAsyncSavePayload($report, $form),
+    );
+
+    $response
+        ->assertOk()
+        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score'])
+        ->assertJsonPath('total_score', 6);
+
+    expect($response->json('total_score'))->toBeNumeric()
+        ->and($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('6.00')
+        ->and($response->json('summary_html'))->toBeString()->toContain('6.00');
+});
+
+test('redirect fallback keeps the existing create response', function () {
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    Sanctum::actingAs($evaluatee);
+
+    $this
+        ->post(route('evaluatee.workload-entries.store'), workloadAsyncSavePayload($report, $form))
+        ->assertRedirect()
+        ->assertSessionHas('success');
+});
+
+test('JSON update returns updated workload fragments and total', function () {
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    $entry = WorkloadEntry::create([
+        ...workloadAsyncSavePayload($report, $form),
+        'calculated_score' => 6,
+    ]);
+    Sanctum::actingAs($evaluatee);
+
+    $response = $this->putJson(
+        route('evaluatee.workload-entries.update', $entry->id),
+        workloadAsyncSavePayload($report, $form, 4, 3),
+    );
+
+    $response
+        ->assertOk()
+        ->assertJsonStructure(['message', 'panels_html', 'summary_html', 'total_score'])
+        ->assertJsonPath('total_score', 12);
+
+    expect($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('12.00')
+        ->and($response->json('summary_html'))->toBeString()->toContain('12.00');
+
+    expect(WorkloadEntry::where('report_id', $report->id)->count())->toBe(1);
 });

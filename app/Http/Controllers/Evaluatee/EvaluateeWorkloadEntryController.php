@@ -14,15 +14,18 @@ use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Models\WorkloadFormItem;
 use App\Services\WorkloadFormulaEvaluator;
+use App\Support\EvaluateeWorkloadLiveData;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class EvaluateeWorkloadEntryController extends Controller
 {
     private array $editableStatuses = ['Draft', 'Assigned'];
 
-    public function store(StoreWorkloadEntryRequest $request): RedirectResponse
+    public function store(StoreWorkloadEntryRequest $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validated();
         $this->ensureReportEditable((int) $validated['report_id'], (int) $request->user()->id);
@@ -83,12 +86,15 @@ class EvaluateeWorkloadEntryController extends Controller
             }
         }
 
-        return redirect()
-            ->back()
-            ->with('success', 'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว');
+        return $this->successfulSaveResponse(
+            $request,
+            $entry,
+            $form,
+            'บันทึกข้อมูลภาระงานเรียบร้อยแล้ว',
+        );
     }
 
-    public function update(UpdateWorkloadEntryRequest $request, $id): RedirectResponse
+    public function update(UpdateWorkloadEntryRequest $request, $id): RedirectResponse|JsonResponse
     {
         try {
             $entry = WorkloadEntry::findOrFail($id);
@@ -154,9 +160,12 @@ class EvaluateeWorkloadEntryController extends Controller
                 }
             }
 
-            return redirect()
-                ->back()
-                ->with('success', 'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว');
+            return $this->successfulSaveResponse(
+                $request,
+                $entry,
+                $form,
+                'แก้ไขข้อมูลภาระงานเรียบร้อยแล้ว',
+            );
         } catch (ModelNotFoundException $e) {
             return redirect()
                 ->back()
@@ -181,6 +190,40 @@ class EvaluateeWorkloadEntryController extends Controller
                 ->back()
                 ->with('error', 'ไม่พบข้อมูลภาระงานที่ต้องการลบ');
         }
+    }
+
+    private function successfulSaveResponse(
+        Request $request,
+        WorkloadEntry $entry,
+        WorkloadForm $form,
+        string $message,
+    ): RedirectResponse|JsonResponse {
+        if (! $request->expectsJson()) {
+            return redirect()->back()->with('success', $message);
+        }
+
+        $quantitySubCriteria = QuantitySubCriteria::with('groups.items')
+            ->findOrFail($form->quantity_sub_criteria_id);
+        $workloadForms = WorkloadForm::with(['fields', 'items', 'subCriteriaItem.group'])
+            ->where('quantity_sub_criteria_id', $quantitySubCriteria->id)
+            ->get();
+        $liveData = EvaluateeWorkloadLiveData::build(
+            $quantitySubCriteria,
+            $workloadForms,
+            (int) $entry->report_id,
+        );
+
+        return response()->json([
+            'message' => $message,
+            'panels_html' => view('evaluatee.partials.workload-group-panels', [
+                'workloadView' => $liveData['workloadView'],
+                'readonly' => false,
+            ])->render(),
+            'summary_html' => view('evaluatee.partials.workload-summary-panel', [
+                'totalDisplay' => $liveData['workloadView']['total_display'],
+            ])->render(),
+            'total_score' => $liveData['workloadTotalScore'],
+        ]);
     }
 
     private function resolveItemVariableName(WorkloadForm $form, int $sequence): string

@@ -24,12 +24,16 @@
             </div>
         @endif
 
-        @include('evaluatee.partials.workload-group-panels')
+        <div id="workloadPanelsLiveRegion">
+            @include('evaluatee.partials.workload-group-panels')
+        </div>
     @endif
 
-    @include('evaluatee.partials.workload-summary-panel', [
-        'totalDisplay' => $workloadView['total_display'] ?? '-',
-    ])
+    <div id="workloadSummaryLiveRegion">
+        @include('evaluatee.partials.workload-summary-panel', [
+            'totalDisplay' => $workloadView['total_display'] ?? '-',
+        ])
+    </div>
     @include('evaluatee.partials.workload-actions', [
         'readonly' => $readonly,
         'reportId' => $reportId,
