@@ -4,17 +4,15 @@ namespace App\Http\Controllers\Evaluatee;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assignments;
-use App\Models\EvidenceAnswer;
 use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\Reports;
 use App\Models\Subject;
-use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use App\Rules\ActiveQuantitySubCriteria;
 use App\Services\PreviousWorkloadImportService;
+use App\Support\EvaluateeWorkloadLiveData;
 use App\Support\EvaluateeWorkloadModalData;
-use App\Support\EvaluateeWorkloadViewData;
 use Illuminate\Http\Request;
 
 class EvaluationWorkloadController extends Controller
@@ -76,26 +74,29 @@ class EvaluationWorkloadController extends Controller
                 ->get();
         }
 
-        $workloadEntriesByFormId = collect();
-        $workloadTotalScore = 0.0;
-        $savedWorkloadScoreC = null;
-        if ($reportId && $workloadForms->isNotEmpty()) {
-            $formIds = $workloadForms->pluck('id')->filter()->unique()->values();
-            if ($formIds->isNotEmpty()) {
-                $workloadEntriesByFormId = WorkloadEntry::with('subject')
-                    ->where('report_id', $reportId)
-                    ->whereIn('workload_form_id', $formIds)
-                    ->orderByDesc('created_at')
-                    ->get()
-                    ->groupBy('workload_form_id');
-
-                $workloadTotalScore = $workloadEntriesByFormId
-                    ->flatten(1)
-                    ->sum(function ($entry) {
-                        return max(0, (float) ($entry->calculated_score ?? 0));
-                    });
-            }
+        $liveData = [
+            'workloadEntriesByFormId' => collect(),
+            'evidenceLinksByEntryId' => collect(),
+            'workloadTotalScore' => 0.0,
+            'workloadView' => [
+                'requires_subject' => false,
+                'groups' => collect(),
+                'total_display' => '0.00',
+            ],
+        ];
+        if ($reportId && $quantitySubCriteria) {
+            $liveData = EvaluateeWorkloadLiveData::build(
+                $quantitySubCriteria,
+                $workloadForms,
+                (int) $reportId,
+            );
         }
+
+        $workloadEntriesByFormId = $liveData['workloadEntriesByFormId'];
+        $evidenceLinksByEntryId = $liveData['evidenceLinksByEntryId'];
+        $workloadTotalScore = $liveData['workloadTotalScore'];
+        $workloadView = $liveData['workloadView'];
+        $savedWorkloadScoreC = null;
 
         if ($reportId && $quantitySubCriteriaId) {
             $savedWorkloadScoreC = QuantityScore::query()
@@ -104,22 +105,6 @@ class EvaluationWorkloadController extends Controller
                 ->value('score_C');
         }
 
-        $evidenceLinksByEntryId = collect();
-        if ($reportId && $quantitySubCriteria && $quantitySubCriteria->evaluation_list_id) {
-            $evidenceLinksByEntryId = EvidenceAnswer::where('report_id', $reportId)
-                ->where('evaluation_list_id', $quantitySubCriteria->evaluation_list_id)
-                ->orderByDesc('created_at')
-                ->get()
-                ->groupBy('workload_entry_id')
-                ->map(fn ($answers) => $answers->pluck('link')->filter()->values());
-        }
-
-        $workloadView = EvaluateeWorkloadViewData::build(
-            $quantitySubCriteria,
-            $workloadForms,
-            $workloadEntriesByFormId,
-            $evidenceLinksByEntryId
-        );
         $workloadModal = EvaluateeWorkloadModalData::build(
             $quantitySubCriteria,
             $workloadForms,
