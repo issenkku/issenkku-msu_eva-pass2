@@ -24,6 +24,7 @@
 - Modify `resources/views/evaluatee/partials/workload-script-entry-submit.blade.php`: provide the create-only origin ID to the coordinator and response helper.
 - Modify `resources/js/workload-entry-submit.js`: snapshot submission context and restore the matching dropdown after HTML replacement.
 - Modify `tests/js/workload-entry-submit.test.mjs`: behaviorally verify context capture and dropdown restoration.
+- Modify `tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php`: verify the server-rendered fragment exposes the stable dropdown ID.
 
 ---
 
@@ -35,6 +36,7 @@
 - Modify: `resources/views/evaluatee/partials/workload-script-entry-submit.blade.php`
 - Modify: `resources/js/workload-entry-submit.js`
 - Test: `tests/js/workload-entry-submit.test.mjs`
+- Test: `tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php`
 
 **Interfaces:**
 - Consumes: `data-item-id` from `.workload-add-btn`
@@ -57,23 +59,23 @@ Assert dropdown `12` has `open === true` and `11`/`13` have `open === false`. Ad
 
 Extend the existing behavioral harness with `getDropdownItemId` and make `applyResponse` capture its second argument. Start a submission with ID `12`, change the harness ID to `13` before resolving the request, and assert the applied context remains `{ dropdownItemId: '12' }`. This proves the context is snapshotted at submission time.
 
-- [ ] **Step 3: Write a failing Blade contract test**
+- [ ] **Step 3: Write a failing rendered-Blade test**
 
-Read `workload-group-panels.blade.php`, `workload-script-entry-modal.blade.php`, and `workload-script-entry-submit.blade.php`. Assert they contain:
+Extend the existing JSON create feature test to assert the real rendered `panels_html` contains the same stable item ID as its add button:
 
-```text
-data-workload-item-id="{{ $itemView['id'] }}"
-lastDefaultItemId = btn.dataset.itemId || ''
-getDropdownItemId
-methodField.value === 'PUT'
+```php
+expect($response->json('panels_html'))
+    ->toContain('data-workload-item-id="'.$item->id.'"')
+    ->toContain('data-item-id="'.$item->id.'"');
 ```
 
-The edit-mode expression must return an empty string; create mode returns the recorded add-button ID.
+The JavaScript coordinator-context test covers create-mode snapshot behavior. Extend it with an edit-mode/empty-origin case that applies `{ dropdownItemId: '' }`, proving edit does not restore an arbitrary dropdown.
 
 - [ ] **Step 4: Run tests to verify RED**
 
 ```powershell
 node --test tests/js/workload-entry-submit.test.mjs
+php vendor/bin/pest tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php --filter="JSON create" --compact
 ```
 
 Expected: FAIL because dropdown restoration and submission context do not exist.
@@ -150,7 +152,7 @@ Expected: all tests PASS.
 - [ ] **Step 9: Commit Task 1**
 
 ```powershell
-git add -- resources/views/evaluatee/partials/workload-group-panels.blade.php resources/views/evaluatee/partials/workload-script-entry-modal.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/js/workload-entry-submit.js tests/js/workload-entry-submit.test.mjs
+git add -- resources/views/evaluatee/partials/workload-group-panels.blade.php resources/views/evaluatee/partials/workload-script-entry-modal.blade.php resources/views/evaluatee/partials/workload-script-entry-submit.blade.php resources/js/workload-entry-submit.js tests/js/workload-entry-submit.test.mjs tests/Feature/Evaluation/WorkloadEntryAsyncSaveTest.php
 git commit -m "fix: preserve active workload dropdown"
 ```
 
