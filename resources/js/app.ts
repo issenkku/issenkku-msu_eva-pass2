@@ -3,6 +3,7 @@ import './assignment-participant-selection';
 import './support-activity-entries';
 import './support-indicator-mode';
 import './support-score-calculator';
+import './workload-entry-submit';
 import './workload-formula-preview';
 
 import { createInertiaApp } from '@inertiajs/vue3';

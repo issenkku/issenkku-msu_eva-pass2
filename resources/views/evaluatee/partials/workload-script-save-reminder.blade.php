@@ -22,7 +22,7 @@
             return Number.isFinite(parsed) ? parsed : 0;
         };
 
-        const currentTotal = parseScore(stateEl.dataset.currentTotal || '0');
+        let currentTotal = parseScore(stateEl.dataset.currentTotal || '0');
         const savedTotalRaw = stateEl.dataset.savedTotal || '';
         const hasSavedTotal = savedTotalRaw !== '';
         const savedTotal = hasSavedTotal ? parseScore(savedTotalRaw) : 0;
@@ -72,9 +72,20 @@
             });
         }
 
-        document.addEventListener('submit', function () {
+        document.addEventListener('submit', function (event) {
+            if (event.target && event.target.id === 'workloadEntryForm') {
+                return;
+            }
             allowPageExit = true;
         }, true);
+
+        document.addEventListener('workload:total-updated', function (event) {
+            currentTotal = parseScore(event.detail ? event.detail.total : 0);
+            hasUnsavedChanges = hasSavedTotal
+                ? Math.abs(currentTotal - savedTotal) > 0.0001
+                : currentTotal > 0;
+            updateReminder();
+        });
 
         backLinks.forEach(function (link) {
             link.addEventListener('click', function (event) {
