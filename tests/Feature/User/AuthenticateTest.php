@@ -3,6 +3,7 @@
 namespace Tests\Feature\User;
 
 use App\Models\User;
+use App\Support\FriendlyErrorPage;
 use Database\Factories\DepartmentFactory;
 use Database\Factories\PositionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -88,6 +89,74 @@ class AuthenticateTest extends TestCase
 
         $response->assertRedirect(route('home'));
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_wrong_password_via_plain_form_returns_to_login_with_a_safe_error()
+    {
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
+        User::factory()->create([
+            'employee_id' => 'EMP001',
+            'password' => bcrypt('password123'),
+            'status' => 'active',
+            'department_id' => $department->id,
+            'position_id' => $position->id,
+        ]);
+
+        $response = $this->post('/login', $this->loginPayload([
+            'password' => 'wrongpassword',
+        ]));
+
+        $response
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'employee_id' => 'กรุณากรอกหมายเลขประจำตัวและรหัสผ่านให้ถูกต้อง',
+            ]);
+        $response->assertSessionHasInput('employee_id', 'EMP001');
+        $this->assertNull(session()->getOldInput('password'));
+        $this->assertGuest();
+    }
+
+    public function test_inactive_user_via_plain_form_returns_to_login_with_an_error()
+    {
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
+        User::factory()->create([
+            'employee_id' => 'EMP001',
+            'password' => bcrypt('password123'),
+            'status' => 'inactive',
+            'department_id' => $department->id,
+            'position_id' => $position->id,
+        ]);
+
+        $response = $this->post('/login', $this->loginPayload());
+
+        $response
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'employee_id' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
+            ]);
+        $this->assertGuest();
+    }
+
+    public function test_rate_limited_plain_form_returns_to_login_with_an_error()
+    {
+        RateLimiter::clear('emp001|127.0.0.1');
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            RateLimiter::hit('emp001|127.0.0.1', 60);
+        }
+
+        $response = $this->post('/login', $this->loginPayload([
+            'password' => 'wrongpassword',
+        ]));
+
+        $response
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors([
+                'employee_id' => 'คุณพยายามเข้าสู่ระบบมากเกินไป กรุณารอ 1 นาทีแล้วลองใหม่อีกครั้ง.',
+            ]);
+        $this->assertGuest();
     }
 
     public function test_login_fails_with_wrong_password()
@@ -303,7 +372,7 @@ class AuthenticateTest extends TestCase
         ]);
 
         $response->assertRedirect('/login');
-        $response->assertSessionHas('success', \App\Support\FriendlyErrorPage::LOGOUT_MESSAGE);
+        $response->assertSessionHas('success', FriendlyErrorPage::LOGOUT_MESSAGE);
         $this->assertGuest();
     }
 

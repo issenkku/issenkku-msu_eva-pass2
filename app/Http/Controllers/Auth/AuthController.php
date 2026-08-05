@@ -7,6 +7,8 @@ use App\Models\Setting\Settings;
 use App\Models\User;
 use App\Support\AuditLog;
 use App\Support\FriendlyErrorPage;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -41,9 +43,11 @@ class AuthController extends Controller
                 'reason' => 'rate_limited',
             ]);
 
-            return response()->json([
-                'message' => 'คุณพยายามเข้าสู่ระบบมากเกินไป กรุณารอ 1 นาทีแล้วลองใหม่อีกครั้ง.',
-            ], 429);
+            return $this->authenticationFailure(
+                $request,
+                'คุณพยายามเข้าสู่ระบบมากเกินไป กรุณารอ 1 นาทีแล้วลองใหม่อีกครั้ง.',
+                429,
+            );
         }
 
         $employeeId = (string) $request->input('employee_id');
@@ -58,9 +62,11 @@ class AuthController extends Controller
                 'attempts' => RateLimiter::attempts($key),
             ], $user);
 
-            return response()->json([
-                'message' => 'กรุณากรอกหมายเลขประจำตัวและรหัสผ่านให้ถูกต้อง',
-            ], 401);
+            return $this->authenticationFailure(
+                $request,
+                'กรุณากรอกหมายเลขประจำตัวและรหัสผ่านให้ถูกต้อง',
+                401,
+            );
         }
 
         if ($user->status === 'inactive') {
@@ -70,9 +76,11 @@ class AuthController extends Controller
                 'reason' => 'inactive_user',
             ], $user);
 
-            return response()->json([
-                'message' => 'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
-            ], 413);
+            return $this->authenticationFailure(
+                $request,
+                'บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ',
+                413,
+            );
         }
 
         RateLimiter::clear($key);
@@ -94,6 +102,21 @@ class AuthController extends Controller
         }
 
         return redirect()->to($redirect);
+    }
+
+    private function authenticationFailure(
+        Request $request,
+        string $message,
+        int $status,
+    ): JsonResponse|RedirectResponse {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['message' => $message], $status);
+        }
+
+        return redirect()
+            ->route('login')
+            ->withErrors(['employee_id' => $message])
+            ->withInput($request->only('employee_id'));
     }
 
     private function resolveDashboardRoute(User $user): string
