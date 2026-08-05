@@ -20,6 +20,7 @@
         >
             @csrf
             <input type="hidden" name="source_report_id" value="" data-import-previous-workload-source-input>
+            <input type="hidden" name="quantity_sub_criteria_id" value="{{ $quantitySubCriteriaId }}">
             <button type="submit" class="workload-import-btn">
                 <i class="fas fa-file-import"></i>
                 นำเข้าจากรอบก่อนหน้า

@@ -52,7 +52,7 @@
             return codeValid && nameValid && lectureValid && labValid && selfStudyValid && creditsValid;
         }
 
-        window.submitForm = function () {
+        window.submitForm = async function () {
             const form = document.getElementById('subjectForm');
             if (!form) {
                 return;
@@ -63,14 +63,57 @@
                 redirectInput.value = window.location.href;
             }
 
-            form.action = "{{ route('subjects.store.evaluatee') }}?redirect_to=" + encodeURIComponent(window.location.href);
+            form.action = "{{ route('subjects.store.evaluatee') }}";
 
             if (!validateSubjectForm()) {
                 return;
             }
 
-            form.submit();
+            const submitButton = document.getElementById('subjectSubmitBtn');
+            const coordinator = window.AsyncForm?.createAsyncFormCoordinator({
+                applySuccess: async function (payload) {
+                    document.dispatchEvent(new CustomEvent('workload:subject-created', {
+                        detail: { subject: payload.data.subject },
+                    }));
+                    const modalElement = document.getElementById('subjectModal');
+                    if (modalElement && window.bootstrap?.Modal) {
+                        window.bootstrap.Modal.getOrCreateInstance(modalElement).hide();
+                    }
+                    form.reset();
+                },
+                applyValidationErrors: function (errors) {
+                    const errorIds = {
+                        code: 'codeError',
+                        name_th: 'subjectNameError',
+                        name_en: 'subjectNameError',
+                        credits: 'creditsError',
+                        lecture_credits: 'lectureCreditsError',
+                        lab_credits: 'labCreditsError',
+                        self_study_credits: 'selfStudyCreditsError',
+                    };
+                    Object.entries(errors || {}).forEach(function ([name, messages]) {
+                        const input = form.querySelector('[name="' + name + '"]');
+                        const errorElement = document.getElementById(errorIds[name]);
+                        if (input) input.classList.add('is-invalid');
+                        if (errorElement) {
+                            errorElement.textContent = Array.isArray(messages) ? messages[0] : String(messages);
+                            errorElement.style.display = 'block';
+                        }
+                    });
+                },
+                form,
+                getSubmitButton: function () { return submitButton; },
+                request: window.AsyncForm.requestFormMutation,
+                showMessage: window.MasterDataPage.showMasterDataMessage,
+            });
+
+            if (coordinator) {
+                await coordinator({ preventDefault: function () {} });
+            } else {
+                form.submit();
+            }
         };
 
+        document.getElementById('subjectSubmitBtn')?.addEventListener('click', window.submitForm);
     });
 </script>

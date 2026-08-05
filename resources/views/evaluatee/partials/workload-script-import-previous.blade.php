@@ -33,7 +33,7 @@
             });
         });
 
-        confirmButton.addEventListener('click', function () {
+        confirmButton.addEventListener('click', async function () {
             if (!pendingForm) {
                 closeModal();
                 return;
@@ -46,9 +46,30 @@
                 sourceInput.value = sourceSelect.value || '';
             }
 
-            confirmButton.disabled = true;
+            const form = pendingForm;
+            const coordinator = window.AsyncForm?.createAsyncFormCoordinator({
+                applySuccess: async function (payload) {
+                    window.WorkloadEntrySubmit.applyWorkloadEntrySaveResponse(
+                        document,
+                        payload,
+                        payload.active_item_id || '',
+                    );
+                    closeModal();
+                },
+                form,
+                getSubmitButton: function () { return confirmButton; },
+                request: window.AsyncForm.requestFormMutation,
+                showMessage: window.MasterDataPage.showMasterDataMessage,
+            });
+
+            if (!coordinator) {
+                HTMLFormElement.prototype.submit.call(form);
+                return;
+            }
+
             confirmButton.classList.add('is-loading');
-            HTMLFormElement.prototype.submit.call(pendingForm);
+            await coordinator({ preventDefault: function () {} });
+            confirmButton.classList.remove('is-loading');
         });
 
         cancelButtons.forEach(function (button) {

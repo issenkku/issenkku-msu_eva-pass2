@@ -24,8 +24,8 @@
 
         let currentTotal = parseScore(stateEl.dataset.currentTotal || '0');
         const savedTotalRaw = stateEl.dataset.savedTotal || '';
-        const hasSavedTotal = savedTotalRaw !== '';
-        const savedTotal = hasSavedTotal ? parseScore(savedTotalRaw) : 0;
+        let hasSavedTotal = savedTotalRaw !== '';
+        let savedTotal = hasSavedTotal ? parseScore(savedTotalRaw) : 0;
         let hasUnsavedChanges = hasSavedTotal
             ? Math.abs(currentTotal - savedTotal) > 0.0001
             : currentTotal > 0;
@@ -65,10 +65,32 @@
         }
 
         if (workloadScoreForm) {
-            workloadScoreForm.addEventListener('submit', function () {
-                allowPageExit = true;
-                hasUnsavedChanges = false;
-                updateReminder();
+            workloadScoreForm.addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const coordinator = window.AsyncForm?.createAsyncFormCoordinator({
+                    applySuccess: async function (payload) {
+                        currentTotal = parseScore(payload.total_score);
+                        savedTotal = parseScore(payload.saved_total);
+                        hasSavedTotal = true;
+                        hasUnsavedChanges = false;
+                        stateEl.dataset.currentTotal = String(currentTotal);
+                        stateEl.dataset.savedTotal = String(savedTotal);
+                        updateReminder();
+                    },
+                    form: workloadScoreForm,
+                    getSubmitButton: function () {
+                        return workloadScoreForm.querySelector('[type="submit"]');
+                    },
+                    request: window.AsyncForm.requestFormMutation,
+                    showMessage: window.MasterDataPage.showMasterDataMessage,
+                });
+
+                if (coordinator) {
+                    await coordinator({ preventDefault: function () {} });
+                } else {
+                    workloadScoreForm.submit();
+                }
             });
         }
 
@@ -77,6 +99,7 @@
                 event.target &&
                 (
                     event.target.id === 'workloadEntryForm' ||
+                    event.target.id === 'workloadScoreForm' ||
                     (event.target.id === 'deleteForm' && event.target.dataset.workloadItemId)
                 )
             ) {

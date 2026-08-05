@@ -186,9 +186,21 @@ class EvaluationWorkloadController extends Controller
             ]
         );
 
+        $message = 'บันทึกคะแนนภาระงานรวมเรียบร้อยแล้ว';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'total_score' => $scoreC,
+                'saved_total' => $scoreC,
+                'score_d' => $scoreD,
+            ]);
+        }
+
         return redirect()
             ->back()
-            ->with('success', 'บันทึกคะแนนภาระงานรวมเรียบร้อยแล้ว');
+            ->with('success', $message);
     }
 
     public function importPreviousWorkload(Request $request, int $id, PreviousWorkloadImportService $importer)
@@ -207,8 +219,14 @@ class EvaluationWorkloadController extends Controller
             abort(403, 'Unauthorized evaluatee');
         }
 
+        $criteriaVersionId = (int) $report->reportData?->criteria_version_id;
         $validated = $request->validate([
             'source_report_id' => 'nullable|integer|exists:reports,id',
+            'quantity_sub_criteria_id' => [
+                'nullable',
+                'integer',
+                new ActiveQuantitySubCriteria($criteriaVersionId),
+            ],
         ]);
 
         $result = $importer->importForReport(
@@ -218,20 +236,87 @@ class EvaluationWorkloadController extends Controller
         );
 
         if (! $result['source_report_id']) {
+            if ($request->expectsJson()) {
+                return $this->importMutationResponse(
+                    $report,
+                    (int) ($validated['quantity_sub_criteria_id'] ?? 0),
+                    $result,
+                    'ไม่พบข้อมูลจากรอบก่อนหน้าที่สามารถนำเข้าได้',
+                );
+            }
+
             return redirect()
                 ->back()
                 ->with('info', 'ไม่พบข้อมูลจากรอบก่อนหน้าที่สามารถนำเข้าได้');
         }
 
         if ($result['copied_entries'] === 0) {
+            if ($request->expectsJson()) {
+                return $this->importMutationResponse(
+                    $report,
+                    (int) ($validated['quantity_sub_criteria_id'] ?? 0),
+                    $result,
+                    'ข้อมูลจากรอบก่อนหน้ามีอยู่ในรอบนี้แล้ว',
+                );
+            }
+
             return redirect()
                 ->back()
                 ->with('info', 'ข้อมูลจากรอบก่อนหน้ามีอยู่ในรอบนี้แล้ว');
         }
 
+        $message = "นำเข้าข้อมูลจากรอบก่อนหน้า {$result['copied_entries']} รายการเรียบร้อยแล้ว";
+
+        if ($request->expectsJson()) {
+            return $this->importMutationResponse(
+                $report,
+                (int) ($validated['quantity_sub_criteria_id'] ?? 0),
+                $result,
+                $message,
+            );
+        }
+
         return redirect()
             ->back()
-            ->with('success', "นำเข้าข้อมูลจากรอบก่อนหน้า {$result['copied_entries']} รายการเรียบร้อยแล้ว");
+            ->with('success', $message);
+    }
+
+    private function importMutationResponse(
+        Reports $report,
+        int $quantitySubCriteriaId,
+        array $result,
+        string $message,
+    ) {
+        $quantitySubCriteria = QuantitySubCriteria::with('groups.items')
+            ->findOrFail($quantitySubCriteriaId);
+        $workloadForms = WorkloadForm::with(['fields', 'items', 'subCriteriaItem.group'])
+            ->where('quantity_sub_criteria_id', $quantitySubCriteria->id)
+            ->get();
+        $liveData = EvaluateeWorkloadLiveData::build(
+            $quantitySubCriteria,
+            $workloadForms,
+            (int) $report->id,
+        );
+        $itemIds = $quantitySubCriteria->groups
+            ->flatMap(fn ($group) => $group->items)
+            ->pluck('id')
+            ->values();
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'copied_entries' => (int) ($result['copied_entries'] ?? 0),
+            'copied_evidence' => (int) ($result['copied_evidence'] ?? 0),
+            'panels_html' => view('evaluatee.partials.workload-group-panels', [
+                'workloadView' => $liveData['workloadView'],
+                'readonly' => false,
+            ])->render(),
+            'summary_html' => view('evaluatee.partials.workload-summary-panel', [
+                'totalDisplay' => $liveData['workloadView']['total_display'],
+            ])->render(),
+            'total_score' => $liveData['workloadTotalScore'],
+            'active_item_id' => $itemIds->count() === 1 ? (int) $itemIds->first() : null,
+        ]);
     }
 
     private function canEditReport(?Reports $report): bool

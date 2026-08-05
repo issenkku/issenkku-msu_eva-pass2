@@ -62,6 +62,41 @@
 
         @include('evaluatee.partials.workload-script-entry-submit')
 
+        document.addEventListener('workload:subject-created', function (event) {
+            const subject = event.detail ? event.detail.subject : null;
+            if (!subject || !subjectOptionContainer) {
+                return;
+            }
+
+            const option = document.createElement('button');
+            const subjectName = subject.name_th || subject.name_en || '';
+            const displayName = subject.code + (subjectName ? ' - ' + subjectName : '');
+            option.type = 'button';
+            option.className = 'workload-subject-option';
+            option.dataset.subjectId = String(subject.id);
+            option.dataset.credits = String(subject.credits ?? 0);
+            option.dataset.lectureCredits = String(subject.lecture_credits ?? 0);
+            option.dataset.labCredits = String(subject.lab_credits ?? 0);
+            option.dataset.selfStudyCredits = String(subject.self_study_credits ?? 0);
+            option.dataset.search = displayName.toLowerCase();
+
+            const name = document.createElement('span');
+            name.className = 'workload-subject-option-name';
+            name.textContent = displayName;
+            const credit = document.createElement('span');
+            credit.className = 'workload-subject-option-credit';
+            credit.textContent = String(subject.credits ?? 0) + ' หน่วยกิต';
+            option.append(name, credit);
+            option.addEventListener('click', function () {
+                selectSubjectOption(option, false);
+                updateWorkloadSubmitState();
+            });
+            subjectOptionContainer.appendChild(option);
+            subjectOptions.push(option);
+            selectSubjectOption(option, false);
+            updateWorkloadSubmitState();
+        });
+
         initWorkloadEntryInteractions();
         initWorkloadEntryModalLifecycle();
         initWorkloadEntrySubmit();
