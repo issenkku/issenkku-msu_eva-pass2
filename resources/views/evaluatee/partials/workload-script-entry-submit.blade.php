@@ -54,6 +54,9 @@
             getModalSession: function () {
                 return workloadModalSession;
             },
+            getDropdownItemId: function () {
+                return methodField && methodField.value === 'PUT' ? '' : lastDefaultItemId;
+            },
             onMissingFields: function (missingFields) {
                 updateWorkloadSubmitState();
                 alert('กรุณากรอกข้อมูลให้ครบก่อนบันทึก: ' + missingFields.join(', '));
@@ -64,8 +67,12 @@
                 });
             },
             requestSave: window.WorkloadEntrySubmit.requestWorkloadEntrySave,
-            applyResponse: function (payload) {
-                window.WorkloadEntrySubmit.applyWorkloadEntrySaveResponse(document, payload);
+            applyResponse: function (payload, context) {
+                window.WorkloadEntrySubmit.applyWorkloadEntrySaveResponse(
+                    document,
+                    payload,
+                    context.dropdownItemId
+                );
             },
             markValidationErrors: function (errors) {
                 return window.WorkloadEntrySubmit.markWorkloadValidationErrors(workloadForm, errors, {

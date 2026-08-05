@@ -128,6 +128,7 @@ export function createWorkloadEntrySubmitCoordinator(options) {
 
         isSubmitting = true;
         const submissionModalSession = options.getModalSession();
+        const submissionDropdownItemId = options.getDropdownItemId?.() ?? '';
         const originalButtonLabel = options.submitButton?.textContent ?? '';
         if (options.submitButton) {
             options.submitButton.disabled = true;
@@ -137,7 +138,9 @@ export function createWorkloadEntrySubmitCoordinator(options) {
 
         try {
             const payload = await options.requestSave(options.form);
-            options.applyResponse(payload);
+            options.applyResponse(payload, {
+                dropdownItemId: submissionDropdownItemId,
+            });
             hideWorkloadEntryModalIfCurrent(submissionModalSession, options.getModalSession(), () => {
                 options.resetForm();
                 options.hideModal();
@@ -187,7 +190,7 @@ function createTotalUpdatedEvent(documentRef, total) {
     return { type: 'workload:total-updated', detail: { total } };
 }
 
-export function applyWorkloadEntrySaveResponse(documentRef, payload) {
+export function applyWorkloadEntrySaveResponse(documentRef, payload, dropdownItemId = '') {
     const panelsRegion = documentRef.getElementById('workloadPanelsLiveRegion');
     const summaryRegion = documentRef.getElementById('workloadSummaryLiveRegion');
     const saveState = documentRef.getElementById('workloadSaveState');
@@ -195,6 +198,11 @@ export function applyWorkloadEntrySaveResponse(documentRef, payload) {
 
     if (panelsRegion) {
         panelsRegion.innerHTML = payload.panels_html ?? '';
+        const normalizedItemId = String(dropdownItemId || '');
+        const dropdowns = panelsRegion.querySelectorAll?.('[data-workload-item-id]') ?? [];
+        dropdowns.forEach((dropdown) => {
+            dropdown.open = normalizedItemId !== '' && String(dropdown.dataset.workloadItemId || '') === normalizedItemId;
+        });
     }
     if (summaryRegion) {
         summaryRegion.innerHTML = payload.summary_html ?? '';

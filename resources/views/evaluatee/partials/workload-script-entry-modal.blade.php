@@ -28,6 +28,7 @@
         const detailFieldsContainer = document.getElementById('workload-detail-fields');
         const groupLabelInput = document.getElementById('workloadGroupLabel');
         let lastDefaultFormId = '';
+        let lastDefaultItemId = '';
         let lastDefaultGroupId = '';
         let lastDefaultGroupName = '';
         let lastDefaultRequiresSubject = false;
@@ -44,6 +45,7 @@
             }
 
             lastDefaultFormId = btn.dataset.defaultFormId || '';
+            lastDefaultItemId = btn.dataset.itemId || '';
             lastDefaultGroupId = btn.dataset.groupId || '';
             lastDefaultGroupName = btn.dataset.groupName || '';
             lastDefaultRequiresSubject = btn.dataset.requiresSubject === '1';

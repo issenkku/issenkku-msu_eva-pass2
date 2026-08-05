@@ -75,7 +75,7 @@ function workloadAsyncSaveContext(): array
         ]);
     }
 
-    return compact('evaluatee', 'report', 'form');
+    return compact('evaluatee', 'report', 'form', 'item');
 }
 
 function workloadAsyncSavePayload(Reports $report, WorkloadForm $form, int $hours = 2, int $rate = 3): array
@@ -214,7 +214,7 @@ test('stores the aggregate workload score', function () {
 });
 
 test('JSON create returns saved workload fragments and total', function () {
-    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form] = workloadAsyncSaveContext();
+    ['evaluatee' => $evaluatee, 'report' => $report, 'form' => $form, 'item' => $item] = workloadAsyncSaveContext();
     Sanctum::actingAs($evaluatee);
 
     $response = $this->postJson(
@@ -229,6 +229,8 @@ test('JSON create returns saved workload fragments and total', function () {
 
     expect($response->json('total_score'))->toBeNumeric()
         ->and($response->json('panels_html'))->toBeString()->toContain('Async teaching entry')->toContain('6.00')
+        ->toContain('data-workload-item-id="'.$item->id.'"')
+        ->toContain('data-item-id="'.$item->id.'"')
         ->and($response->json('summary_html'))->toBeString()->toContain('6.00');
 });
 

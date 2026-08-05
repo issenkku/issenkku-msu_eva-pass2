@@ -58,7 +58,8 @@ function fakeClassList() {
 
 function submitCoordinatorHarness(requestSave) {
     let modalSession = 1;
-    const calls = { apply: [], hide: 0, mark: [], messages: [], requests: 0, reset: 0 };
+    let dropdownItemId = '';
+    const calls = { apply: [], applyContext: [], hide: 0, mark: [], messages: [], requests: 0, reset: 0 };
     const form = {
         value: 'visible form value',
         reset() {
@@ -68,12 +69,14 @@ function submitCoordinatorHarness(requestSave) {
     };
     const submitButton = { disabled: false, textContent: 'Save' };
     const coordinator = createWorkloadEntrySubmitCoordinator({
-        applyResponse(payload) {
+        applyResponse(payload, context) {
             calls.apply.push(payload);
+            calls.applyContext.push(context);
         },
         clearInvalid() {},
         form,
         getMissingFields: () => [],
+        getDropdownItemId: () => dropdownItemId,
         getModalSession: () => modalSession,
         hideModal() {
             calls.hide += 1;
@@ -104,6 +107,9 @@ function submitCoordinatorHarness(requestSave) {
         form,
         reopenModal() {
             modalSession += 1;
+        },
+        setDropdownItemId(value) {
+            dropdownItemId = value;
         },
         submitButton,
     };
@@ -323,6 +329,20 @@ test('submit coordinator applies an earlier success without resetting or closing
     assert.equal(harness.submitButton.textContent, 'Save');
 });
 
+test('submit coordinator snapshots the originating dropdown when submission starts', async () => {
+    const pending = deferred();
+    const payload = { message: 'Saved', panels_html: 'panels', summary_html: 'summary', total_score: 4 };
+    const harness = submitCoordinatorHarness(() => pending.promise);
+    harness.setDropdownItemId('12');
+
+    const submission = harness.coordinator(submitEvent());
+    harness.setDropdownItemId('13');
+    pending.resolve(payload);
+    await submission;
+
+    assert.deepEqual(harness.calls.applyContext, [{ dropdownItemId: '12' }]);
+});
+
 test('submit coordinator keeps values and restores the button for 422, network, and malformed failures', async (t) => {
     const cases = [
         {
@@ -456,6 +476,67 @@ test('applyWorkloadEntrySaveResponse refreshes workload HTML and broadcasts the 
     assert.equal(events.length, 1);
     assert.equal(events[0].type, 'workload:total-updated');
     assert.deepEqual(events[0].detail, { total: 8.5 });
+});
+
+test('applyWorkloadEntrySaveResponse opens only the originating workload dropdown', () => {
+    const dropdowns = ['11', '12', '13'].map((id) => ({
+        dataset: { workloadItemId: id },
+        open: true,
+    }));
+    const panels = {
+        innerHTML: '',
+        querySelectorAll(selector) {
+            assert.equal(selector, '[data-workload-item-id]');
+            return dropdowns;
+        },
+    };
+    const documentRef = {
+        getElementById(id) {
+            return id === 'workloadPanelsLiveRegion' ? panels : null;
+        },
+        dispatchEvent() {},
+    };
+    const payload = {
+        message: 'Saved',
+        panels_html: '<details></details>',
+        summary_html: '',
+        total_score: 8.5,
+    };
+
+    applyWorkloadEntrySaveResponse(documentRef, payload, '12');
+
+    assert.deepEqual(
+        dropdowns.map((dropdown) => dropdown.open),
+        [false, true, false],
+    );
+});
+
+test('applyWorkloadEntrySaveResponse opens no dropdown for an absent or unknown origin', () => {
+    for (const itemId of ['', '999']) {
+        const dropdowns = ['11', '12'].map((id) => ({
+            dataset: { workloadItemId: id },
+            open: true,
+        }));
+        const panels = {
+            innerHTML: '',
+            querySelectorAll() {
+                return dropdowns;
+            },
+        };
+        const documentRef = {
+            getElementById(id) {
+                return id === 'workloadPanelsLiveRegion' ? panels : null;
+            },
+            dispatchEvent() {},
+        };
+
+        applyWorkloadEntrySaveResponse(documentRef, { message: 'Saved', panels_html: '', summary_html: '', total_score: 8.5 }, itemId);
+
+        assert.deepEqual(
+            dropdowns.map((dropdown) => dropdown.open),
+            [false, false],
+        );
+    }
 });
 
 test('workload entry partials retain the async submission contract', () => {

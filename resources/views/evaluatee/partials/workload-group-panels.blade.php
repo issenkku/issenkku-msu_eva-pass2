@@ -5,7 +5,10 @@
         </div>
         <div class="workload-panel-body">
             @forelse(($groupView['items'] ?? []) as $itemView)
-                <details class="workload-item-dropdown">
+                <details
+                    class="workload-item-dropdown"
+                    data-workload-item-id="{{ $itemView['id'] }}"
+                >
                     <summary class="workload-item-summary">
                         <div class="workload-item-summary-left">
                             <span class="workload-item-summary-title">{{ $itemView['name'] ?? '-' }}</span>
