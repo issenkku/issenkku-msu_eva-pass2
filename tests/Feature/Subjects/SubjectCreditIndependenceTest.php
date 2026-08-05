@@ -67,7 +67,29 @@ test('manual subject writes reject invalid credit input', function (string $fiel
     expect(Subject::where('code', $payload['code'])->exists())->toBeFalse();
 })->with([
     'total text' => ['credits', 'three'],
-    'lecture blank' => ['lecture_credits', ''],
     'lab decimal' => ['lab_credits', '1.5'],
     'self study negative' => ['self_study_credits', '-1'],
 ]);
+
+test('manual subject writes default empty credits to zero', function () {
+    $payload = independentCreditPayload([
+        'code' => 'EMPTYCREDITS',
+        'credits' => '',
+        'lecture_credits' => null,
+        'lab_credits' => '',
+        'self_study_credits' => null,
+    ]);
+
+    $this->actingAs(independentCreditAdmin(), 'web')
+        ->post(route('subjects.store'), $payload)
+        ->assertSessionDoesntHaveErrors();
+
+    $subject = Subject::where('code', 'EMPTYCREDITS')->firstOrFail();
+    expect($subject->only(['credits', 'lecture_credits', 'lab_credits', 'self_study_credits']))
+        ->toMatchArray([
+            'credits' => 0,
+            'lecture_credits' => 0,
+            'lab_credits' => 0,
+            'self_study_credits' => 0,
+        ]);
+});
