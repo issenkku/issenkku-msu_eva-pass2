@@ -1,4 +1,6 @@
 import '../css/app.css';
+import './async-form';
+import './async-resource-table';
 import './assignment-participant-selection';
 import './support-activity-entries';
 import './support-indicator-mode';
