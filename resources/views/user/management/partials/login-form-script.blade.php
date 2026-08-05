@@ -1,26 +1,42 @@
 <script>
     const form = document.getElementById('loginForm');
     const errorDiv = document.getElementById('error');
+    const fallbackMessage = 'เข้าสู่ระบบไม่สำเร็จ';
 
-    if (form && window.axios) {
-        form.addEventListener('submit', function (event) {
+    if (form && window.fetch) {
+        form.addEventListener('submit', async function (event) {
             event.preventDefault();
+            errorDiv?.classList.add('hidden');
 
-            const employeeId = form.employee_id.value;
-            const password = form.password.value;
+            let message = fallbackMessage;
 
-            window.axios.post('/login', { employee_id: employeeId, password })
-                .then(response => {
-                    localStorage.setItem('token', response.data.token || '');
-                    window.location.href = response.data.redirect;
-                })
-                .catch(error => {
-                    const message = error.response?.data?.message || 'เข้าสู่ระบบไม่สำเร็จ';
-                    if (errorDiv) {
-                        errorDiv.textContent = message;
-                        errorDiv.classList.remove('hidden');
-                    }
+            try {
+                const response = await window.fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
                 });
+                const data = await response.json();
+
+                if (!response.ok) {
+                    message = data.message || fallbackMessage;
+                    throw new Error(message);
+                }
+
+                if (typeof data.redirect !== 'string') {
+                    throw new Error(fallbackMessage);
+                }
+
+                window.location.assign(data.redirect);
+            } catch {
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.classList.remove('hidden');
+                }
+            }
         });
     }
 </script>

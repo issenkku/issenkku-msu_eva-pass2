@@ -16,7 +16,6 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-msu.png') }}?v=1">
     <link rel="shortcut icon" href="{{ asset('favicon-msu.png') }}?v=1">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Noto+Serif+Thai:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         *, *::before, *::after {
             box-sizing: border-box;
@@ -846,6 +845,7 @@
                                 id="employee_id"
                                 name="employee_id"
                                 placeholder="กรอกรหัสพนักงาน"
+                                value="{{ old('employee_id') }}"
                                 autocomplete="username"
                                 required>
                         </div>
@@ -880,7 +880,13 @@
                         </div>
                     @endif
 
-                    <div id="error" class="hidden"></div>
+                    <div
+                        id="error"
+                        class="{{ $errors->has('employee_id') ? '' : 'hidden' }}"
+                        role="alert"
+                        aria-live="assertive">
+                        {{ $errors->first('employee_id') }}
+                    </div>
 
                     <div class="form-meta">
                         <a href="{{ route('password.request') }}" class="forgot">ลืมรหัสผ่าน?</a>
