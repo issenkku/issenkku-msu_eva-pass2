@@ -1,5 +1,42 @@
+<style>
+    #subjectModal .subject-modal-dialog {
+        height: calc(100vh - 2rem);
+        height: calc(100dvh - 2rem);
+        margin: 1rem auto !important;
+    }
+
+    #subjectModal .modal-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    #subjectModal .modal-header,
+    #subjectModal .modal-footer {
+        flex-shrink: 0;
+    }
+
+    #subjectModal .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    @media (max-width: 575.98px) {
+        #subjectModal .subject-modal-dialog {
+            height: 100vh;
+            height: 100dvh;
+            margin: 0 !important;
+        }
+    }
+</style>
+
 <div class="modal fade" id="subjectModal" tabindex="-1" aria-labelledby="subjectModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg subject-modal-dialog">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down subject-modal-dialog">
         <div class="modal-content modal-content-custom">
             <div class="modal-header modal-header-custom">
                 <h5 class="modal-title" id="subjectModalLabel">

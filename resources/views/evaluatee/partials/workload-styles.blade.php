@@ -1128,10 +1128,6 @@
         z-index: 1065;
     }
 
-    #subjectModal .subject-modal-dialog {
-        margin-top: 450px;
-    }
-
     .workload-backdrop-inert {
         pointer-events: none;
     }

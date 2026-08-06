@@ -114,6 +114,20 @@ test('subjects index and subject modal render create hooks without inline handle
         ->not->toContain('onclick="submitForm()"');
 
     expect($modalHtml)
+        ->toContain('modal-dialog-centered')
+        ->toContain('modal-dialog-scrollable')
+        ->toContain('modal-fullscreen-sm-down')
+        ->toContain('height: calc(100vh - 2rem)')
+        ->toContain('height: calc(100dvh - 2rem)')
+        ->toContain('overflow-y: auto')
+        ->toContain('flex-shrink: 0');
+
+    $evaluateeStyles = file_get_contents(resource_path('views/evaluatee/partials/workload-styles.blade.php'));
+
+    expect($evaluateeStyles)
+        ->not->toMatch('/#subjectModal\s+\.subject-modal-dialog\s*\{[^}]*margin-top:\s*450px/s');
+
+    expect($modalHtml)
         ->toContain('id="subjectNameHelp"')
         ->toContain('id="subjectNameError"')
         ->toContain('กรอกชื่อรายวิชาภาษาไทยหรือภาษาอังกฤษอย่างน้อยหนึ่งช่อง')
