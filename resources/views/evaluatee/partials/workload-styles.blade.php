@@ -793,6 +793,44 @@
         overflow: hidden;
     }
 
+    #workloadAddModal .workload-modal-dialog {
+        height: calc(100vh - 2rem);
+        height: calc(100dvh - 2rem);
+        margin: 1rem auto !important;
+    }
+
+    #workloadAddModal .workload-modal-content {
+        height: 100%;
+        max-height: 100%;
+    }
+
+    #workloadAddModal .workload-modal-form {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+    }
+
+    #workloadAddModal .workload-modal-header,
+    #workloadAddModal .workload-modal-footer {
+        flex-shrink: 0;
+    }
+
+    #workloadAddModal .workload-modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    @media (max-width: 575.98px) {
+        #workloadAddModal .workload-modal-dialog {
+            height: 100vh;
+            height: 100dvh;
+            margin: 0 !important;
+        }
+    }
+
     .workload-modal-content {
         border-radius: 18px;
         border: 1px solid #e5e7eb;

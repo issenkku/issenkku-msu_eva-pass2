@@ -201,3 +201,34 @@ test('workload unsaved back confirmation uses system modal instead of native con
         ->not->toContain('window.confirm')
         ->not->toContain('confirm(');
 });
+
+test('workload entry modal keeps its actions visible within the viewport', function () {
+    $modalHtml = view('evaluatee.partials.workload-entry-modal', [
+        'readonly' => false,
+        'reportId' => 10,
+        'workloadModal' => [
+            'requires_evidence' => false,
+            'requires_subject' => false,
+            'workload_item_options' => [],
+            'subjects' => [],
+            'forms' => [],
+        ],
+    ])->render();
+    $stylesHtml = view('evaluatee.partials.workload-styles')->render();
+
+    expect($modalHtml)
+        ->toContain('modal-dialog-scrollable')
+        ->toContain('modal-fullscreen-sm-down')
+        ->toContain('workload-modal-dialog')
+        ->toContain('workload-modal-form');
+
+    expect($stylesHtml)
+        ->toContain('#workloadAddModal .workload-modal-dialog')
+        ->toContain('height: calc(100vh - 2rem)')
+        ->toContain('height: calc(100dvh - 2rem)')
+        ->toContain('#workloadAddModal .workload-modal-form')
+        ->toContain('flex-shrink: 0')
+        ->toContain('overflow-y: auto')
+        ->toContain('overscroll-behavior: contain')
+        ->toContain('@media (max-width: 575.98px)');
+});

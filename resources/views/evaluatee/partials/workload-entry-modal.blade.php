@@ -1,8 +1,8 @@
 @unless($readonly)
 <div class="modal fade" id="workloadAddModal" tabindex="-1" aria-labelledby="workloadAddModalLabel" aria-hidden="true" data-bs-focus="false">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down modal-lg workload-modal-dialog">
         <div class="modal-content workload-modal-content">
-            <form method="POST" id="workloadEntryForm" action="{{ route('evaluatee.workload-entries.store') }}" data-store-url="{{ route('evaluatee.workload-entries.store') }}" data-update-url="{{ route('evaluatee.workload-entries.update', '__id__') }}">
+            <form class="workload-modal-form" method="POST" id="workloadEntryForm" action="{{ route('evaluatee.workload-entries.store') }}" data-store-url="{{ route('evaluatee.workload-entries.store') }}" data-update-url="{{ route('evaluatee.workload-entries.update', '__id__') }}">
                 @csrf
                 <input type="hidden" id="workloadFormMethod" name="_method" value="">
                 <input type="hidden" id="workloadRequireEvidenceFlag" value="{{ !empty($workloadModal['requires_evidence']) ? 1 : 0 }}">
