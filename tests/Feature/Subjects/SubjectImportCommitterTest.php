@@ -21,8 +21,8 @@ function committerSubject(array $overrides = []): Subject
 test('committer creates new rows updates selected rows and preserves status and order', function () {
     $existing = committerSubject();
     $preview = (new SubjectImportPreviewService)->build(new SubjectWorkbookReadResult([
-        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0),
-        new SubjectImportRow(3, 'CS101', 'เปลี่ยน', null, 3, 2, 1, 0),
+        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0, 0, 0, 0),
+        new SubjectImportRow(3, 'CS101', 'เปลี่ยน', null, 3, 2, 1, 0, 0, 0, 0),
     ], []));
     $result = (new SubjectImportCommitter)->commit(
         ['filename' => 'subjects.xlsx', 'token_hash' => 'hashed-token', 'preview' => $preview],
@@ -46,7 +46,7 @@ test('committer creates new rows updates selected rows and preserves status and 
 test('committer leaves unselected changed rows untouched', function () {
     $existing = committerSubject();
     $preview = (new SubjectImportPreviewService)->build(new SubjectWorkbookReadResult([
-        new SubjectImportRow(2, 'CS101', 'ไม่เลือก', null, 3, 2, 1, 0),
+        new SubjectImportRow(2, 'CS101', 'ไม่เลือก', null, 3, 2, 1, 0, 0, 0, 0),
     ], []));
     $result = (new SubjectImportCommitter)->commit(
         ['filename' => 'subjects.xlsx', 'token_hash' => 'hashed-token', 'preview' => $preview], [], User::factory()->create(),
@@ -59,8 +59,8 @@ test('committer leaves unselected changed rows untouched', function () {
 test('stale data rolls back the entire import before creating new rows', function () {
     $existing = committerSubject();
     $preview = (new SubjectImportPreviewService)->build(new SubjectWorkbookReadResult([
-        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0),
-        new SubjectImportRow(3, 'CS101', 'จากไฟล์', null, 3, 2, 1, 0),
+        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0, 0, 0, 0),
+        new SubjectImportRow(3, 'CS101', 'จากไฟล์', null, 3, 2, 1, 0, 0, 0, 0),
     ], []));
     $existing->update(['name_th' => 'แก้โดยผู้ใช้อื่น']);
 

@@ -13,6 +13,9 @@ final readonly class SubjectImportRow
         public int $lectureCredits,
         public int $labCredits,
         public int $selfStudyCredits,
+        public int $lectureHours,
+        public int $labHours,
+        public int $selfStudyHours,
     ) {}
 
     public function attributes(): array
@@ -25,6 +28,9 @@ final readonly class SubjectImportRow
             'lecture_credits' => $this->lectureCredits,
             'lab_credits' => $this->labCredits,
             'self_study_credits' => $this->selfStudyCredits,
+            'lecture_hours' => $this->lectureHours,
+            'lab_hours' => $this->labHours,
+            'self_study_hours' => $this->selfStudyHours,
         ];
     }
 

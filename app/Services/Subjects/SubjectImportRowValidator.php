@@ -6,14 +6,10 @@ use App\Data\Subjects\SubjectImportError;
 use App\Data\Subjects\SubjectImportRow;
 use App\Support\Subjects\SubjectCode;
 use App\Support\Subjects\SubjectName;
+use App\Support\Subjects\SubjectWorkbookSchema;
 
 final class SubjectImportRowValidator
 {
-    private const COLUMNS = [
-        'รหัสรายวิชา', 'ชื่อรายวิชา (ไทย)', 'ชื่อรายวิชา (อังกฤษ)', 'หน่วยกิตรวม',
-        'หน่วยกิตบรรยาย', 'หน่วยกิตปฏิบัติ', 'หน่วยกิตศึกษาด้วยตนเอง',
-    ];
-
     public function validate(int $excelRow, array $values): array
     {
         $code = SubjectCode::normalize($values[0] ?? null);
@@ -35,7 +31,7 @@ final class SubjectImportRowValidator
         }
 
         $numbers = [];
-        foreach ([3, 4, 5, 6] as $column) {
+        foreach (range(3, 9) as $column) {
             $numbers[$column] = $this->integer($values[$column] ?? null);
             if ($numbers[$column] === null) {
                 $errors[] = $this->error($excelRow, $code, $column, $values[$column] ?? null, 'ต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป');
@@ -49,11 +45,15 @@ final class SubjectImportRowValidator
         return ['row' => new SubjectImportRow(
             $excelRow, $code, $nameTh, $nameEn,
             $numbers[3], $numbers[4], $numbers[5], $numbers[6],
+            $numbers[7], $numbers[8], $numbers[9],
         ), 'errors' => []];
     }
 
     private function integer(mixed $value): ?int
     {
+        if ($value === null || (is_string($value) && trim($value) === '')) {
+            return 0;
+        }
         if (is_int($value) && $value >= 0) {
             return $value;
         }
@@ -69,6 +69,6 @@ final class SubjectImportRowValidator
 
     private function error(int $row, ?string $code, int $column, mixed $value, string $message): SubjectImportError
     {
-        return new SubjectImportError($row, $code ?: null, self::COLUMNS[$column], $value, $message);
+        return new SubjectImportError($row, $code ?: null, SubjectWorkbookSchema::HEADERS[$column], $value, $message);
     }
 }

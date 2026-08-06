@@ -20,7 +20,7 @@ function previewSubjectPayload(array $overrides = []): array
 
 function importRow(string $code, string $name, int $row): SubjectImportRow
 {
-    return new SubjectImportRow($row, $code, $name, null, 3, 2, 1, 0);
+    return new SubjectImportRow($row, $code, $name, null, 3, 2, 1, 0, 0, 0, 0);
 }
 
 test('preview classifies new changed unchanged and errors in one batch', function () {

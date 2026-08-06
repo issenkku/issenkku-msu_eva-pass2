@@ -35,13 +35,16 @@ final class SubjectDataSheet extends DefaultValueBinder implements FromArray, Wi
 
     public function columnWidths(): array
     {
-        return ['A' => 18, 'B' => 34, 'C' => 34, 'D' => 14, 'E' => 18, 'F' => 18, 'G' => 26];
+        return [
+            'A' => 18, 'B' => 34, 'C' => 34, 'D' => 14, 'E' => 18,
+            'F' => 18, 'G' => 26, 'H' => 18, 'I' => 18, 'J' => 26,
+        ];
     }
 
     public function styles(Worksheet $sheet): array
     {
         $sheet->freezePane('A2');
-        $sheet->setAutoFilter('A1:G1');
+        $sheet->setAutoFilter('A1:J1');
 
         return [1 => ['font' => ['bold' => true]]];
     }

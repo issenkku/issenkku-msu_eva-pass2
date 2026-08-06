@@ -36,10 +36,13 @@ final class SubjectWorkbookReader
 
             $headers = array_map(
                 fn (mixed $value): string => trim((string) $value),
-                $sheet->rangeToArray('A1:G1', null, true, true, false)[0],
+                $sheet->rangeToArray('A1:J1', null, true, true, false)[0],
             );
-            if ($headers !== SubjectWorkbookSchema::HEADERS || $sheet->getHighestDataColumn() !== 'G') {
-                throw new SubjectWorkbookException('หัวคอลัมน์ต้องตรงกับ Template ทั้ง 7 คอลัมน์');
+            if ($sheet->getHighestDataColumn() === 'G' && array_slice($headers, 0, 7) === SubjectWorkbookSchema::LEGACY_HEADERS) {
+                throw new SubjectWorkbookException('ไฟล์นี้เป็น Template รูปแบบเก่า กรุณาดาวน์โหลด Template ใหม่ที่มีคอลัมน์ชั่วโมงครบ 3 ช่อง');
+            }
+            if ($headers !== SubjectWorkbookSchema::HEADERS || $sheet->getHighestDataColumn() !== 'J') {
+                throw new SubjectWorkbookException('หัวคอลัมน์ต้องตรงกับ Template ใหม่ทั้ง 10 คอลัมน์');
             }
 
             $rows = [];
@@ -47,7 +50,7 @@ final class SubjectWorkbookReader
             $codesByRow = [];
             $nonEmptyRows = 0;
             for ($excelRow = 2; $excelRow <= $sheet->getHighestDataRow(); $excelRow++) {
-                $values = $sheet->rangeToArray("A{$excelRow}:G{$excelRow}", null, true, true, false)[0];
+                $values = $sheet->rangeToArray("A{$excelRow}:J{$excelRow}", null, true, true, false)[0];
                 if (collect($values)->every(fn ($value) => trim((string) $value) === '')) {
                     continue;
                 }
@@ -58,7 +61,7 @@ final class SubjectWorkbookReader
                 $codesByRow[$excelRow] = SubjectCode::normalize($values[0] ?? null);
 
                 $formulaFound = false;
-                foreach (range('A', 'G') as $offset => $column) {
+                foreach (range('A', 'J') as $offset => $column) {
                     $cell = $sheet->getCell("{$column}{$excelRow}");
                     if ($cell->getDataType() === DataType::TYPE_FORMULA) {
                         $formulaFound = true;

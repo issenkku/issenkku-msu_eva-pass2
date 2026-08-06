@@ -7,7 +7,11 @@ use App\Models\Subject;
 
 final class SubjectImportPreviewService
 {
-    private const COMPARED = ['name_th', 'name_en', 'credits', 'lecture_credits', 'lab_credits', 'self_study_credits'];
+    private const COMPARED = [
+        'name_th', 'name_en',
+        'credits', 'lecture_credits', 'lab_credits', 'self_study_credits',
+        'lecture_hours', 'lab_hours', 'self_study_hours',
+    ];
 
     public function build(SubjectWorkbookReadResult $read): array
     {

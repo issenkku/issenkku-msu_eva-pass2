@@ -96,7 +96,7 @@ test('admin upload redirects to the subjects index with a Preview token', functi
 test('confirm consumes a token and flashes only a result token', function () {
     $admin = importAdmin();
     $preview = (new SubjectImportPreviewService)->build(new SubjectWorkbookReadResult([
-        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0),
+        new SubjectImportRow(2, 'CS100', 'ใหม่', null, 3, 2, 1, 0, 0, 0, 0),
     ], []));
     $token = app(SubjectImportSnapshotStore::class)->put($admin->id, 'subjects.xlsx', $preview);
 

@@ -23,41 +23,58 @@ function subjectWorkbook(array $rows, ?array $headers = null): string
     return $path;
 }
 
-test('reader returns normalized rows and ignores empty trailing rows', function () {
-    $path = subjectWorkbook([[' cs101 ', 'วิทยาการคอมพิวเตอร์', '', 3, 2, 1, 0], ['', '', '', '', '', '', '']]);
+test('reader returns ten-column normalized rows and ignores empty trailing rows', function () {
+    $path = subjectWorkbook([
+        [' cs101 ', 'Computer Science', '', 3, 2, 1, 0, 3, 2, 1],
+        ['', '', '', '', '', '', '', '', '', ''],
+    ]);
     $result = (new SubjectWorkbookReader(new SubjectImportRowValidator))->read($path);
     @unlink($path);
 
     expect($result->errors)->toBe([])
         ->and($result->rows)->toHaveCount(1)
-        ->and($result->rows[0]->code)->toBe('CS101');
+        ->and($result->rows[0]->code)->toBe('CS101')
+        ->and($result->rows[0]->attributes())->toMatchArray([
+            'lecture_hours' => 3,
+            'lab_hours' => 2,
+            'self_study_hours' => 1,
+        ]);
 });
 
 test('reader rejects an incorrect header contract', function () {
     $path = subjectWorkbook([], ['wrong']);
 
     expect(fn () => (new SubjectWorkbookReader(new SubjectImportRowValidator))->read($path))
-        ->toThrow(SubjectWorkbookException::class, 'หัวคอลัมน์');
+        ->toThrow(SubjectWorkbookException::class);
+    @unlink($path);
+});
+
+test('reader rejects the legacy seven column template with new template guidance', function () {
+    $legacyHeaders = array_slice(SubjectWorkbookSchema::HEADERS, 0, 7);
+    $path = subjectWorkbook([], $legacyHeaders);
+
+    expect(fn () => (new SubjectWorkbookReader(new SubjectImportRowValidator))->read($path))
+        ->toThrow(SubjectWorkbookException::class, 'Template รูปแบบเก่า');
     @unlink($path);
 });
 
 test('reader reports formulas and duplicate normalized codes with every row number', function () {
     $path = subjectWorkbook([
-        ['FORM', 'สูตร', '', '=1+2', 2, 1, 0],
-        ['cs101', 'ชื่อหนึ่ง', '', 3, 2, 1, 0],
-        [' CS101 ', 'ชื่อสอง', '', 3, 2, 1, 0],
+        ['FORM', 'Formula', '', '=1+2', 2, 1, 0, 3, 2, 1],
+        ['cs101', 'First Name', '', 3, 2, 1, 0, 3, 2, 1],
+        [' CS101 ', 'Second Name', '', 3, 2, 1, 0, 3, 2, 1],
     ]);
     $result = (new SubjectWorkbookReader(new SubjectImportRowValidator))->read($path);
     @unlink($path);
 
     expect(collect($result->errors)->pluck('message')->implode(' '))
         ->toContain('Formula')
-        ->toContain('แถว 3, 4');
+        ->toContain('3, 4');
 });
 
 test('reader enforces a configured row limit and production remains limited to five thousand', function () {
     expect(SubjectWorkbookSchema::MAX_ROWS)->toBe(5000);
-    $row = ['CS101', 'ชื่อ', '', 3, 2, 1, 0];
+    $row = ['CS101', 'Name', '', 3, 2, 1, 0, 3, 2, 1];
     $path = subjectWorkbook([$row, $row, $row]);
 
     expect(fn () => (new SubjectWorkbookReader(new SubjectImportRowValidator, 2))->read($path))

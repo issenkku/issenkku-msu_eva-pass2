@@ -3,6 +3,8 @@ $fieldLabels = [
     'name_th' => 'ชื่อรายวิชา (ไทย)', 'name_en' => 'ชื่อรายวิชา (อังกฤษ)',
     'credits' => 'หน่วยกิตรวม', 'lecture_credits' => 'หน่วยกิตบรรยาย',
     'lab_credits' => 'หน่วยกิตปฏิบัติ', 'self_study_credits' => 'หน่วยกิตศึกษาด้วยตนเอง',
+    'lecture_hours' => 'ชั่วโมงบรรยาย', 'lab_hours' => 'ชั่วโมงปฏิบัติ',
+    'self_study_hours' => 'ชั่วโมงศึกษาด้วยตนเอง',
 ];
 @endphp
 

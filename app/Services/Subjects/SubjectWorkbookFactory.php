@@ -18,6 +18,7 @@ final class SubjectWorkbookFactory
             $subject->code, $subject->name_th, $subject->name_en,
             $subject->credits, $subject->lecture_credits,
             $subject->lab_credits, $subject->self_study_credits,
+            $subject->lecture_hours, $subject->lab_hours, $subject->self_study_hours,
         ])->all());
     }
 }

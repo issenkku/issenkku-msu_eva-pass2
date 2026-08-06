@@ -155,10 +155,10 @@ test('English-only long names survive preview and confirm without copying langua
         ->and($subject->name_en)->toBe($longEnglishName);
 });
 
-test('independent credit values survive preview and confirm', function () {
+test('independent credit and hour values survive preview and confirm', function () {
     $admin = e2eAdmin();
     $response = $this->actingAs($admin, 'web')->post(route('subjects.import.preview.store'), [
-        'import_file' => e2eUpload([['ENV301', 'อนามัยสิ่งแวดล้อม', '', 3, 3, 0, 6]]),
+        'import_file' => e2eUpload([['ENV301', 'อนามัยสิ่งแวดล้อม', '', 3, 3, 0, 6, 2, 3, 1]]),
     ])->assertRedirect();
     $token = tokenFromRedirect($response);
 
@@ -178,5 +178,8 @@ test('independent credit values survive preview and confirm', function () {
     expect((int) $subject->credits)->toBe(3)
         ->and((int) $subject->lecture_credits)->toBe(3)
         ->and((int) $subject->lab_credits)->toBe(0)
-        ->and((int) $subject->self_study_credits)->toBe(6);
+        ->and((int) $subject->self_study_credits)->toBe(6)
+        ->and((int) $subject->lecture_hours)->toBe(2)
+        ->and((int) $subject->lab_hours)->toBe(3)
+        ->and((int) $subject->self_study_hours)->toBe(1);
 });
