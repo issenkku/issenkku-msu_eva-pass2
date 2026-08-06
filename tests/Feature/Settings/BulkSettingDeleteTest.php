@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Models\Setting\Departments;
 use App\Models\Setting\JobLevel;
-use App\Models\Setting\Positions;
 use App\Models\Subject;
 use App\Models\User;
+use Database\Factories\DepartmentFactory;
+use Database\Factories\PositionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -24,8 +24,8 @@ class BulkSettingDeleteTest extends TestCase
 
         Role::create(['name' => 'admin']);
 
-        $department = \Database\Factories\DepartmentFactory::new()->create();
-        $position = \Database\Factories\PositionFactory::new()->create();
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
 
         $this->admin = User::factory()->create([
             'employee_id' => 'ADMIN-BULK',
@@ -57,27 +57,26 @@ class BulkSettingDeleteTest extends TestCase
 
     public function test_admin_can_bulk_delete_subjects(): void
     {
-        $subjects = collect([
-            Subject::create([
-                'code' => 'BULK101',
-                'name_th' => 'รายวิชาลบหลายรายการ 1',
-                'name_en' => 'Bulk Delete 1',
-                'credits' => 3,
-                'lecture_credits' => 2,
-                'lab_credits' => 1,
-                'self_study_credits' => 0,
-                'is_active' => true,
-            ]),
-            Subject::create([
-                'code' => 'BULK102',
-                'name_th' => 'รายวิชาลบหลายรายการ 2',
-                'name_en' => 'Bulk Delete 2',
-                'credits' => 3,
-                'lecture_credits' => 2,
-                'lab_credits' => 1,
-                'self_study_credits' => 0,
-                'is_active' => true,
-            ]),
+        $subjects = collect(range(1, 12))->map(fn (int $index) => Subject::create([
+            'code' => sprintf('BULK%03d', $index),
+            'name_th' => "รายวิชาลบหลายรายการ {$index}",
+            'name_en' => "Bulk Delete {$index}",
+            'credits' => 3,
+            'lecture_credits' => 2,
+            'lab_credits' => 1,
+            'self_study_credits' => 0,
+            'is_active' => true,
+        ]));
+
+        $control = Subject::create([
+            'code' => 'KEEP001',
+            'name_th' => 'รายวิชาที่ไม่ถูกเลือก',
+            'name_en' => 'Keep Subject',
+            'credits' => 3,
+            'lecture_credits' => 3,
+            'lab_credits' => 0,
+            'self_study_credits' => 0,
+            'is_active' => true,
         ]);
 
         $this->actingAs($this->admin, 'web')
@@ -85,9 +84,11 @@ class BulkSettingDeleteTest extends TestCase
                 'ids' => $subjects->pluck('id')->all(),
             ])
             ->assertRedirect(route('subjects.index'))
-            ->assertSessionHas('success', 'ลบรายวิชาที่เลือกเรียบร้อยแล้ว 2 รายการ');
+            ->assertSessionHas('success', fn (string $message) => str_contains($message, '12'));
 
-        $this->assertDatabaseMissing('subjects', ['id' => $subjects[0]->id]);
-        $this->assertDatabaseMissing('subjects', ['id' => $subjects[1]->id]);
+        foreach ($subjects as $subject) {
+            $this->assertDatabaseMissing('subjects', ['id' => $subject->id]);
+        }
+        $this->assertDatabaseHas('subjects', ['id' => $control->id]);
     }
 }

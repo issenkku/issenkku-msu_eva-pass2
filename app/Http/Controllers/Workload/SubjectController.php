@@ -31,6 +31,10 @@ class SubjectController extends Controller
 
         $sort = $request->input('sort', 'manual');
         $status = $request->input('status');
+        $requestedPerPage = filter_var($request->input('per_page'), FILTER_VALIDATE_INT);
+        $perPage = in_array($requestedPerPage, [10, 25, 50, 100], true)
+            ? $requestedPerPage
+            : 10;
         $hasSortOrder = $this->hasSortOrderColumn();
 
         $subjects = Subject::query()
@@ -60,7 +64,7 @@ class SubjectController extends Controller
             default => $subjects->orderBy('code'),
         };
 
-        $subjects = $subjects->paginate(10)->withQueryString();
+        $subjects = $subjects->paginate($perPage)->withQueryString();
         $resultToken = $request->session()->pull('subject_import_result_token');
         $importResult = is_string($resultToken)
             ? $results->pullForUser($resultToken, $request->user()->id)
