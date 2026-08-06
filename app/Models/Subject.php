@@ -12,6 +12,10 @@ class Subject extends Model
 {
     use HasFactory;
 
+    protected $appends = [
+        'display_component_values',
+    ];
+
     protected $fillable = [
         'code',
         'name_th',
@@ -20,6 +24,9 @@ class Subject extends Model
         'lecture_credits',
         'lab_credits',
         'self_study_credits',
+        'lecture_hours',
+        'lab_hours',
+        'self_study_hours',
         'sort_order',
         'is_active',
     ];
@@ -46,9 +53,35 @@ class Subject extends Model
         );
     }
 
+    protected function displayComponentValues(): Attribute
+    {
+        return Attribute::get(function (): array {
+            $hours = [
+                (int) $this->lecture_hours,
+                (int) $this->lab_hours,
+                (int) $this->self_study_hours,
+            ];
+
+            return collect($hours)->contains(fn (int $value): bool => $value > 0)
+                ? $hours
+                : [
+                    (int) $this->lecture_credits,
+                    (int) $this->lab_credits,
+                    (int) $this->self_study_credits,
+                ];
+        });
+    }
+
     protected function casts(): array
     {
         return [
+            'credits' => 'integer',
+            'lecture_credits' => 'integer',
+            'lab_credits' => 'integer',
+            'self_study_credits' => 'integer',
+            'lecture_hours' => 'integer',
+            'lab_hours' => 'integer',
+            'self_study_hours' => 'integer',
             'is_active' => 'boolean',
         ];
     }
