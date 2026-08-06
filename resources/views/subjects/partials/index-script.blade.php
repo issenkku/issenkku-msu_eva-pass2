@@ -32,13 +32,6 @@
             return false;
         }
 
-        [
-            lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput,
-            lectureHoursInput, labHoursInput, selfStudyHoursInput,
-        ].forEach((input) => {
-            if (input.value.trim() === '') input.value = '0';
-        });
-
         const codeValue = codeInput.value.trim();
         const nameThValue = nameThInput.value.trim();
         const nameEnValue = nameEnInput.value.trim();

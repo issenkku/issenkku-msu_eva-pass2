@@ -11,6 +11,29 @@ const subjectFormScript = readFileSync(
     'utf8',
 ).match(/<script>\s*([\s\S]*?)<\/script>/)[1];
 
+const adminSubjectFormScript = readFileSync(
+    new URL(
+        '../../resources/views/subjects/partials/index-script.blade.php',
+        import.meta.url,
+    ),
+    'utf8',
+);
+
+function extractFunction(source, name) {
+    const start = source.indexOf(`function ${name}(`);
+    assert.notEqual(start, -1);
+    const bodyStart = source.indexOf('{', start);
+    let depth = 0;
+
+    for (let index = bodyStart; index < source.length; index += 1) {
+        if (source[index] === '{') depth += 1;
+        if (source[index] === '}') depth -= 1;
+        if (depth === 0) return source.slice(start, index + 1);
+    }
+
+    throw new Error(`Unable to extract ${name}`);
+}
+
 class FakeElement {
     constructor(value = '') {
         this.value = value;
@@ -25,6 +48,10 @@ class FakeElement {
         this.listeners.set(type, listener);
     }
 
+    setAttribute() {}
+
+    removeAttribute() {}
+
     submit() {
         this.submitted = true;
     }
@@ -37,6 +64,60 @@ class FakeElement {
         this.wasReset = true;
     }
 }
+
+test('admin subject form allows zero to be deleted while editing', () => {
+    const numericIds = [
+        'lecture_credits',
+        'lab_credits',
+        'self_study_credits',
+        'credits',
+        'lecture_hours',
+        'lab_hours',
+        'self_study_hours',
+    ];
+    const errorIds = [
+        'codeError',
+        'subjectNameError',
+        'lectureCreditsError',
+        'labCreditsError',
+        'selfStudyCreditsError',
+        'creditsError',
+        'lectureHoursError',
+        'labHoursError',
+        'selfStudyHoursError',
+    ];
+    const elements = new Map([
+        ['code', new FakeElement('SUB101')],
+        ['name_th', new FakeElement('รายวิชาทดสอบ')],
+        ['name_en', new FakeElement('')],
+        ['subjectSubmitBtn', new FakeElement()],
+        ...numericIds.map((id) => [id, new FakeElement('0')]),
+        ...errorIds.map((id) => [id, new FakeElement()]),
+    ]);
+    elements.get('lab_credits').value = '';
+
+    for (const element of elements.values()) {
+        element.classList = {
+            add() {},
+            remove() {},
+            toggle() {},
+        };
+    }
+
+    const context = vm.createContext({
+        Number,
+        document: {
+            getElementById(id) {
+                return elements.get(id) ?? null;
+            },
+        },
+        updateSubmitButton() {},
+    });
+    vm.runInContext(extractFunction(adminSubjectFormScript, 'validateForm'), context);
+    vm.runInContext('validateForm()', context);
+
+    assert.equal(elements.get('lab_credits').value, '');
+});
 
 test('evaluatee subject save defaults empty credits and hours to zero without native form submission', async () => {
     const domListeners = new Map();
