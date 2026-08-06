@@ -112,8 +112,14 @@ test('subject table renderers expose a read only detail modal action', function 
             ->toContain('data-display-lecture="0"')
             ->toContain('data-display-lab="2"')
             ->toContain('data-display-self-study="0"')
+            ->toContain('subject-action-buttons')
             ->toMatch('/รายละเอียด.*แก้ไข.*ลบ/s');
     }
+
+    expect($tableHtml)
+        ->toContain('.subject-action-buttons > *')
+        ->toContain('white-space: nowrap')
+        ->toContain('flex-shrink: 0');
 
     expect($modalHtml)
         ->toContain('id="subjectDetailModal"')
