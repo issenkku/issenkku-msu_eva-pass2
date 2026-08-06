@@ -20,6 +20,10 @@
         border-bottom: 1px solid #e5e7eb;
     }
 
+    .note-editor .note-placeholder {
+        pointer-events: none;
+    }
+
     /* Tailwind preflight removes list markers; restore them in rich text. */
     .note-editor .note-editable ul,
     .support-criteria-rich-text ul {

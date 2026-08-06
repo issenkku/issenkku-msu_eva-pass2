@@ -12,7 +12,7 @@
             rows.forEach(function (row) {
                 const removeBtn = row.querySelector('.workload-evidence-remove-btn');
                 if (removeBtn) {
-                    removeBtn.disabled = rows.length === 1;
+                    removeBtn.disabled = false;
                 }
             });
         }
@@ -35,11 +35,15 @@
             }
 
             const rows = container.querySelectorAll('.workload-evidence-row');
+            const row = btn.closest('.workload-evidence-row');
             if (rows.length <= 1) {
+                const input = row ? row.querySelector('input[name="evidence_links[]"]') : null;
+                if (input) {
+                    input.value = '';
+                }
                 return;
             }
 
-            const row = btn.closest('.workload-evidence-row');
             if (row) {
                 row.remove();
                 updateRemoveButtons();

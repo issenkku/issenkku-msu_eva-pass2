@@ -360,7 +360,7 @@ class SupportActivityEntryService
                 ? ['required', 'numeric', 'gt:0', 'max:100', 'decimal:0,2']
                 : ['prohibited'],
             "{$base}.achieved_score" => $criterion->allow_evaluatee_weight
-                ? ['required', 'integer', 'between:1,5', 'max:'.$criterion->target_value]
+                ? ['required', 'numeric', 'multiple_of:1', 'between:1,5', 'max:'.$criterion->target_value]
                 : ['prohibited'],
         ])->validate();
 

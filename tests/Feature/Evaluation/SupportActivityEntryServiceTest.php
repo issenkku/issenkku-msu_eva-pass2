@@ -453,7 +453,7 @@ class SupportActivityEntryServiceTest extends TestCase
             'content' => '<p>โครงการ</p>',
             'indicator' => '<p>ตัวชี้วัด</p>',
             'weight' => 40,
-            'achieved_score' => 3,
+            'achieved_score' => '3.00',
         ]]);
 
         $this->assertDatabaseHas('support_activity_entries', [

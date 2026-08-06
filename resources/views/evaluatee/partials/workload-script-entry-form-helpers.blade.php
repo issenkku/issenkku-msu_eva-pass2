@@ -173,7 +173,7 @@
         rows.forEach(function (row) {
             const removeBtn = row.querySelector('.workload-evidence-remove-btn');
             if (removeBtn) {
-                removeBtn.disabled = rows.length === 1;
+                removeBtn.disabled = false;
             }
         });
     }

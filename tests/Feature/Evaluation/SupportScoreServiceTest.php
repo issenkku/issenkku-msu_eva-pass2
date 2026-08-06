@@ -64,7 +64,7 @@ class SupportScoreServiceTest extends TestCase
 
     public function test_it_accepts_whole_criterion_scores_within_one_through_five_and_target(): void
     {
-        foreach ([1, 5] as $score) {
+        foreach ([1, '5.00'] as $score) {
             app(SupportScoreService::class)->persist($this->report, [[
                 'support_criteria_id' => $this->criterion->id,
                 'achieved_score' => $score,
