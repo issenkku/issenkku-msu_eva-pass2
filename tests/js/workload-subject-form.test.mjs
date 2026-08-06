@@ -38,7 +38,7 @@ class FakeElement {
     }
 }
 
-test('evaluatee subject save defaults empty credits to zero without native form submission', async () => {
+test('evaluatee subject save defaults empty credits and hours to zero without native form submission', async () => {
     const domListeners = new Map();
     const dispatchedEvents = [];
     const form = new FakeElement();
@@ -52,6 +52,9 @@ test('evaluatee subject save defaults empty credits to zero without native form 
         ['lecture_credits', new FakeElement('')],
         ['lab_credits', new FakeElement('')],
         ['self_study_credits', new FakeElement('')],
+        ['lecture_hours', new FakeElement('')],
+        ['lab_hours', new FakeElement('')],
+        ['self_study_hours', new FakeElement('')],
         ['credits', new FakeElement('')],
     ]);
 
@@ -114,6 +117,9 @@ test('evaluatee subject save defaults empty credits to zero without native form 
     assert.equal(elements.get('lecture_credits').value, '0');
     assert.equal(elements.get('lab_credits').value, '0');
     assert.equal(elements.get('self_study_credits').value, '0');
+    assert.equal(elements.get('lecture_hours').value, '0');
+    assert.equal(elements.get('lab_hours').value, '0');
+    assert.equal(elements.get('self_study_hours').value, '0');
     assert.equal(form.submitted, false);
     assert.equal(form.wasReset, true);
     assert.equal(dispatchedEvents[0].type, 'workload:subject-created');

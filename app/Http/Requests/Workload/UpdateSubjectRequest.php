@@ -24,7 +24,10 @@ class UpdateSubjectRequest extends FormRequest
             }
         }
 
-        foreach (['credits', 'lecture_credits', 'lab_credits', 'self_study_credits'] as $field) {
+        foreach ([
+            'credits', 'lecture_credits', 'lab_credits', 'self_study_credits',
+            'lecture_hours', 'lab_hours', 'self_study_hours',
+        ] as $field) {
             if ($this->input($field) === null || $this->input($field) === '') {
                 $normalized[$field] = 0;
             }
@@ -62,6 +65,9 @@ class UpdateSubjectRequest extends FormRequest
             'lecture_credits' => ['sometimes', 'required', 'integer', 'min:0'],
             'lab_credits' => ['sometimes', 'required', 'integer', 'min:0'],
             'self_study_credits' => ['sometimes', 'required', 'integer', 'min:0'],
+            'lecture_hours' => ['sometimes', 'required', 'integer', 'min:0'],
+            'lab_hours' => ['sometimes', 'required', 'integer', 'min:0'],
+            'self_study_hours' => ['sometimes', 'required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

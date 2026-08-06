@@ -102,6 +102,11 @@ test('subjects index and subject modal render create hooks without inline handle
 
     expect($modalHtml)
         ->toContain('data-modal-submit-trigger')
+        ->toContain('data-subject-credit-fields')
+        ->toContain('data-subject-hour-fields')
+        ->toContain('name="lecture_hours"')
+        ->toContain('name="lab_hours"')
+        ->toContain('name="self_study_hours"')
         ->not->toContain('onclick="submitForm()"');
 
     expect($modalHtml)

@@ -10,21 +10,32 @@
         const lectureCreditsInput = document.getElementById('lecture_credits');
         const labCreditsInput = document.getElementById('lab_credits');
         const selfStudyCreditsInput = document.getElementById('self_study_credits');
+        const lectureHoursInput = document.getElementById('lecture_hours');
+        const labHoursInput = document.getElementById('lab_hours');
+        const selfStudyHoursInput = document.getElementById('self_study_hours');
         const creditsInput = document.getElementById('credits');
         const codeError = document.getElementById('codeError');
         const subjectNameError = document.getElementById('subjectNameError');
         const lectureCreditsError = document.getElementById('lectureCreditsError');
         const labCreditsError = document.getElementById('labCreditsError');
         const selfStudyCreditsError = document.getElementById('selfStudyCreditsError');
+        const lectureHoursError = document.getElementById('lectureHoursError');
+        const labHoursError = document.getElementById('labHoursError');
+        const selfStudyHoursError = document.getElementById('selfStudyHoursError');
         const creditsError = document.getElementById('creditsError');
         const submitBtn = document.getElementById('subjectSubmitBtn');
 
-        if (!codeInput || !nameThInput || !nameEnInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput ||
-            !codeError || !subjectNameError || !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !creditsError || !submitBtn) {
+        if (!codeInput || !nameThInput || !nameEnInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput ||
+            !lectureHoursInput || !labHoursInput || !selfStudyHoursInput || !creditsInput || !codeError || !subjectNameError ||
+            !lectureCreditsError || !labCreditsError || !selfStudyCreditsError || !lectureHoursError || !labHoursError ||
+            !selfStudyHoursError || !creditsError || !submitBtn) {
             return false;
         }
 
-        [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput].forEach((input) => {
+        [
+            lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput,
+            lectureHoursInput, labHoursInput, selfStudyHoursInput,
+        ].forEach((input) => {
             if (input.value.trim() === '') input.value = '0';
         });
 
@@ -35,6 +46,9 @@
         const labCreditsValue = labCreditsInput.value.trim();
         const selfStudyCreditsValue = selfStudyCreditsInput.value.trim();
         const creditsValue = creditsInput.value.trim();
+        const lectureHoursValue = lectureHoursInput.value.trim();
+        const labHoursValue = labHoursInput.value.trim();
+        const selfStudyHoursValue = selfStudyHoursInput.value.trim();
         let isValid = true;
 
         if (codeValue === '') {
@@ -103,6 +117,33 @@
             creditsError.style.display = 'none';
         }
 
+        if (!Number.isInteger(Number(lectureHoursValue)) || Number(lectureHoursValue) < 0) {
+            lectureHoursInput.classList.add('is-invalid');
+            lectureHoursError.style.display = 'block';
+            isValid = false;
+        } else {
+            lectureHoursInput.classList.remove('is-invalid');
+            lectureHoursError.style.display = 'none';
+        }
+
+        if (!Number.isInteger(Number(labHoursValue)) || Number(labHoursValue) < 0) {
+            labHoursInput.classList.add('is-invalid');
+            labHoursError.style.display = 'block';
+            isValid = false;
+        } else {
+            labHoursInput.classList.remove('is-invalid');
+            labHoursError.style.display = 'none';
+        }
+
+        if (!Number.isInteger(Number(selfStudyHoursValue)) || Number(selfStudyHoursValue) < 0) {
+            selfStudyHoursInput.classList.add('is-invalid');
+            selfStudyHoursError.style.display = 'block';
+            isValid = false;
+        } else {
+            selfStudyHoursInput.classList.remove('is-invalid');
+            selfStudyHoursError.style.display = 'none';
+        }
+
         updateSubmitButton(isValid);
         isFormValid = isValid;
         return isValid;
@@ -144,7 +185,7 @@
     }
 
     // เติมข้อมูลเดิมลง modal เพื่อแก้ไขรายวิชาโดยใช้ dataset จากปุ่มในตาราง
-    function handleEdit(id, code, nameTh, nameEn, credits, lectureCredits, labCredits, selfStudyCredits) {
+    function handleEdit(id, code, nameTh, nameEn, credits, lectureCredits, labCredits, selfStudyCredits, lectureHours, labHours, selfStudyHours) {
         const form = document.getElementById('subjectForm');
         const modalTitle = document.getElementById('subjectModalLabel');
         if (!form || !modalTitle) return;
@@ -160,6 +201,9 @@
         document.getElementById('lecture_credits').value = lectureCredits ?? 0;
         document.getElementById('lab_credits').value = labCredits ?? 0;
         document.getElementById('self_study_credits').value = selfStudyCredits ?? 0;
+        document.getElementById('lecture_hours').value = lectureHours ?? 0;
+        document.getElementById('lab_hours').value = labHours ?? 0;
+        document.getElementById('self_study_hours').value = selfStudyHours ?? 0;
         document.getElementById('credits').value = credits ?? '';
         modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขรายวิชา';
 
@@ -229,7 +273,10 @@
             input.removeAttribute('aria-invalid');
         });
 
-        ['codeError', 'subjectNameError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError', 'creditsError'].forEach((errorId) => {
+        [
+            'codeError', 'subjectNameError', 'lectureCreditsError', 'labCreditsError', 'selfStudyCreditsError',
+            'lectureHoursError', 'labHoursError', 'selfStudyHoursError', 'creditsError',
+        ].forEach((errorId) => {
             const errorEl = document.getElementById(errorId);
             if (errorEl) {
                 errorEl.style.display = 'none';
@@ -285,7 +332,10 @@
                     button.dataset.credits || 0,
                     button.dataset.lectureCredits || 0,
                     button.dataset.labCredits || 0,
-                    button.dataset.selfStudyCredits || 0
+                    button.dataset.selfStudyCredits || 0,
+                    button.dataset.lectureHours || 0,
+                    button.dataset.labHours || 0,
+                    button.dataset.selfStudyHours || 0
                 );
             }
         });
@@ -296,6 +346,9 @@
         const lectureCreditsInput = document.getElementById('lecture_credits');
         const labCreditsInput = document.getElementById('lab_credits');
         const selfStudyCreditsInput = document.getElementById('self_study_credits');
+        const lectureHoursInput = document.getElementById('lecture_hours');
+        const labHoursInput = document.getElementById('lab_hours');
+        const selfStudyHoursInput = document.getElementById('self_study_hours');
         const creditsInput = document.getElementById('credits');
 
         if (codeInput) {
@@ -309,7 +362,10 @@
             input.addEventListener('blur', validateForm);
         });
 
-        [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput].forEach((input) => {
+        [
+            lectureCreditsInput, labCreditsInput, selfStudyCreditsInput,
+            lectureHoursInput, labHoursInput, selfStudyHoursInput,
+        ].forEach((input) => {
             if (!input) return;
 
             input.addEventListener('input', validateForm);

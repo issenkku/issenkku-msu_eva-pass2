@@ -18,7 +18,7 @@
     </td>
     <td class="align-middle">
         <div class="d-flex gap-2 align-items-center justify-content-center">
-            <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit" data-id="{{ $subject->id }}" data-code="{{ $subject->code }}" data-name-th="{{ $subject->name_th }}" data-name-en="{{ $subject->name_en ?? '' }}" data-credits="{{ $subject->credits }}" data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}" data-lab-credits="{{ $subject->lab_credits ?? 0 }}" data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}" data-role="subject-edit-trigger" />
+            <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit" data-id="{{ $subject->id }}" data-code="{{ $subject->code }}" data-name-th="{{ $subject->name_th }}" data-name-en="{{ $subject->name_en ?? '' }}" data-credits="{{ $subject->credits }}" data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}" data-lab-credits="{{ $subject->lab_credits ?? 0 }}" data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}" data-lecture-hours="{{ $subject->lecture_hours ?? 0 }}" data-lab-hours="{{ $subject->lab_hours ?? 0 }}" data-self-study-hours="{{ $subject->self_study_hours ?? 0 }}" data-role="subject-edit-trigger" />
             <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $subject->id }}" />
         </div>
     </td>

@@ -100,10 +100,16 @@ test('evaluatee subject creation returns subject data without redirecting', func
             'lecture_credits' => 3,
             'lab_credits' => 0,
             'self_study_credits' => 6,
+            'lecture_hours' => 2,
+            'lab_hours' => 3,
+            'self_study_hours' => 1,
         ])
         ->assertCreated()
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.subject.code', 'ASYNC-SUBJECT');
+        ->assertJsonPath('data.subject.code', 'ASYNC-SUBJECT')
+        ->assertJsonPath('data.subject.lecture_hours', 2)
+        ->assertJsonPath('data.subject.lab_hours', 3)
+        ->assertJsonPath('data.subject.self_study_hours', 1);
 });
 
 test('previous workload import returns live fragments without redirecting', function () {

@@ -35,27 +35,49 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-3" data-subject-credit-fields>
+                        <h6 class="mb-3">ข้อมูลหน่วยกิต</h6>
                         <label for="credits" class="form-label">หน่วยกิต</label>
-                        <input type="number" id="credits" name="credits" class="form-control" min="0" value="0" placeholder="0">
+                        <input type="number" id="credits" name="credits" class="form-control" min="0" step="1" value="0" placeholder="0">
                         <div class="text-red-500 text-sm mt-1 hidden" id="creditsError">กรุณากรอกหน่วยกิต</div>
                     </div>
 
-                    <div class="row g-3">
+                    <div class="row g-3" data-subject-credit-fields>
                         <div class="col-md-4">
                             <label for="lecture_credits" class="form-label">หน่วยกิตบรรยาย</label>
-                            <input type="number" id="lecture_credits" name="lecture_credits" class="form-control" min="0" value="0" placeholder="0">
+                            <input type="number" id="lecture_credits" name="lecture_credits" class="form-control" min="0" step="1" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="lectureCreditsError">กรุณากรอกหน่วยกิตบรรยาย</div>
                         </div>
                         <div class="col-md-4">
                             <label for="lab_credits" class="form-label">หน่วยกิตปฏิบัติ</label>
-                            <input type="number" id="lab_credits" name="lab_credits" class="form-control" min="0" value="0" placeholder="0">
+                            <input type="number" id="lab_credits" name="lab_credits" class="form-control" min="0" step="1" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="labCreditsError">กรุณากรอกหน่วยกิตปฏิบัติ</div>
                         </div>
                         <div class="col-md-4">
                             <label for="self_study_credits" class="form-label">หน่วยกิตศึกษาด้วยตนเอง</label>
-                            <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" value="0" placeholder="0">
+                            <input type="number" id="self_study_credits" name="self_study_credits" class="form-control" min="0" step="1" value="0" placeholder="0">
                             <div class="text-red-500 text-sm mt-1 hidden" id="selfStudyCreditsError">กรุณากรอกหน่วยกิตศึกษาด้วยตนเอง</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4" data-subject-hour-fields>
+                        <h6 class="mb-3">ข้อมูลชั่วโมง</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="lecture_hours" class="form-label">ชั่วโมงบรรยาย</label>
+                                <input type="number" id="lecture_hours" name="lecture_hours" class="form-control" min="0" step="1" value="0" placeholder="0">
+                                <div class="text-red-500 text-sm mt-1 hidden" id="lectureHoursError">กรุณากรอกชั่วโมงบรรยายเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="lab_hours" class="form-label">ชั่วโมงปฏิบัติ</label>
+                                <input type="number" id="lab_hours" name="lab_hours" class="form-control" min="0" step="1" value="0" placeholder="0">
+                                <div class="text-red-500 text-sm mt-1 hidden" id="labHoursError">กรุณากรอกชั่วโมงปฏิบัติเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="self_study_hours" class="form-label">ชั่วโมงศึกษาด้วยตนเอง</label>
+                                <input type="number" id="self_study_hours" name="self_study_hours" class="form-control" min="0" step="1" value="0" placeholder="0">
+                                <div class="text-red-500 text-sm mt-1 hidden" id="selfStudyHoursError">กรุณากรอกชั่วโมงศึกษาด้วยตนเองเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป</div>
+                            </div>
                         </div>
                     </div>
                 </form>

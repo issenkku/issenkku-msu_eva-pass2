@@ -21,7 +21,10 @@ class StoreSubjectRequest extends FormRequest
                 : $this->input('name_en'),
         ];
 
-        foreach (['credits', 'lecture_credits', 'lab_credits', 'self_study_credits'] as $field) {
+        foreach ([
+            'credits', 'lecture_credits', 'lab_credits', 'self_study_credits',
+            'lecture_hours', 'lab_hours', 'self_study_hours',
+        ] as $field) {
             if ($this->input($field) === null || $this->input($field) === '') {
                 $normalized[$field] = 0;
             }
@@ -59,6 +62,9 @@ class StoreSubjectRequest extends FormRequest
             'lecture_credits' => ['required', 'integer', 'min:0'],
             'lab_credits' => ['required', 'integer', 'min:0'],
             'self_study_credits' => ['required', 'integer', 'min:0'],
+            'lecture_hours' => ['required', 'integer', 'min:0'],
+            'lab_hours' => ['required', 'integer', 'min:0'],
+            'self_study_hours' => ['required', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

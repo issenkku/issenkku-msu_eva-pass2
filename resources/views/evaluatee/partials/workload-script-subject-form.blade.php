@@ -24,13 +24,20 @@
             const lectureCreditsInput = document.getElementById('lecture_credits');
             const labCreditsInput = document.getElementById('lab_credits');
             const selfStudyCreditsInput = document.getElementById('self_study_credits');
+            const lectureHoursInput = document.getElementById('lecture_hours');
+            const labHoursInput = document.getElementById('lab_hours');
+            const selfStudyHoursInput = document.getElementById('self_study_hours');
             const creditsInput = document.getElementById('credits');
 
-            if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput || !creditsInput) {
+            if (!codeInput || !nameThInput || !lectureCreditsInput || !labCreditsInput || !selfStudyCreditsInput ||
+                !lectureHoursInput || !labHoursInput || !selfStudyHoursInput || !creditsInput) {
                 return true;
             }
 
-            [lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput].forEach(function (input) {
+            [
+                lectureCreditsInput, labCreditsInput, selfStudyCreditsInput, creditsInput,
+                lectureHoursInput, labHoursInput, selfStudyHoursInput,
+            ].forEach(function (input) {
                 if (input.value.trim() === '') input.value = '0';
             });
 
@@ -40,6 +47,9 @@
             const labValid = Number.isInteger(Number(labCreditsInput.value)) && Number(labCreditsInput.value) >= 0;
             const selfStudyValid = Number.isInteger(Number(selfStudyCreditsInput.value)) && Number(selfStudyCreditsInput.value) >= 0;
             const creditsValid = Number.isInteger(Number(creditsInput.value)) && Number(creditsInput.value) >= 0;
+            const lectureHoursValid = Number.isInteger(Number(lectureHoursInput.value)) && Number(lectureHoursInput.value) >= 0;
+            const labHoursValid = Number.isInteger(Number(labHoursInput.value)) && Number(labHoursInput.value) >= 0;
+            const selfStudyHoursValid = Number.isInteger(Number(selfStudyHoursInput.value)) && Number(selfStudyHoursInput.value) >= 0;
 
             toggleError(codeInput, 'codeError', codeValid);
             toggleError(nameThInput, 'nameThError', nameValid);
@@ -47,8 +57,12 @@
             toggleError(labCreditsInput, 'labCreditsError', labValid);
             toggleError(selfStudyCreditsInput, 'selfStudyCreditsError', selfStudyValid);
             toggleError(creditsInput, 'creditsError', creditsValid);
+            toggleError(lectureHoursInput, 'lectureHoursError', lectureHoursValid);
+            toggleError(labHoursInput, 'labHoursError', labHoursValid);
+            toggleError(selfStudyHoursInput, 'selfStudyHoursError', selfStudyHoursValid);
 
-            return codeValid && nameValid && lectureValid && labValid && selfStudyValid && creditsValid;
+            return codeValid && nameValid && lectureValid && labValid && selfStudyValid && creditsValid &&
+                lectureHoursValid && labHoursValid && selfStudyHoursValid;
         }
 
         window.submitForm = async function () {
@@ -89,6 +103,9 @@
                         lecture_credits: 'lectureCreditsError',
                         lab_credits: 'labCreditsError',
                         self_study_credits: 'selfStudyCreditsError',
+                        lecture_hours: 'lectureHoursError',
+                        lab_hours: 'labHoursError',
+                        self_study_hours: 'selfStudyHoursError',
                     };
                     Object.entries(errors || {}).forEach(function ([name, messages]) {
                         const input = form.querySelector('[name="' + name + '"]');
