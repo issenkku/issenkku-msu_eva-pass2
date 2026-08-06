@@ -2,6 +2,46 @@
 <script>
     let isFormValid = false;
 
+    function populateSubjectDetailModal(trigger, modal) {
+        const value = (name) => trigger.dataset[name] ?? '0';
+        const write = (selector, text) => {
+            const target = modal.querySelector(selector);
+            if (target) target.textContent = text;
+        };
+
+        write('[data-subject-detail-code-name]', `${value('code')}: ${value('displayName')}`);
+        write('[data-subject-detail-secondary-name]', trigger.dataset.secondaryName ?? '');
+        write('[data-subject-detail-credits]', value('credits'));
+        write('[data-subject-detail-lecture-credits]', value('lectureCredits'));
+        write('[data-subject-detail-lab-credits]', value('labCredits'));
+        write('[data-subject-detail-self-study-credits]', value('selfStudyCredits'));
+        write('[data-subject-detail-lecture-hours]', value('lectureHours'));
+        write('[data-subject-detail-lab-hours]', value('labHours'));
+        write('[data-subject-detail-self-study-hours]', value('selfStudyHours'));
+
+        const sourceLabel = value('displaySource') === 'hours' ? 'ชั่วโมง' : 'หน่วยกิต';
+        write(
+            '[data-subject-detail-source]',
+            `ค่าที่แสดงในตาราง: ${sourceLabel} ( ${value('displayLecture')} / ${value('displayLab')} / ${value('displaySelfStudy')} )`
+        );
+
+        const status = modal.querySelector('[data-subject-detail-status]');
+        if (status) {
+            const isActive = value('isActive') === '1';
+            status.textContent = isActive ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+            status.classList.remove('bg-success', 'bg-secondary');
+            status.classList.add(isActive ? 'bg-success' : 'bg-secondary');
+        }
+    }
+
+    function openSubjectDetailModal(trigger) {
+        const modal = document.getElementById('subjectDetailModal');
+        if (!modal || !window.bootstrap?.Modal) return;
+
+        populateSubjectDetailModal(trigger, modal);
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+
     // ตรวจฟอร์มก่อนเปิดให้กดบันทึก เพื่อคุมทั้ง create และ edit ใช้กติกาเดียวกัน
     function validateForm() {
         const codeInput = document.getElementById('code');
@@ -315,6 +355,12 @@
         }
 
         document.addEventListener('click', function(event) {
+            const detailTrigger = event.target.closest('[data-role="subject-detail-trigger"]');
+            if (detailTrigger) {
+                openSubjectDetailModal(detailTrigger);
+                return;
+            }
+
             const button = event.target.closest('[data-role="subject-edit-trigger"]');
             if (button) {
                 handleEdit(
