@@ -37,6 +37,8 @@
                             $displayName = $subject->display_name ?? $subject->name_th ?? $subject->name_en ?? '';
                             $secondaryName = !empty($subject->name_th) ? ($subject->name_en ?? null) : null;
                             [$lectureDisplay, $labDisplay, $selfStudyDisplay] = $subject->display_component_values;
+                            $usesHours = collect([$subject->lecture_hours, $subject->lab_hours, $subject->self_study_hours])
+                                ->contains(fn ($value) => (int) $value > 0);
                         @endphp
                         <tr class="reorder-row" data-id="{{ $subject->id }}" data-resource-row data-resource-id="{{ $subject->id }}">
                             <td class="text-center align-middle">
@@ -56,6 +58,7 @@
                             </td>
                             <td class="align-middle">
                                 <div class="d-flex gap-2 align-items-center justify-content-center">
+                                    <x-button type="default" text="รายละเอียด" class="text-sm !bg-teal-600 hover:!bg-teal-700 !text-white" icon="fas fa-eye" data-role="subject-detail-trigger" data-code="{{ $subject->code }}" data-display-name="{{ $displayName }}" data-secondary-name="{{ $secondaryName ?? '' }}" data-credits="{{ $subject->credits }}" data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}" data-lab-credits="{{ $subject->lab_credits ?? 0 }}" data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}" data-lecture-hours="{{ $subject->lecture_hours ?? 0 }}" data-lab-hours="{{ $subject->lab_hours ?? 0 }}" data-self-study-hours="{{ $subject->self_study_hours ?? 0 }}" data-is-active="{{ ($subject->is_active ?? true) ? 1 : 0 }}" data-display-source="{{ $usesHours ? 'hours' : 'credits' }}" data-display-lecture="{{ $lectureDisplay }}" data-display-lab="{{ $labDisplay }}" data-display-self-study="{{ $selfStudyDisplay }}" aria-label="ดูรายละเอียด {{ $subject->code }} {{ $displayName }}" />
                                     <x-button type="warning" text="แก้ไข" class="text-sm" icon="fas fa-edit" data-id="{{ $subject->id }}" data-code="{{ $subject->code }}" data-name-th="{{ $subject->name_th }}" data-name-en="{{ $subject->name_en ?? '' }}" data-credits="{{ $subject->credits }}" data-lecture-credits="{{ $subject->lecture_credits ?? 0 }}" data-lab-credits="{{ $subject->lab_credits ?? 0 }}" data-self-study-credits="{{ $subject->self_study_credits ?? 0 }}" data-lecture-hours="{{ $subject->lecture_hours ?? 0 }}" data-lab-hours="{{ $subject->lab_hours ?? 0 }}" data-self-study-hours="{{ $subject->self_study_hours ?? 0 }}" data-role="subject-edit-trigger" />
                                     <x-button type="danger" text="ลบ" class="text-sm" icon="fas fa-trash-alt" data-delete-trigger data-delete-id="{{ $subject->id }}" />
                                 </div>

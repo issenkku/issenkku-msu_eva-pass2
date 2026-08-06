@@ -73,6 +73,7 @@
     </div>
 
     <x-subject-modal />
+    @include('subjects.partials.detail-modal')
     @include('subjects.partials.import-modal')
     @include('subjects.imports.preview-modal', [
         'importPreview' => $importPreview ?? null,
