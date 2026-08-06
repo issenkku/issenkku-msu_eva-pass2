@@ -78,6 +78,9 @@
             option.dataset.lectureCredits = String(subject.lecture_credits ?? 0);
             option.dataset.labCredits = String(subject.lab_credits ?? 0);
             option.dataset.selfStudyCredits = String(subject.self_study_credits ?? 0);
+            option.dataset.lectureHours = String(subject.lecture_hours ?? 0);
+            option.dataset.labHours = String(subject.lab_hours ?? 0);
+            option.dataset.selfStudyHours = String(subject.self_study_hours ?? 0);
             option.dataset.search = displayName.toLowerCase();
 
             const name = document.createElement('span');
@@ -86,6 +89,13 @@
             const credit = document.createElement('span');
             credit.className = 'workload-subject-option-credit';
             credit.textContent = String(subject.credits ?? 0) + ' หน่วยกิต';
+            const componentValues = subject.display_component_values || [
+                subject.lecture_credits ?? 0,
+                subject.lab_credits ?? 0,
+                subject.self_study_credits ?? 0,
+            ];
+            credit.textContent = '(รวม ' + String(subject.credits ?? 0) + ' หน่วยกิต | บ ' +
+                componentValues[0] + ' / ป ' + componentValues[1] + ' / ศ ' + componentValues[2] + ')';
             option.append(name, credit);
             option.addEventListener('click', function () {
                 selectSubjectOption(option, false);

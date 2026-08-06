@@ -79,6 +79,10 @@ test('subject rows render delete triggers without inline handlers', function () 
             'lecture_credits' => 2,
             'lab_credits' => 1,
             'self_study_credits' => 0,
+            'lecture_hours' => 0,
+            'lab_hours' => 0,
+            'self_study_hours' => 0,
+            'display_component_values' => [2, 1, 0],
         ],
     ], 1, 15, 1, ['path' => url('/subjects')]);
 
@@ -99,7 +103,7 @@ test('settings pages render shared bulk delete modals and scripts', function () 
     $departments = new LengthAwarePaginator([(object) ['id' => 1, 'department_name' => 'IT', 'user_count' => 0]], 1, 15, 1, ['path' => url('/departments')]);
     $positions = new LengthAwarePaginator([(object) ['id' => 2, 'name' => 'Lecturer', 'user_count' => 0]], 1, 15, 1, ['path' => url('/positions')]);
     $jobLevels = new LengthAwarePaginator([(object) ['id' => 3, 'name' => 'Senior']], 1, 15, 1, ['path' => url('/job-level')]);
-    $subjects = new LengthAwarePaginator([(object) ['id' => 4, 'code' => 'TH101', 'name_th' => 'Thai', 'name_en' => 'Thai', 'credits' => 3, 'lecture_credits' => 2, 'lab_credits' => 1, 'self_study_credits' => 0]], 1, 15, 1, ['path' => url('/subjects')]);
+    $subjects = new LengthAwarePaginator([(object) ['id' => 4, 'code' => 'TH101', 'name_th' => 'Thai', 'name_en' => 'Thai', 'credits' => 3, 'lecture_credits' => 2, 'lab_credits' => 1, 'self_study_credits' => 0, 'lecture_hours' => 0, 'lab_hours' => 0, 'self_study_hours' => 0, 'display_component_values' => [2, 1, 0]]], 1, 15, 1, ['path' => url('/subjects')]);
 
     $html = view('departments.index', ['departments' => $departments])->render()
         .view('positions.index', ['positions' => $positions])->render()

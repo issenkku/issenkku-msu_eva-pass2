@@ -1,6 +1,7 @@
 @php
     $displayName = $subject->display_name ?? $subject->name_th ?? $subject->name_en ?? '';
     $secondaryName = !empty($subject->name_th) ? ($subject->name_en ?? null) : null;
+    [$lectureDisplay, $labDisplay, $selfStudyDisplay] = $subject->display_component_values;
 @endphp
 <tr class="reorder-row" data-id="{{ $subject->id }}" data-resource-row data-resource-id="{{ $subject->id }}">
     <td class="text-center align-middle">
@@ -14,7 +15,7 @@
     </td>
     <td class="align-middle">
         <div class="fw-semibold">{{ $subject->credits }}</div>
-        <div class="text-muted text-sm">( {{ $subject->lecture_credits ?? 0 }} / {{ $subject->lab_credits ?? 0 }} / {{ $subject->self_study_credits ?? 0 }})</div>
+        <div class="text-muted text-sm">( {{ $lectureDisplay }} / {{ $labDisplay }} / {{ $selfStudyDisplay }})</div>
     </td>
     <td class="align-middle">
         <div class="d-flex gap-2 align-items-center justify-content-center">

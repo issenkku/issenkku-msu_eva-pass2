@@ -27,6 +27,10 @@ class EvaluateeWorkloadModalData
                     'lecture_credits' => $subject->lecture_credits ?? 0,
                     'lab_credits' => $subject->lab_credits ?? 0,
                     'self_study_credits' => $subject->self_study_credits ?? 0,
+                    'lecture_hours' => $subject->lecture_hours ?? 0,
+                    'lab_hours' => $subject->lab_hours ?? 0,
+                    'self_study_hours' => $subject->self_study_hours ?? 0,
+                    'display_component_values' => $subject->display_component_values,
                     'search' => mb_strtolower(trim(($subject->code ?? '').' '.($subject->name_th ?? '').' '.($subject->name_en ?? ''))),
                 ];
             })->values(),

@@ -19,6 +19,7 @@
             </div>
             <div class="workload-subject-options" id="workloadSubjectOptions">
                 @foreach(($workloadModal['subjects'] ?? []) as $subjectView)
+                    @php([$lectureDisplay, $labDisplay, $selfStudyDisplay] = $subjectView['display_component_values'])
                     <button
                         type="button"
                         class="workload-subject-option"
@@ -33,7 +34,7 @@
                             {{ $subjectView['code'] }} {{ $subjectView['display_name'] }}{{ !empty($subjectView['secondary_name']) ? ' ' . $subjectView['secondary_name'] : '' }}
                         </span>
                         <span class="workload-subject-option-credit">
-                            (&#3619;&#3623;&#3617; {{ $subjectView['credits'] ?: '-' }} &#3627;&#3609;&#3656;&#3623;&#3618;&#3585;&#3636;&#3605; | &#3610; {{ $subjectView['lecture_credits'] }} / &#3611; {{ $subjectView['lab_credits'] }} / &#3624; {{ $subjectView['self_study_credits'] }})
+                            (&#3619;&#3623;&#3617; {{ $subjectView['credits'] ?: '-' }} &#3627;&#3609;&#3656;&#3623;&#3618;&#3585;&#3636;&#3605; | &#3610; {{ $lectureDisplay }} / &#3611; {{ $labDisplay }} / &#3624; {{ $selfStudyDisplay }})
                         </span>
                     </button>
                 @endforeach

@@ -83,6 +83,10 @@ test('subjects index and subject modal render create hooks without inline handle
             'lecture_credits' => 2,
             'lab_credits' => 1,
             'self_study_credits' => 0,
+            'lecture_hours' => 0,
+            'lab_hours' => 0,
+            'self_study_hours' => 0,
+            'display_component_values' => [2, 1, 0],
         ],
     ], '/subjects');
 

@@ -2,6 +2,7 @@
 
 use App\Models\Subject;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 uses(RefreshDatabase::class);
 
@@ -47,4 +48,32 @@ test('component display values use the complete credit set when every hour is ze
     ]);
 
     expect($subject->display_component_values)->toBe([3, 0, 1]);
+});
+
+test('subject table renderers use the shared component display values', function () {
+    $subject = new Subject([
+        'code' => 'DISPLAY101',
+        'name_th' => 'Display Hours',
+        'credits' => 3,
+        'lecture_credits' => 1,
+        'lab_credits' => 1,
+        'self_study_credits' => 1,
+        'lecture_hours' => 2,
+        'lab_hours' => 0,
+        'self_study_hours' => 0,
+    ]);
+    $subject->id = 101;
+
+    $rowHtml = view('subjects.partials.index-table-row', [
+        'subject' => $subject,
+        'sequence' => 1,
+    ])->render();
+    $tableHtml = view('subjects.partials.index-table-section', [
+        'subjects' => new LengthAwarePaginator([$subject], 1, 10, 1, ['path' => url('/subjects')]),
+    ])->render();
+
+    expect($rowHtml)->toContain('( 2 / 0 / 0)')
+        ->not->toContain('( 1 / 1 / 1)')
+        ->and($tableHtml)->toContain('( 2 / 0 / 0)')
+        ->not->toContain('( 1 / 1 / 1)');
 });
