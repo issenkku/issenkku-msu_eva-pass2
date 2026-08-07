@@ -1,8 +1,10 @@
 {{-- โมดัลนำเข้าผู้ใช้งานแบบไฟล์ พร้อมส่วนแสดงข้อผิดพลาดและสคริปต์ควบคุม --}}
-<div id="importUserModal" class="fixed z-[9999] inset-0 bg-black bg-opacity-50 hidden items-center justify-center overflow-y-auto">
-    <div class="bg-white rounded-xl w-full max-w-4xl mx-4 p-6 relative max-h-[90vh] overflow-y-auto shadow-2xl">
+<div id="importUserModal" class="fixed z-[9999] inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-0 sm:p-4">
+    <div
+        data-import-modal-panel
+        class="flex h-[100dvh] max-h-[100dvh] w-full max-w-4xl flex-col overflow-hidden rounded-none bg-white shadow-2xl sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:rounded-xl">
         {{-- ส่วนหัวของโมดัล --}}
-        <div class="flex justify-between items-center border-b pb-4 mb-6">
+        <div data-import-modal-header class="flex flex-none items-center justify-between border-b px-4 py-4 sm:px-6">
             <div>
                 <h2 class="text-xl font-semibold text-purple-700">นำเข้าข้อมูลผู้ใช้งาน</h2>
                 <p class="text-sm text-gray-600 mt-1">อัปโหลดไฟล์ Excel หรือ CSV เพื่อนำเข้าข้อมูลผู้ใช้งานจำนวนมาก</p>
@@ -10,15 +12,17 @@
             <button type="button" data-import-modal-close class="text-gray-500 hover:text-red-500 text-2xl leading-none">&times;</button>
         </div>
 
-        <form id="importForm" action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <input type="hidden" name="_method" id="formMethod" value="POST">
+        <form id="importForm" class="flex min-h-0 flex-1 flex-col" action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
+            <div data-import-modal-body class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6">
+                @csrf
+                <input type="hidden" name="_method" id="formMethod" value="POST">
 
-            @include('user.management.partials.import-modal-upload-section')
-            @include('user.management.partials.import-modal-feedback')
+                @include('user.management.partials.import-modal-upload-section')
+                @include('user.management.partials.import-modal-feedback')
+            </div>
 
             {{-- ส่วนปุ่มคำสั่ง --}}
-            <div class="flex justify-end gap-4 mt-8 pt-6 border-t">
+            <div data-import-modal-footer class="flex flex-none justify-end gap-4 border-t px-4 py-4 sm:px-6">
                 <x-button
                     type="secondary"
                     text="ย้อนกลับ"

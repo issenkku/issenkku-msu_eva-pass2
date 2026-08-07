@@ -36,4 +36,14 @@ test('import user modal renders import hooks without inline handlers', function 
         ->not->toContain('onclick="document.getElementById(\'fileInput\').click()"')
         ->not->toContain('onchange="handleFileSelect(event)"')
         ->not->toContain('onclick="removeFile()"');
+
+    expect($html)
+        ->toContain('data-import-modal-panel')
+        ->toContain('data-import-modal-header')
+        ->toContain('data-import-modal-body')
+        ->toContain('data-import-modal-footer')
+        ->toContain('h-[100dvh]')
+        ->toContain('sm:max-h-[calc(100dvh-2rem)]')
+        ->toContain('flex-1 overflow-y-auto overscroll-contain')
+        ->toContain('flex-none');
 });
