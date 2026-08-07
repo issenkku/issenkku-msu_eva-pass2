@@ -1,7 +1,7 @@
-<div id="evaluateeReviewerModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 px-4 py-6">
-    <div class="flex min-h-full items-center justify-center">
-        <div class="w-full max-w-lg rounded-2xl bg-white shadow-xl">
-            <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+<div id="evaluateeReviewerModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 p-4">
+    <div class="flex h-full min-h-0 items-center justify-center">
+        <div data-reviewer-list-modal-panel class="flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div data-reviewer-list-modal-header class="flex flex-none items-center justify-between border-b border-slate-200 px-5 py-4">
                 <div>
                     <h3 class="text-lg font-semibold text-slate-900">รายชื่อผู้ประเมิน</h3>
                     <p class="text-sm text-slate-500">แสดงผู้ประเมินทั้งหมดตามลำดับที่กำหนด</p>
@@ -12,7 +12,7 @@
                     </svg>
                 </button>
             </div>
-            <div id="evaluateeReviewerModalBody" class="space-y-3 px-5 py-5"></div>
+            <div id="evaluateeReviewerModalBody" data-reviewer-list-modal-body class="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-5 py-5"></div>
         </div>
     </div>
 </div>

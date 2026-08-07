@@ -232,3 +232,31 @@ test('workload entry modal keeps its actions visible within the viewport', funct
         ->toContain('overscroll-behavior: contain')
         ->toContain('@media (max-width: 575.98px)');
 });
+
+test('reviewer list modals keep headers visible while their lists scroll', function () {
+    $modalHtml = [
+        view('dashboard.partials.index-reviewer-modal')->render(),
+        view('components.evaluation-summary-reviewer-modal')->render(),
+        view('components.director-table', [
+            'evaluations' => evaluationPaginator([evaluationAssignment()], '/director'),
+            'statusCounts' => [],
+            'years' => collect([2025]),
+        ])->render(),
+        view('components.manager-table', [
+            'evaluations' => evaluationPaginator([evaluationAssignment()], '/manager'),
+            'statusCounts' => [],
+            'years' => collect([2025]),
+        ])->render(),
+    ];
+
+    foreach ($modalHtml as $html) {
+        expect($html)
+            ->toContain('data-reviewer-list-modal-panel')
+            ->toContain('data-reviewer-list-modal-header')
+            ->toContain('data-reviewer-list-modal-body')
+            ->toContain('max-h-[calc(100dvh-2rem)]')
+            ->toContain('flex-none')
+            ->toContain('min-h-0 flex-1')
+            ->toContain('overflow-y-auto overscroll-contain');
+    }
+});
