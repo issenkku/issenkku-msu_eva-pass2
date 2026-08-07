@@ -334,4 +334,43 @@
         font-size: 0.8rem;
         margin-top: 4px;
     }
+
+    #subjectImportModal .subject-import-dialog {
+        height: calc(100vh - 2rem);
+        height: calc(100dvh - 2rem);
+        margin: 1rem auto !important;
+    }
+
+    #subjectImportModal .subject-import-content {
+        height: 100%;
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    #subjectImportModal .subject-import-form {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        height: 100%;
+    }
+
+    #subjectImportModal .modal-header,
+    #subjectImportModal .modal-footer {
+        flex-shrink: 0;
+    }
+
+    #subjectImportModal .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    @media (max-width: 575.98px) {
+        #subjectImportModal .subject-import-dialog {
+            height: 100vh;
+            height: 100dvh;
+            margin: 0 !important;
+        }
+    }
 </style>

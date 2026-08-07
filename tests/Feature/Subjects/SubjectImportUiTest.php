@@ -41,6 +41,18 @@ test('subject index renders import actions and accessible modal hooks', function
         ->toContain(route('subjects.import.export'))
         ->not->toContain('onclick=')
         ->not->toContain('ondrop=');
+
+    expect($html)
+        ->toContain('modal-dialog-centered')
+        ->toContain('modal-dialog-scrollable')
+        ->toContain('modal-fullscreen-sm-down')
+        ->toContain('subject-import-dialog')
+        ->toContain('subject-import-content')
+        ->toContain('subject-import-form')
+        ->toContain('#subjectImportModal .subject-import-dialog')
+        ->toContain('height: calc(100dvh - 2rem)')
+        ->toContain('overflow-y: auto')
+        ->toContain('overscroll-behavior: contain');
 });
 
 test('subject index renders complete import result groups', function () {

@@ -1,13 +1,13 @@
 <div class="modal fade" id="subjectImportModal" tabindex="-1" aria-labelledby="subjectImportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down subject-import-dialog">
+        <div class="modal-content subject-import-content">
             <div class="modal-header">
                 <h2 class="modal-title fs-5" id="subjectImportModalLabel">
                     <i class="fas fa-file-import me-2" aria-hidden="true"></i>นำเข้าข้อมูลรายวิชา
                 </h2>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="ปิด"></button>
             </div>
-            <form method="POST" action="{{ route('subjects.import.preview.store') }}" enctype="multipart/form-data" data-subject-import-form>
+            <form class="subject-import-form" method="POST" action="{{ route('subjects.import.preview.store') }}" enctype="multipart/form-data" data-subject-import-form>
                 @csrf
                 <div class="modal-body">
                     <div class="d-flex flex-wrap gap-2 mb-4">
