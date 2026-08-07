@@ -260,3 +260,16 @@ test('reviewer list modals keep headers visible while their lists scroll', funct
             ->toContain('overflow-y-auto overscroll-contain');
     }
 });
+
+test('assignment evaluatee modal keeps its title and search above the scrolling list', function () {
+    $html = view('assignment-data.partials.index-evaluatees-modal')->render();
+
+    expect($html)
+        ->toContain('data-evaluatees-modal-panel')
+        ->toContain('data-evaluatees-modal-controls')
+        ->toContain('max-h-[calc(100dvh-2rem)]')
+        ->toContain('min-h-0 flex-1 overflow-y-auto overscroll-contain')
+        ->toContain('id="evaluateesSearch"')
+        ->toContain('id="evaluateesContent"')
+        ->not->toContain('top-20');
+});
