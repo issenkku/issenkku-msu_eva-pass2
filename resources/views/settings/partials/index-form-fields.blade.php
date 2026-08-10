@@ -1,45 +1,5 @@
 {{-- ฟิลด์หลักของหน้าตั้งค่า ใช้เป็นแหล่งข้อมูลหลักที่บันทึกลงระบบ --}}
 <div class="form-group-custom">
-    <label for="university" class="form-label-custom">
-        ชื่อมหาวิทยาลัย <span style="color: #dc3545;">*</span>
-    </label>
-    <div class="input-group-custom">
-        <input type="text" name="university" id="university"
-            class="form-control form-control-custom"
-            placeholder="กรุณากรอกชื่อมหาวิทยาลัย"
-            value="{{ old('university', $setting->university ?? '') }}"
-            required>
-        <i class="form-icon fas fa-building-columns"></i>
-    </div>
-    @error('university')
-        <div class="alert alert-custom">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            {{ $message }}
-        </div>
-    @enderror
-</div>
-
-<div class="form-group-custom">
-    <label for="faculty" class="form-label-custom">
-        ชื่อคณะ <span style="color: #dc3545;">*</span>
-    </label>
-    <div class="input-group-custom">
-        <input type="text" name="faculty" id="faculty"
-            class="form-control form-control-custom"
-            placeholder="กรุณากรอกชื่อคณะ"
-            value="{{ old('faculty', $setting->faculty ?? '') }}"
-            required>
-        <i class="form-icon fas fa-school"></i>
-    </div>
-    @error('faculty')
-        <div class="alert alert-custom">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            {{ $message }}
-        </div>
-    @enderror
-</div>
-
-<div class="form-group-custom">
     @php($selectedBackgroundPath = old('selected_background_path', $setting?->background_path))
     <label for="background" class="form-label-custom">
         รูปพื้นหลังหน้าภาระงาน
