@@ -52,6 +52,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \Throwable $exception,
             Request $request
         ) {
+            // The production container uses a streaming HTTP server. If an
+            // exception occurs during termination or shutdown, the original
+            // response has already been sent and a second HTML document would
+            // otherwise be appended to it.
+            if (headers_sent()) {
+                return FriendlyErrorPage::withoutContent($response);
+            }
+
             if ($request->expectsJson()) {
                 return $response;
             }

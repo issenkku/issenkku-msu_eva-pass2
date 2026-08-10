@@ -10,6 +10,8 @@ services:
     env_file: ${APP_ENV_FILE:-.env.production}
     environment:
       RUN_MIGRATIONS_ON_BOOT: ${RUN_MIGRATIONS_ON_BOOT:-false}
+      FORCE_HTTPS: ${FORCE_HTTPS:-true}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12}
     working_dir: /var/www/html
     volumes:
       - storage:/var/www/html/storage

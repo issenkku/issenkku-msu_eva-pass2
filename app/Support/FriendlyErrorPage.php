@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 final class FriendlyErrorPage
@@ -11,6 +12,13 @@ final class FriendlyErrorPage
     public const SESSION_EXPIRED_MESSAGE = 'เซสชันหมดอายุหรือออกจากระบบแล้ว กรุณาเข้าสู่ระบบอีกครั้ง';
 
     public const LOGOUT_MESSAGE = 'ออกจากระบบเรียบร้อยแล้ว';
+
+    public static function withoutContent(Response $response): Response
+    {
+        $response->setContent('');
+
+        return $response;
+    }
 
     public static function destinationUrl(?User $user): string
     {

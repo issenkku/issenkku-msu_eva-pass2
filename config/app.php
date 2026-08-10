@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://127.0.0.1:8000'),
 
+    'force_https' => (bool) env('FORCE_HTTPS', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
