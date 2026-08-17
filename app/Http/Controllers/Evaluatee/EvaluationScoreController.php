@@ -21,6 +21,7 @@ use App\Support\SupportScoreRules;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Facades\Activity;
@@ -353,12 +354,20 @@ class EvaluationScoreController extends Controller
                 ])
                 ->log($statusMessages[$status] ?? "เปลี่ยนสถานะเป็น {$status}");
 
-            if (in_array($status, ['Pending', 'Director_assigned', 'Manager_assign', 'Completed'], true)) {
-                $this->sendEvaluationCompletedMail($reportId);
-            }
-
             DB::commit();
             $transactionStarted = false;
+
+            if (in_array($status, ['Pending', 'Director_assigned', 'Manager_assign', 'Completed'], true)) {
+                try {
+                    $this->sendEvaluationCompletedMail($reportId);
+                } catch (Exception $e) {
+                    Log::warning('Failed to send evaluation notification', [
+                        'report_id' => $reportId,
+                        'status' => $status,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
 
             $message = $status === 'Draft' ? 'บันทึกข้อมูลเรียบร้อยแล้ว' : 'ส่งรายงานเรียบร้อยแล้ว';
 

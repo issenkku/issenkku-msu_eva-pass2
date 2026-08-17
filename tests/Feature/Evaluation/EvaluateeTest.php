@@ -497,6 +497,34 @@ class EvaluateeTest extends TestCase
         ]);
     }
 
+    public function test_support_submission_succeeds_when_email_notification_fails(): void
+    {
+        $this->assignmentData->update(['evaluator_id' => $this->evaluator->id]);
+        $report = $this->createReportWithStatus('Draft');
+
+        Mail::shouldReceive('send')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP authentication failed'));
+
+        $this->actingAs($this->evaluatee, 'web')
+            ->post(
+                route('evaluation_score.store', ['id' => $report->id]),
+                $this->supportPayload('Pending', 5)
+            )
+            ->assertRedirect('/evaluatee-dashboard')
+            ->assertSessionHas('success', 'ส่งรายงานเรียบร้อยแล้ว');
+
+        $this->assertDatabaseHas('support_scores', [
+            'report_id' => $report->id,
+            'support_criteria_id' => $this->supportCriterion->id,
+            'achieved_score' => '5.00',
+        ]);
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'status' => 'Pending',
+        ]);
+    }
+
     public function test_evaluatee_can_save_draft_without_required_support_evidence(): void
     {
         $this->supportCriterion->update(['require_evidence' => true]);
