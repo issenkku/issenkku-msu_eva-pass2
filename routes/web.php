@@ -124,6 +124,7 @@ Route::middleware(['auth:sanctum', 'role:ผู้รับการประเ
     Route::put('/evaluatee/workload-entries/{id}', [EvaluateeWorkloadEntryController::class, 'update'])->name('evaluatee.workload-entries.update');
     Route::delete('/evaluatee/workload-entries/{id}', [EvaluateeWorkloadEntryController::class, 'destroy'])->name('evaluatee.workload-entries.destroy');
     Route::get('/evaluation-workload', [EvaluationWorkloadController::class, 'index'])->name('evaluatee.workload');
+    Route::get('/evaluation-workload/score', [EvaluationWorkloadController::class, 'redirectWorkloadScore']);
     Route::post('/evaluation/{id}/import-previous-workload', [EvaluationWorkloadController::class, 'importPreviousWorkload'])->name('evaluatee.import-previous-workload');
     Route::post('/evaluation-workload/score', [EvaluationWorkloadController::class, 'storeWorkloadScore'])->name('evaluatee.workload-score.store');
     Route::post('/evaluatee/subjects', [SubjectController::class, 'store'])->name('subjects.store.evaluatee');

@@ -155,3 +155,11 @@ test('aggregate workload score save returns the saved total without redirecting'
         ->assertJsonPath('total_score', 9)
         ->assertJsonPath('saved_total', 9);
 });
+
+test('opening the workload score endpoint redirects to the workload page', function () {
+    $context = workloadPageAsyncContext();
+
+    $this->actingAs($context['evaluatee'], 'web')
+        ->get('/evaluation-workload/score')
+        ->assertRedirect(route('evaluatee.workload'));
+});

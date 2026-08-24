@@ -14,6 +14,7 @@ use App\Rules\ActiveQuantitySubCriteria;
 use App\Services\PreviousWorkloadImportService;
 use App\Support\EvaluateeWorkloadLiveData;
 use App\Support\EvaluateeWorkloadModalData;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class EvaluationWorkloadController extends Controller
@@ -129,6 +130,11 @@ class EvaluationWorkloadController extends Controller
             'workloadModal' => $workloadModal,
             'importablePreviousReports' => $importablePreviousReports,
         ]);
+    }
+
+    public function redirectWorkloadScore(): RedirectResponse
+    {
+        return redirect()->route('evaluatee.workload');
     }
 
     public function storeWorkloadScore(Request $request)
