@@ -27,6 +27,8 @@ test('scatter data uses bulk scores for completed reports only', function () {
     ]);
     $quantityList = EvaluationList::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 100,
     ]);
     $quantitySubCriteria = QuantitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,

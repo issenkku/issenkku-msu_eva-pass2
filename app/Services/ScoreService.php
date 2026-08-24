@@ -213,11 +213,55 @@ class ScoreService
             return collect();
         }
 
-        return DB::table('quantity_scores')
-            ->whereIn('report_id', $reportIds)
-            ->selectRaw('report_id, COALESCE(SUM(score_D), 0) as total_score')
-            ->groupBy('report_id')
-            ->pluck('total_score', 'report_id');
+        $quantityScores = $reportIds->mapWithKeys(fn ($reportId) => [$reportId => 0.0]);
+
+        $listScores = DB::table('quantity_scores')
+            ->join(
+                'quantity_sub_criterias',
+                'quantity_scores.quantity_sub_criteria_id',
+                '=',
+                'quantity_sub_criterias.id'
+            )
+            ->join(
+                'evaluation_lists',
+                'quantity_sub_criterias.evaluation_list_id',
+                '=',
+                'evaluation_lists.id'
+            )
+            ->whereIn('quantity_scores.report_id', $reportIds)
+            ->where('evaluation_lists.quantity_enabled', true)
+            ->selectRaw('
+                quantity_scores.report_id,
+                evaluation_lists.id as evaluation_list_id,
+                evaluation_lists.sum_score,
+                COALESCE(SUM(quantity_scores.score_D), 0) as total_score
+            ')
+            ->groupBy(
+                'quantity_scores.report_id',
+                'evaluation_lists.id',
+                'evaluation_lists.sum_score'
+            )
+            ->get()
+            ->groupBy('report_id');
+
+        foreach ($listScores as $reportId => $scores) {
+            $quantityTotal = 0.0;
+
+            foreach ($scores as $score) {
+                $listTotal = (float) $score->total_score;
+                $listMax = (float) $score->sum_score;
+
+                if ($listMax > 0 && $listTotal > $listMax) {
+                    $listTotal = $listMax;
+                }
+
+                $quantityTotal += $listTotal;
+            }
+
+            $quantityScores[(int) $reportId] = round($quantityTotal, 2);
+        }
+
+        return $quantityScores;
     }
 
     private static function getMaxQualityScore($reportId)

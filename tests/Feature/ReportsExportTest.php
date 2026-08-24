@@ -63,6 +63,7 @@ test('dashboard export grand total includes quantity quality and capped support'
     ]);
     $evaluationList = EvaluationList::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
         'sum_score' => 10,
     ]);
     $quantitySubCriteria = QuantitySubCriteria::factory()->create([

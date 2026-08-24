@@ -59,3 +59,17 @@ test('director component delegates score summary rendering to the shared read mo
         ->not->toContain('$totalQuantityScore = 0')
         ->not->toContain('<span id="quantity-summary"');
 });
+
+test('editable evaluation forms expose quantity list caps to the live summary scripts', function () {
+    foreach (['unified-evaluator', 'unified-director'] as $component) {
+        $template = file_get_contents(resource_path("views/components/{$component}.blade.php"));
+        $script = file_get_contents(resource_path("views/components/{$component}-script.blade.php"));
+
+        expect($template)
+            ->toContain('data-evaluation-list-id="{{ $evaluationList[\'id\'] }}"')
+            ->toContain('data-list-max="{{ $evaluationList[\'sum_score\'] ?? 0 }}"')
+            ->and($script)
+            ->toContain('quantityListTotals')
+            ->toContain('cappedSum');
+    }
+});

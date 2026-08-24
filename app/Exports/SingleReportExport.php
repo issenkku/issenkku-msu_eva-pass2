@@ -192,7 +192,9 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
     {
         $report = $this->assignment->report;
 
-        $quantityScore = $report?->quantityScores?->sum('score_D') ?? 0;
+        $quantityScore = $report
+            ? (float) (ScoreService::calculateQuantityScoresRawByReportIds([$report->id])[$report->id] ?? 0)
+            : 0;
         $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
         $scores = ReportScoreSummary::fromTotals(
             (float) $quantityScore,

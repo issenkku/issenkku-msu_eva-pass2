@@ -3,7 +3,6 @@
 namespace App\Support;
 
 use App\Models\Department;
-use App\Models\QuantityScore;
 use App\Models\Setting\Positions;
 use App\Models\User;
 use App\Services\EvaluationService;
@@ -187,11 +186,9 @@ class AdminDashboardQuery
             return [];
         }
 
-        $quantityScores = QuantityScore::query()
-            ->whereIn('report_id', $reports->pluck('report_id')->filter()->unique()->values())
-            ->selectRaw('report_id, COALESCE(SUM(score_D), 0) as total_score')
-            ->groupBy('report_id')
-            ->pluck('total_score', 'report_id');
+        $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds(
+            $reports->pluck('report_id')->filter()->unique()->values()
+        );
         $qualityScores = ScoreService::calculateQualityScoresRawByReportIds(
             $reports->pluck('report_id')->filter()->unique()->values()
         );

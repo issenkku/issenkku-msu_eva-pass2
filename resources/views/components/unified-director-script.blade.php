@@ -25,9 +25,23 @@ function recalculateSummaryScores() {
     }
 
     let quantitySum = 0;
+    const quantityListTotals = {};
     document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]').forEach(input => {
         const val = parseFloat(input.value);
-        if (!isNaN(val)) quantitySum += val;
+        if (isNaN(val)) return;
+
+        const listId = input.dataset.evaluationListId || 'unknown';
+        const listMax = parseFloat(input.dataset.listMax);
+        if (!quantityListTotals[listId]) {
+            quantityListTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
+        }
+        quantityListTotals[listId].sum += val;
+    });
+
+    Object.values(quantityListTotals).forEach(({ sum, max }) => {
+        let cappedSum = sum;
+        if (max > 0 && cappedSum > max) cappedSum = max;
+        quantitySum += cappedSum;
     });
 
     const listTotals = {};

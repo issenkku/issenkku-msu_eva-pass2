@@ -8,6 +8,7 @@ use App\Models\Setting\Departments;
 use App\Models\Setting\JobLevel;
 use App\Models\Setting\Positions;
 use App\Models\User;
+use App\Services\ScoreService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -152,9 +153,14 @@ class ProfileController extends Controller
 
     private function buildEvaluatedWorks(User $user)
     {
-        return $user->assignment
-            ->filter(fn ($assignment) => $assignment->report && $assignment->report->status === 'Completed')
-            ->map(function ($assignment) {
+        $completedAssignments = $user->assignment
+            ->filter(fn ($assignment) => $assignment->report && $assignment->report->status === 'Completed');
+        $reportIds = $completedAssignments->pluck('report.id')->filter()->unique()->values();
+        $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds($reportIds);
+        $qualityScores = ScoreService::calculateQualityScoresRawByReportIds($reportIds);
+
+        return $completedAssignments
+            ->map(function ($assignment) use ($quantityScores, $qualityScores) {
                 $report = $assignment->report;
                 $entries = $report->workloadEntries ?? collect();
                 $subjects = $entries
@@ -174,8 +180,8 @@ class ProfileController extends Controller
                     'workload_entries_count' => $entries->count(),
                     'subjects' => $subjects,
                     'evidence_count' => ($report->evidenceAnswers ?? collect())->count(),
-                    'quantity_score' => round((float) ($report->quantityScores?->sum('score_D') ?? 0), 2),
-                    'quality_score' => round((float) ($report->qualityScores?->sum('score') ?? 0), 2),
+                    'quantity_score' => round((float) ($quantityScores[$report->id] ?? 0), 2),
+                    'quality_score' => round((float) ($qualityScores[$report->id] ?? 0), 2),
                     'updated_at' => optional($report->updated_at)?->format('d/m/Y H:i'),
                 ];
             })

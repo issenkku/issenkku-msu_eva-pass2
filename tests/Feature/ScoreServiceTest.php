@@ -74,6 +74,90 @@ test('evaluation summary derives support achievement without changing the overal
         ->and($summary['total'])->toBe(4.3);
 });
 
+test('evaluation summary caps quantity at each evaluation list sum score', function () {
+    $summary = EvaluationScoreSummary::fromCategoryItems([[
+        'evaluation_lists' => [
+            [
+                'quantity_enabled' => true,
+                'quantity_items' => [[
+                    'sub_criterias' => [
+                        ['score_d' => 55.15],
+                        ['score_d' => 20],
+                    ],
+                ]],
+                'quality_items' => [],
+                'support_items' => [],
+                'sum_score' => 40,
+            ],
+            [
+                'quantity_enabled' => false,
+                'quantity_items' => [],
+                'quality_items' => [[
+                    'sub_criterias' => [['score' => 29.65]],
+                ]],
+                'support_items' => [],
+                'sum_score' => 30,
+            ],
+        ],
+    ]]);
+
+    expect($summary['quantity'])->toBe(40.0)
+        ->and($summary['quality'])->toBe(29.65)
+        ->and($summary['total'])->toBe(69.65);
+});
+
+test('bulk quantity score calculation caps each active list at its configured sum score', function () {
+    $criteriaVersion = CriteriaVersion::factory()->create();
+    $reportData = ReportData::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+    $report = Reports::factory()->create([
+        'report_data_id' => $reportData->id,
+        'status' => 'Completed',
+    ]);
+    $main = QuantityMainCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
+
+    $cappedList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 40,
+    ]);
+    $secondList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 10,
+    ]);
+    $disabledList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => false,
+        'sum_score' => 100,
+    ]);
+
+    foreach ([
+        [$cappedList, 75.15],
+        [$secondList, 5],
+        [$disabledList, 99],
+    ] as [$list, $score]) {
+        $subCriteria = QuantitySubCriteria::factory()->create([
+            'criteria_version_id' => $criteriaVersion->id,
+            'quantity_main_criteria_id' => $main->id,
+            'evaluation_list_id' => $list->id,
+        ]);
+
+        QuantityScore::factory()->create([
+            'report_id' => $report->id,
+            'quantity_sub_criteria_id' => $subCriteria->id,
+            'score_D' => $score,
+        ]);
+    }
+
+    $scores = ScoreService::calculateQuantityScoresRawByReportIds([$report->id]);
+
+    expect((float) $scores[$report->id])->toBe(45.0);
+});
+
 test('bulk quality score calculation matches single report calculation', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
@@ -158,6 +242,8 @@ test('average score calculation uses bulk scores for completed reports only', fu
     ]);
     $quantityList = EvaluationList::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 100,
     ]);
     $quantitySubCriteria = QuantitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
@@ -306,6 +392,8 @@ test('highest score calculation uses bulk scores for completed reports only', fu
     ]);
     $quantityList = EvaluationList::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 100,
     ]);
     $quantitySubCriteria = QuantitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
