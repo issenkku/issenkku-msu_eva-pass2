@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "figma-build": {
+      "source": "awdr74100/figwright",
+      "sourceType": "github",
+      "skillPath": "skills/figma-build/SKILL.md",
+      "computedHash": "965b1ee71cd6e61e16503e08609fdc0400a85da438d5f75c1b612e26f6165d38"
+    },
+    "figma-codegen": {
+      "source": "awdr74100/figwright",
+      "sourceType": "github",
+      "skillPath": "skills/figma-codegen/SKILL.md",
+      "computedHash": "68bd6d9cd4104388009c1bbe7acaf505cea48523abf85da71fb403e0450804dd"
+    }
+  }
+}
