@@ -25,3 +25,5 @@ yarn-error.log
 /.vscode
 /.zed
 /.worktrees
+/.superpowers/brainstorm/
+/docs/*.pptx.inspect.ndjson
