@@ -2,6 +2,8 @@
 
 namespace App\Exports;
 
+use App\Models\WorkloadEntry;
+use App\Models\WorkloadForm;
 use App\Services\ScoreService;
 use App\Support\ReportScoreSummary;
 use Carbon\Carbon;
@@ -12,6 +14,7 @@ use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -22,21 +25,24 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
      */
     protected $query;
 
+    protected ?Collection $assignments = null;
+
+    protected Collection $workloadColumns;
+
+    protected Collection $workloadTotalsByReportAndForm;
+
     public function __construct($query = null)
     {
         $this->query = $query;
+        $this->workloadColumns = collect();
+        $this->workloadTotalsByReportAndForm = collect();
     }
 
     public function collection()
     {
-        $assignments = $this->query
-            ->with([
-                'assignmentData.evaluatorUser',
-                'evaluateeUser.department',
-                'evaluateeUser.position',
-                'report',
-            ])
-            ->get();
+        $this->prepareExportData();
+
+        $assignments = $this->assignments;
         $reportIds = $assignments->pluck('report_id')->filter()->unique()->values();
         $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds($reportIds);
         $qualityScores = ScoreService::calculateQualityScoresRawByReportIds($reportIds);
@@ -50,6 +56,15 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
                 (float) ($qualityScores[$report?->id] ?? 0),
                 (float) ($report?->support_score_total ?? 0),
             );
+            $workloadScores = $this->workloadColumns
+                ->map(function ($column) use ($report) {
+                    $formTotals = collect($this->workloadTotalsByReportAndForm->get($report?->id, collect()));
+
+                    return round(collect($column['form_ids'])->sum(
+                        fn ($formId) => (float) ($formTotals[$formId] ?? 0)
+                    ), 4);
+                })
+                ->all();
 
             $start = optional($assignment->assignmentData)->start_time;
             $end = optional($assignment->assignmentData)->end_time;
@@ -83,6 +98,7 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
                 $scores['quality'],
                 $scores['support_raw'],
                 $scores['support_achievement'],
+                ...$workloadScores,
                 $report?->comment,
                 $report?->evaluator_comment,
                 $report?->director_comment,
@@ -96,7 +112,9 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
 
     public function headings(): array
     {
-        return [
+        $this->prepareExportData();
+
+        $headings = [
             'ลำดับ',
             'รอบประเมิน',
             'ชื่อ-สกุล',
@@ -116,6 +134,10 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             'สร้างเมื่อ',
             'แก้ไขเมื่อ',
         ];
+
+        array_splice($headings, 11, 0, $this->workloadColumns->pluck('heading')->all());
+
+        return $headings;
     }
 
     public function styles(Worksheet $sheet)
@@ -134,26 +156,17 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
 
     public function columnWidths(): array
     {
-        return [
-            'A' => 5,
-            'B' => 25,
-            'C' => 20,
-            'D' => 20,
-            'E' => 8,
-            'F' => 20,
-            'G' => 10,
-            'H' => 16,
-            'I' => 16,
-            'J' => 30,
-            'K' => 20,
-            'L' => 30,
-            'M' => 30,
-            'N' => 30,
-            'O' => 30,
-            'P' => 25,
-            'Q' => 20,
-            'R' => 20,
+        $this->prepareExportData();
+
+        $widths = [
+            5, 25, 20, 20, 8, 20, 10, 16, 16, 30, 20,
+            ...array_fill(0, $this->workloadColumns->count(), 35),
+            30, 30, 30, 30, 25, 20, 20,
         ];
+
+        return collect($widths)
+            ->mapWithKeys(fn ($width, $index) => [Coordinate::stringFromColumnIndex($index + 1) => $width])
+            ->all();
     }
 
     public function registerEvents(): array
@@ -162,9 +175,85 @@ class ReportsExport implements FromCollection, WithColumnWidths, WithEvents, Wit
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Apply font to A1:R100 range
-                $sheet->getStyle('A1:R100')->getFont()->setName('TH Sarabun New')->setSize(14);
+                $this->prepareExportData();
+                $lastColumn = Coordinate::stringFromColumnIndex(count($this->headings()));
+                $lastRow = max(100, $this->assignments->count() + 1);
+
+                $sheet->getStyle("A1:{$lastColumn}{$lastRow}")->getFont()->setName('TH Sarabun New')->setSize(14);
             },
         ];
+    }
+
+    private function prepareExportData(): void
+    {
+        if ($this->assignments !== null) {
+            return;
+        }
+
+        $this->assignments = $this->query
+            ->with([
+                'assignmentData.evaluatorUser',
+                'evaluateeUser.department',
+                'evaluateeUser.position',
+                'report.reportData',
+            ])
+            ->get();
+
+        $reportIds = $this->assignments->pluck('report_id')->filter()->unique()->values();
+        $criteriaVersionIds = $this->assignments
+            ->pluck('report.reportData.criteria_version_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $forms = WorkloadForm::with([
+            'quantitySubCriteria.evaluationList.category',
+            'subCriteriaItem.group',
+        ])
+            ->whereHas('quantitySubCriteria', fn ($query) => $query
+                ->active()
+                ->whereIn('criteria_version_id', $criteriaVersionIds))
+            ->get()
+            ->sortBy(fn ($form) => sprintf(
+                '%010d-%010d-%010d-%010d-%010d-%010d',
+                (int) ($form->quantitySubCriteria?->criteria_version_id ?? PHP_INT_MAX),
+                (int) ($form->quantitySubCriteria?->evaluationList?->category?->sequence ?? PHP_INT_MAX),
+                (int) ($form->quantitySubCriteria?->evaluationList?->sequence ?? PHP_INT_MAX),
+                (int) ($form->quantitySubCriteria?->sequence ?? PHP_INT_MAX),
+                (int) ($form->subCriteriaItem?->group?->sequence ?? PHP_INT_MAX),
+                (int) ($form->subCriteriaItem?->sequence ?? PHP_INT_MAX),
+            ));
+
+        $this->workloadColumns = $forms
+            ->map(function ($form) {
+                $parts = collect([
+                    $form->quantitySubCriteria?->name,
+                    $form->subCriteriaItem?->group?->name,
+                    $form->subCriteriaItem?->name,
+                ])->filter(fn ($value) => trim((string) $value) !== '')
+                    ->unique()
+                    ->values();
+
+                return [
+                    'heading' => 'คะแนนภาระงาน: '.$parts->implode(' / '),
+                    'form_id' => (int) $form->id,
+                ];
+            })
+            ->map(fn ($formColumn) => [
+                'heading' => $formColumn['heading'],
+                'form_ids' => [$formColumn['form_id']],
+            ])
+            ->values();
+
+        $this->workloadTotalsByReportAndForm = WorkloadEntry::query()
+            ->whereIn('report_id', $reportIds)
+            ->whereIn('workload_form_id', $forms->pluck('id'))
+            ->get(['report_id', 'workload_form_id', 'calculated_score'])
+            ->groupBy('report_id')
+            ->map(fn ($reportEntries) => $reportEntries
+                ->groupBy('workload_form_id')
+                ->map(fn ($formEntries) => round($formEntries->sum(
+                    fn ($entry) => max(0, (float) ($entry->calculated_score ?? 0))
+                ), 4)));
     }
 }

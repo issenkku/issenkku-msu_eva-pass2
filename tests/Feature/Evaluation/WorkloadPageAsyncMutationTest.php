@@ -4,6 +4,7 @@ use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\QuantitySubCriteriaGroup;
 use App\Models\QuantitySubCriteriaItem;
@@ -135,25 +136,34 @@ test('previous workload import returns live fragments without redirecting', func
         ->assertJsonStructure(['panels_html', 'summary_html', 'active_item_id']);
 });
 
-test('aggregate workload score save returns the saved total without redirecting', function () {
+test('aggregate workload score save accepts a total above the legacy decimal limit', function () {
     $context = workloadPageAsyncContext();
     $report = assignedWorkloadReport($context, 'Draft', '2026-08-01', '2026-08-31');
     WorkloadEntry::create([
         'report_id' => $report->id,
         'workload_form_id' => $context['form']->id,
-        'field_values' => ['hours' => 9],
-        'calculated_score' => 9,
+        'field_values' => ['hours' => 2766.7034],
+        'calculated_score' => 2766.7034,
     ]);
 
-    $this->actingAs($context['evaluatee'], 'web')
+    $response = $this->actingAs($context['evaluatee'], 'web')
         ->postJson(route('evaluatee.workload-score.store'), [
             'report_id' => $report->id,
             'quantity_sub_criteria_id' => $context['quantitySubCriteria']->id,
-        ])
+        ]);
+
+    $response
         ->assertOk()
         ->assertJsonPath('success', true)
-        ->assertJsonPath('total_score', 9)
-        ->assertJsonPath('saved_total', 9);
+        ->assertJsonPath('total_score', 2766.7034)
+        ->assertJsonPath('saved_total', 2766.7034);
+
+    $savedScore = QuantityScore::query()
+        ->where('report_id', $report->id)
+        ->where('quantity_sub_criteria_id', $context['quantitySubCriteria']->id)
+        ->firstOrFail();
+
+    expect((float) $savedScore->score_C)->toBe(2766.7034);
 });
 
 test('opening the workload score endpoint redirects to the workload page', function () {

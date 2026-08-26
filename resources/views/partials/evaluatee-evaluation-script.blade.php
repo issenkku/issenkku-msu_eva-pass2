@@ -278,6 +278,10 @@
                     }
                 });
 
+                if (listMax > 0 && quantityTotal > listMax) {
+                    quantityTotal = listMax;
+                }
+
                 if (listMax > 0 && qualityTotal > listMax) {
                     qualityTotal = listMax;
                 }

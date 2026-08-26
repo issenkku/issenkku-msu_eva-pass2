@@ -4,6 +4,8 @@ namespace App\Exports;
 
 use App\Models\QualityScore;
 use App\Models\QuantityScore;
+use App\Models\WorkloadEntry;
+use App\Models\WorkloadForm;
 use App\Services\ScoreService;
 use App\Support\ReportScoreSummary;
 use App\Support\SafeHtml;
@@ -60,6 +62,9 @@ class SingleReportExport implements WithMultipleSheets
         $qualityScores = QualityScore::where('report_id', $report->id)
             ->get()
             ->keyBy('quality_sub_criteria_id');
+        $quantityScores = QuantityScore::where('report_id', $report->id)
+            ->get()
+            ->keyBy('quantity_sub_criteria_id');
         $supportItemsByList = app(SupportCriteriaReadModel::class)->forReport($report);
 
         $categories = $report->reportData->criteriaVersion->categories()
@@ -71,6 +76,31 @@ class SingleReportExport implements WithMultipleSheets
             }])
             ->orderBy('sequence')
             ->get();
+
+        $quantitySubCriteriaIds = $categories
+            ->flatMap(fn ($category) => $category->evaluationLists)
+            ->flatMap(fn ($list) => $list->quantitySubCriterias)
+            ->pluck('id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $workloadFormsBySubCriteria = WorkloadForm::with(['subCriteriaItem.group'])
+            ->whereIn('quantity_sub_criteria_id', $quantitySubCriteriaIds)
+            ->get()
+            ->sortBy(fn ($form) => sprintf(
+                '%010d-%010d-%010d',
+                (int) ($form->subCriteriaItem?->group?->sequence ?? PHP_INT_MAX),
+                (int) ($form->subCriteriaItem?->sequence ?? PHP_INT_MAX),
+                (int) $form->id,
+            ))
+            ->groupBy('quantity_sub_criteria_id');
+
+        $workloadEntriesByForm = WorkloadEntry::query()
+            ->where('report_id', $report->id)
+            ->whereIn('workload_form_id', $workloadFormsBySubCriteria->flatten(1)->pluck('id'))
+            ->get(['workload_form_id', 'calculated_score'])
+            ->groupBy('workload_form_id');
 
         $categoryItems = [];
 
@@ -110,9 +140,22 @@ class SingleReportExport implements WithMultipleSheets
                             ];
 
                             foreach ($subCriterias->sortBy('sequence') as $subCriteria) {
-                                $quantityScore = QuantityScore::where('report_id', $report->id)
-                                    ->where('quantity_sub_criteria_id', $subCriteria->id)
-                                    ->first();
+                                $quantityScore = $quantityScores->get($subCriteria->id);
+                                $workloadItems = collect($workloadFormsBySubCriteria->get($subCriteria->id, collect()))
+                                    ->map(function ($form) use ($workloadEntriesByForm, $subCriteria) {
+                                        $entries = collect($workloadEntriesByForm->get($form->id, collect()));
+
+                                        return [
+                                            'id' => $form->quantity_sub_criteria_item_id,
+                                            'name' => $form->subCriteriaItem?->name ?? $subCriteria->name,
+                                            'group_name' => $form->subCriteriaItem?->group?->name,
+                                            'total_score' => round($entries->sum(
+                                                fn ($entry) => max(0, (float) ($entry->calculated_score ?? 0))
+                                            ), 4),
+                                        ];
+                                    })
+                                    ->values()
+                                    ->all();
 
                                 $mainCriteriaData['sub_criterias'][] = [
                                     'id' => $subCriteria->id,
@@ -121,6 +164,7 @@ class SingleReportExport implements WithMultipleSheets
                                     'score_a' => $subCriteria->score_a,
                                     'score_b' => $subCriteria->score_b,
                                     'score_d' => $quantityScore?->score_D ?? 0,
+                                    'workload_items' => $workloadItems,
                                 ];
                             }
 
@@ -312,13 +356,18 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
 
         foreach ($this->category['evaluation_lists'] as $evaluationList) {
             // Add evaluation list header
-            $totalListScore = 0;
+            $quantityListScore = 0;
 
             // Calculate total score for this evaluation list
             foreach ($evaluationList['quantity_items'] as $quantityMain) {
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $totalListScore += (float) $sub['score_d'];
+                    $quantityListScore += (float) $sub['score_d'];
                 }
+            }
+
+            $listMax = (float) ($evaluationList['sum_score'] ?? 0);
+            if ($listMax > 0 && $quantityListScore > $listMax) {
+                $quantityListScore = $listMax;
             }
 
             $qualityListScore = 0;
@@ -329,11 +378,10 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 }
                 $qualityListScore += $subTotal;
             }
-            $listMax = (float) ($evaluationList['sum_score'] ?? 0);
             if ($listMax > 0 && $qualityListScore > $listMax) {
                 $qualityListScore = $listMax;
             }
-            $totalListScore += $qualityListScore;
+            $totalListScore = $quantityListScore + $qualityListScore;
             $supportListScore = collect($evaluationList['support_items'] ?? [])
                 ->sum(fn ($item) => (float) ($item['weighted_score'] ?? 0));
             $totalListScore += $supportListScore;
@@ -353,6 +401,19 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
                 $subCounter = 1; // Counter for sub-criteria numbering
                 foreach ($quantityMain['sub_criterias'] as $sub) {
                     $data[] = ['  '.$sub['name'], $sub['score_d']];
+
+                    foreach ($sub['workload_items'] ?? [] as $workloadItem) {
+                        $workloadName = collect([
+                            $workloadItem['group_name'] ?? null,
+                            $workloadItem['name'] ?? null,
+                        ])->filter(fn ($value) => trim((string) $value) !== '')
+                            ->implode(' / ');
+
+                        $data[] = [
+                            '    คะแนนรวมภาระงาน: '.$workloadName,
+                            (float) ($workloadItem['total_score'] ?? 0),
+                        ];
+                    }
                     $subCounter++;
                 }
                 $mainCounter++;

@@ -55,7 +55,7 @@
             return;
         }
 
-        let quantitySum = 0;
+        const quantityListTotals = {};
         document.querySelectorAll('input[name^="quantity_list"][name$="[score_C]"]').forEach(input => {
             const match = input.name.match(/^quantity_list\[(.+?)\]\[score_C\]$/);
             if (!match) return;
@@ -72,8 +72,24 @@
             const scoreB = parseFloat(summaryRow?.dataset.scoreB || '0');
 
             if (!isNaN(scoreA) && !isNaN(scoreB) && scoreB !== 0) {
-                quantitySum += (scoreA * scoreC) / scoreB;
+                const listSummary = summaryRow?.closest('[data-summary-list]');
+                const listId = listSummary?.dataset.listId || `quantity-${subCriteriaId}`;
+                const listMax = parseFloat(listSummary?.dataset.listMax || '0');
+
+                if (!quantityListTotals[listId]) {
+                    quantityListTotals[listId] = {
+                        sum: 0,
+                        max: isNaN(listMax) ? 0 : listMax,
+                    };
+                }
+
+                quantityListTotals[listId].sum += (scoreA * scoreC) / scoreB;
             }
+        });
+
+        let quantitySum = 0;
+        Object.values(quantityListTotals).forEach(({ sum, max }) => {
+            quantitySum += max > 0 && sum > max ? max : sum;
         });
 
         const listTotals = {};

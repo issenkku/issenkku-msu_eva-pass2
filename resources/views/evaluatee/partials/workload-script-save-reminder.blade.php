@@ -31,6 +31,7 @@
             : currentTotal > 0;
         let allowPageExit = false;
         let pendingBackUrl = '';
+        let workloadScoreSaveInFlight = false;
 
         function updateReminder() {
             reminderEl.hidden = !hasUnsavedChanges;
@@ -64,32 +65,118 @@
             document.body.classList.remove('workload-unsaved-confirm-open');
         }
 
+        function showSaveMessage(message, isError) {
+            if (typeof window.MasterDataPage?.showMasterDataMessage === 'function') {
+                window.MasterDataPage.showMasterDataMessage(message, isError);
+                return;
+            }
+
+            let messageEl = document.getElementById('asyncMutationMessage');
+            if (!messageEl) {
+                messageEl = document.createElement('div');
+                messageEl.id = 'asyncMutationMessage';
+                messageEl.setAttribute?.('role', 'alert');
+                document.body.append?.(messageEl);
+            }
+
+            messageEl.className = isError
+                ? 'fixed bottom-4 right-4 z-[10000] rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800 shadow-lg'
+                : 'fixed bottom-4 right-4 z-[10000] rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 shadow-lg';
+            messageEl.textContent = message;
+            messageEl.hidden = false;
+            window.setTimeout?.(function () {
+                messageEl.hidden = true;
+            }, 5000);
+        }
+
+        async function requestWorkloadScoreSave() {
+            const response = await window.fetch(workloadScoreForm.action, {
+                body: new FormData(workloadScoreForm),
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                method: 'POST',
+            });
+
+            let payload = {};
+            try {
+                payload = await response.json();
+            } catch {
+                throw new Error('เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+            }
+
+            if (response.redirected || !response.ok || payload?.success !== true) {
+                const error = new Error(payload?.message || 'ไม่สามารถบันทึกคะแนนภาระงานได้ กรุณาลองใหม่อีกครั้ง');
+                error.status = response.status;
+                error.errors = payload?.errors || {};
+                throw error;
+            }
+
+            return payload;
+        }
+
+        async function applyScoreSave(payload) {
+            currentTotal = parseScore(payload.total_score);
+            savedTotal = parseScore(payload.saved_total);
+            hasSavedTotal = true;
+            hasUnsavedChanges = false;
+            stateEl.dataset.currentTotal = String(currentTotal);
+            stateEl.dataset.savedTotal = String(savedTotal);
+            updateReminder();
+        }
+
         if (workloadScoreForm) {
             workloadScoreForm.addEventListener('submit', async function (event) {
                 event.preventDefault();
 
-                const coordinator = window.AsyncForm?.createAsyncFormCoordinator({
-                    applySuccess: async function (payload) {
-                        currentTotal = parseScore(payload.total_score);
-                        savedTotal = parseScore(payload.saved_total);
-                        hasSavedTotal = true;
-                        hasUnsavedChanges = false;
-                        stateEl.dataset.currentTotal = String(currentTotal);
-                        stateEl.dataset.savedTotal = String(savedTotal);
-                        updateReminder();
-                    },
-                    form: workloadScoreForm,
-                    getSubmitButton: function () {
-                        return workloadScoreForm.querySelector('[type="submit"]');
-                    },
-                    request: window.AsyncForm.requestFormMutation,
-                    showMessage: window.MasterDataPage.showMasterDataMessage,
-                });
+                if (workloadScoreSaveInFlight) {
+                    return;
+                }
+                workloadScoreSaveInFlight = true;
+
+                const createCoordinator = window.AsyncForm?.createAsyncFormCoordinator;
+                const requestMutation = window.AsyncForm?.requestFormMutation;
+                const coordinator = typeof createCoordinator === 'function' && typeof requestMutation === 'function'
+                    ? createCoordinator({
+                        applySuccess: applyScoreSave,
+                        form: workloadScoreForm,
+                        getSubmitButton: function () {
+                            return workloadScoreForm.querySelector('[type="submit"]');
+                        },
+                        request: requestMutation,
+                        showMessage: showSaveMessage,
+                    })
+                    : null;
 
                 if (coordinator) {
-                    await coordinator({ preventDefault: function () {} });
-                } else {
-                    workloadScoreForm.submit();
+                    try {
+                        await coordinator({ preventDefault: function () {} });
+                    } finally {
+                        workloadScoreSaveInFlight = false;
+                    }
+                    return;
+                }
+
+                const submitButton = workloadScoreForm.querySelector('[type="submit"]');
+                const originalLabel = submitButton?.textContent;
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'กำลังบันทึก...';
+                }
+
+                try {
+                    const payload = await requestWorkloadScoreSave();
+                    await applyScoreSave(payload);
+                    showSaveMessage(payload.message || 'บันทึกคะแนนภาระงานเรียบร้อยแล้ว', false);
+                } catch (error) {
+                    showSaveMessage(error?.message || 'ไม่สามารถบันทึกคะแนนภาระงานได้ กรุณาลองใหม่อีกครั้ง', true);
+                } finally {
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = originalLabel;
+                    }
+                    workloadScoreSaveInFlight = false;
                 }
             });
         }
