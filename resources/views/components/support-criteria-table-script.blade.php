@@ -9,21 +9,95 @@
             return Number.isFinite(number) ? number.toFixed(2) : trimmed;
         };
 
-        const activityTools = () => window.SupportActivityEntries || {
+        const fallbackActivityTools = {
             activityEntryFieldName: (criterionId, index, field) =>
                 `support_list[${criterionId}][activity_entries][${index}][${field}]`,
+            activityEvidenceFieldName: (criterionId, index) =>
+                `support_list[${criterionId}][activity_entries][${index}][evidence_links][]`,
+            activityEvidenceGroups: (entries) => entries
+                .map((entry, index) => ({
+                    id: entry.id ?? `new-${index}`,
+                    label: `รายการ ${index + 1}`,
+                    links: (entry.evidence_links ?? []).filter(Boolean),
+                }))
+                .filter((group) => group.links.length > 0),
             activityHtmlHasVisibleText: (html) => String(html ?? '')
                 .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+                .replace(/<br\s*\/?>/gi, ' ')
                 .replace(/<[^>]*>/g, ' ')
                 .replace(/&(nbsp|#160|#xA0);/gi, ' ')
+                .replace(/&amp;/gi, '&')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&quot;/gi, '"')
+                .replace(/&#0*39;/gi, "'")
+                .replace(/\s+/gu, ' ')
                 .trim() !== '',
             activityHtmlPlainText: (html) => String(html ?? '')
                 .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+                .replace(/<br\s*\/?>/gi, ' ')
                 .replace(/<[^>]*>/g, ' ')
                 .replace(/&(nbsp|#160|#xA0);/gi, ' ')
+                .replace(/&amp;/gi, '&')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&quot;/gi, '"')
+                .replace(/&#0*39;/gi, "'")
                 .replace(/\s+/gu, ' ')
                 .trim(),
+            reconcileActivityEntryRows: (currentRows, entryCount, createRow) => {
+                const rows = [...currentRows];
+                const normalizedEntryCount = Math.max(Number(entryCount) || 0, 0);
+                const rowCount = Math.max(normalizedEntryCount, 1);
+
+                while (rows.length < rowCount) rows.push(createRow(rows.length));
+                while (rows.length > rowCount) rows.pop()?.remove();
+
+                return {
+                    rows,
+                    rowCount,
+                    hasEntries: normalizedEntryCount > 0,
+                };
+            },
+            renderActivityEntryList: (target, entries, options = {}) => {
+                const visibleEntries = entries.filter((entry) =>
+                    fallbackActivityTools.activityHtmlHasVisibleText(entry.html));
+                target.replaceChildren();
+
+                if (visibleEntries.length === 0) {
+                    const empty = document.createElement('p');
+                    empty.className = 'text-xs font-normal text-slate-400';
+                    empty.dataset.supportGroupedProjectEmpty = '';
+                    empty.textContent = options.emptyText ?? 'ยังไม่มีกิจกรรม/โครงการเพิ่มเติม';
+                    target.appendChild(empty);
+                    return;
+                }
+
+                const list = document.createElement('div');
+                list.className = 'space-y-2';
+                visibleEntries.forEach((entryData, entryIndex) => {
+                    const entry = document.createElement('div');
+                    entry.className = 'flex gap-2';
+
+                    const number = document.createElement('span');
+                    number.className = 'inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-semibold text-amber-800';
+                    number.dataset.supportGroupedProjectNumber = '';
+                    number.textContent = String(entryIndex + 1);
+
+                    const content = document.createElement('div');
+                    content.className = 'min-w-0 break-words font-semibold text-amber-800';
+                    content.textContent = fallbackActivityTools.activityHtmlPlainText(entryData.html);
+
+                    entry.append(number, content);
+                    list.appendChild(entry);
+                });
+                target.appendChild(list);
+            },
         };
+        const activityTools = () => ({
+            ...fallbackActivityTools,
+            ...(window.SupportActivityEntries || {}),
+        });
 
         const calculateEntryWeightedScore = (weight, achievedScore) => {
             const calculator = window.SupportScoreCalculator?.calculateEntryWeightedScore;
@@ -384,7 +458,11 @@
                 if (!window.jQuery || typeof window.jQuery.fn?.summernote !== 'function') return;
                 const $editor = window.jQuery(textarea);
                 if ($editor.next('.note-editor').length > 0) {
-                    textarea.value = $editor.summernote('code') || '';
+                    try {
+                        textarea.value = $editor.summernote('code') || textarea.value;
+                    } catch {
+                        // Keep the value maintained by Summernote's onChange callback when its instance is stale.
+                    }
                 }
             });
         };
@@ -413,8 +491,13 @@
             item.querySelectorAll('.support-activity-richtext').forEach((textarea) => {
                 if (window.jQuery && typeof window.jQuery.fn?.summernote === 'function') {
                     const $editor = window.jQuery(textarea);
-                    if ($editor.next('.note-editor').length > 0) $editor.summernote('destroy');
-                    $editor.removeData('summernoteInitialized');
+                    try {
+                        if ($editor.next('.note-editor').length > 0) $editor.summernote('destroy');
+                    } catch {
+                        $editor.next('.note-editor').remove();
+                    } finally {
+                        $editor.removeData('summernoteInitialized');
+                    }
                 }
                 textarea.textContent = textarea.value;
             });
@@ -1176,7 +1259,7 @@
         };
 
         document.addEventListener('keydown', (event) => {
-            if (!supportHistoryModal?.classList.contains('hidden')) {
+            if (supportHistoryModal && !supportHistoryModal.classList.contains('hidden')) {
                 if (event.key === 'Escape') closeSupportHistoryModal();
                 if (event.key === 'Tab') trapSupportHistoryModalFocus(event);
                 return;
