@@ -227,4 +227,3 @@ rich text ยาวอาจ clip/truncate หรือทำให้ input/act
 ### แนวทางแก้
 
 ใช้ responsive layout ที่เปลี่ยน table เป็น stacked/cards บน viewport แคบ แทนการบังคับ table fixed อย่างเดียว
-

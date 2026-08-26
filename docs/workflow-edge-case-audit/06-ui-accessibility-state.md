@@ -205,4 +205,3 @@ Design system มี tokens แต่ยังไม่มี accessibility veri
 - เพิ่ม CSS reduced-motion base rule
 - เพิ่ม test หรือ lint สำหรับ contrast critical components
 - ทำ browser E2E audit สำหรับ modal/table/form states
-

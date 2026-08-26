@@ -47,4 +47,3 @@
 2. `ScorePersistence` Module — Interface เดียวสำหรับ patch/replace/delete score operation, evidence, comments, history, transaction invariants
 
 สอง Module นี้ให้ Leverage สูงสุด เพราะลด condition conflict ที่กระจายอยู่ในหลาย controller และเพิ่ม Locality ของ bug fix/test surface
-

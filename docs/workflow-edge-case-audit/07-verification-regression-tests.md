@@ -120,4 +120,3 @@ Priority: `P2`
 - detect long-running PHP process ที่ lock testing DB
 - document safe reset command
 - run subject import E2E ทั้ง batch และ isolated เพื่อจับ test interference
-

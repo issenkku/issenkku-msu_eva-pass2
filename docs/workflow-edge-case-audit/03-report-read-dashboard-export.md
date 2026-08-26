@@ -206,4 +206,3 @@ test เดิม lock current behavior บางส่วน แต่ไม่
 ### แนวทางแก้
 
 ย้าย status grouping เข้า `EvaluationFlow::statusMeta(status)` แล้วให้ทุก read model ใช้ร่วมกัน
-

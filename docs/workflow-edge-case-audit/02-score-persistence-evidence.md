@@ -244,4 +244,3 @@ Validation ตรวจว่า id มีอยู่จริง แต่ไ�
 ### แนวทางแก้
 
 เพิ่ม validation rule ว่า `support_list.*.support_criteria_id` ต้อง unique ต่อ request
-

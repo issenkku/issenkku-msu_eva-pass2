@@ -148,4 +148,3 @@ bulk operation หลาย Module ใช้ pattern คล้ายกัน �
 - deleted records
 - user-facing message
 - transaction behavior
-
