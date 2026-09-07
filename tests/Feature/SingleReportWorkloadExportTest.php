@@ -12,6 +12,7 @@ use App\Models\QuantitySubCriteriaGroup;
 use App\Models\QuantitySubCriteriaItem;
 use App\Models\ReportData;
 use App\Models\Reports;
+use App\Models\User;
 use App\Models\WorkloadEntry;
 use App\Models\WorkloadForm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -126,9 +127,10 @@ test('single report category exports a separate total for each workload item and
         ->toContain(['    คะแนนรวมภาระงาน: การสอนปฏิบัติ / ควบคุมสัมมนา', 1.75]);
 });
 
-test('overview export keeps separate workload columns when labels are duplicated', function () {
+test('overview export uses score D in the template quantity category column', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
+        'assessment_type' => 'กลุ่มวิชาการ',
         'criteria_version_id' => $criteriaVersion->id,
     ]);
     $category = Category::factory()->create([
@@ -146,6 +148,7 @@ test('overview export keeps separate workload columns when labels are duplicated
         'evaluation_list_id' => $evaluationList->id,
         'sequence' => 1,
         'name' => 'ภาระงานด้านการสอน',
+        'score_a' => 2,
     ]);
     $group = QuantitySubCriteriaGroup::create([
         'name' => 'การสอนปฏิบัติ',
@@ -190,8 +193,14 @@ test('overview export keeps separate workload columns when labels are duplicated
         'report_data_id' => $reportData->id,
         'status' => 'Completed',
     ]);
-    Assignments::factory()->create(['report_id' => $firstReport->id]);
-    Assignments::factory()->create(['report_id' => $secondReport->id]);
+    Assignments::factory()->create([
+        'report_id' => $firstReport->id,
+        'evaluatee_id' => User::factory()->create(['personnel_type' => 'วิชาการ'])->id,
+    ]);
+    Assignments::factory()->create([
+        'report_id' => $secondReport->id,
+        'evaluatee_id' => User::factory()->create(['personnel_type' => 'วิชาการ'])->id,
+    ]);
 
     WorkloadEntry::create([
         'field_values' => [],
@@ -214,18 +223,19 @@ test('overview export keeps separate workload columns when labels are duplicated
         'workload_form_id' => $form->id,
         'subject_id' => null,
     ]);
+    QuantityScore::factory()->create([
+        'report_id' => $firstReport->id,
+        'quantity_sub_criteria_id' => $subCriteria->id,
+        'score_D' => 2.75,
+    ]);
 
     $export = new ReportsExport(Assignments::query()->whereIn('report_id', [
         $firstReport->id,
         $secondReport->id,
     ])->orderBy('id'));
-    $heading = 'คะแนนภาระงาน: ภาระงานด้านการสอน / การสอนปฏิบัติ / สอนรายวิชาปฏิบัติ';
-    $headings = $export->headings();
-    $rows = $export->collection();
-    $workloadColumnIndexes = collect($headings)
-        ->filter(fn ($candidate) => $candidate === $heading)
-        ->keys()
-        ->values();
+    $sheet = $export->sheets()[0];
+    $headings = $sheet->headings();
+    $rows = $sheet->collection();
     $workbook = Excel::raw(
         new ReportsExport(Assignments::query()->whereIn('report_id', [
             $firstReport->id,
@@ -234,10 +244,8 @@ test('overview export keeps separate workload columns when labels are duplicated
         ExcelFormat::XLSX,
     );
 
-    expect($workloadColumnIndexes)->toHaveCount(2)
-        ->and($rows[0][$workloadColumnIndexes[0]])->toBe(5.75)
-        ->and($rows[0][$workloadColumnIndexes[1]])->toBe(1.25)
-        ->and($rows[1][$workloadColumnIndexes[0]])->toBe(0.0)
-        ->and($rows[1][$workloadColumnIndexes[1]])->toBe(0.0)
+    expect($headings[6])->toBe('1.1 ภาระงานด้านการสอน')
+        ->and($rows[0][6])->toBe(2.75)
+        ->and($rows[1][6])->toBe(0.0)
         ->and(strlen($workbook))->toBeGreaterThan(0);
 });

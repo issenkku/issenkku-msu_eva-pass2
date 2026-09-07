@@ -13,14 +13,22 @@ use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\ReportData;
 use App\Models\Reports;
+use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
 use App\Models\SupportScore;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 test('dashboard export includes support score summaries and role comments', function () {
+    $criteriaVersion = CriteriaVersion::factory()->create();
+    $reportData = ReportData::factory()->create([
+        'assessment_type' => 'กลุ่มสนับสนุน',
+        'criteria_version_id' => $criteriaVersion->id,
+    ]);
     $report = Reports::factory()->create([
+        'report_data_id' => $reportData->id,
         'status' => 'Completed',
         'support_score_total' => 112.50,
         'support_achievement_score' => 22.50,
@@ -29,30 +37,106 @@ test('dashboard export includes support score summaries and role comments', func
         'director_comment' => 'ความเห็นกรรมการ',
         'manager_comment' => 'ความเห็นผู้บริหาร',
     ]);
-    $assignment = Assignments::factory()->create(['report_id' => $report->id]);
+    $category = Category::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'sequence' => 1,
+    ]);
+    $evaluationList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'categorie_id' => $category->id,
+        'sequence' => 1,
+        'quantity_enabled' => false,
+        'sum_score' => 75,
+    ]);
+    $firstCriterion = SupportCriteria::create([
+        'evaluation_list_id' => $evaluationList->id,
+        'sequence' => 1,
+        'activity_name' => 'เรื่อง',
+        'indicator' => 'จำนวนเรื่อง',
+        'target_value' => 5,
+        'weight' => 20,
+        'require_evidence' => false,
+        'allow_activity_entries' => true,
+        'allow_evaluatee_weight' => true,
+    ]);
+    $secondCriterion = SupportCriteria::create([
+        'evaluation_list_id' => $evaluationList->id,
+        'sequence' => 2,
+        'activity_name' => 'งานด้านประกันคุณภาพ',
+        'indicator' => 'ร้อยละ',
+        'target_value' => 5,
+        'weight' => 20,
+        'require_evidence' => false,
+    ]);
+    $thirdCriterion = SupportCriteria::create([
+        'evaluation_list_id' => $evaluationList->id,
+        'sequence' => 3,
+        'activity_name' => 'งานอื่นที่ได้รับมอบหมาย',
+        'indicator' => 'ร้อยละ',
+        'target_value' => 5,
+        'weight' => 5,
+        'require_evidence' => false,
+    ]);
+    SupportActivityEntry::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $firstCriterion->id,
+        'sequence' => 1,
+        'content' => 'งานในหน้าที่รายการที่หนึ่ง',
+        'weight' => 20,
+        'achieved_score' => 4,
+        'weighted_score' => 7.5,
+    ]);
+    SupportScore::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $secondCriterion->id,
+        'achieved_score' => 5,
+        'weighted_score' => 2,
+    ]);
+    SupportScore::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $thirdCriterion->id,
+        'achieved_score' => 5,
+        'weighted_score' => 0.5,
+    ]);
+    $evaluatee = User::factory()->create(['personnel_type' => 'สนับสนุน']);
+    $assignment = Assignments::factory()->create([
+        'report_id' => $report->id,
+        'evaluatee_id' => $evaluatee->id,
+    ]);
 
     $export = new ReportsExport(
         Assignments::query()->where('report_id', $report->id)
     );
-    $headings = $export->headings();
-    $row = $export->collection()->first();
+    $sheets = $export->sheets();
+    $sheet = $sheets[1];
+    $headings = $sheet->headings();
+    $row = $sheet->collection()->first();
 
-    expect($headings)
-        ->toHaveCount(18)
+    expect($sheets)
+        ->toHaveCount(2)
+        ->and($sheets[0]->title())->toBe('สายอาจารย์')
+        ->and($sheet->title())->toBe('สายสนับสนุน')
+        ->and($headings)
+        ->toHaveCount(22)
+        ->and($headings[12])->toBe('')
+        ->and($headings)
         ->toContain('ผลรวมคะแนนถ่วงน้ำหนักสายสนับสนุน')
         ->toContain('คะแนนผลสัมฤทธิ์ของงาน')
         ->toContain('ความเห็นผู้ประเมิน')
         ->toContain('ความเห็นกรรมการ')
         ->toContain('ความเห็นผู้บริหาร')
-        ->and($row[6])->toBe(100.0)
-        ->and($row[9])->toBe(112.5)
-        ->and($row[10])->toBe(22.5)
+        ->and($row[5])->toBe(2.5)
+        ->and($row[6])->toBe(1.0)
+        ->and($row[7])->toBe(0.25)
+        ->and($row[13])->toBe(3.75)
+        ->and($row[14])->toBe(0.75)
         ->and($row)->toContain('ความเห็นผู้ประเมิน', 'ความเห็นกรรมการ', 'ความเห็นผู้บริหาร');
 });
 
-test('dashboard export grand total includes quantity quality and capped support', function () {
+test('academic dashboard export follows the template and keeps quantity and quality totals', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
+        'assessment_type' => 'กลุ่มวิชาการ',
         'criteria_version_id' => $criteriaVersion->id,
     ]);
     $report = Reports::factory()->create([
@@ -69,10 +153,12 @@ test('dashboard export grand total includes quantity quality and capped support'
     $quantitySubCriteria = QuantitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
         'evaluation_list_id' => $evaluationList->id,
+        'score_a' => 1.5,
     ]);
     $qualitySubCriteria = QualitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
         'evaluation_list_id' => $evaluationList->id,
+        'num_score' => 2,
     ]);
     QuantityScore::factory()->create([
         'report_id' => $report->id,
@@ -84,17 +170,26 @@ test('dashboard export grand total includes quantity quality and capped support'
         'quality_sub_criteria_id' => $qualitySubCriteria->id,
         'score' => 3,
     ]);
-    $assignment = Assignments::factory()->create(['report_id' => $report->id]);
+    $evaluatee = User::factory()->create(['personnel_type' => 'วิชาการ']);
+    $assignment = Assignments::factory()->create([
+        'report_id' => $report->id,
+        'evaluatee_id' => $evaluatee->id,
+    ]);
 
-    $row = (new ReportsExport(
+    $sheet = (new ReportsExport(
         Assignments::query()->where('report_id', $report->id)
-    ))->collection()->first();
+    ))->sheets()[0];
+    $row = $sheet->collection()->first();
 
-    expect($row[6])->toBe(9.3)
-        ->and($row[7])->toBe(2.0)
-        ->and($row[8])->toBe(3.0)
-        ->and($row[9])->toBe(4.3)
-        ->and($row[10])->toBe(0.86);
+    expect($sheet->headings())
+        ->toHaveCount(30)
+        ->and($sheet->headings()[6])->toBe('1.1 ภาระงานด้านการสอน')
+        ->and($sheet->headings()[13])->toBe('2.1 ภาระงานด้านการสอน')
+        ->and($row[6])->toBe(2.0)
+        ->and($row[13])->toBe(2.0)
+        ->and($row[20])->toBe(8.3)
+        ->and($row[21])->toBe(2.0)
+        ->and($row[22])->toBe(2.0);
 });
 
 test('single report summary conditionally includes support scores and role comments', function () {
