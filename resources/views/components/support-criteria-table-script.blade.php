@@ -193,7 +193,8 @@
                         achieved = Number(rawValue);
                         weighted = (Number(input.dataset.supportWeight || 0) * achieved) / 100;
                     }
-                } else if (item.dataset.supportAllowEntryWeight === '1') {
+                } else if (item.dataset.supportAllowEntryWeight === '1'
+                    && ['evaluatee', 'reviewer'].includes(item.dataset.supportActivityRole)) {
                     weighted = Array.from(item.querySelectorAll('[data-support-activity-entry]'))
                         .map(updateEntryWeightedScore)
                         .filter((value) => value !== null)

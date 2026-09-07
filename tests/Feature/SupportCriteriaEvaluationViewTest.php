@@ -115,6 +115,26 @@ function supportEvaluateeWeightedViewItem(): array
     ]);
 }
 
+test('submitted weighted support criteria expose saved totals without editable score inputs', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportEvaluateeWeightedViewItem()],
+        'readonly' => true,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    $document = new DOMDocument;
+    @$document->loadHTML($html);
+    $xpath = new DOMXPath($document);
+    $item = $xpath->query('//*[@data-support-item]')->item(0);
+
+    expect($item->getAttribute('data-support-activity-role'))->toBe('readonly')
+        ->and($item->getAttribute('data-support-existing-weighted'))->toBe('1.60')
+        ->and($xpath->query('//*[@data-support-entry-weight or @data-support-entry-score]')->length)->toBe(0);
+    foreach ($xpath->query('//*[@data-support-weighted-display="7"]') as $display) {
+        expect(trim($display->textContent))->toBe('1.60');
+    }
+});
+
 function supportEvaluateeIndicatorOnlyViewItem(): array
 {
     return array_replace(supportActivityViewItem(), [

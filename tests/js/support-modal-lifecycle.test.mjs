@@ -261,7 +261,65 @@ function createHarness({ includeActivitySection = false, includeActivityTools = 
         window,
     };
 
-    return { listeners, manageButton, modal, modalCancel, modalSave, sandbox };
+    return { listeners, manageButton, modal, modalCancel, modalSave, sandbox, item };
+}
+
+test('submitted support criteria preserve saved weighted scores when entry inputs are read only', () => {
+    const { sandbox, item } = createHarness({ includeActivitySection: true });
+    Object.assign(item.dataset, {
+        supportActivityRole: 'readonly',
+        supportAllowEntryWeight: '1',
+        supportExistingWeighted: '4.60',
+    });
+    const display = new FakeElement();
+    display.textContent = '4.60';
+    const summary = new FakeElement();
+    sandbox.document.querySelectorAll = (selector) => {
+        if (selector === '[data-support-item]') return [item];
+        if (selector === '[data-support-weighted-display="7"]') return [display];
+        return [];
+    };
+    sandbox.document.getElementById = (id) => id === 'support-summary' ? summary : null;
+
+    vm.runInNewContext(scriptSource, sandbox);
+
+    assert.equal(display.textContent, '4.60');
+    assert.equal(summary.textContent, '4.60');
+});
+
+for (const role of ['evaluatee', 'reviewer']) {
+    test(`${role} support entries still recalculate edits and clear removed entries`, () => {
+        const { sandbox, item } = createHarness();
+        Object.assign(item.dataset, {
+            supportActivityRole: role,
+            supportAllowEntryWeight: '1',
+            supportExistingWeighted: '4.60',
+        });
+        const weight = { value: '20' };
+        const score = { value: '4' };
+        const entry = new FakeElement();
+        entry.querySelector = (selector) => ({
+            '[data-support-entry-weight]': weight,
+            '[data-support-entry-score]': score,
+        })[selector] ?? null;
+        let entries = [entry];
+        item.querySelectorAll = (selector) => selector === '[data-support-activity-entry]' ? entries : [];
+        const display = new FakeElement();
+        sandbox.document.querySelectorAll = (selector) => {
+            if (selector === '[data-support-item]') return [item];
+            if (selector === '[data-support-weighted-display="7"]') return [display];
+            return [];
+        };
+
+        vm.runInNewContext(scriptSource, sandbox);
+        assert.equal(display.textContent, '0.80');
+        score.value = '5';
+        sandbox.window.recalculateSupportScores();
+        assert.equal(display.textContent, '1.00');
+        entries = [];
+        sandbox.window.recalculateSupportScores();
+        assert.equal(display.textContent, '0.00');
+    });
 }
 
 test('cancel closes the support modal when the rich text editor teardown fails', () => {
