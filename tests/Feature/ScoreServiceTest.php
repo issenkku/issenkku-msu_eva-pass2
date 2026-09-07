@@ -159,7 +159,7 @@ test('bulk quantity score calculation caps each active list at its configured su
     expect((float) $scores[$report->id])->toBe(45.0);
 });
 
-test('dashboard score allows score D above score A and matches the 69.79 detail total', function () {
+test('dashboard and evaluation summary cap each quantity criterion before calculating the total', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create(['criteria_version_id' => $criteriaVersion->id]);
     $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
@@ -223,12 +223,12 @@ test('dashboard score allows score D above score A and matches the 69.79 detail 
         ],
     ]]);
 
-    expect((float) $quantityScores[$report->id])->toBe(40.0)
+    expect((float) $quantityScores[$report->id])->toBe(30.0)
         ->and((float) $qualityScores[$report->id])->toBe(29.79)
-        ->and($detailSummary['quantity'])->toBe(40.0)
+        ->and($detailSummary['quantity'])->toBe(30.0)
         ->and($detailSummary['quality'])->toBe(29.79)
-        ->and($detailSummary['total'])->toBe(69.79)
-        ->and(round($quantityScores[$report->id] + $qualityScores[$report->id], 2))->toBe(69.79);
+        ->and($detailSummary['total'])->toBe(59.79)
+        ->and(round($quantityScores[$report->id] + $qualityScores[$report->id], 2))->toBe(59.79);
 });
 
 test('quality score calculations cap each score at its configured maximum', function () {

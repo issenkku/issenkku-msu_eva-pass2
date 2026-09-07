@@ -3,16 +3,15 @@
 namespace App\Exports;
 
 use App\Models\QuantityScore;
+use App\Services\ScoreService;
 use Illuminate\Support\Collection;
 
-/** Quantity scores for exports only; assessment and dashboard scores retain their own policy. */
+/** Quantity detail rows for exports, using the same per-criterion cap as system totals. */
 final class ReportQuantityScores
 {
     public static function cap(mixed $score, mixed $maximum): float
     {
-        $value = max(0.0, (float) $score);
-
-        return round($maximum === null ? $value : min($value, max(0.0, (float) $maximum)), 2);
+        return ScoreService::capQuantityScore($score, $maximum);
     }
 
     /** @return Collection<int, array{details: Collection<int, float>, total: float}> */

@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Services\ScoreService;
+
 class EvaluationScoreSummary
 {
     public static function fromCategoryItems(array $categoryItems): array
@@ -36,7 +38,10 @@ class EvaluationScoreSummary
                             $quantityCompletedCount++;
                         }
 
-                        $evaluationListQuantityTotal += (float) ($subCriteria['score_d'] ?? 0);
+                        $evaluationListQuantityTotal += ScoreService::capQuantityScore(
+                            $subCriteria['score_d'] ?? 0,
+                            $subCriteria['score_a'] ?? null,
+                        );
                     }
                 }
 

@@ -261,6 +261,7 @@
                                                                         id="score-D-{{ $subCriteria['id'] }}"
                                                                         data-evaluation-list-id="{{ $evaluationList['id'] }}"
                                                                         data-list-max="{{ $evaluationList['sum_score'] ?? 0 }}"
+                                                                        data-score-max="{{ $subCriteria['score_a'] ?? '' }}"
                                                                         value="{{ $subCriteria['score_d'] ?? '' }}"
                                                                         readonly
                                                                         class="h-10 w-full rounded-lg border border-emerald-300 bg-white px-3 text-center text-lg font-semibold text-emerald-700 shadow-sm"

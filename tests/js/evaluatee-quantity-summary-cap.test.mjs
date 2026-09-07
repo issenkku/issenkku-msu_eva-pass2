@@ -11,7 +11,7 @@ const scriptSource = readFileSync(
     .replace(/^\s*<script>\s*/, '')
     .replace(/\s*<\/script>\s*$/, '');
 
-test('evaluatee live summary caps quantity at its evaluation list maximum', () => {
+test('evaluatee live summary caps each quantity criterion before its evaluation list maximum', () => {
     const listSummary = {
         dataset: {
             listId: '268',
@@ -75,7 +75,7 @@ test('evaluatee live summary caps quantity at its evaluation list maximum', () =
     vm.runInNewContext(scriptSource, sandbox);
     sandbox.recalculateSummaryScores();
 
-    assert.equal(elements['quantity-summary'].textContent, '40.00');
+    assert.equal(elements['quantity-summary'].textContent, '1.00');
     assert.equal(elements['quantity-progress'].textContent, 'กรอกแล้ว 1/2 ข้อ');
-    assert.equal(elements['total-summary'].textContent, '69.80');
+    assert.equal(elements['total-summary'].textContent, '30.80');
 });

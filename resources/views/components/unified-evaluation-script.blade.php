@@ -86,7 +86,11 @@
                     };
                 }
 
-                quantityListTotals[listId].sum += (scoreA * scoreC) / scoreB;
+                const calculatedScore = (scoreA * scoreC) / scoreB;
+                quantityListTotals[listId].sum += Math.min(
+                    Math.max(0, calculatedScore),
+                    Math.max(0, scoreA),
+                );
             }
         });
 

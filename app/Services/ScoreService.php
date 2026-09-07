@@ -215,7 +215,7 @@ class ScoreService
 
         $quantityScores = $reportIds->mapWithKeys(fn ($reportId) => [$reportId => 0.0]);
 
-        $normalizedQuantityScoreSql = self::normalizedQuantityScoreSql();
+        $cappedQuantityScoreSql = self::cappedQuantityScoreSql();
 
         $listScores = DB::table('quantity_scores')
             ->join(
@@ -236,7 +236,7 @@ class ScoreService
                 quantity_scores.report_id,
                 evaluation_lists.id as evaluation_list_id,
                 evaluation_lists.sum_score,
-                COALESCE(SUM('.$normalizedQuantityScoreSql.'), 0) as total_score
+                COALESCE(SUM('.$cappedQuantityScoreSql.'), 0) as total_score
             ')
             ->groupBy(
                 'quantity_scores.report_id',
@@ -287,10 +287,26 @@ class ScoreService
         return (float) $lists->sum('sum_score');
     }
 
-    private static function normalizedQuantityScoreSql(): string
+    public static function capQuantityScore(mixed $score, mixed $maximum): float
+    {
+        $value = max(0.0, (float) $score);
+
+        if ($maximum === null || $maximum === '') {
+            return round($value, 2);
+        }
+
+        return round(min($value, max(0.0, (float) $maximum)), 2);
+    }
+
+    private static function cappedQuantityScoreSql(): string
     {
         return 'CASE
             WHEN quantity_scores.score_D IS NULL OR quantity_scores.score_D < 0 THEN 0
+            WHEN quantity_sub_criterias.score_a IS NOT NULL
+                AND quantity_sub_criterias.score_a < 0 THEN 0
+            WHEN quantity_sub_criterias.score_a IS NOT NULL
+                AND quantity_scores.score_D > quantity_sub_criterias.score_a
+                THEN quantity_sub_criterias.score_a
             ELSE quantity_scores.score_D
         END';
     }

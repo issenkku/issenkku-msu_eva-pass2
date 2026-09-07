@@ -68,6 +68,7 @@ test('editable evaluation forms expose quantity list caps to the live summary sc
         expect($template)
             ->toContain('data-evaluation-list-id="{{ $evaluationList[\'id\'] }}"')
             ->toContain('data-list-max="{{ $evaluationList[\'sum_score\'] ?? 0 }}"')
+            ->toContain('data-score-max="{{ $subCriteria[\'score_a\'] ?? \'\' }}"')
             ->and($script)
             ->toContain('quantityListTotals')
             ->toContain('cappedSum')

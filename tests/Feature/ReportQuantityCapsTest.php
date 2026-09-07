@@ -17,7 +17,7 @@ use Maatwebsite\Excel\Excel as ExcelFormat;
 use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-test('report exports cap each quantity criterion without changing dashboard or stored scores', function (array $caps, array $expected, float $total, array $raw) {
+test('system and report exports cap each quantity criterion without changing stored scores', function (array $caps, array $expected, float $total, array $raw) {
     $version = CriteriaVersion::factory()->create();
     $sheetIndex = $caps[6] === 20 ? 1 : 0;
     $reportData = ReportData::factory()->create([
@@ -76,7 +76,7 @@ test('report exports cap each quantity criterion without changing dashboard or s
         unlink($path);
     }
     expect((float) ScoreService::calculateQuantityScoresRawByReportIds([$report->id])[$report->id])
-        ->toBe(min(40.0, array_sum(array_map(fn ($value) => max(0.0, (float) $value), $raw))))
+        ->toBe($total)
         ->and(QuantityScore::where('report_id', $report->id)->orderBy('id')->pluck('score_D')->map(fn ($value) => $value === null ? null : (float) $value)->all())
         ->toBe(array_map(fn ($value) => $value === null ? null : (float) $value, $raw));
 })->with([

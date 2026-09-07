@@ -79,7 +79,7 @@ function createHarness() {
 for (const scriptPath of scripts) {
     test(`${scriptPath} updates quantity scores and caps the live total after editing`, () => {
         const harness = createHarness();
-        const scoreD = { value: '', dataset: { evaluationListId: '20', listMax: '40' } };
+        const scoreD = { value: '', dataset: { evaluationListId: '20', listMax: '40', scoreMax: '30' } };
         const scoreC = {
             value: '2',
             dataset: { subCriteriaId: '21' },
@@ -103,8 +103,8 @@ for (const scriptPath of scripts) {
         vm.runInNewContext(extractScript(scriptPath), harness.sandbox);
         harness.domContentLoadedListeners.forEach((listener) => listener());
         assert.equal(scoreD.value, '60.00');
-        assert.equal(harness.elements.get('quantity-summary').textContent, '40.00');
-        assert.equal(harness.elements.get('total-summary').textContent, '42.14');
+        assert.equal(harness.elements.get('quantity-summary').textContent, '30.00');
+        assert.equal(harness.elements.get('total-summary').textContent, '32.14');
         assert.equal(harness.elements.get('quantity-progress').textContent, 'กรอกแล้ว 1/1 ข้อ');
 
         scoreC.value = '1';

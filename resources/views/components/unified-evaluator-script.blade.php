@@ -33,13 +33,17 @@ function recalculateSummaryScores() {
         quantityInputs.forEach(input => {
             const val = parseFloat(input.value);
             if (isNaN(val)) return;
+            const scoreMax = parseFloat(input.dataset.scoreMax);
+            const cappedValue = isNaN(scoreMax)
+                ? Math.max(0, val)
+                : Math.min(Math.max(0, val), Math.max(0, scoreMax));
 
             const listId = input.dataset.evaluationListId || 'unknown';
             const listMax = parseFloat(input.dataset.listMax);
             if (!quantityListTotals[listId]) {
                 quantityListTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
             }
-            quantityListTotals[listId].sum += val;
+            quantityListTotals[listId].sum += cappedValue;
         });
 
         Object.values(quantityListTotals).forEach(({ sum, max }) => {
