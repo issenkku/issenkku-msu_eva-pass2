@@ -4,7 +4,6 @@ namespace App\Exports;
 
 use App\Models\EvaluationList;
 use App\Models\QualityScore;
-use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
 use App\Models\SupportActivityEntry;
 use App\Models\SupportCriteria;
@@ -43,25 +42,27 @@ class ReportsExport implements WithMultipleSheets
             ])
             ->get();
 
-        [$supportAssignments, $academicAssignments] = $assignments
-            ->partition(fn ($assignment) => $this->isSupportAssignment($assignment));
+        $groups = $assignments->groupBy(fn ($assignment) => $this->assignmentGroup($assignment));
 
         return [
-            new AcademicReportsSheet($academicAssignments->values()),
-            new SupportReportsSheet($supportAssignments->values()),
+            new AcademicReportsSheet($groups->get('academic', collect())->values()),
+            new ManagementReportsSheet($groups->get('management', collect())->values()),
+            new SupportReportsSheet($groups->get('support', collect())->values()),
         ];
     }
 
-    private function isSupportAssignment($assignment): bool
+    private function assignmentGroup($assignment): string
     {
         $assessmentType = (string) ($assignment->report?->reportData?->assessment_type ?? '');
         $personnelType = (string) ($assignment->evaluateeUser?->personnel_type ?? '');
 
-        if ($assessmentType !== '') {
-            return str_contains($assessmentType, 'สนับสนุน');
-        }
+        $type = $assessmentType !== '' ? $assessmentType : $personnelType;
 
-        return str_contains($personnelType, 'สนับสนุน');
+        return match (true) {
+            str_contains($type, 'สนับสนุน') => 'support',
+            str_contains($type, 'บริหาร') => 'management',
+            default => 'academic',
+        };
     }
 }
 
@@ -296,18 +297,9 @@ class AcademicReportsSheet extends ReportsOverviewSheet
                         : min($value, max(0.0, (float) $maximum));
                 })));
 
-        $this->quantityScoresByReportAndSubCriteria = QuantityScore::query()
-            ->whereIn('report_id', $reportIds)
-            ->get(['report_id', 'quantity_sub_criteria_id', 'score_D'])
-            ->groupBy('report_id')
-            ->map(fn (Collection $scores) => $scores
-                ->groupBy('quantity_sub_criteria_id')
-                ->map(fn (Collection $subCriteriaScores) => round(
-                    (float) $subCriteriaScores->sum('score_D'),
-                    2,
-                )));
-
-        $this->quantityScores = ScoreService::calculateQuantityScoresRawByReportIds($reportIds);
+        $quantityScores = ReportQuantityScores::forReportIds($reportIds);
+        $this->quantityScoresByReportAndSubCriteria = $quantityScores->map(fn (array $scores) => $scores['details']);
+        $this->quantityScores = $quantityScores->map(fn (array $scores) => $scores['total']);
         $this->qualityScores = ScoreService::calculateQualityScoresRawByReportIds($reportIds);
     }
 
@@ -395,6 +387,14 @@ class AcademicReportsSheet extends ReportsOverviewSheet
         }
 
         return $values;
+    }
+}
+
+class ManagementReportsSheet extends AcademicReportsSheet
+{
+    public function title(): string
+    {
+        return 'สายผู้บริหาร';
     }
 }
 
@@ -578,5 +578,4 @@ class SupportReportsSheet extends ReportsOverviewSheet
 
         return $values;
     }
-
 }

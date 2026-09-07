@@ -126,7 +126,7 @@ class SingleReportExport implements WithMultipleSheets
                 ];
 
                 // Process quantity items
-                if ($list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
+                if ($list->quantity_enabled && $list->quantitySubCriterias && $list->quantitySubCriterias->count() > 0) {
                     $quantityMainGroups = $list->quantitySubCriterias->groupBy('quantity_main_criteria_id');
 
                     foreach ($quantityMainGroups as $mainCriteriaId => $subCriterias) {
@@ -237,7 +237,7 @@ class SummarySheet implements FromArray, WithColumnWidths, WithEvents, WithStyle
         $report = $this->assignment->report;
 
         $quantityScore = $report
-            ? (float) (ScoreService::calculateQuantityScoresRawByReportIds([$report->id])[$report->id] ?? 0)
+            ? (float) (ReportQuantityScores::forReportIds([$report->id])[$report->id]['total'] ?? 0)
             : 0;
         $qualityScore = $report ? ScoreService::calculateQualityScoreRaw($report->id) : 0;
         $scores = ReportScoreSummary::fromTotals(
@@ -361,7 +361,7 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
             // Calculate total score for this evaluation list
             foreach ($evaluationList['quantity_items'] as $quantityMain) {
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $quantityListScore += (float) $sub['score_d'];
+                    $quantityListScore += ReportQuantityScores::cap($sub['score_d'] ?? 0, $sub['score_a'] ?? null);
                 }
             }
 
@@ -394,13 +394,13 @@ class CategorySheet implements FromArray, WithColumnWidths, WithEvents, WithStyl
             foreach ($evaluationList['quantity_items'] as $quantityMain) {
                 $mainTotalScore = 0;
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $mainTotalScore += (float) $sub['score_d'];
+                    $mainTotalScore += ReportQuantityScores::cap($sub['score_d'] ?? 0, $sub['score_a'] ?? null);
                 }
                 $data[] = [$quantityMain['name'], $mainTotalScore];
 
                 $subCounter = 1; // Counter for sub-criteria numbering
                 foreach ($quantityMain['sub_criterias'] as $sub) {
-                    $data[] = ['  '.$sub['name'], $sub['score_d']];
+                    $data[] = ['  '.$sub['name'], ReportQuantityScores::cap($sub['score_d'] ?? 0, $sub['score_a'] ?? null)];
 
                     foreach ($sub['workload_items'] ?? [] as $workloadItem) {
                         $workloadName = collect([

@@ -108,13 +108,14 @@ test('dashboard export includes support score summaries and role comments', func
         Assignments::query()->where('report_id', $report->id)
     );
     $sheets = $export->sheets();
-    $sheet = $sheets[1];
+    $sheet = $sheets[2];
     $headings = $sheet->headings();
     $row = $sheet->collection()->first();
 
     expect($sheets)
-        ->toHaveCount(2)
+        ->toHaveCount(3)
         ->and($sheets[0]->title())->toBe('สายอาจารย์')
+        ->and($sheets[1]->title())->toBe('สายผู้บริหาร')
         ->and($sheet->title())->toBe('สายสนับสนุน')
         ->and($headings)
         ->toHaveCount(22)
@@ -131,6 +132,29 @@ test('dashboard export includes support score summaries and role comments', func
         ->and($row[13])->toBe(3.75)
         ->and($row[14])->toBe(0.75)
         ->and($row)->toContain('ความเห็นผู้ประเมิน', 'ความเห็นกรรมการ', 'ความเห็นผู้บริหาร');
+});
+
+test('overview export separates all personnel groups using report criteria before personnel type', function () {
+    $reportIds = [];
+    foreach ([
+        ['academic-person', 'กลุ่มวิชาการ', 'บริหาร'],
+        ['management-person', 'กลุ่มบริหาร', 'วิชาการ'],
+        ['support-person', 'กลุ่มสนับสนุน', 'วิชาการ'],
+        ['fallback-management-person', '', 'บริหาร'],
+    ] as [$name, $assessmentType, $personnelType]) {
+        $reportData = ReportData::factory()->create(['assessment_type' => $assessmentType]);
+        $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+        $user = User::factory()->create(['name' => $name, 'personnel_type' => $personnelType]);
+        Assignments::factory()->create(['report_id' => $report->id, 'evaluatee_id' => $user->id]);
+        $reportIds[] = $report->id;
+    }
+
+    $sheets = (new ReportsExport(Assignments::whereIn('report_id', $reportIds)))->sheets();
+    expect(array_map(fn ($sheet) => $sheet->title(), $sheets))
+        ->toBe(['สายอาจารย์', 'สายผู้บริหาร', 'สายสนับสนุน'])
+        ->and($sheets[0]->collection()->pluck(2)->all())->toBe(['academic-person'])
+        ->and($sheets[1]->collection()->pluck(2)->all())->toEqualCanonicalizing(['management-person', 'fallback-management-person'])
+        ->and($sheets[2]->collection()->pluck(2)->all())->toBe(['support-person']);
 });
 
 test('academic dashboard export follows the template and keeps quantity and quality totals', function () {
@@ -185,10 +209,10 @@ test('academic dashboard export follows the template and keeps quantity and qual
         ->toHaveCount(30)
         ->and($sheet->headings()[6])->toBe('1.1 ภาระงานด้านการสอน')
         ->and($sheet->headings()[13])->toBe('2.1 ภาระงานด้านการสอน')
-        ->and($row[6])->toBe(2.0)
+        ->and($row[6])->toBe(1.5)
         ->and($row[13])->toBe(2.0)
-        ->and($row[20])->toBe(8.3)
-        ->and($row[21])->toBe(2.0)
+        ->and($row[20])->toBe(7.8)
+        ->and($row[21])->toBe(1.5)
         ->and($row[22])->toBe(2.0);
 });
 

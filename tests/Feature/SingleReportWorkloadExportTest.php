@@ -21,7 +21,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 uses(RefreshDatabase::class);
 
-test('single report category exports a separate total for each workload item and caps the list total', function () {
+test('single report category caps quantity scores while preserving workload item totals', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
@@ -122,12 +122,13 @@ test('single report category exports a separate total for each workload item and
         ->array();
 
     expect($rows)
-        ->toContain(['หัวข้อ: หัวข้องานสอน', 10.0])
+        ->toContain(['หัวข้อ: หัวข้องานสอน', 1.0])
+        ->toContain(['  ภาระงานด้านการสอน', 1.0])
         ->toContain(['    คะแนนรวมภาระงาน: การสอนปฏิบัติ / สอนรายวิชาปฏิบัติ', 5.75])
         ->toContain(['    คะแนนรวมภาระงาน: การสอนปฏิบัติ / ควบคุมสัมมนา', 1.75]);
 });
 
-test('overview export uses score D in the template quantity category column', function () {
+test('overview export caps score D in the template quantity category column', function () {
     $criteriaVersion = CriteriaVersion::factory()->create();
     $reportData = ReportData::factory()->create([
         'assessment_type' => 'กลุ่มวิชาการ',
@@ -245,7 +246,7 @@ test('overview export uses score D in the template quantity category column', fu
     );
 
     expect($headings[6])->toBe('1.1 ภาระงานด้านการสอน')
-        ->and($rows[0][6])->toBe(2.75)
+        ->and($rows[0][6])->toBe(2.0)
         ->and($rows[1][6])->toBe(0.0)
         ->and(strlen($workbook))->toBeGreaterThan(0);
 });
