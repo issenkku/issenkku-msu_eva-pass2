@@ -6,6 +6,7 @@ use App\Models\AssignmentData;
 use App\Models\Assignments;
 use App\Models\CriteriaVersion;
 use App\Models\EvaluationList;
+use App\Models\QualityScore;
 use App\Models\QualitySubCriteria;
 use App\Models\QuantityScore;
 use App\Models\QuantitySubCriteria;
@@ -194,6 +195,72 @@ class EvaluatorTest extends TestCase
             'id' => $report->id,
             'status' => 'Director_assigned',
             'comment' => 'Evaluator evaluation completed, forwarding to director',
+        ]);
+    }
+
+    public function test_evaluator_can_forward_unchanged_rounded_quality_scores_without_reason(): void
+    {
+        $report = $this->createReportWithStatus('Pending');
+        $evaluationList = EvaluationList::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
+            'sum_score' => 3,
+        ]);
+        $firstCriterion = QualitySubCriteria::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
+            'evaluation_list_id' => $evaluationList->id,
+            'num_score' => 2,
+        ]);
+        $secondCriterion = QualitySubCriteria::factory()->create([
+            'criteria_version_id' => $this->criteriaVersion->id,
+            'evaluation_list_id' => $evaluationList->id,
+            'num_score' => 3,
+        ]);
+
+        QualityScore::create([
+            'report_id' => $report->id,
+            'quality_sub_criteria_id' => $firstCriterion->id,
+            'score' => 1.02,
+        ]);
+        QualityScore::create([
+            'report_id' => $report->id,
+            'quality_sub_criteria_id' => $secondCriterion->id,
+            'score' => 2.01,
+        ]);
+
+        $this->actingAs($this->evaluator, 'web')
+            ->from(route('evaluator.evaluator.show', ['id' => $report->id]))
+            ->post(route('evaluator.evaluator_score.store', ['id' => $report->id]), [
+                'quality_list' => [
+                    $firstCriterion->id => [
+                        'quality_sub_criteria_id' => $firstCriterion->id,
+                        'score' => '1.02',
+                        'modification_reason' => '',
+                    ],
+                    $secondCriterion->id => [
+                        'quality_sub_criteria_id' => $secondCriterion->id,
+                        'score' => '2.01',
+                        'modification_reason' => '',
+                    ],
+                ],
+                'status' => 'Pending',
+            ])
+            ->assertRedirect('/evaluator-dashboard')
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('quality_scores', [
+            'report_id' => $report->id,
+            'quality_sub_criteria_id' => $firstCriterion->id,
+            'score' => '1.02',
+        ]);
+        $this->assertDatabaseHas('quality_scores', [
+            'report_id' => $report->id,
+            'quality_sub_criteria_id' => $secondCriterion->id,
+            'score' => '2.01',
+        ]);
+        $this->assertDatabaseCount('quality_score_histories', 0);
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'status' => 'Director_assigned',
         ]);
     }
 

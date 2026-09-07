@@ -111,7 +111,7 @@ class ScoreService
             ->select(
                 'evaluation_lists.id as evaluation_list_id',
                 'evaluation_lists.sum_score',
-                DB::raw('SUM(quality_scores.score) as total_score')
+                DB::raw('SUM('.self::cappedQualityScoreSql().') as total_score')
             )
             ->where('quality_scores.report_id', $reportId)
             ->groupBy('evaluation_lists.id', 'evaluation_lists.sum_score')
@@ -167,7 +167,7 @@ class ScoreService
                 'quality_scores.report_id',
                 'evaluation_lists.id as evaluation_list_id',
                 'evaluation_lists.sum_score',
-                DB::raw('SUM(quality_scores.score) as total_score')
+                DB::raw('SUM('.self::cappedQualityScoreSql().') as total_score')
             )
             ->whereIn('quality_scores.report_id', $reportIds)
             ->groupBy('quality_scores.report_id', 'evaluation_lists.id', 'evaluation_lists.sum_score')
@@ -215,6 +215,8 @@ class ScoreService
 
         $quantityScores = $reportIds->mapWithKeys(fn ($reportId) => [$reportId => 0.0]);
 
+        $normalizedQuantityScoreSql = self::normalizedQuantityScoreSql();
+
         $listScores = DB::table('quantity_scores')
             ->join(
                 'quantity_sub_criterias',
@@ -234,7 +236,7 @@ class ScoreService
                 quantity_scores.report_id,
                 evaluation_lists.id as evaluation_list_id,
                 evaluation_lists.sum_score,
-                COALESCE(SUM(quantity_scores.score_D), 0) as total_score
+                COALESCE(SUM('.$normalizedQuantityScoreSql.'), 0) as total_score
             ')
             ->groupBy(
                 'quantity_scores.report_id',
@@ -283,5 +285,24 @@ class ScoreService
             ->get();
 
         return (float) $lists->sum('sum_score');
+    }
+
+    private static function normalizedQuantityScoreSql(): string
+    {
+        return 'CASE
+            WHEN quantity_scores.score_D IS NULL OR quantity_scores.score_D < 0 THEN 0
+            ELSE quantity_scores.score_D
+        END';
+    }
+
+    private static function cappedQualityScoreSql(): string
+    {
+        return 'CASE
+            WHEN quality_scores.score IS NULL OR quality_scores.score < 0 THEN 0
+            WHEN quality_sub_criterias.num_score IS NOT NULL
+                AND quality_scores.score > quality_sub_criterias.num_score
+                THEN quality_sub_criterias.num_score
+            ELSE quality_scores.score
+        END';
     }
 }

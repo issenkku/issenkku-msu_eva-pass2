@@ -70,6 +70,31 @@ test('editable evaluation forms expose quantity list caps to the live summary sc
             ->toContain('data-list-max="{{ $evaluationList[\'sum_score\'] ?? 0 }}"')
             ->and($script)
             ->toContain('quantityListTotals')
-            ->toContain('cappedSum');
+            ->toContain('cappedSum')
+            ->toContain("getElementById('quantity-progress')")
+            ->toContain('quantityCompletedCount');
     }
+});
+
+test('quantity summary labels the current score with its completion progress', function () {
+    $html = view('partials.evaluator-score-summary', [
+        'scoreSummary' => [
+            'quantity' => 40.0,
+            'quality' => 0.0,
+            'support' => 0.0,
+            'total' => 40.0,
+            'has_quantity' => true,
+            'has_quality' => true,
+            'has_support' => false,
+            'quantity_completed_count' => 2,
+            'quantity_total_count' => 7,
+        ],
+    ])->render();
+
+    expect($html)
+        ->toContain('id="quantity-progress"')
+        ->toContain('data-completed="2"')
+        ->toContain('data-total="7"')
+        ->toContain('กรอกแล้ว 2/7 ข้อ')
+        ->toContain('>40.00</span>');
 });

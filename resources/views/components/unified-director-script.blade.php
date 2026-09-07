@@ -13,36 +13,44 @@ function calculateScoreD(input) {
     }
 
     const scoreD = (scoreA * scoreC) / scoreB;
-
     document.getElementById(`score-D-${subCriteriaId}`).value = scoreD ? scoreD.toFixed(2) : '';
 }
 
 function recalculateSummaryScores() {
     const readonlyInput = document.getElementById('quality-readonly');
-    const isReadonly = readonlyInput && readonlyInput.value === '1';
-    if (isReadonly) {
+    if (readonlyInput && readonlyInput.value === '1') {
         return;
     }
 
+    const quantityScoreInputs = document.querySelectorAll('[data-quantity-score-input]');
+    const quantityCompletedCount = Array.from(quantityScoreInputs)
+        .filter(input => input.value.trim() !== '')
+        .length;
     let quantitySum = 0;
-    const quantityListTotals = {};
-    document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]').forEach(input => {
-        const val = parseFloat(input.value);
-        if (isNaN(val)) return;
+    const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]');
+    if (quantityInputs.length > 0) {
+        const quantityListTotals = {};
+        quantityInputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (isNaN(val)) return;
 
-        const listId = input.dataset.evaluationListId || 'unknown';
-        const listMax = parseFloat(input.dataset.listMax);
-        if (!quantityListTotals[listId]) {
-            quantityListTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
-        }
-        quantityListTotals[listId].sum += val;
-    });
+            const listId = input.dataset.evaluationListId || 'unknown';
+            const listMax = parseFloat(input.dataset.listMax);
+            if (!quantityListTotals[listId]) {
+                quantityListTotals[listId] = { sum: 0, max: isNaN(listMax) ? 0 : listMax };
+            }
+            quantityListTotals[listId].sum += val;
+        });
 
-    Object.values(quantityListTotals).forEach(({ sum, max }) => {
-        let cappedSum = sum;
-        if (max > 0 && cappedSum > max) cappedSum = max;
-        quantitySum += cappedSum;
-    });
+        Object.values(quantityListTotals).forEach(({ sum, max }) => {
+            let cappedSum = sum;
+            if (max > 0 && cappedSum > max) cappedSum = max;
+            quantitySum += cappedSum;
+        });
+    } else {
+        const baseInput = document.getElementById('quantity-base-score');
+        quantitySum = baseInput ? parseFloat(baseInput.value) || 0 : 0;
+    }
 
     const listTotals = {};
     document.querySelectorAll('input[name^="quality_list"][name$="[score]"]').forEach(input => {
@@ -71,14 +79,17 @@ function recalculateSummaryScores() {
         qualitySum = qualityMax;
     }
 
-    const quantityEl = document.getElementById('quantity-summary');
-    const qualityEl = document.getElementById('quality-summary');
-    const supportEl = document.getElementById('support-summary');
-    const totalEl = document.getElementById('total-summary');
-    const supportSum = parseFloat(supportEl?.textContent?.replaceAll(',', '') || '0') || 0;
-    if (quantityEl) quantityEl.textContent = quantitySum.toFixed(2);
-    if (qualityEl) qualityEl.textContent = qualitySum.toFixed(2);
-    if (totalEl) totalEl.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
+    const quantitySummary = document.getElementById('quantity-summary');
+    const qualitySummary = document.getElementById('quality-summary');
+    const supportSummary = document.getElementById('support-summary');
+    const totalSummary = document.getElementById('total-summary');
+    const quantityProgress = document.getElementById('quantity-progress');
+    const supportSum = parseFloat(supportSummary?.textContent?.replaceAll(',', '') || '0') || 0;
+
+    if (quantitySummary) quantitySummary.textContent = quantitySum.toFixed(2);
+    if (quantityProgress) quantityProgress.textContent = `กรอกแล้ว ${quantityCompletedCount}/${quantityScoreInputs.length} ข้อ`;
+    if (qualitySummary) qualitySummary.textContent = qualitySum.toFixed(2);
+    if (totalSummary) totalSummary.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -114,9 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function handleQualityCheckboxChange(checkbox) {
     const subCriteriaId = checkbox.dataset.subCriteriaId;
     const score = parseFloat(checkbox.dataset.score) || 0;
+    const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
     const mainCriteriaId = checkbox.dataset.mainCriteriaId;
     const allowMultiple = checkbox.dataset.allowMultiple === '1';
-    const scoreInput = document.getElementById(`quality-score-${subCriteriaId}`);
 
     if (checkbox.checked && mainCriteriaId && !allowMultiple) {
         document.querySelectorAll(`input[name*="quality_criteria"][data-main-criteria-id="${mainCriteriaId}"]`).forEach(otherCheckbox => {
@@ -152,11 +163,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const checkboxes = document.querySelectorAll('[data-quality-checkbox]');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            handleQualityCheckboxChange(checkbox);
-        }
-    });
 });
 </script>

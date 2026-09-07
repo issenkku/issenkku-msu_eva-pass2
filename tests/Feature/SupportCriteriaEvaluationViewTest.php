@@ -453,9 +453,10 @@ test('desktop support table renders evaluatee owned values as aligned entry rows
         ->and($html)->toContain('colspan="9"')
         ->and(substr_count($desktopTable[0], 'data-support-entry-activity-cell'))->toBe(2)
         ->and(substr_count($desktopTable[0], 'data-support-entry-indicator-cell'))->toBe(2)
-        ->and(substr_count($desktopTable[0], 'data-support-shared-evidence="7"'))->toBe(1)
+        ->and(substr_count($desktopTable[0], 'data-support-entry-evidence-index='))->toBe(2)
+        ->and($desktopTable[0])->not->toContain('data-support-shared-evidence="7"')
         ->and($html)->toContain('rowspan="2"')
-        ->and($html)->toContain('aria-label="เปิดหลักฐาน 1 สำหรับรายการ 2"')
+        ->and($html)->toContain('aria-label="เปิดหลักฐาน 1 สำหรับรายการ 2 · โครงการรายการที่สอง"')
         ->and($html)->toContain('whitespace-nowrap')
         ->and($html)->toContain('>เปิดดู</span>')
         ->and($desktopTable[0])->not->toMatch('/>\s*https:\/\/example\.com\/second-proof\s*</u');
@@ -551,7 +552,7 @@ test('activity-only entries still render under a full-width admin heading', func
         ->and($desktop)->toContain('rowspan="2"');
 });
 
-test('aligned desktop rows use one grouped evidence cell without losing activity links', function () {
+test('aligned desktop rows show only the evidence owned by that activity', function () {
     $html = view('components.support-criteria-table', [
         'items' => [supportEvaluateeIndicatorOnlyViewItem()],
         'readonly' => false,
@@ -562,13 +563,35 @@ test('aligned desktop rows use one grouped evidence cell without losing activity
     preg_match('/<table class="hidden.*?<\/table>/su', $html, $desktopTable);
     $desktop = $desktopTable[0];
 
-    expect(substr_count($desktop, 'data-support-shared-evidence="7"'))->toBe(1)
-        ->and(substr_count($desktop, 'data-support-evidence-list="7"'))->toBe(1)
-        ->and($desktop)->toContain('rowspan="2"')
-        ->and($desktop)->toContain('href="https://example.com/one"')
-        ->and($desktop)->toContain('href="https://example.com/two"')
-        ->and($desktop)->toContain('รายการ 1')
-        ->and($desktop)->toContain('รายการ 2');
+    preg_match_all('/<tr data-support-entry-row="7".*?<\/tr>/su', $desktop, $entryRows);
+
+    expect($entryRows[0])->toHaveCount(2)
+        ->and($entryRows[0][0])->toContain('data-support-entry-evidence-index="0"')
+        ->and($entryRows[0][0])->toContain('href="https://example.com/one"')
+        ->and($entryRows[0][0])->not->toContain('href="https://example.com/two"')
+        ->and($entryRows[0][1])->toContain('data-support-entry-evidence-index="1"')
+        ->and($entryRows[0][1])->toContain('href="https://example.com/two"')
+        ->and($entryRows[0][1])->not->toContain('href="https://example.com/one"')
+        ->and($desktop)->not->toContain('data-support-shared-evidence="7"');
+});
+
+test('grouped desktop rows limit evidence to projects under the same indicator', function () {
+    $html = view('components.support-criteria-table', [
+        'items' => [supportGroupedActivityViewItem()],
+        'readonly' => false,
+        'evidenceEditable' => true,
+        'requireReason' => false,
+        'activityEntryRole' => 'evaluatee',
+    ])->render();
+
+    preg_match('/<tr data-support-grouped-indicator-row="7"\s+data-support-grouped-indicator-id="11".*?<\/tr>/su', $html, $firstGroup);
+    preg_match('/<tr data-support-grouped-indicator-row="7"\s+data-support-grouped-indicator-id="12".*?<\/tr>/su', $html, $secondGroup);
+
+    expect($firstGroup[0])->toContain('data-support-evidence-group="11"')
+        ->and($firstGroup[0])->toContain('href="https://example.com/project-a"')
+        ->and($secondGroup[0])->toContain('data-support-evidence-group="12"')
+        ->and($secondGroup[0])->not->toContain('href="https://example.com/project-a"')
+        ->and($html)->not->toContain('data-support-shared-evidence="7"');
 });
 
 test('admin heading is black and has no explanatory badge', function () {

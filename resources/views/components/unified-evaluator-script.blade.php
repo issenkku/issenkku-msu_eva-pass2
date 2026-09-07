@@ -22,6 +22,10 @@ function recalculateSummaryScores() {
         return;
     }
 
+    const quantityScoreInputs = document.querySelectorAll('[data-quantity-score-input]');
+    const quantityCompletedCount = Array.from(quantityScoreInputs)
+        .filter(input => input.value.trim() !== '')
+        .length;
     let quantitySum = 0;
     const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_D]"]');
     if (quantityInputs.length > 0) {
@@ -79,9 +83,11 @@ function recalculateSummaryScores() {
     const qualitySummary = document.getElementById('quality-summary');
     const supportSummary = document.getElementById('support-summary');
     const totalSummary = document.getElementById('total-summary');
+    const quantityProgress = document.getElementById('quantity-progress');
     const supportSum = parseFloat(supportSummary?.textContent?.replaceAll(',', '') || '0') || 0;
 
     if (quantitySummary) quantitySummary.textContent = quantitySum.toFixed(2);
+    if (quantityProgress) quantityProgress.textContent = `กรอกแล้ว ${quantityCompletedCount}/${quantityScoreInputs.length} ข้อ`;
     if (qualitySummary) qualitySummary.textContent = qualitySum.toFixed(2);
     if (totalSummary) totalSummary.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
 }
@@ -157,11 +163,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const checkboxes = document.querySelectorAll('[data-quality-checkbox]');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            handleQualityCheckboxChange(checkbox);
-        }
-    });
 });
 </script>

@@ -26,6 +26,8 @@ final class SupportScoreTotal
             )
             ->sum('weighted_score');
 
-        return round((float) $legacyTotal + (float) $entryTotal, 2);
+        $total = round((float) $legacyTotal + (float) $entryTotal, 2);
+
+        return min(max($total, 0.0), SupportAchievementScore::TARGET_LEVEL_COUNT);
     }
 }

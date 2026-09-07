@@ -640,6 +640,59 @@ class SupportActivityEntryServiceTest extends TestCase
         ]);
     }
 
+    public function test_reviewer_saving_editor_normalized_html_does_not_require_reason(): void
+    {
+        $entry = $this->existingEntry('<p>โครงการเดิม<br /></p>');
+
+        $this->persistAsReviewer([[
+            'id' => $entry->id,
+            'content' => '<p>โครงการเดิม<br></p>',
+        ]]);
+
+        $this->assertDatabaseCount('support_activity_entry_histories', 0);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'content' => '<p>โครงการเดิม<br /></p>',
+        ]);
+    }
+
+    public function test_reviewer_saving_unchanged_evaluatee_owned_scores_does_not_require_reason(): void
+    {
+        $this->criterion->update([
+            'weight' => null,
+            'allow_evaluatee_indicator' => true,
+            'allow_evaluatee_weight' => true,
+        ]);
+        $entry = SupportActivityEntry::create([
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'sequence' => 1,
+            'content' => '<p>โครงการเดิม</p>',
+            'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+            'weight' => 40,
+            'achieved_score' => 4,
+            'weighted_score' => 1.6,
+            'created_by' => $this->evaluatee->id,
+            'updated_by' => $this->evaluatee->id,
+        ]);
+
+        $this->persistAsReviewer([[
+            'id' => $entry->id,
+            'content' => '<p>โครงการเดิม</p>',
+            'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+            'weight' => '40.00',
+            'achieved_score' => '4.00',
+        ]]);
+
+        $this->assertDatabaseCount('support_activity_entry_histories', 0);
+        $this->assertDatabaseHas('support_activity_entries', [
+            'id' => $entry->id,
+            'weight' => '40.00',
+            'achieved_score' => '4.00',
+            'weighted_score' => '1.60',
+        ]);
+    }
+
     public function test_reviewer_changes_to_evaluatee_owned_fields_require_reason_and_record_full_history(): void
     {
         $this->criterion->update([

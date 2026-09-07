@@ -183,14 +183,10 @@
                                             @endif
                                         </td>
                                     @endif
-                                    @if ($entryIndex === 0)
-                                        <td rowspan="{{ $alignedRowCount }}"
-                                            data-support-shared-cell
-                                            data-support-shared-evidence="{{ $item['id'] }}"
-                                            class="px-2 py-4 align-middle">
-                                            <x-support-evidence-summary :item="$item" />
-                                        </td>
-                                    @endif
+                                    <td data-support-entry-cell
+                                        class="{{ $entryIndex > 0 ? 'border-t border-slate-100 ' : '' }}px-2 py-4 align-top">
+                                        <x-support-evidence-summary :item="$item" :entry="$entry" :entry-index="$entryIndex" />
+                                    </td>
                                     @if (!$readonly && $entryIndex === 0)
                                         <td rowspan="{{ $alignedRowCount }}"
                                             data-support-shared-cell
@@ -323,23 +319,20 @@
                                                 <span class="text-slate-400" aria-label="ไม่มีประวัติการแก้ไข">–</span>
                                             @endif
                                         </td>
+                                    @endif
+                                    <td class="{{ $groupDividerClass }}px-2 py-4 align-top">
+                                        <x-support-evidence-summary :item="$item" :entries="$groupEntries" :evidence-group="$indicatorItem['id']" />
+                                    </td>
+                                    @if (!$readonly && $groupIndex === 0)
                                         <td rowspan="{{ $groupedIndicatorRowCount }}"
                                             data-support-shared-cell
-                                            data-support-shared-evidence="{{ $item['id'] }}"
-                                            class="px-2 py-4 align-middle">
-                                            <x-support-evidence-summary :item="$item" />
+                                            class="border-l border-amber-100 px-2 py-4 text-center align-middle">
+                                            <button type="button" data-support-manage-open="{{ $item['id'] }}"
+                                                aria-label="{{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
+                                                class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                                {{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
+                                            </button>
                                         </td>
-                                        @if (!$readonly)
-                                            <td rowspan="{{ $groupedIndicatorRowCount }}"
-                                                data-support-shared-cell
-                                                class="border-l border-amber-100 px-2 py-4 text-center align-middle">
-                                                <button type="button" data-support-manage-open="{{ $item['id'] }}"
-                                                    aria-label="{{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}สำหรับ {{ $activityNameText }}"
-                                                    class="rounded-lg bg-amber-100 px-3 py-2 font-semibold text-amber-900 transition hover:bg-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
-                                                    {{ $evidenceCount > 0 ? 'แก้ไขข้อมูล' : 'กรอกข้อมูล' }}
-                                                </button>
-                                            </td>
-                                        @endif
                                     @endif
                                 </tr>
                             @endforeach
@@ -461,6 +454,11 @@
                                     data-support-entry-score-list="{{ $item['id'] }}"
                                     class="px-2 py-4 text-right align-top font-semibold tabular-nums"></td>
                             @endif
+                            <td data-support-entry-cell class="px-2 py-4 align-top">
+                                <div class="space-y-2 text-left"
+                                    data-support-evidence-list="{{ $item['id'] }}"
+                                    data-support-entry-evidence-index></div>
+                            </td>
                         </tr></tbody></table>
                     </template>
                 @endif

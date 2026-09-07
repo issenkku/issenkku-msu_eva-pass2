@@ -8,11 +8,16 @@ export function activityEvidenceFieldName(criterionId, index) {
 
 export function activityEvidenceGroups(entries) {
     return entries
-        .map((entry, index) => ({
-            id: entry.id ?? `new-${index}`,
-            label: `รายการ ${index + 1}`,
-            links: (entry.evidence_links ?? []).filter(Boolean),
-        }))
+        .map((entry, index) => {
+            const sequence = entry.sequence ?? index + 1;
+            const content = activityHtmlPlainText(entry.content ?? '');
+
+            return {
+                id: entry.id ?? `new-${index}`,
+                label: `รายการ ${sequence}${content ? ` · ${content}` : ''}`,
+                links: (entry.evidence_links ?? []).filter(Boolean),
+            };
+        })
         .filter((group) => group.links.length > 0);
 }
 

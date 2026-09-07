@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
-test('evaluation summary caps only the support component at one hundred', function () {
+test('evaluation summary caps the support total at five and achievement at one', function () {
     $summary = EvaluationScoreSummary::fromCategoryItems([[
         'evaluation_lists' => [[
             'quantity_items' => [],
@@ -30,10 +30,10 @@ test('evaluation summary caps only the support component at one hundred', functi
         ]],
     ]]);
 
-    expect($summary['support_raw'])->toBe(112.5)
-        ->and($summary['support'])->toBe(100.0)
-        ->and($summary['support_achievement'])->toBe(22.5)
-        ->and($summary['total'])->toBe(100.0);
+    expect($summary['support_raw'])->toBe(5.0)
+        ->and($summary['support'])->toBe(5.0)
+        ->and($summary['support_achievement'])->toBe(1.0)
+        ->and($summary['total'])->toBe(5.0);
 });
 
 test('evaluation summary exposes criterion presence independently from zero scores', function () {
@@ -136,14 +136,15 @@ test('bulk quantity score calculation caps each active list at its configured su
     ]);
 
     foreach ([
-        [$cappedList, 75.15],
-        [$secondList, 5],
-        [$disabledList, 99],
-    ] as [$list, $score]) {
+        [$cappedList, 75.15, 100],
+        [$secondList, 5, 10],
+        [$disabledList, 99, 100],
+    ] as [$list, $score, $maximum]) {
         $subCriteria = QuantitySubCriteria::factory()->create([
             'criteria_version_id' => $criteriaVersion->id,
             'quantity_main_criteria_id' => $main->id,
             'evaluation_list_id' => $list->id,
+            'score_a' => $maximum,
         ]);
 
         QuantityScore::factory()->create([
@@ -156,6 +157,103 @@ test('bulk quantity score calculation caps each active list at its configured su
     $scores = ScoreService::calculateQuantityScoresRawByReportIds([$report->id]);
 
     expect((float) $scores[$report->id])->toBe(45.0);
+});
+
+test('dashboard score allows score D above score A and matches the 69.79 detail total', function () {
+    $criteriaVersion = CriteriaVersion::factory()->create();
+    $reportData = ReportData::factory()->create(['criteria_version_id' => $criteriaVersion->id]);
+    $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+    $quantityList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => true,
+        'sum_score' => 40,
+    ]);
+    $subCriteria = QuantitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $quantityList->id,
+        'score_a' => 30,
+    ]);
+    QuantityScore::factory()->create([
+        'report_id' => $report->id,
+        'quantity_sub_criteria_id' => $subCriteria->id,
+        'score_D' => 40,
+    ]);
+
+    $qualityList = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'quantity_enabled' => false,
+        'sum_score' => 30,
+    ]);
+    $qualitySubCriteria = QualitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $qualityList->id,
+        'num_score' => 30,
+    ]);
+    QualityScore::factory()->create([
+        'report_id' => $report->id,
+        'quality_sub_criteria_id' => $qualitySubCriteria->id,
+        'score' => 29.79,
+    ]);
+
+    $quantityScores = ScoreService::calculateQuantityScoresRawByReportIds([$report->id]);
+    $qualityScores = ScoreService::calculateQualityScoresRawByReportIds([$report->id]);
+    $detailSummary = EvaluationScoreSummary::fromCategoryItems([[
+        'evaluation_lists' => [
+            [
+                'quantity_enabled' => true,
+                'quantity_items' => [[
+                    'sub_criterias' => [[
+                        'score_a' => 30,
+                        'score_d' => 40,
+                    ]],
+                ]],
+                'quality_items' => [],
+                'support_items' => [],
+                'sum_score' => 40,
+            ],
+            [
+                'quantity_enabled' => false,
+                'quantity_items' => [],
+                'quality_items' => [[
+                    'sub_criterias' => [['score' => 29.79]],
+                ]],
+                'support_items' => [],
+                'sum_score' => 30,
+            ],
+        ],
+    ]]);
+
+    expect((float) $quantityScores[$report->id])->toBe(40.0)
+        ->and((float) $qualityScores[$report->id])->toBe(29.79)
+        ->and($detailSummary['quantity'])->toBe(40.0)
+        ->and($detailSummary['quality'])->toBe(29.79)
+        ->and($detailSummary['total'])->toBe(69.79)
+        ->and(round($quantityScores[$report->id] + $qualityScores[$report->id], 2))->toBe(69.79);
+});
+
+test('quality score calculations cap each score at its configured maximum', function () {
+    $criteriaVersion = CriteriaVersion::factory()->create();
+    $reportData = ReportData::factory()->create(['criteria_version_id' => $criteriaVersion->id]);
+    $report = Reports::factory()->create(['report_data_id' => $reportData->id]);
+    $list = EvaluationList::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'sum_score' => 30,
+    ]);
+    $subCriteria = QualitySubCriteria::factory()->create([
+        'criteria_version_id' => $criteriaVersion->id,
+        'evaluation_list_id' => $list->id,
+        'num_score' => 6,
+    ]);
+    QualityScore::factory()->create([
+        'report_id' => $report->id,
+        'quality_sub_criteria_id' => $subCriteria->id,
+        'score' => 9,
+    ]);
+
+    $bulkScores = ScoreService::calculateQualityScoresRawByReportIds([$report->id]);
+
+    expect($bulkScores[$report->id])->toBe(6.0)
+        ->and(ScoreService::calculateQualityScoreRaw($report->id))->toBe(6.0);
 });
 
 test('bulk quality score calculation matches single report calculation', function () {
@@ -189,14 +287,17 @@ test('bulk quality score calculation matches single report calculation', functio
     $firstListSubCriteriaA = QualitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
         'evaluation_list_id' => $firstList->id,
+        'num_score' => 100,
     ]);
     $firstListSubCriteriaB = QualitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
         'evaluation_list_id' => $firstList->id,
+        'num_score' => 100,
     ]);
     $secondListSubCriteria = QualitySubCriteria::factory()->create([
         'criteria_version_id' => $criteriaVersion->id,
         'evaluation_list_id' => $secondList->id,
+        'num_score' => 100,
     ]);
 
     QualityScore::factory()->create([
@@ -249,6 +350,7 @@ test('average score calculation uses bulk scores for completed reports only', fu
         'criteria_version_id' => $criteriaVersion->id,
         'quantity_main_criteria_id' => $quantityMainCriteria->id,
         'evaluation_list_id' => $quantityList->id,
+        'score_a' => 100,
     ]);
 
     $qualityMainCriteria = QualityMainCriteria::factory()->create([
@@ -262,6 +364,7 @@ test('average score calculation uses bulk scores for completed reports only', fu
         'criteria_version_id' => $criteriaVersion->id,
         'quality_main_criteria_id' => $qualityMainCriteria->id,
         'evaluation_list_id' => $qualityList->id,
+        'num_score' => 50,
     ]);
 
     $completedReportA = Reports::factory()->create([
@@ -399,6 +502,7 @@ test('highest score calculation uses bulk scores for completed reports only', fu
         'criteria_version_id' => $criteriaVersion->id,
         'quantity_main_criteria_id' => $quantityMainCriteria->id,
         'evaluation_list_id' => $quantityList->id,
+        'score_a' => 100,
     ]);
 
     $qualityMainCriteria = QualityMainCriteria::factory()->create([
@@ -412,6 +516,7 @@ test('highest score calculation uses bulk scores for completed reports only', fu
         'criteria_version_id' => $criteriaVersion->id,
         'quality_main_criteria_id' => $qualityMainCriteria->id,
         'evaluation_list_id' => $qualityList->id,
+        'num_score' => 50,
     ]);
 
     $completedReportA = Reports::factory()->create([
@@ -503,6 +608,6 @@ test('dashboard aggregate scores include capped support totals', function () {
 
     $reports = [$reportWithOverCapSupport, $reportWithSupport];
 
-    expect(ScoreService::calculateAverageScore($reports))->toBe(52.15)
-        ->and(ScoreService::calculateHighestScore($reports))->toBe(100.0);
+    expect(ScoreService::calculateAverageScore($reports))->toBe(4.65)
+        ->and(ScoreService::calculateHighestScore($reports))->toBe(5.0);
 });

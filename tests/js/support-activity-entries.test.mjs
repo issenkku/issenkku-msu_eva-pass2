@@ -80,19 +80,19 @@ test('groups projects under each ordered indicator item without duplication', ()
 test('keeps evidence grouped by its owning activity entry', () => {
     assert.deepEqual(
         activityEvidenceGroups([
-            { id: 41, evidence_links: ['https://example.com/one'] },
-            { id: 42, evidence_links: [] },
-            { id: null, evidence_links: ['https://example.com/new'] },
+            { id: 41, content: '<p>กิจกรรมหนึ่ง</p>', evidence_links: ['https://example.com/one'] },
+            { id: 42, content: '<p>กิจกรรมสอง</p>', evidence_links: [] },
+            { id: null, content: '<p>กิจกรรมใหม่</p>', evidence_links: ['https://example.com/new'] },
         ]),
         [
             {
                 id: 41,
-                label: 'รายการ 1',
+                label: 'รายการ 1 · กิจกรรมหนึ่ง',
                 links: ['https://example.com/one'],
             },
             {
                 id: 'new-2',
-                label: 'รายการ 3',
+                label: 'รายการ 3 · กิจกรรมใหม่',
                 links: ['https://example.com/new'],
             },
         ],

@@ -254,6 +254,51 @@ test('saving an unchanged support score does not create history', function () {
     $this->assertDatabaseCount('support_score_histories', 0);
 });
 
+test('evaluator can forward unchanged evaluatee owned support scores without a reason', function () {
+    $this->criterion->update([
+        'indicator' => null,
+        'weight' => null,
+        'allow_evaluatee_indicator' => true,
+        'allow_evaluatee_weight' => true,
+    ]);
+    $report = createSupportReviewerReport($this, 'Pending');
+    $entry = SupportActivityEntry::create([
+        'report_id' => $report->id,
+        'support_criteria_id' => $this->criterion->id,
+        'sequence' => 1,
+        'content' => '<p>โครงการเดิม</p>',
+        'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+        'weight' => 40,
+        'achieved_score' => 4,
+        'weighted_score' => 1.6,
+        'created_by' => $this->evaluatee->id,
+        'updated_by' => $this->evaluatee->id,
+    ]);
+    $payload = supportReviewerPayload(
+        $this->criterion->id,
+        'Director_assigned',
+        4,
+        null,
+        'ตรวจสอบแล้ว ส่งต่อกรรมการ'
+    );
+    $payload['support_list'][$this->criterion->id]['achieved_score'] = null;
+    $payload['support_list'][$this->criterion->id]['activity_entries'] = [[
+        'id' => $entry->id,
+        'content' => '<p>โครงการเดิม</p>',
+        'indicator' => '<p>ตัวชี้วัดเดิม</p>',
+        'weight' => '40.00',
+        'achieved_score' => '4.00',
+    ]];
+
+    $this->actingAs($this->evaluator, 'web')
+        ->post(route('evaluator.evaluator_score.store', ['id' => $report->id]), $payload)
+        ->assertRedirect('/evaluator-dashboard')
+        ->assertSessionHasNoErrors();
+
+    $this->assertSame('Director_assigned', $report->fresh()->status);
+    $this->assertDatabaseCount('support_activity_entry_histories', 0);
+});
+
 function createSupportReviewerReport(object $context, string $status): Reports
 {
     $report = Reports::factory()->create([

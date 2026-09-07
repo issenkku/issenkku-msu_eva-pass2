@@ -55,7 +55,7 @@
                             $sortedSubs = collect($qualityMain['sub_criterias'])->sortBy('sequence')->values();
                             $hasAnyChecked = false;
                             foreach ($sortedSubs as $sub) {
-                                $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
+                                $hasScore = isset($sub['score']) && $sub['score'] !== '';
                                 $isSelected = $hasScore || ($sub['user_selected'] ?? false);
                                 if ($isSelected) {
                                     $evaluationListQualityTotalRaw += $hasScore ? (float) $sub['score'] : (float) ($sub['num_score'] ?? 0);
@@ -202,10 +202,7 @@
                                                                 {{-- Score A --}}
                                                                 <div class="flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                                     <label for="evaluator-score-a-{{ $subCriteria['id'] }}" class="mb-2 flex min-h-[32px] items-center justify-center text-center text-sm font-semibold leading-6 text-slate-700">
-                                                                        {{--
-                                                                        คะแนนที่ได้
-                                                                        --}}
-                                                                        หน่วยภาระงานมาตรฐาน (B)
+                                                                        ค่าน้ำหนักคะแนน (A)
                                                                     </label>
                                                                     <input type="text"
                                                                         id="evaluator-score-a-{{ $subCriteria['id'] }}"
@@ -365,12 +362,12 @@
                                             @php
                                                 $mainSorted = collect($mainCriteria['sub_criterias'])->sortBy('sequence')->values();
                                                 $mainHasChecked = $mainSorted->contains(function ($sub) {
-                                                    $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
+                                                    $hasScore = isset($sub['score']) && $sub['score'] !== '';
                                                     return $hasScore || ($sub['user_selected'] ?? false);
                                                 });
                                                 $selectedScore = 0;
                                                 foreach ($mainSorted as $sub) {
-                                                    $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
+                                                    $hasScore = isset($sub['score']) && $sub['score'] !== '';
                                                     $isSelected = $hasScore || ($sub['user_selected'] ?? false);
                                                     if ($isSelected) {
                                                         $selectedScore += $hasScore ? (float) $sub['score'] : (float) ($sub['num_score'] ?? 0);
@@ -406,7 +403,7 @@
                                                     <div class="space-y-3 ml-2">
                                                         @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
                                                             @php
-                                                                $hasScore = !empty($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                                                                $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '';
                                                                 $shouldBeChecked = $hasScore || ($subCriteria['user_selected'] ?? false);
                                                             @endphp
 

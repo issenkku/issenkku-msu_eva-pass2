@@ -2,16 +2,16 @@
 
 use App\Support\ReportScoreSummary;
 
-test('report score summary caps only the support value used by the grand total', function () {
+test('report score summary caps support totals at five and achievement at one', function () {
     $summary = ReportScoreSummary::fromTotals(2.0, 3.0, 112.5);
 
     expect($summary)->toMatchArray([
         'quantity' => 2.0,
         'quality' => 3.0,
-        'support_raw' => 112.5,
-        'support' => 100.0,
-        'support_achievement' => 22.5,
-        'total' => 105.0,
+        'support_raw' => 5.0,
+        'support' => 5.0,
+        'support_achievement' => 1.0,
+        'total' => 10.0,
     ]);
 });
 

@@ -56,13 +56,16 @@
         }
 
         const quantityListTotals = {};
-        document.querySelectorAll('input[name^="quantity_list"][name$="[score_C]"]').forEach(input => {
+        let quantityCompletedCount = 0;
+        const quantityInputs = document.querySelectorAll('input[name^="quantity_list"][name$="[score_C]"]');
+        quantityInputs.forEach(input => {
             const match = input.name.match(/^quantity_list\[(.+?)\]\[score_C\]$/);
             if (!match) return;
 
             const subCriteriaId = match[1];
             const rawValue = input.value.trim();
             if (rawValue === '') return;
+            quantityCompletedCount++;
 
             const scoreC = Math.max(0, parseFloat(rawValue));
             if (isNaN(scoreC)) return;
@@ -129,8 +132,10 @@
         const qualityEl = document.getElementById('quality-summary');
         const supportEl = document.getElementById('support-summary');
         const totalEl = document.getElementById('total-summary');
+        const quantityProgressEl = document.getElementById('quantity-progress');
         const supportSum = parseFloat(supportEl?.textContent?.replaceAll(',', '') || '0') || 0;
         if (quantityEl) quantityEl.textContent = quantitySum.toFixed(2);
+        if (quantityProgressEl) quantityProgressEl.textContent = `กรอกแล้ว ${quantityCompletedCount}/${quantityInputs.length} ข้อ`;
         if (qualityEl) qualityEl.textContent = qualitySum.toFixed(2);
         if (totalEl) totalEl.textContent = (quantitySum + qualitySum + supportSum).toFixed(2);
     }

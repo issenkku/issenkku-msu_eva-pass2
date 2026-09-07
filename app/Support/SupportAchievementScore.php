@@ -8,6 +8,8 @@ final class SupportAchievementScore
 
     public static function calculate(float $weightedTotal): float
     {
-        return round($weightedTotal / self::TARGET_LEVEL_COUNT, 2);
+        $cappedTotal = min(max($weightedTotal, 0.0), self::TARGET_LEVEL_COUNT);
+
+        return round($cappedTotal / self::TARGET_LEVEL_COUNT, 2);
     }
 }

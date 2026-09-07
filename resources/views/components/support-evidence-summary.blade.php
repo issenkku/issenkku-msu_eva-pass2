@@ -1,12 +1,28 @@
-@props(['item'])
+@props([
+    'item',
+    'entry' => null,
+    'entryIndex' => null,
+    'entries' => null,
+    'evidenceGroup' => null,
+])
 
 @php
-    $activityEvidenceGroups = collect($item['activity_entries'] ?? [])
-        ->map(function (array $entry, int $index): array {
+    $showsSingleEntry = $entryIndex !== null;
+    $activityEntries = $showsSingleEntry
+        ? (is_array($entry) ? [$entry] : [])
+        : ($entries !== null ? array_values($entries) : array_values($item['activity_entries'] ?? []));
+    $activityEvidenceGroups = collect($activityEntries)
+        ->map(function (array $activityEntry, int $index): array {
+            $sequence = $activityEntry['sequence'] ?? ($index + 1);
+            $content = \Illuminate\Support\Str::limit(
+                \App\Support\SafeHtml::plainText($activityEntry['content'] ?? ''),
+                60
+            );
+
             return [
-                'id' => $entry['id'] ?? "new-{$index}",
-                'label' => 'รายการ '.($index + 1),
-                'links' => array_values(array_filter($entry['evidence_links'] ?? [])),
+                'id' => $activityEntry['id'] ?? "new-{$index}",
+                'label' => 'รายการ '.$sequence.($content !== '' ? ' · '.$content : ''),
+                'links' => array_values(array_filter($activityEntry['evidence_links'] ?? [])),
             ];
         })
         ->filter(fn (array $group): bool => $group['links'] !== [])
@@ -14,11 +30,14 @@
     $criterionEvidenceLinks = array_values(array_filter($item['evidence_links'] ?? []));
 @endphp
 
-<div class="space-y-2 text-left" data-support-evidence-list="{{ $item['id'] }}">
+<div class="space-y-2 text-left" data-support-evidence-list="{{ $item['id'] }}"
+    @if ($showsSingleEntry) data-support-entry-evidence-index="{{ $entryIndex }}" @endif
+    @if ($showsSingleEntry && is_array($entry)) data-support-entry-evidence-id="{{ $entry['id'] ?? 'new-'.$entryIndex }}" @endif
+    @if ($evidenceGroup !== null) data-support-evidence-group="{{ $evidenceGroup }}" @endif>
     @if (!empty($item['allow_activity_entries']))
         @forelse ($activityEvidenceGroups as $group)
             <div class="space-y-1" data-support-activity-evidence-list="{{ $group['id'] }}">
-                @if ($activityEvidenceGroups->count() > 1)
+                @if (!$showsSingleEntry && $activityEvidenceGroups->count() > 1)
                     <span class="block text-xs font-semibold text-slate-500">{{ $group['label'] }}</span>
                 @endif
                 @foreach ($group['links'] as $linkIndex => $link)

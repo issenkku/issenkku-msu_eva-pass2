@@ -16,6 +16,7 @@ use App\Support\AssignmentFlow;
 use App\Support\EvaluationScoreSummary;
 use App\Support\QualityScoreHistoryRecorder;
 use App\Support\QuantityScoreHistoryRecorder;
+use App\Support\ScoreChangePolicy;
 use App\Support\SupportScoreRules;
 use Exception;
 use Illuminate\Http\Request;
@@ -205,6 +206,7 @@ class EvaluatorScoreController extends Controller
                             ? (int) $item['quality_sub_criteria_id'][0]
                             : (int) $item['quality_sub_criteria_id'];
                     })
+                    ->merge($oldQualityScores->pluck('quality_sub_criteria_id'))
                     ->unique()
                     ->values();
 
@@ -249,10 +251,24 @@ class EvaluatorScoreController extends Controller
                 }
 
                 $listScales = [];
+                $oldQualityScoresBySubCriteria = $oldQualityScores->keyBy('quality_sub_criteria_id');
                 foreach ($listTotals as $listId => $sum) {
                     $listMax = (float) ($listMaxMap->get($listId)?->sum_score ?? 0);
+                    $submittedScoresForList = collect($tempScores)
+                        ->filter(fn (array $score) => $score['list_id'] === $listId);
+                    $oldSubCriteriaIdsForList = $subCriteriaMap
+                        ->filter(fn (QualitySubCriteria $subCriteria) => (int) $subCriteria->evaluation_list_id === $listId)
+                        ->keys()
+                        ->filter(fn ($subCriteriaId) => $oldQualityScoresBySubCriteria->has($subCriteriaId));
+                    $listIsUnchanged = $submittedScoresForList->count() === $oldSubCriteriaIdsForList->count()
+                        && $submittedScoresForList->every(function (array $score, $subCriteriaId) use ($oldQualityScoresBySubCriteria) {
+                            $oldScore = $oldQualityScoresBySubCriteria->get($subCriteriaId);
+
+                            return $oldScore
+                                && ! ScoreChangePolicy::numbersDiffer($oldScore->score, $score['score']);
+                        });
                     $scale = 1.0;
-                    if ($listMax > 0 && $sum > $listMax) {
+                    if (! $listIsUnchanged && $listMax > 0 && $sum > $listMax) {
                         $scale = $listMax / $sum;
                     }
                     $listScales[$listId] = $scale;

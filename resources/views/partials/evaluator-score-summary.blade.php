@@ -10,7 +10,19 @@
     <div class="space-y-3 text-blue-800">
         @if ($scoreSummary['has_quantity'] ?? false)
             <div class="flex items-center justify-between">
-                <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
+                <div>
+                    <span class="text-base">คะแนนด้านปริมาณ (Quantity)</span>
+                    @if (($scoreSummary['quantity_total_count'] ?? 0) > 0)
+                        <span
+                            id="quantity-progress"
+                            data-completed="{{ $scoreSummary['quantity_completed_count'] ?? 0 }}"
+                            data-total="{{ $scoreSummary['quantity_total_count'] }}"
+                            aria-live="polite"
+                            class="mt-1 block text-sm text-blue-600">
+                            กรอกแล้ว {{ $scoreSummary['quantity_completed_count'] ?? 0 }}/{{ $scoreSummary['quantity_total_count'] }} ข้อ
+                        </span>
+                    @endif
+                </div>
                 <span id="quantity-summary" class="font-semibold text-blue-900">{{ number_format($scoreSummary['quantity'] ?? 0, 2) }}</span>
             </div>
         @endif

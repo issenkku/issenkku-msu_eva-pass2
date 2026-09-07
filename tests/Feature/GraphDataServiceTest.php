@@ -34,6 +34,7 @@ test('scatter data uses bulk scores for completed reports only', function () {
         'criteria_version_id' => $criteriaVersion->id,
         'quantity_main_criteria_id' => $quantityMainCriteria->id,
         'evaluation_list_id' => $quantityList->id,
+        'score_a' => 100,
     ]);
 
     $qualityMainCriteria = QualityMainCriteria::factory()->create([
@@ -47,6 +48,7 @@ test('scatter data uses bulk scores for completed reports only', function () {
         'criteria_version_id' => $criteriaVersion->id,
         'quality_main_criteria_id' => $qualityMainCriteria->id,
         'evaluation_list_id' => $qualityList->id,
+        'num_score' => 50,
     ]);
 
     $completedReportA = Reports::factory()->create([

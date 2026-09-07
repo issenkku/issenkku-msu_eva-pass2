@@ -185,18 +185,60 @@ class SupportScoreServiceTest extends TestCase
         ]);
     }
 
-    public function test_required_evidence_is_required_even_when_score_is_blank(): void
+    public function test_it_caps_persisted_support_totals_at_five_and_achievement_at_one(): void
     {
-        try {
-            app(SupportScoreService::class)->persist($this->report, [[
+        $this->criterion->update([
+            'weight' => 100,
+            'require_evidence' => false,
+        ]);
+        $secondCriterion = SupportCriteria::create([
+            'evaluation_list_id' => $this->criterion->evaluation_list_id,
+            'sequence' => 2,
+            'activity_name' => 'งานเพิ่มเติม',
+            'indicator' => 'สำเร็จตามเป้าหมาย',
+            'target_value' => 5,
+            'weight' => 100,
+            'require_evidence' => false,
+        ]);
+
+        $result = app(SupportScoreService::class)->persist($this->report, [
+            [
                 'support_criteria_id' => $this->criterion->id,
-                'achieved_score' => null,
+                'achieved_score' => 5,
                 'evidence_links' => [],
-            ]], $this->evaluatee, null, false);
-            $this->fail('Expected validation failure');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('support_list.0.evidence_links', $exception->errors());
-        }
+            ],
+            [
+                'support_criteria_id' => $secondCriterion->id,
+                'achieved_score' => 5,
+                'evidence_links' => [],
+            ],
+        ], $this->evaluatee, null, false);
+
+        $this->assertSame(5.0, $result['support_score_total']);
+        $this->assertSame(1.0, $result['support_achievement_score']);
+        $this->assertDatabaseHas('reports', [
+            'id' => $this->report->id,
+            'support_score_total' => '5.00',
+            'support_achievement_score' => '1.00',
+        ]);
+    }
+
+    public function test_incomplete_criterion_can_be_saved_without_score_or_required_evidence(): void
+    {
+        $result = app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => null,
+            'evidence_links' => [],
+        ]], $this->evaluatee, null, false);
+
+        $this->assertSame(0.0, $result['support_score_total']);
+        $this->assertDatabaseHas('support_scores', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => null,
+            'weighted_score' => null,
+        ]);
+        $this->assertDatabaseCount('evidence_answers', 0);
     }
 
     public function test_activity_criterion_accepts_required_evidence_on_any_activity(): void
@@ -225,24 +267,26 @@ class SupportScoreServiceTest extends TestCase
         ]);
     }
 
-    public function test_activity_criterion_rejects_required_evidence_when_every_activity_is_empty(): void
+    public function test_incomplete_activity_can_be_saved_without_required_evidence(): void
     {
         $this->criterion->update(['allow_activity_entries' => true]);
 
-        try {
-            app(SupportScoreService::class)->persist($this->report, [[
-                'support_criteria_id' => $this->criterion->id,
-                'achieved_score' => null,
+        app(SupportScoreService::class)->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => null,
+            'evidence_links' => [],
+            'activity_entries' => [[
+                'content' => '<p>กิจกรรมไม่มีหลักฐาน</p>',
                 'evidence_links' => [],
-                'activity_entries' => [[
-                    'content' => '<p>กิจกรรมไม่มีหลักฐาน</p>',
-                    'evidence_links' => [],
-                ]],
-            ]], $this->evaluatee, null, false);
-            $this->fail('Expected validation failure');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('support_list.0.activity_entries', $exception->errors());
-        }
+            ]],
+        ]], $this->evaluatee, null, false);
+
+        $this->assertDatabaseHas('support_activity_entries', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'content' => '<p>กิจกรรมไม่มีหลักฐาน</p>',
+        ]);
+        $this->assertDatabaseCount('evidence_answers', 0);
     }
 
     public function test_evaluatee_weighted_criterion_uses_entry_scores_without_a_parent_score(): void
@@ -282,20 +326,28 @@ class SupportScoreServiceTest extends TestCase
         $this->assertSame('4.60', $this->report->fresh()->support_score_total);
     }
 
-    public function test_required_criterion_cannot_be_omitted_from_the_payload(): void
+    public function test_omitting_required_criterion_preserves_existing_scores_and_evidence(): void
     {
-        try {
-            app(SupportScoreService::class)->persist(
-                $this->report,
-                [],
-                $this->evaluatee,
-                null,
-                false
-            );
-            $this->fail('Expected validation failure');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('support_list', $exception->errors());
-        }
+        $service = app(SupportScoreService::class);
+        $service->persist($this->report, [[
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => 5,
+            'evidence_links' => ['https://example.com/preserved'],
+        ]], $this->evaluatee, null, false);
+
+        $result = $service->persist($this->report, [], $this->evaluatee, null, false);
+
+        $this->assertSame(1.0, $result['support_score_total']);
+        $this->assertDatabaseHas('support_scores', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'achieved_score' => 5,
+        ]);
+        $this->assertDatabaseHas('evidence_answers', [
+            'report_id' => $this->report->id,
+            'support_criteria_id' => $this->criterion->id,
+            'link' => 'https://example.com/preserved',
+        ]);
     }
 
     public function test_reviewer_change_requires_reason_and_records_history(): void

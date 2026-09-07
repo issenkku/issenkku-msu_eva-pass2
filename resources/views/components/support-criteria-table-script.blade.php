@@ -795,6 +795,7 @@
                 const indicatorDisplay = row.querySelector('[data-support-entry-indicator-list]');
                 const weightDisplay = row.querySelector('[data-support-entry-weight-list]');
                 const scoreDisplay = row.querySelector('[data-support-entry-score-list]');
+                const evidenceDisplay = row.querySelector('[data-support-entry-evidence-index]');
 
                 if (activityDisplay) {
                     activityDisplay.textContent = entry
@@ -821,6 +822,11 @@
                     scoreDisplay.textContent = entry
                         ? normalizeScore(entry.querySelector('[data-support-entry-score]')?.value ?? '') || '-'
                         : '-';
+                }
+                if (evidenceDisplay) {
+                    evidenceDisplay.dataset.supportEntryEvidenceIndex = String(index);
+                    const entryId = entry?.dataset.supportActivityEntryId || `new-${index}`;
+                    evidenceDisplay.dataset.supportEntryEvidenceId = entryId;
                 }
             });
 
@@ -956,7 +962,7 @@
             const id = item.dataset.supportId;
             const score = item.querySelector('[data-support-score]')?.value.trim() || '';
             const activityEntries = Array.from(item.querySelectorAll('[data-support-activity-entry]'))
-                .map((entry) => {
+                .map((entry, entryIndex) => {
                     const inputs = Array.from(entry.querySelectorAll('[data-support-evidence-input]'));
                     const links = inputs.length > 0
                         ? inputs.map((input) => input.value.trim()).filter(Boolean)
@@ -966,10 +972,14 @@
 
                     return {
                         id: entry.dataset.supportActivityEntryId || null,
+                        sequence: entryIndex + 1,
+                        content: entry.querySelector('[data-support-activity-content]')?.value ?? '',
+                        support_indicator_item_id: entry.querySelector('[data-support-activity-indicator-id]')?.value ?? '',
                         evidence_links: links,
                     };
                 });
             const activityEvidenceGroups = activityTools().activityEvidenceGroups(activityEntries);
+            const usesActivityEntries = Boolean(item.querySelector('[data-support-activity-section]'));
             const criterionEvidenceInputs = Array.from(item.querySelectorAll('[data-support-evidence-input]'))
                 .filter((input) => !input.closest('[data-support-activity-entry]'));
             const criterionEvidenceLinks = criterionEvidenceInputs.length > 0
@@ -978,19 +988,14 @@
                     .filter((link) => !link.closest('[data-support-activity-entry]'))
                     .map((link) => link.getAttribute('href'))
                     .filter(Boolean);
-            const evidenceLinks = activityEntries.length > 0
+            const evidenceLinks = usesActivityEntries
                 ? activityEvidenceGroups.flatMap((group) => group.links)
                 : criterionEvidenceLinks;
 
+            syncDesktopEntryRows(item);
+
             document.querySelectorAll(`[data-support-evidence-list="${id}"]`).forEach((container) => {
                 container.replaceChildren();
-                if (evidenceLinks.length === 0) {
-                    const empty = document.createElement('span');
-                    empty.className = 'text-slate-400';
-                    empty.textContent = 'ไม่มีหลักฐาน';
-                    container.appendChild(empty);
-                    return;
-                }
 
                 const appendAnchor = (target, evidenceUrl, label = 'เปิดดู', ariaLabel = label) => {
                     const anchor = document.createElement('a');
@@ -1003,13 +1008,45 @@
                     target.appendChild(anchor);
                 };
 
-                if (activityEntries.length > 0) {
-                    activityEvidenceGroups.forEach((group) => {
+                const appendEmptyState = () => {
+                    const empty = document.createElement('span');
+                    empty.className = 'text-slate-400';
+                    empty.textContent = 'ไม่มีหลักฐาน';
+                    container.appendChild(empty);
+                };
+
+                if (usesActivityEntries) {
+                    const entryIndexValue = container.getAttribute('data-support-entry-evidence-index');
+                    const evidenceGroupValue = container.getAttribute('data-support-evidence-group');
+                    let visibleGroups = activityEvidenceGroups;
+                    let showGroupLabels = activityEvidenceGroups.length > 1;
+
+                    if (entryIndexValue !== null) {
+                        const selectedEntry = activityEntries[Number(entryIndexValue)];
+                        visibleGroups = selectedEntry
+                            ? activityTools().activityEvidenceGroups([selectedEntry])
+                            : [];
+                        showGroupLabels = false;
+                    } else if (evidenceGroupValue !== null) {
+                        visibleGroups = activityTools().activityEvidenceGroups(
+                            activityEntries.filter((entry) => (
+                                String(entry.support_indicator_item_id) === evidenceGroupValue
+                            )),
+                        );
+                        showGroupLabels = visibleGroups.length > 1;
+                    }
+
+                    if (visibleGroups.length === 0) {
+                        appendEmptyState();
+                        return;
+                    }
+
+                    visibleGroups.forEach((group) => {
                         const groupContainer = document.createElement('div');
                         groupContainer.className = 'space-y-1';
                         groupContainer.dataset.supportActivityEvidenceList = group.id;
 
-                        if (activityEvidenceGroups.length > 1) {
+                        if (showGroupLabels) {
                             const label = document.createElement('span');
                             label.className = 'block text-xs font-semibold text-slate-500';
                             label.textContent = group.label;
@@ -1023,6 +1060,11 @@
                         ));
                         container.appendChild(groupContainer);
                     });
+                    return;
+                }
+
+                if (criterionEvidenceLinks.length === 0) {
+                    appendEmptyState();
                     return;
                 }
 
@@ -1041,7 +1083,6 @@
             });
             updateActivityDisplays(item);
             updateEntryValueDisplays(item);
-            syncDesktopEntryRows(item);
         };
 
         const clearModalErrors = () => {

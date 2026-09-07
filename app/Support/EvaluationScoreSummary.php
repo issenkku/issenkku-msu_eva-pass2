@@ -9,6 +9,8 @@ class EvaluationScoreSummary
         $totalQuantityScore = 0.0;
         $totalQualityScore = 0.0;
         $totalSupportScore = 0.0;
+        $quantityCompletedCount = 0;
+        $quantityTotalCount = 0;
         $hasQuantity = false;
         $hasQuality = false;
         $hasSupport = false;
@@ -26,6 +28,14 @@ class EvaluationScoreSummary
                 $evaluationListQuantityTotal = 0.0;
                 foreach ($quantityItems as $mainCriteria) {
                     foreach ($mainCriteria['sub_criterias'] ?? [] as $subCriteria) {
+                        $quantityTotalCount++;
+                        $quantityInput = array_key_exists('tor_compliant', $subCriteria)
+                            ? $subCriteria['tor_compliant']
+                            : ($subCriteria['score_d'] ?? null);
+                        if ($quantityInput !== null && $quantityInput !== '') {
+                            $quantityCompletedCount++;
+                        }
+
                         $evaluationListQuantityTotal += (float) ($subCriteria['score_d'] ?? 0);
                     }
                 }
@@ -87,6 +97,8 @@ class EvaluationScoreSummary
 
         return [
             ...$scores,
+            'quantity_completed_count' => $quantityCompletedCount,
+            'quantity_total_count' => $quantityTotalCount,
             'support_target_level_count' => SupportAchievementScore::TARGET_LEVEL_COUNT,
             'has_quantity' => $hasQuantity,
             'has_quality' => $hasQuality,

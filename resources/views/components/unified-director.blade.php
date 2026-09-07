@@ -64,7 +64,7 @@
                                         foreach ($evaluationList['quality_items'] as $mainCriteria) {
                                             $sorted = collect($mainCriteria['sub_criterias'])->sortBy('sequence')->values();
                                             $hasAnyChecked = $sorted->contains(function ($sub) {
-                                                $hasScore = !empty($sub['score']) && $sub['score'] !== '' && $sub['score'] !== null;
+                                                $hasScore = isset($sub['score']) && $sub['score'] !== '';
                                                 return $hasScore || ($sub['user_selected'] ?? false);
                                             });
                                             if ($hasAnyChecked) {
@@ -392,7 +392,7 @@
                             @endphp
                             @foreach(collect($mainCriteria['sub_criterias'])->sortBy('sequence') as $subCriteria)
                                 @php
-                                    $hasScore = !empty($subCriteria['score']) && $subCriteria['score'] !== '' && $subCriteria['score'] !== null;
+                                    $hasScore = isset($subCriteria['score']) && $subCriteria['score'] !== '';
                                     $shouldBeChecked = $hasScore || ($subCriteria['user_selected'] ?? false);
                                     $selectedScore = $hasScore ? $subCriteria['score'] : ($shouldBeChecked ? $subCriteria['num_score'] : '0.00');
                                     $displayScore = $subCriteria['num_score'] ?? 0;

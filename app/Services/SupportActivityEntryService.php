@@ -8,6 +8,8 @@ use App\Models\SupportActivityEntryHistory;
 use App\Models\SupportCriteria;
 use App\Models\User;
 use App\Rules\HasRichText;
+use App\Support\SafeHtml;
+use App\Support\ScoreChangePolicy;
 use App\Support\SupportWeightedScore;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -232,21 +234,12 @@ class SupportActivityEntryService
             }
 
             $content = (string) $entryData['content'];
-            $previous = [
-                'content' => $entry->content,
-                'indicator' => $entry->indicator,
-                'weight' => filled($entry->weight) ? (float) $entry->weight : null,
-                'achieved_score' => filled($entry->achieved_score) ? (float) $entry->achieved_score : null,
-                'weighted_score' => filled($entry->weighted_score) ? (float) $entry->weighted_score : null,
-            ];
-            $next = [
-                'content' => $content,
-                'indicator' => $entryData['indicator'],
-                'weight' => $entryData['weight'],
-                'achieved_score' => $entryData['achieved_score'],
-                'weighted_score' => $entryData['weighted_score'],
-            ];
-            if ($previous === $next) {
+            $changed = $this->richTextsDiffer($entry->content, $content)
+                || $this->richTextsDiffer($entry->indicator, $entryData['indicator'])
+                || ScoreChangePolicy::numbersDiffer($entry->weight, $entryData['weight'])
+                || ScoreChangePolicy::numbersDiffer($entry->achieved_score, $entryData['achieved_score'])
+                || ScoreChangePolicy::numbersDiffer($entry->weighted_score, $entryData['weighted_score']);
+            if (! $changed) {
                 continue;
             }
 
@@ -284,6 +277,15 @@ class SupportActivityEntryService
                 'updated_by' => $actor?->id,
             ]);
         }
+    }
+
+    private function richTextsDiffer(mixed $before, mixed $after): bool
+    {
+        $normalize = static fn (mixed $value): string => trim(
+            (string) SafeHtml::richText((string) ($value ?? ''))
+        );
+
+        return $normalize($before) !== $normalize($after);
     }
 
     /** @param array<string, mixed> $entryData */

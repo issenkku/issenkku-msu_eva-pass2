@@ -30,7 +30,7 @@ test('evaluatee live summary caps quantity at its evaluation list maximum', () =
     };
     const quantityInputs = [
         { name: 'quantity_list[1][score_C]', value: '150' },
-        { name: 'quantity_list[2][score_C]', value: '63.49' },
+        { name: 'quantity_list[2][score_C]', value: '' },
     ];
     const qualityInputs = [
         {
@@ -40,6 +40,7 @@ test('evaluatee live summary caps quantity at its evaluation list maximum', () =
     ];
     const elements = {
         'quantity-summary': { textContent: '40.00' },
+        'quantity-progress': { textContent: 'กรอกแล้ว 0/2 ข้อ' },
         'quality-summary': { textContent: '29.80' },
         'support-summary': { textContent: '0.00' },
         'total-summary': { textContent: '69.80' },
@@ -75,5 +76,6 @@ test('evaluatee live summary caps quantity at its evaluation list maximum', () =
     sandbox.recalculateSummaryScores();
 
     assert.equal(elements['quantity-summary'].textContent, '40.00');
+    assert.equal(elements['quantity-progress'].textContent, 'กรอกแล้ว 1/2 ข้อ');
     assert.equal(elements['total-summary'].textContent, '69.80');
 });
