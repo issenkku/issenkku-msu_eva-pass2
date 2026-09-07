@@ -225,6 +225,40 @@ class AssignmentDataController extends Controller
                 ->withInput();
         }
 
+        $existingAssignments = $assignmentData->assignments()
+            ->with('report')
+            ->get();
+        $existingEvaluateeIds = $existingAssignments
+            ->pluck('evaluatee_id')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $requestedEvaluateeIds = collect($request->input('evaluatees', []))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($existingEvaluateeIds->diff($requestedEvaluateeIds)->isNotEmpty()) {
+            return redirect()->back()
+                ->withErrors([
+                    'evaluatees' => 'ไม่สามารถนำผู้รับการประเมินเดิมออกผ่านการแก้ไขรอบได้ เพราะอาจทำให้ข้อมูลการประเมินสูญหาย กรุณาคงรายชื่อเดิมหรือสร้างรอบใหม่',
+                ])
+                ->withInput();
+        }
+
+        $changesExistingReportCriteria = $existingAssignments->contains(
+            fn (Assignments $assignment) => $assignment->report
+                && (int) $assignment->report->report_data_id !== (int) $request->report_data_id
+        );
+
+        if ($changesExistingReportCriteria) {
+            return redirect()->back()
+                ->withErrors([
+                    'report_data_id' => 'ไม่สามารถเปลี่ยนเกณฑ์ของรอบที่มอบหมายแล้วได้ เพราะอาจทำให้ข้อมูลการประเมินเดิมไม่สอดคล้องกัน กรุณาคัดลอกรอบเพื่อใช้เกณฑ์ใหม่',
+                ])
+                ->withInput();
+        }
+
         DB::beginTransaction();
 
         try {
@@ -233,18 +267,11 @@ class AssignmentDataController extends Controller
             // อัปเดตข้อมูลหลักของรอบการประเมิน
             $assignmentData->update($payload['assignment_data']);
 
-            // ลบ assignment และ report เดิมก่อนสร้างใหม่
-            foreach ($assignmentData->assignments as $assignment) {
-                if ($assignment->report) {
-                    $assignment->report->delete();
-                }
-            }
-            $assignmentData->assignments()->delete();
-
             // อัปเดต role ของ reviewer ตามชุดข้อมูลล่าสุด
             $this->assignSelectedRoles($payload['reviewers']);
 
-            foreach ($request->evaluatees as $evaluateeId) {
+            // รักษา assignment/report เดิมไว้ และสร้างเฉพาะผู้รับการประเมินที่เพิ่มใหม่
+            foreach ($requestedEvaluateeIds->diff($existingEvaluateeIds) as $evaluateeId) {
                 $evaluatee = User::findOrFail($evaluateeId);
                 $this->assignUserRole($evaluatee, 'ผู้รับการประเมิน');
 
@@ -275,7 +302,7 @@ class AssignmentDataController extends Controller
             ]);
 
             return redirect()->back()
-                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: ' . $e->getMessage()])
+                ->withErrors(['update_error' => 'เกิดข้อผิดพลาดในการแก้ไข: '.$e->getMessage()])
                 ->withInput();
         }
     }
@@ -325,7 +352,7 @@ class AssignmentDataController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'เกิดข้อผิดพลาดในการลบ: ' . $e->getMessage(),
+                'message' => 'เกิดข้อผิดพลาดในการลบ: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -345,7 +372,7 @@ class AssignmentDataController extends Controller
             'stage_order' => 'nullable|array',
             'stage_order.*' => 'nullable|integer|min:1|max:3',
             'evaluatees' => 'required|array|min:1',
-            'evaluatees.*' => 'required|exists:users,id',
+            'evaluatees.*' => 'required|distinct|exists:users,id',
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -485,7 +512,6 @@ class AssignmentDataController extends Controller
             ]);
         }
     }
-
 
     /**
      * เพิ่ม role ให้ผู้ใช้ เมื่อยังไม่มี role ดังกล่าว

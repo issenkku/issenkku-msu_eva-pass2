@@ -2,29 +2,36 @@
 
 namespace Tests\Feature\Report;
 
-use Tests\TestCase;
-use App\Models\Assignments;
-use App\Models\User;
 use App\Models\AssignmentData;
+use App\Models\Assignments;
 use App\Models\CriteriaVersion;
 use App\Models\ReportData;
 use App\Models\Reports;
 use App\Models\Setting\Departments;
 use App\Models\Setting\Positions;
+use App\Models\User;
+use Database\Factories\DepartmentFactory;
+use Database\Factories\PositionFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
+use Tests\TestCase;
 
 class AssignmentDataTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $admin;
+
     protected Departments $department;
+
     protected Positions $evaluateePosition;
+
     protected Positions $evaluatorPosition;
+
     protected ReportData $reportData;
+
     protected CriteriaVersion $criteriaVersion;
 
     protected function setUp(): void
@@ -38,17 +45,17 @@ class AssignmentDataTest extends TestCase
         Role::create(['name' => 'ผู้รับการประเมิน']);
 
         // deps + positions
-        $this->department = \Database\Factories\DepartmentFactory::new()->create();
-        $this->evaluateePosition = \Database\Factories\PositionFactory::new()->create();
-        $this->evaluatorPosition = \Database\Factories\PositionFactory::new()->create();
+        $this->department = DepartmentFactory::new()->create();
+        $this->evaluateePosition = PositionFactory::new()->create();
+        $this->evaluatorPosition = PositionFactory::new()->create();
 
         // users
         $this->admin = User::factory()->create([
-            'employee_id'   => 'ADMIN001',
-            'password'      => Hash::make('password'),
-            'status'        => 'active',
+            'employee_id' => 'ADMIN001',
+            'password' => Hash::make('password'),
+            'status' => 'active',
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluateePosition->id,
+            'position_id' => $this->evaluateePosition->id,
         ]);
         $this->admin->assignRole('admin');
 
@@ -58,8 +65,8 @@ class AssignmentDataTest extends TestCase
             'criteria_version_id' => $this->criteriaVersion->id,
         ]);
 
-        $this->evaluateePosition = \Database\Factories\PositionFactory::new()->create();
-        $this->evaluatorPosition = \Database\Factories\PositionFactory::new()->create();
+        $this->evaluateePosition = PositionFactory::new()->create();
+        $this->evaluatorPosition = PositionFactory::new()->create();
     }
 
     public function test_admin_can_view_assignment_data_index()
@@ -149,13 +156,13 @@ class AssignmentDataTest extends TestCase
 
     public function test_non_admin_cannot_access_assignment_data_routes()
     {
-        $department = \Database\Factories\DepartmentFactory::new()->create();
-        $position = \Database\Factories\PositionFactory::new()->create();
+        $department = DepartmentFactory::new()->create();
+        $position = PositionFactory::new()->create();
 
         $staff = User::factory()->create([
-            'employee_id'   => 'STAFF001',
+            'employee_id' => 'STAFF001',
             'department_id' => $department->id,
-            'position_id'   => $position->id,
+            'position_id' => $position->id,
         ]);
         $staff->assignRole('staff');
 
@@ -163,7 +170,7 @@ class AssignmentDataTest extends TestCase
             ->get(route('assignment-data.index'))
             ->assertForbidden();
     }
-    
+
     public function test_admin_can_create_assignment_data(): void
     {
         $response = $this->actingAs($this->admin, 'web')
@@ -174,23 +181,23 @@ class AssignmentDataTest extends TestCase
         // create users for positions
         $evaluateeUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluateePosition->id,
+            'position_id' => $this->evaluateePosition->id,
         ]);
         $evaluatorUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluatorPosition->id,
+            'position_id' => $this->evaluatorPosition->id,
         ]);
 
         Mail::fake();
 
         $payload = [
-            '_token'         => $token,
-            'start_time'     => now()->toDateString(),
-            'end_time'       => now()->addDays(5)->toDateString(),
+            '_token' => $token,
+            'start_time' => now()->toDateString(),
+            'end_time' => now()->addDays(5)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => [$evaluateeUser->id],
-            'evaluator_id'   => $evaluatorUser->id,
-            'stage_order'    => ['evaluator' => 1],
+            'evaluatees' => [$evaluateeUser->id],
+            'evaluator_id' => $evaluatorUser->id,
+            'stage_order' => ['evaluator' => 1],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -249,22 +256,22 @@ class AssignmentDataTest extends TestCase
 
         $reviewer = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluatorPosition->id,
+            'position_id' => $this->evaluatorPosition->id,
         ]);
         $evaluateeUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluateePosition->id,
+            'position_id' => $this->evaluateePosition->id,
         ]);
 
         $payload = [
-            '_token'         => $token,
-            'start_time'     => now()->toDateString(),
-            'end_time'       => now()->addDays(5)->toDateString(),
+            '_token' => $token,
+            'start_time' => now()->toDateString(),
+            'end_time' => now()->addDays(5)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => [$evaluateeUser->id],
-            'evaluator_id'   => $reviewer->id,
-            'director_id'    => $reviewer->id,
-            'stage_order'    => ['evaluator' => 1, 'director' => 2],
+            'evaluatees' => [$evaluateeUser->id],
+            'evaluator_id' => $reviewer->id,
+            'director_id' => $reviewer->id,
+            'stage_order' => ['evaluator' => 1, 'director' => 2],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -283,26 +290,26 @@ class AssignmentDataTest extends TestCase
 
         $evaluator = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluatorPosition->id,
+            'position_id' => $this->evaluatorPosition->id,
         ]);
         $director = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluatorPosition->id,
+            'position_id' => $this->evaluatorPosition->id,
         ]);
         $evaluateeUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluateePosition->id,
+            'position_id' => $this->evaluateePosition->id,
         ]);
 
         $payload = [
-            '_token'         => $token,
-            'start_time'     => now()->toDateString(),
-            'end_time'       => now()->addDays(5)->toDateString(),
+            '_token' => $token,
+            'start_time' => now()->toDateString(),
+            'end_time' => now()->addDays(5)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => [$evaluateeUser->id],
-            'evaluator_id'   => $evaluator->id,
-            'director_id'    => $director->id,
-            'stage_order'    => ['evaluator' => 1, 'director' => 1],
+            'evaluatees' => [$evaluateeUser->id],
+            'evaluator_id' => $evaluator->id,
+            'director_id' => $director->id,
+            'stage_order' => ['evaluator' => 1, 'director' => 1],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -325,26 +332,26 @@ class AssignmentDataTest extends TestCase
             'evaluator_position_id' => $this->evaluatorPosition->id,
             'evaluatee_position_id' => $this->evaluateePosition->id,
             'start_time' => now(),
-            'end_time'   => now()->addDay(),
+            'end_time' => now()->addDay(),
         ]);
 
         $evaluateeUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluateePosition->id,
+            'position_id' => $this->evaluateePosition->id,
         ]);
         $evaluatorUser = User::factory()->create([
             'department_id' => $this->department->id,
-            'position_id'   => $this->evaluatorPosition->id,
+            'position_id' => $this->evaluatorPosition->id,
         ]);
 
         $payload = [
-            '_token'         => $token,
-            'start_time'     => now()->toDateString(),
-            'end_time'       => now()->addDays(10)->toDateString(),
+            '_token' => $token,
+            'start_time' => now()->toDateString(),
+            'end_time' => now()->addDays(10)->toDateString(),
             'report_data_id' => $this->reportData->id,
-            'evaluatees'     => [$evaluateeUser->id],
-            'evaluator_id'   => $evaluatorUser->id,
-            'stage_order'    => ['evaluator' => 1],
+            'evaluatees' => [$evaluateeUser->id],
+            'evaluator_id' => $evaluatorUser->id,
+            'stage_order' => ['evaluator' => 1],
         ];
 
         $this->actingAs($this->admin, 'web')
@@ -358,6 +365,219 @@ class AssignmentDataTest extends TestCase
         ]);
     }
 
+    public function test_updating_assignment_period_preserves_existing_assignment_and_report(): void
+    {
+        $evaluatee = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $assignmentData = AssignmentData::factory()->create([
+            'evaluator_id' => $evaluator->id,
+            'evaluator_position_id' => $evaluator->position_id,
+            'evaluation_flow' => ['evaluator'],
+            'start_time' => now()->startOfDay(),
+            'end_time' => now()->addDay()->startOfDay(),
+        ]);
+        $report = Reports::factory()->create([
+            'report_data_id' => $this->reportData->id,
+            'status' => 'Completed',
+            'comment' => 'ข้อมูลการประเมินเดิมต้องไม่หาย',
+        ]);
+        Assignments::factory()->create([
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]);
+
+        Mail::fake();
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('assignment-data.update', $assignmentData), [
+                'start_time' => now()->toDateString(),
+                'end_time' => now()->addDays(10)->toDateString(),
+                'report_data_id' => $this->reportData->id,
+                'evaluatees' => [$evaluatee->id],
+                'evaluator_id' => $evaluator->id,
+                'stage_order' => ['evaluator' => 1],
+            ])
+            ->assertRedirect(route('assignment-data.index'))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('assignments', [
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]);
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'report_data_id' => $this->reportData->id,
+            'status' => 'Completed',
+            'comment' => 'ข้อมูลการประเมินเดิมต้องไม่หาย',
+        ]);
+        $this->assertDatabaseCount('assignments', 1);
+        $this->assertDatabaseCount('reports', 1);
+    }
+
+    public function test_updating_assignment_round_adds_new_evaluatee_without_recreating_existing_report(): void
+    {
+        $existingEvaluatee = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $newEvaluatee = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $assignmentData = AssignmentData::factory()->create([
+            'evaluator_id' => $evaluator->id,
+            'evaluator_position_id' => $evaluator->position_id,
+            'evaluation_flow' => ['evaluator'],
+        ]);
+        $existingReport = Reports::factory()->create([
+            'report_data_id' => $this->reportData->id,
+            'status' => 'Draft',
+        ]);
+        Assignments::factory()->create([
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $existingReport->id,
+            'evaluatee_id' => $existingEvaluatee->id,
+        ]);
+
+        Mail::fake();
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('assignment-data.update', $assignmentData), [
+                'start_time' => now()->toDateString(),
+                'end_time' => now()->addDays(10)->toDateString(),
+                'report_data_id' => $this->reportData->id,
+                'evaluatees' => [$existingEvaluatee->id, $newEvaluatee->id],
+                'evaluator_id' => $evaluator->id,
+                'stage_order' => ['evaluator' => 1],
+            ])
+            ->assertRedirect(route('assignment-data.index'))
+            ->assertSessionDoesntHaveErrors();
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $existingReport->id,
+            'status' => 'Draft',
+        ]);
+        $this->assertDatabaseHas('assignments', [
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $existingReport->id,
+            'evaluatee_id' => $existingEvaluatee->id,
+        ]);
+        $this->assertDatabaseHas('assignments', [
+            'assignment_data_id' => $assignmentData->id,
+            'evaluatee_id' => $newEvaluatee->id,
+        ]);
+        $this->assertDatabaseCount('assignments', 2);
+        $this->assertDatabaseCount('reports', 2);
+    }
+
+    public function test_updating_assignment_round_rejects_removing_existing_evaluatee(): void
+    {
+        $evaluatees = User::factory()->count(2)->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $assignmentData = AssignmentData::factory()->create([
+            'evaluator_id' => $evaluator->id,
+            'evaluator_position_id' => $evaluator->position_id,
+            'evaluation_flow' => ['evaluator'],
+            'end_time' => now()->addDay()->startOfDay(),
+        ]);
+
+        foreach ($evaluatees as $evaluatee) {
+            $report = Reports::factory()->create([
+                'report_data_id' => $this->reportData->id,
+                'status' => 'Completed',
+            ]);
+            Assignments::factory()->create([
+                'assignment_data_id' => $assignmentData->id,
+                'report_id' => $report->id,
+                'evaluatee_id' => $evaluatee->id,
+            ]);
+        }
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('assignment-data.update', $assignmentData), [
+                'start_time' => now()->toDateString(),
+                'end_time' => now()->addDays(10)->toDateString(),
+                'report_data_id' => $this->reportData->id,
+                'evaluatees' => [$evaluatees->first()->id],
+                'evaluator_id' => $evaluator->id,
+                'stage_order' => ['evaluator' => 1],
+            ])
+            ->assertSessionHasErrors('evaluatees');
+
+        $this->assertDatabaseCount('assignments', 2);
+        $this->assertDatabaseCount('reports', 2);
+        $this->assertDatabaseHas('assignment_datas', [
+            'id' => $assignmentData->id,
+            'end_time' => $assignmentData->end_time->toDateTimeString(),
+        ]);
+    }
+
+    public function test_updating_assignment_round_rejects_changing_existing_report_criteria(): void
+    {
+        $evaluatee = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluateePosition->id,
+        ]);
+        $evaluator = User::factory()->create([
+            'department_id' => $this->department->id,
+            'position_id' => $this->evaluatorPosition->id,
+        ]);
+        $newReportData = ReportData::factory()->create([
+            'criteria_version_id' => CriteriaVersion::factory()->create()->id,
+        ]);
+        $assignmentData = AssignmentData::factory()->create([
+            'evaluator_id' => $evaluator->id,
+            'evaluator_position_id' => $evaluator->position_id,
+            'evaluation_flow' => ['evaluator'],
+        ]);
+        $report = Reports::factory()->create([
+            'report_data_id' => $this->reportData->id,
+            'status' => 'Assigned',
+        ]);
+        Assignments::factory()->create([
+            'assignment_data_id' => $assignmentData->id,
+            'report_id' => $report->id,
+            'evaluatee_id' => $evaluatee->id,
+        ]);
+
+        $this->actingAs($this->admin, 'web')
+            ->put(route('assignment-data.update', $assignmentData), [
+                'start_time' => now()->toDateString(),
+                'end_time' => now()->addDays(10)->toDateString(),
+                'report_data_id' => $newReportData->id,
+                'evaluatees' => [$evaluatee->id],
+                'evaluator_id' => $evaluator->id,
+                'stage_order' => ['evaluator' => 1],
+            ])
+            ->assertSessionHasErrors('report_data_id');
+
+        $this->assertDatabaseHas('reports', [
+            'id' => $report->id,
+            'report_data_id' => $this->reportData->id,
+            'status' => 'Assigned',
+        ]);
+        $this->assertDatabaseCount('assignments', 1);
+        $this->assertDatabaseCount('reports', 1);
+    }
+
     public function test_admin_can_delete_assignment_data(): void
     {
         $this->actingAs($this->admin, 'web')
@@ -369,11 +589,11 @@ class AssignmentDataTest extends TestCase
             'evaluator_position_id' => $this->evaluatorPosition->id,
             'evaluatee_position_id' => $this->evaluateePosition->id,
             'start_time' => now(),
-            'end_time'   => now()->addDay(),
+            'end_time' => now()->addDay(),
         ]);
 
         $this->actingAs($this->admin, 'web')
-            ->deleteJson(route('assignment-data.destroy', $assignmentData->id),[
+            ->deleteJson(route('assignment-data.destroy', $assignmentData->id), [
                 '_token' => $token,
             ])
             ->assertOk()
